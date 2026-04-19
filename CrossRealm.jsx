@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
 // サーバーのURL（開発時はlocalhost、公開後はRender等のURL）
-const socket = io('http://localhost:3000');
+const socket = io('https://crossrealm-server.onrender.com');
 
 const REALMS = {
   GEAR:    { id: 'gear',    name: '歯車', color: '#B8860B', next: 'ICEAGE' },
