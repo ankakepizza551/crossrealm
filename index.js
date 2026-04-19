@@ -4,9 +4,9 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 
 const app = express();
-app.use(cors()); // 全ての接続を許可
+app.use(cors());
 
-// ブラウザで直接URLを開いた時に表示されるメッセージ
+// ブラウザで直接開いた時の確認用
 app.get('/', (req, res) => {
   res.send('CrossRealm Server is running!');
 });
@@ -14,30 +14,30 @@ app.get('/', (req, res) => {
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // 公開環境では "*"（すべて許可）にするのが確実です
+    origin: "*", 
     methods: ["GET", "POST"]
   }
 });
 
 io.on('connection', (socket) => {
-  console.log('ユーザーが接続しました:', socket.id);
+  console.log('User connected:', socket.id);
 
   socket.on('join-room', (roomId) => {
     socket.join(roomId);
-    console.log(`ユーザー ${socket.id} が部屋 ${roomId} に入室`);
+    console.log(`User ${socket.id} joined room: ${roomId}`);
   });
 
   socket.on('play-card', (data) => {
+    // 同じ部屋の他のプレイヤーにカード情報を送る
     socket.to(data.roomId).emit('opponent-played', data.card);
   });
 
   socket.on('disconnect', () => {
-    console.log('ユーザーが切断されました');
+    console.log('User disconnected');
   });
 });
 
-// Renderの環境変数（PORT）に対応させるための修正
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
