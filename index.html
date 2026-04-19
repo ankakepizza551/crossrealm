@@ -4,9 +4,106 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cross Realm Online</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
-<body style="margin: 0; background-color: #121212;">
+<body style="margin: 0; background-color: #1a1a1a; color: white; font-family: sans-serif;">
     <div id="root"></div>
-    <script type="module" src="./src/main.jsx"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        // サーバーのURL（Render）
+        const socket = io('https://crossrealm-server.onrender.com');
+
+        const REALMS = {
+            GEAR:    { name: '歯車', color: '#B8860B' },
+            ICEAGE:  { name: '氷河期', color: '#ADD8E6' },
+            FOUNTAIN:{ name: '噴水', color: '#00BFFF' },
+            BATTERY: { name: 'バッテリー', color: '#FFFF00' },
+            MACHINE: { name: '機械', color: '#00FF7F' },
+            ARCHIVE: { name: '古文書', color: '#DEB887' },
+            PLANET:  { name: '惑星', color: '#FFFACD', isWild: true },
+            RUINS:   { name: '廃墟', color: '#696969', isWild: true }
+        };
+
+        function App() {
+            const [roomId, setRoomId] = useState('');
+            const [isJoined, setIsJoined] = useState(false);
+            const [fieldCard, setFieldCard] = useState({ realm: 'GEAR', number: 5 });
+            const [myHand, setMyHand] = useState([
+                { id: 1, realm: 'GEAR', number: 3 },
+                { id: 2, realm: 'ICEAGE', number: 7 },
+                { id: 3, realm: 'PLANET', number: 0 },
+                { id: 4, realm: 'FOUNTAIN', number: 2 }
+            ]);
+
+            useEffect(() => {
+                socket.on('opponent-played', (newCard) => {
+                    setFieldCard(newCard);
+                });
+                return () => socket.off('opponent-played');
+            }, []);
+
+            const joinRoom = () => {
+                if (roomId) {
+                    socket.emit('join-room', roomId);
+                    setIsJoined(true);
+                }
+            };
+
+            const playCard = (card) => {
+                setFieldCard(card);
+                setMyHand(myHand.filter(c => c.id !== card.id));
+                socket.emit('play-card', { roomId, card });
+            };
+
+            if (!isJoined) {
+                return (
+                    <div style={{ textAlign: 'center', paddingTop: '100px' }}>
+                        <h1>Cross Realm Online</h1>
+                        <input 
+                            placeholder="合言葉を入力" 
+                            value={roomId} 
+                            onChange={e => setRoomId(e.target.value)}
+                            style={{ padding: '10px', fontSize: '16px' }}
+                        />
+                        <button onClick={joinRoom} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer' }}>入室</button>
+                    </div>
+                );
+            }
+
+            return (
+                <div style={{ textAlign: 'center', padding: '20px' }}>
+                    <p>Room: {roomId}</p>
+                    <div style={{
+                        margin: '20px auto', width: '120px', height: '180px',
+                        backgroundColor: REALMS[fieldCard.realm.toUpperCase()].color,
+                        borderRadius: '12px', border: '3px solid #fff', color: '#000',
+                        display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'
+                    }}>
+                        <div style={{ fontSize: '1.2em' }}>{REALMS[fieldCard.realm.toUpperCase()].name}</div>
+                        <div style={{ fontSize: '3em' }}>{fieldCard.number}</div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '50px' }}>
+                        {myHand.map(card => (
+                            <div key={card.id} onClick={() => playCard(card)} style={{
+                                width: '70px', height: '100px', cursor: 'pointer',
+                                backgroundColor: REALMS[card.realm.toUpperCase()].color,
+                                borderRadius: '8px', color: '#000', display: 'flex', flexDirection: 'column', justifyContent: 'center'
+                            }}>
+                                <b>{REALMS[card.realm.toUpperCase()].name}</b>
+                                <span>{card.number}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
