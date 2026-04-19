@@ -4,12 +4,14 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 
 const app = express();
-app.use(cors()); // フロントエンドからの接続を許可
+app.use(cors()); 
 
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // Reactの開発サーバーURLに合わせる
+    // 修正ポイント1: "*" にすることで、どこからでも接続を許可します
+    // （セキュリティを厳しくする場合は自分のGitHub PagesのURLを入力します）
+    origin: "*", 
     methods: ["GET", "POST"]
   }
 });
@@ -17,15 +19,12 @@ const io = new Server(server, {
 io.on('connection', (socket) => {
   console.log('ユーザーが接続しました:', socket.id);
 
-  // 指定された部屋に参加する
   socket.on('join-room', (roomId) => {
     socket.join(roomId);
     console.log(`ユーザー ${socket.id} が部屋 ${roomId} に入室`);
   });
 
-  // カードがプレイされた時、その部屋の他の人にだけ情報を送る
   socket.on('play-card', (data) => {
-    // data = { roomId: '...', card: { realm: '...', number: 5 } }
     socket.to(data.roomId).emit('opponent-played', data.card);
   });
 
@@ -34,6 +33,8 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(3000, () => {
-  console.log('Server is running on port 3000');
+// 修正ポイント2: Renderの環境変数（PORT）に対応させます
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
