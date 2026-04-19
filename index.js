@@ -9,8 +9,7 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    // 修正ポイント1: "*" にすることで、どこからでも接続を許可します
-    // （セキュリティを厳しくする場合は自分のGitHub PagesのURLを入力します）
+    // 修正: どこからでも接続できるようにします
     origin: "*", 
     methods: ["GET", "POST"]
   }
@@ -21,7 +20,6 @@ io.on('connection', (socket) => {
 
   socket.on('join-room', (roomId) => {
     socket.join(roomId);
-    console.log(`ユーザー ${socket.id} が部屋 ${roomId} に入室`);
   });
 
   socket.on('play-card', (data) => {
@@ -33,7 +31,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// 修正ポイント2: Renderの環境変数（PORT）に対応させます
+// 修正: Renderが指定するポート番号を使うようにします
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
