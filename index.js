@@ -4,17 +4,17 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());
+app.use(cors()); // 全ての接続を許可
 
-// ブラウザでURLを開いた時に表示されるメッセージ（Cannot GET対策）
+// ブラウザで直接URLを開いた時に表示されるメッセージ
 app.get('/', (req, res) => {
-  res.send('CrossRealm Online Server is running!');
+  res.send('CrossRealm Server is running!');
 });
 
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // どこからの接続も許可する設定
+    origin: "*", // 公開環境では "*"（すべて許可）にするのが確実です
     methods: ["GET", "POST"]
   }
 });
@@ -24,6 +24,7 @@ io.on('connection', (socket) => {
 
   socket.on('join-room', (roomId) => {
     socket.join(roomId);
+    console.log(`ユーザー ${socket.id} が部屋 ${roomId} に入室`);
   });
 
   socket.on('play-card', (data) => {
@@ -35,7 +36,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Renderのポート設定に対応
+// Renderの環境変数（PORT）に対応させるための修正
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
