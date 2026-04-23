@@ -24,7 +24,6 @@
             overflow: hidden; transition: background 1s ease;
         }
 
-        /* 背景演出 */
         .bg-aura {
             position: fixed; inset: 0;
             background: radial-gradient(circle at 50% 50%, var(--realm-color, #111) 0%, transparent 70%);
@@ -44,7 +43,6 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         }
 
-        /* サイクルガイド */
         .cycle-guide {
             position: fixed; display: flex; z-index: 50; transition: 0.3s;
             background: rgba(0,0,0,0.6); padding: 8px; gap: 5px; align-items: center; backdrop-filter: blur(10px);
@@ -60,7 +58,7 @@
             .cycle-guide { top: 65px; left: 10px; right: 10px; justify-content: center; border-bottom: 1px solid var(--border); border-radius: 8px; }
             .guide-arrow { transform: rotate(-90deg); }
             .center-stage { flex-direction: column; gap: 20px; justify-content: center; }
-            .login-title { font-size: 24px; letter-spacing: 6px; white-space: nowrap; } /* スマホ向けサイズ調整 */
+            .login-title { font-size: 24px; letter-spacing: 6px; white-space: nowrap; }
             :root { --card-w: 70px; --card-h: 100px; }
         }
 
@@ -75,47 +73,25 @@
         }
         .guide-arrow { font-size: 9px; opacity: 0.3; }
 
-        /* ログイン・待機画面のオーバーレイ */
         .overlay { 
             position: fixed; inset: 0; background: var(--bg); 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             z-index: 1000; padding: 20px;
         }
-        .login-title {
-            font-weight: 900; 
-            color: var(--accent); margin-bottom: 40px; text-shadow: 0 0 20px rgba(64,224,208,0.3);
-            text-align: center;
-        }
-        .input-field {
-            width: 260px; padding: 15px 20px; border-radius: 30px; 
-            border: 1.5px solid var(--accent); background: transparent;
-            color: white; font-size: 14px; text-align: center; margin-bottom: 15px;
-            transition: 0.3s; outline: none; box-sizing: border-box;
-        }
+        .login-title { font-weight: 900; color: var(--accent); margin-bottom: 40px; text-shadow: 0 0 20px rgba(64,224,208,0.3); text-align: center; }
+        .input-field { width: 260px; padding: 15px 20px; border-radius: 30px; border: 1.5px solid var(--accent); background: transparent; color: white; font-size: 14px; text-align: center; margin-bottom: 15px; transition: 0.3s; outline: none; box-sizing: border-box; }
         .input-field::placeholder { color: rgba(255,255,255,0.3); letter-spacing: 2px; }
-        .input-field:focus { box-shadow: 0 0 15px var(--accent); background: rgba(255,255,255,0.05); }
-
-        .btn-main {
-            width: 260px; padding: 15px; border-radius: 30px; border: none;
-            background: var(--accent); color: #000; font-weight: 900; 
-            font-size: 14px; letter-spacing: 4px; cursor: pointer; transition: 0.3s;
-        }
+        .btn-main { width: 260px; padding: 15px; border-radius: 30px; border: none; background: var(--accent); color: #000; font-weight: 900; font-size: 14px; letter-spacing: 4px; cursor: pointer; transition: 0.3s; }
         .btn-main:hover { transform: scale(1.02); box-shadow: 0 0 25px var(--accent); }
 
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 5px 15px; margin-bottom: 5px; height: 45px; }
-        
-        .card { 
-            width: var(--card-w); height: var(--card-h); border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
-            background: #000; position: relative; transition: 0.3s; overflow: hidden; cursor: pointer;
-        }
+        .card { width: var(--card-w); height: var(--card-h); border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #000; position: relative; transition: 0.3s; overflow: hidden; cursor: pointer; }
         .card:hover { transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 10px var(--accent); }
         .card.disabled { opacity: 0.15; filter: grayscale(1); pointer-events: none; }
         .card img { width: 100%; height: 100%; object-fit: cover; }
         .card-ui { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); padding: 2px 0; text-align: center; font-size: 9px; font-weight: bold; }
-
         .center-stage { flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 20px; }
         .btn-action { padding: 10px 20px; border-radius: 20px; border: 1px solid var(--accent); background: transparent; color: var(--accent); font-weight: bold; cursor: pointer; font-size: 11px; }
-
         .hand-container { padding: 5px; border-radius: 20px 20px 0 0; min-height: 130px; position: relative; }
         .my-turn-active { border-top: 1px solid var(--accent); background: linear-gradient(to top, rgba(64,224,208,0.05), transparent); }
         .hand-flex { display: flex; justify-content: center; padding: 0 20px; }
@@ -169,12 +145,14 @@
                 if (gs.nextDrawAmount > 1) return (c.realm === 'GEAR' && c.isSpecial); 
                 const f = gs.fieldCard.realm;
                 const h = c.realm;           
-                if (REALMS[h].w) return true;
-                if (REALMS[f].w) return true;
-                
-                // 噴水WILDの厳格ルール
+                if (REALMS[h].w || REALMS[f].w) return true;
                 if (h === 'FOUNTAIN' && c.isSpecial) return (f === 'ICEAGE' || f === 'FOUNTAIN');
-                
+
+                // --- 追加ロジック: 特殊な接続ルート ---
+                if (f === 'ICEAGE' && h === 'BATTERY') return true;  // 氷河期 → バッテリー
+                if (f === 'ARCHIVE' && h === 'ICEAGE') return true;  // 古文書 → 氷河期
+                // ------------------------------------
+
                 if (f === h) return REALMS[h].canDuplicate;
                 const fIdx = CYCLE_ORDER.indexOf(f);
                 if (fIdx !== -1) {
@@ -229,7 +207,6 @@
             return (
                 <div className="game-container" style={{'--realm-color': currentRealmColor}}>
                     <div className="bg-aura"></div>
-                    
                     <div className="cycle-guide">
                         {CYCLE_ORDER.map((r, i) => (
                             <React.Fragment key={r}>
