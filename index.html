@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm - Final Edition -</title>
+    <title>Cross Realm - Ver 1.2 -</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -16,7 +16,7 @@
         .card.disabled { opacity: 0.15; filter: grayscale(0.9); pointer-events: none; }
         .card img { width: 100%; height: 100%; object-fit: cover; }
         .card-ui { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); padding: 4px 0; text-align: center; font-size: 10px; font-weight: bold; }
-        .badge { position: absolute; top: 5px; right: 5px; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .badge { position: absolute; top: 5px; right: 5px; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; z-index: 10; }
         .hand-area { position: fixed; bottom: 40px; width: 100%; display: flex; justify-content: center; padding-left: 35px; }
         .slot { margin-left: -35px; transition: 0.25s; }
         .slot:hover { transform: translateY(-30px); margin-right: 25px; z-index: 100 !important; }
@@ -57,12 +57,7 @@
 
             const canPlay = (c) => {
                 if (!isMyTurn || !gs?.fieldCard || gs.needsInitialChoice) return false;
-                
-                // ドロー累積中の制限
-                if (gs.nextDrawAmount > 1) {
-                    return (c.realm === 'GEAR' && c.isSpecial);
-                }
-
+                if (gs.nextDrawAmount > 1) return (c.realm === 'GEAR' && c.isSpecial);
                 const f = gs.fieldCard.realm;
                 const h = c.realm;
                 if (REALMS[h].w || REALMS[f].w) return true;
@@ -78,14 +73,13 @@
                 let src = `./images/${card.realm}.png`;
                 if (card.wasRuins) src = './images/RUINS.png';
                 if (card.wasPlanet) src = './images/PLANET.png';
-                
                 if (card.realm === 'MACHINE') src = card.isSpecial ? './images/MACHINE_reverse.png' : './images/MACHINE_normal.png';
                 else if (card.realm === 'FOUNTAIN') src = card.isSpecial ? './images/FOUNTAIN_wild.png' : './images/FOUNTAIN_normal.png';
                 else if (card.realm === 'GEAR' && card.isSpecial) src = './images/GEAR_frame.png';
 
                 return (
                     <div className={`card ${disabled ? 'disabled' : ''}`} onClick={onClick}>
-                        <img src={src} />
+                        <img src={src} alt={card.realm} />
                         {card.isSpecial && card.realm === 'GEAR' && <div className="badge" style={{background:'red'}}>+2</div>}
                         {card.isSpecial && card.realm === 'FOUNTAIN' && <div className="badge" style={{background:'blue'}}>WILD</div>}
                         {card.isSpecial && card.realm === 'MACHINE' && <div className="badge" style={{background:'orange'}}>REV</div>}
@@ -114,7 +108,7 @@
                 <div style={{textAlign:'center', paddingTop:'40px'}}>
                     {(selectorCard || (gs.needsInitialChoice && gs.players[0].id === socket.id)) && (
                         <div className="overlay">
-                            <h3>NEXT REALM</h3>
+                            <h3>SELECT REALM</h3>
                             {['GEAR','ICEAGE','FOUNTAIN','BATTERY','MACHINE','ARCHIVE'].map(r=>(
                                 <button key={r} className="choice-btn" onClick={()=>{
                                     if(selectorCard) { socket.emit('play-card',{roomId:room, card:selectorCard, chosenRealm:r}); setSelectorCard(null); }
