@@ -3,57 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm Online - Final Edition</title>
+    <title>Cross Realm Online - Multiplayer</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        :root { --accent: #40E0D0; --bg: #121212; --card-w: 85px; --card-h: 125px; }
-        body { margin: 0; background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; touch-action: manipulation; }
+        :root { --accent: #40E0D0; --bg: #121212; }
+        body { margin: 0; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; }
         
-        /* プレイヤーエリア（上部） */
-        .opponents { display: flex; justify-content: center; gap: 15px; padding: 10px; background: rgba(0,0,0,0.4); border-bottom: 1px solid #333; height: 60px; }
-        .opp-box { text-align: center; padding: 4px 12px; border-radius: 12px; border: 1px solid #444; background: #1a1a1a; min-width: 70px; transition: 0.3s; }
-        .opp-box.active { border-color: var(--accent); box-shadow: 0 0 10px rgba(64, 224, 208, 0.4); background: rgba(64, 224, 208, 0.1); }
-        .opp-hand { display: flex; align-items: center; justify-content: center; gap: 5px; font-weight: bold; margin-top: 2px; }
-        .card-mini { width: 10px; height: 14px; background: #666; border: 1px solid #999; border-radius: 2px; }
+        /* ロビー画面 */
+        .lobby-container { padding: 50px 20px; text-align: center; }
+        .player-list { background: #1a1a1a; border-radius: 15px; padding: 20px; margin: 20px auto; max-width: 300px; border: 1px solid #333; }
+        .player-item { padding: 10px; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .player-item:last-child { border: none; }
+        .status-badge { background: var(--accent); color: #000; font-size: 0.7em; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
 
-        .game-area { height: calc(100vh - 80px); display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px; }
-        
-        /* 属性サイクルガイド */
-        .cycle-bar { font-size: 10px; color: #777; display: flex; gap: 4px; background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 15px; }
-        .active-realm { color: var(--accent); font-weight: bold; text-shadow: 0 0 5px var(--accent); }
-
-        /* フィールド（場） */
-        .field-box { position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; margin: 10px 0; }
-        .turn-msg { font-size: 1.2em; font-weight: bold; margin-bottom: 10px; height: 1.5em; color: var(--accent); }
-
-        /* カードの基本デザイン */
-        .card { 
-            width: var(--card-w); height: var(--card-h); border-radius: 10px; overflow: hidden; 
-            position: relative; border: 2px solid #333; background: #000; transition: transform 0.2s;
-        }
-        .card.disabled { opacity: 0.2; filter: grayscale(1); transform: scale(0.9); }
+        /* ゲーム画面（共通パーツ） */
+        .opponents { display: flex; justify-content: center; gap: 10px; padding: 10px; background: rgba(0,0,0,0.4); border-bottom: 1px solid #333; height: 60px; }
+        .opp-box { text-align: center; padding: 4px 10px; border-radius: 10px; border: 1px solid #444; background: #1a1a1a; min-width: 60px; }
+        .opp-box.active { border-color: var(--accent); background: rgba(64, 224, 208, 0.1); }
+        .card { width: 85px; height: 125px; border-radius: 10px; overflow: hidden; position: relative; border: 2px solid #333; background: #000; transition: 0.2s; }
+        .card.disabled { opacity: 0.2; filter: grayscale(1); }
         .card img { width: 100%; height: 100%; object-fit: cover; }
         .card-ui { position: absolute; inset: 0; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(rgba(0,0,0,0.6) 0%, transparent 50%, rgba(0,0,0,0.7) 100%); pointer-events: none; }
-        .card-num { font-size: 2.2em; font-weight: bold; text-align: right; line-height: 0.8; }
-        .card-name { font-size: 0.6em; font-weight: bold; }
-
-        /* 手札（スマホ最適化） */
-        .my-hand-wrapper { width: 100%; overflow-x: auto; padding: 20px 0; display: flex; justify-content: center; }
-        .my-hand { display: flex; padding: 0 40px; }
+        
+        /* 手札 */
+        .my-hand-wrapper { width: 100%; overflow-x: auto; padding: 20px 0; display: flex; justify-content: center; position: fixed; bottom: 0; }
         .hand-slot { margin-left: -35px; transition: 0.2s; }
         .hand-slot:first-child { margin-left: 0; }
         .hand-slot:hover { transform: translateY(-20px); z-index: 100 !important; }
 
-        /* 操作ボタン */
-        .draw-btn-wrap { position: relative; margin-top: 15px; }
-        .btn { padding: 12px 30px; border-radius: 25px; border: 2px solid #555; background: #222; color: white; font-weight: bold; cursor: pointer; }
-        .btn:disabled { opacity: 0.5; }
-        .draw-badge { position: absolute; top: -12px; right: -12px; background: #ff4444; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; animation: pulse 1s infinite; }
-
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .btn { padding: 12px 24px; border-radius: 25px; border: 2px solid #555; background: #222; color: white; font-weight: bold; cursor: pointer; margin: 10px; }
+        .btn-start { background: var(--accent); color: #000; border-color: white; }
     </style>
 </head>
 <body>
@@ -63,93 +45,115 @@
         const { useState, useEffect } = React;
         const socket = io('https://crossrealm-server.onrender.com');
 
-        const REALMS = {
-            GEAR: { n: '歯車' }, ICEAGE: { n: '氷河期' }, FOUNTAIN: { n: '噴水' },
-            BATTERY: { n: 'バッテリー' }, MACHINE: { n: '機械' }, ARCHIVE: { n: '古文書' },
-            PLANET: { n: '惑星', w: true }, RUINS: { n: '廃墟', w: true }
-        };
+        const REALMS = { GEAR:{n:'歯車'}, ICEAGE:{n:'氷河期'}, FOUNTAIN:{n:'噴水'}, BATTERY:{n:'バッテリー'}, MACHINE:{n:'機械'}, ARCHIVE:{n:'古文書'}, PLANET:{n:'惑星',w:true}, RUINS:{n:'廃墟',w:true} };
         const CYCLE = { GEAR:'ICEAGE', ICEAGE:'FOUNTAIN', FOUNTAIN:'BATTERY', BATTERY:'MACHINE', MACHINE:'ARCHIVE', ARCHIVE:'GEAR' };
 
         const Card = ({ card, onClick, disabled }) => {
             let img = card.realm === 'MACHINE' ? (card.number <= 2 ? 'MACHINE_reverse.png' : 'MACHINE_normal.png') :
                       card.realm === 'FOUNTAIN' ? (card.number <= 2 ? 'FOUNTAIN_wild.png' : 'FOUNTAIN_normal.png') :
                       (card.realm === 'GEAR' && card.number === 0) ? 'GEAR_frame.png' : `${card.realm}.png`;
-            
             return (
                 <div className={`card ${disabled ? 'disabled' : ''}`} onClick={onClick}>
                     <img src={`./images/${img}`} onError={(e)=>e.target.style.visibility='hidden'} />
                     <div className="card-ui">
-                        <div className="card-name">{REALMS[card.realm].n}</div>
-                        <div className="card-num">{card.number}</div>
+                        <div style={{fontSize:'0.6em',fontWeight:'bold'}}>{REALMS[card.realm].n}</div>
+                        <div style={{fontSize:'2.2em',fontWeight:'bold',textAlign:'right',lineHeight:'0.8'}}>{card.number}</div>
                     </div>
                 </div>
             );
         };
 
         const App = () => {
-            const [data, setData] = useState({ players: [], fieldCard: null, nextDrawAmount: 1 });
+            const [gameState, setGameState] = useState({ players: [], fieldCard: null, status: 'waiting' });
             const [roomId, setRoomId] = useState('');
-            const [joined, setJoined] = useState(false);
+            const [isJoined, setIsJoined] = useState(false);
 
             useEffect(() => {
-                socket.on('update-game', setData);
+                socket.on('update-game', setGameState);
                 return () => socket.off();
             }, []);
 
-            const me = data.players.find(p => p.id === socket.id) || { hand: [] };
-            const isMyTurn = data.currentTurnPlayerId === socket.id;
-            const others = data.players.filter(p => p.id !== socket.id);
+            const me = gameState.players.find(p => p.id === socket.id) || { hand: [] };
+            const isHost = gameState.players[0]?.id === socket.id; // 最初の人がホスト
+            const isMyTurn = gameState.currentTurnPlayerId === socket.id;
 
-            const canPlay = (c) => {
-                if (!isMyTurn || !data.fieldCard) return false;
-                if (REALMS[c.realm].w || (c.realm === 'FOUNTAIN' && c.number <= 2)) return true;
-                const f = data.fieldCard;
-                return c.realm === f.realm || c.number === f.number || CYCLE[f.realm] === c.realm;
-            };
+            const handleJoin = () => { if(roomId) { socket.emit('join-room', roomId); setIsJoined(true); } };
+            const handleStart = () => { socket.emit('start-game', { roomId }); };
 
-            if (!joined) return (
-                <div style={{paddingTop: '150px', textAlign: 'center'}}>
+            // ログイン前
+            if (!isJoined) return (
+                <div className="lobby-container">
                     <h1>Cross Realm</h1>
-                    <input className="btn" style={{background:'#fff', color:'#000'}} value={roomId} onChange={e=>setRoomId(e.target.value)} placeholder="ROOM ID" />
-                    <button className="btn" onClick={()=>{if(roomId){socket.emit('join-room', roomId); setJoined(true)}}}>START</button>
+                    <input className="btn" style={{background:'#fff', color:'#000'}} value={roomId} onChange={e=>setRoomId(e.target.value)} placeholder="ルームID" />
+                    <button className="btn" onClick={handleJoin}>入室する</button>
                 </div>
             );
+
+            // ロビー待機中
+            if (gameState.status === 'waiting') return (
+                <div className="lobby-container">
+                    <h2>待機ロビー</h2>
+                    <p>ROOM ID: <strong>{roomId}</strong></p>
+                    <div className="player-list">
+                        {gameState.players.map((p, i) => (
+                            <div key={p.id} className="player-item">
+                                👤 Player {i+1} {p.id === socket.id && <span className="status-badge">YOU</span>}
+                                {i === 0 && <span>👑</span>}
+                            </div>
+                        ))}
+                        {[...Array(Math.max(0, 4 - gameState.players.length))].map((_, i) => (
+                            <div key={i} className="player-item" style={{opacity: 0.3}}>待機中...</div>
+                        ))}
+                    </div>
+                    <p>{gameState.players.length} / 4 人が参加中</p>
+                    {isHost ? (
+                        <button className="btn btn-start" onClick={handleStart} disabled={gameState.players.length < 2}>
+                            ゲームを開始する
+                        </button>
+                    ) : (
+                        <p style={{color: var(--accent)}}>ホストが開始するのを待っています...</p>
+                    )}
+                </div>
+            );
+
+            // ゲーム本編
+            const others = gameState.players.filter(p => p.id !== socket.id);
+            const canPlay = (c) => {
+                if (!isMyTurn || !gameState.fieldCard) return false;
+                if (REALMS[c.realm].w || (c.realm === 'FOUNTAIN' && c.number <= 2)) return true;
+                const f = gameState.fieldCard;
+                return c.realm === f.realm || c.number === f.number || CYCLE[f.realm] === c.realm;
+            };
 
             return (
                 <div>
                     <div className="opponents">
                         {others.map(p => (
-                            <div key={p.id} className={`opp-box ${data.currentTurnPlayerId === p.id ? 'active' : ''}`}>
-                                <div style={{fontSize:'10px'}}>PLAYER</div>
-                                <div className="opp-hand"><div className="card-mini"/>{p.handCount}</div>
+                            <div key={p.id} className={`opp-box ${gameState.currentTurnPlayerId === p.id ? 'active' : ''}`}>
+                                <div style={{fontSize:'9px'}}>PLAYER</div>
+                                <div style={{fontWeight:'bold'}}>🎴 {p.handCount}</div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="game-area">
-                        <div className="cycle-bar">
-                            {Object.keys(CYCLE).map(r => (
-                                <span key={r} className={data.fieldCard?.realm === r ? 'active-step active-realm' : ''}>{REALMS[r].n} ➔</span>
-                            ))} <span>歯車</span>
+                    <div style={{textAlign:'center', marginTop:'20px'}}>
+                        <div style={{color: var(--accent), fontWeight:'bold', marginBottom: '10px'}}>
+                            {isMyTurn ? "★ あなたの番です ★" : "相手の番を待っています..."}
                         </div>
-
-                        <div className="field-box">
-                            <div className="turn-msg">{isMyTurn ? "★ YOUR TURN ★" : "Waiting..."}</div>
-                            {data.fieldCard && <Card card={data.fieldCard} />}
-                            <div className="draw-btn-wrap">
-                                <button className="btn" onClick={()=>socket.emit('draw-card',{roomId})} disabled={!isMyTurn}>DRAW</button>
-                                {data.nextDrawAmount > 1 && <div className="draw-badge">+{data.nextDrawAmount}</div>}
-                            </div>
+                        <div style={{display:'flex', justifyContent:'center', position:'relative'}}>
+                            {gameState.fieldCard && <Card card={gameState.fieldCard} />}
+                            {gameState.nextDrawAmount > 1 && <div style={{position:'absolute', top:'-10px', right:'30%', background:'red', borderRadius:'50%', width:'25px', height:'25px', display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid white'}}>+{gameState.nextDrawAmount}</div>}
                         </div>
+                        <button className="btn" onClick={()=>socket.emit('draw-card',{roomId})} disabled={!isMyTurn}>カードを引く</button>
+                    </div>
 
-                        <div className="my-hand-wrapper">
-                            <div className="my-hand">
-                                {me.hand.map((c, i) => (
-                                    <div key={c.id} className="hand-slot" style={{zIndex: i}}>
-                                        <Card card={c} onClick={()=>isMyTurn && canPlay(c) && socket.emit('play-card',{roomId, card:c})} disabled={!canPlay(c)} />
-                                    </div>
-                                ))}
-                            </div>
+                    <div className="my-hand-wrapper">
+                        <div style={{display:'flex', padding:'0 40px'}}>
+                            {me.hand.map((c, i) => (
+                                <div key={c.id} className="hand-slot" style={{zIndex: i}}>
+                                    <Card card={c} onClick={()=>isMyTurn && canPlay(c) && socket.emit('play-card',{roomId, card:c})} disabled={!canPlay(c)} />
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
