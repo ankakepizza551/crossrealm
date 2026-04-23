@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cross Realm Online - Cycle Edition</title>
+    <title>Cross Realm Online - Final Edition</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        body { margin: 0; background-color: #121212; color: white; font-family: 'Hiragino Kaku Gothic ProN', sans-serif; text-align: center; }
-        .game-container { padding: 20px; max-width: 900px; margin: 0 auto; }
+        body { margin: 0; background-color: #121212; color: white; font-family: sans-serif; text-align: center; }
+        .game-container { padding: 10px; max-width: 800px; margin: 0 auto; }
         
-        /* 属性サイクルの表示 */
-        .cycle-info { font-size: 0.8em; color: #aaa; margin-bottom: 10px; }
-        .cycle-active { color: #00ff7f; font-weight: bold; }
+        /* 属性サイクルのインジケーター */
+        .cycle-guide { font-size: 0.75em; background: #222; padding: 8px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #333; }
+        .cycle-step { opacity: 0.5; padding: 0 4px; }
+        .active-step { opacity: 1; color: #40E0D0; font-weight: bold; text-shadow: 0 0 5px #40E0D0; }
 
-        /* カードデザイン */
+        /* カードスタイル */
         .card { 
             width: 85px; height: 125px; 
             border-radius: 10px; 
@@ -27,13 +28,15 @@
             cursor: pointer; 
             border: 2px solid #333; 
             transition: transform 0.2s, box-shadow 0.2s;
-            background-color: #222;
+            background-color: #1a1a1a;
         }
-        .card:hover:not(.disabled) { transform: translateY(-8px); box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
-        .card.disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(80%); }
+        .card:hover:not(.disabled) { transform: translateY(-10px); box-shadow: 0 8px 20px rgba(0,0,0,0.8); z-index: 10; }
+        .card.disabled { opacity: 0.25; cursor: not-allowed; filter: grayscale(100%); }
 
+        /* カード内のイラスト */
         .card img { width: 100%; height: 100%; object-fit: cover; }
 
+        /* カード情報のオーバーレイ */
         .card-info {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -47,12 +50,13 @@
             pointer-events: none;
         }
         .realm-name { font-size: 0.6em; font-weight: bold; text-align: left; }
-        .card-number { font-size: 2em; font-weight: bold; text-align: right; line-height: 0.9; }
+        .card-number { font-size: 2.2em; font-weight: bold; text-align: right; line-height: 0.8; }
 
-        .field-section { margin: 20px 0; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px; border: 1px solid #444; }
-        .btn { padding: 12px 24px; background: #333; color: white; border: 2px solid #666; border-radius: 8px; cursor: pointer; margin: 10px; font-weight: bold; }
-        .btn:hover:not(:disabled) { background: #444; border-color: #fff; }
+        /* フィールドエリア */
+        .field-section { margin: 20px 0; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 20px; border: 1px solid #444; }
+        .btn { padding: 12px 24px; background: #333; color: white; border: 2px solid #555; border-radius: 8px; cursor: pointer; margin: 10px; font-weight: bold; }
         .btn:disabled { opacity: 0.5; }
+        .status-msg { margin-bottom: 10px; font-weight: bold; color: #ddd; }
     </style>
 </head>
 <body>
@@ -62,7 +66,6 @@
         const { useState, useEffect } = React;
         const socket = io('https://crossrealm-server.onrender.com');
 
-        // 属性データ
         const REALMS = {
             GEAR:    { name: '歯車' },
             ICEAGE:  { name: '氷河期' },
@@ -74,7 +77,7 @@
             RUINS:   { name: '廃墟', isWild: true }
         };
 
-        // ★提案の属性サイクル
+        // ★確定した属性サイクル
         const REALM_CYCLE = {
             'GEAR': 'ICEAGE',
             'ICEAGE': 'FOUNTAIN',
@@ -85,12 +88,15 @@
         };
 
         const Card = ({ card, onClick, disabled }) => {
-            // 画像ファイル名判定ロジック（GitHubの構成に準拠）
+            // リネームしたファイル名に対応する出し分けロジック
             let imageName = "";
             if (card.realm === 'MACHINE') {
                 imageName = card.number <= 2 ? 'MACHINE_reverse.png' : 'MACHINE_normal.png';
             } else if (card.realm === 'FOUNTAIN') {
                 imageName = card.number <= 2 ? 'FOUNTAIN_wild.png' : 'FOUNTAIN_normal.png';
+            } else if (card.realm === 'GEAR' && card.number === 0) {
+                // 歯車の0（DRAW2）があれば専用枠を使う想定
+                imageName = 'GEAR_frame.png';
             } else {
                 imageName = `${card.realm}.png`;
             }
@@ -130,18 +136,19 @@
 
             const joinRoom = () => { if(roomId) { socket.emit('join-room', roomId); setIsJoined(true); } };
             
-            // ★プレイ可否判定（ここにサイクルロジックを追加）
             const canPlay = (card) => {
                 if (!isMyTurn || !fieldCard) return false;
                 
-                // 1. ワイルドカード判定
+                // 1. 完全ワイルド（惑星、廃墟）
                 if (REALMS[card.realm].isWild) return true;
+                
+                // 2. 噴水のワイルド (0-2)
                 if (card.realm === 'FOUNTAIN' && card.number <= 2) return true;
 
-                // 2. 通常判定（同じ属性 or 同じ数字）
+                // 3. 通常ルール (同じ属性 or 同じ数字)
                 if (card.realm === fieldCard.realm || card.number === fieldCard.number) return true;
 
-                // 3. ★サイクル判定（例：場が歯車なら、数字が違っても氷河期が出せる）
+                // 4. ★属性サイクルルール (歯車➔氷河期➔噴水...)
                 if (REALM_CYCLE[fieldCard.realm] === card.realm) return true;
 
                 return false;
@@ -160,29 +167,39 @@
                 return (
                     <div className="game-container">
                         <h1>Cross Realm Online</h1>
-                        <input className="btn" style={{color: 'black', background: '#fff'}} placeholder="Room ID" value={roomId} onChange={e => setRoomId(e.target.value)} />
-                        <button className="btn" onClick={joinRoom}>入室</button>
+                        <p style={{fontSize: '0.8em', color: '#888'}}>Enter Room ID to Start</p>
+                        <input className="btn" style={{color: 'black', background: '#fff'}} value={roomId} onChange={e => setRoomId(e.target.value)} />
+                        <button className="btn" onClick={joinRoom}>JOIN</button>
                     </div>
                 );
             }
 
             return (
                 <div className="game-container">
-                    <div className="cycle-info">
-                        サイクル: 歯車 ➔ <span className={fieldCard?.realm==='GEAR'?'cycle-active':''}>氷河期</span> ➔ <span className={fieldCard?.realm==='ICEAGE'?'cycle-active':''}>噴水</span> ➔ <span className={fieldCard?.realm==='FOUNTAIN'?'cycle-active':''}>バッテリー</span> ➔ <span className={fieldCard?.realm==='BATTERY'?'cycle-active':''}>機械</span> ➔ <span className={fieldCard?.realm==='MACHINE'?'cycle-active':''}>古文書</span> ➔ <span className={fieldCard?.realm==='ARCHIVE'?'cycle-active':''}>歯車</span>
+                    {/* サイクルガイド */}
+                    <div className="cycle-guide">
+                        {['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'].map((r, i) => (
+                            <span key={r}>
+                                <span className={fieldCard?.realm === r ? 'active-step' : 'cycle-step'}>
+                                    {REALMS[r].name}
+                                </span>
+                                {i < 5 && <span className="cycle-step">➔</span>}
+                                {i === 5 && <span className="cycle-step">➔ 歯車</span>}
+                            </span>
+                        ))}
                     </div>
 
                     <div className="field-section">
-                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+                        <div className="status-msg">{isMyTurn ? "▼ Your Turn" : "Wait for Opponent..."}</div>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '15px' }}>
                             {fieldCard && <Card card={fieldCard} disabled={false} />}
                         </div>
-                        <p>{isMyTurn ? "🔔 あなたの番" : "相手の番..."}</p>
                         <button className="btn" onClick={drawCard} disabled={!isMyTurn}>
-                            {nextDrawAmount > 1 ? `${nextDrawAmount}枚引く` : "山札から引く"}
+                            {nextDrawAmount > 1 ? `DRAW ${nextDrawAmount}` : "DRAW CARD"}
                         </button>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '8px', paddingBottom: '20px' }}>
                         {myHand.map(card => (
                             <Card key={card.id} card={card} onClick={() => playCard(card)} disabled={!canPlay(card)} />
                         ))}
