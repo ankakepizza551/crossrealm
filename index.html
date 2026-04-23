@@ -3,37 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm - Complete Edition -</title>
+    <title>Cross Realm - Final Edition -</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         :root { --accent: #40E0D0; --bg: #0d0d0d; --card-w: 85px; --card-h: 125px; }
-        body { margin: 0; background: var(--bg); color: white; font-family: 'Hiragino Kaku Gothic ProN', sans-serif; overflow: hidden; }
-        .overlay { position: fixed; inset: 0; background: rgba(13,13,13,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; text-align: center; padding: 20px; }
+        body { margin: 0; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; }
+        .overlay { position: fixed; inset: 0; background: rgba(13,13,13,0.96); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; text-align: center; }
         .card { width: var(--card-w); height: var(--card-h); border-radius: 10px; border: 2px solid #333; background: #000; position: relative; transition: 0.2s; cursor: pointer; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .card.disabled { opacity: 0.15; filter: grayscale(0.9); pointer-events: none; }
-        .card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-        .card-ui { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); padding: 4px 0; text-align: center; font-size: 10px; font-weight: bold; pointer-events: none; }
-        .badge { position: absolute; top: 5px; right: 5px; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-shadow: 0 1px 2px #000; }
+        .card img { width: 100%; height: 100%; object-fit: cover; }
+        .card-ui { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); padding: 4px 0; text-align: center; font-size: 10px; font-weight: bold; }
+        .badge { position: absolute; top: 5px; right: 5px; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         .hand-area { position: fixed; bottom: 40px; width: 100%; display: flex; justify-content: center; padding-left: 35px; }
         .slot { margin-left: -35px; transition: 0.25s; }
         .slot:hover { transform: translateY(-30px); margin-right: 25px; z-index: 100 !important; }
-        .btn { padding: 12px 30px; border-radius: 30px; border: none; background: var(--accent); color: #000; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
-        .choice-btn { margin: 6px; padding: 10px 18px; border-radius: 6px; border: 1px solid var(--accent); background: transparent; color: white; cursor: pointer; font-size: 13px; }
-        .choice-btn:hover { background: var(--accent); color: #000; }
-        .status-info { font-size: 12px; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px; }
+        .btn { padding: 12px 30px; border-radius: 30px; border: none; background: var(--accent); color: #000; font-weight: bold; cursor: pointer; }
+        .choice-btn { margin: 6px; padding: 10px 18px; border-radius: 6px; border: 1px solid var(--accent); background: transparent; color: white; cursor: pointer; }
+        .warning { color: #ff4444; font-weight: bold; font-size: 18px; margin-bottom: 10px; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.3; } }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect } = React;
-        
-        // 外部サーバーURL（多人数対戦用）
-        const socket = io('https://crossrealm-server.onrender.com'); 
+        const socket = io('https://crossrealm-server.onrender.com');
 
         const REALMS = {
             GEAR: { n: '歯車', can: true }, ICEAGE: { n: '氷河期', can: false },
@@ -58,22 +55,19 @@
             const me = gs?.players?.find(p => p.id === socket.id) || { hand: [] };
             const isMyTurn = gs?.currentTurnPlayerId === socket.id;
 
-            // プレイ可否判定ロジック
             const canPlay = (c) => {
                 if (!isMyTurn || !gs?.fieldCard || gs.needsInitialChoice) return false;
-                const f = gs.fieldCard.realm; // 場の属性
-                const h = c.realm;           // 手札の属性
+                
+                // ドロー累積中の制限
+                if (gs.nextDrawAmount > 1) {
+                    return (c.realm === 'GEAR' && c.isSpecial);
+                }
 
-                if (REALMS[h].w) return true; // 手札がワイルドならOK
-                if (REALMS[f].w) return true; // 場がワイルドならOK
-
-                // 噴水ワイルド特殊判定
+                const f = gs.fieldCard.realm;
+                const h = c.realm;
+                if (REALMS[h].w || REALMS[f].w) return true;
                 if (c.realm === 'FOUNTAIN' && c.isSpecial && (f === 'ICEAGE' || f === 'FOUNTAIN')) return true;
-
-                // 同属性出し（canプロパティ参照）
                 if (f === h) return REALMS[h].can;
-
-                // 属性サイクル判定
                 const cycle = ['GEAR','ICEAGE','FOUNTAIN','BATTERY','MACHINE','ARCHIVE'];
                 const fIdx = cycle.indexOf(f);
                 return (fIdx !== -1 && cycle[(fIdx + 1) % 6] === h);
@@ -81,26 +75,20 @@
 
             const CardView = ({ card, disabled, onClick, field = false }) => {
                 if (!card) return null;
-                
-                // 画像パス分岐ロジック
                 let src = `./images/${card.realm}.png`;
                 if (card.wasRuins) src = './images/RUINS.png';
                 if (card.wasPlanet) src = './images/PLANET.png';
-
-                if (card.realm === 'MACHINE') {
-                    src = card.isSpecial ? './images/MACHINE_reverse.png' : './images/MACHINE_normal.png';
-                } else if (card.realm === 'FOUNTAIN') {
-                    src = card.isSpecial ? './images/FOUNTAIN_wild.png' : './images/FOUNTAIN_normal.png';
-                } else if (card.realm === 'GEAR') {
-                    src = card.isSpecial ? './images/GEAR_frame.png' : './images/GEAR.png';
-                }
+                
+                if (card.realm === 'MACHINE') src = card.isSpecial ? './images/MACHINE_reverse.png' : './images/MACHINE_normal.png';
+                else if (card.realm === 'FOUNTAIN') src = card.isSpecial ? './images/FOUNTAIN_wild.png' : './images/FOUNTAIN_normal.png';
+                else if (card.realm === 'GEAR' && card.isSpecial) src = './images/GEAR_frame.png';
 
                 return (
                     <div className={`card ${disabled ? 'disabled' : ''}`} onClick={onClick}>
-                        <img src={src} alt={card.realm} />
-                        {card.isSpecial && card.realm === 'GEAR' && <div className="badge" style={{background:'linear-gradient(45deg, #ff4444, #990000)'}}>+2</div>}
-                        {card.isSpecial && card.realm === 'FOUNTAIN' && <div className="badge" style={{background:'linear-gradient(45deg, #4444ff, #000099)'}}>WILD</div>}
-                        {card.isSpecial && card.realm === 'MACHINE' && <div className="badge" style={{background:'linear-gradient(45deg, #ffaa00, #996600)'}}>REV</div>}
+                        <img src={src} />
+                        {card.isSpecial && card.realm === 'GEAR' && <div className="badge" style={{background:'red'}}>+2</div>}
+                        {card.isSpecial && card.realm === 'FOUNTAIN' && <div className="badge" style={{background:'blue'}}>WILD</div>}
+                        {card.isSpecial && card.realm === 'MACHINE' && <div className="badge" style={{background:'orange'}}>REV</div>}
                         <div className="card-ui">{field ? `FIELD: ${REALMS[card.realm].n}` : REALMS[card.realm].n}</div>
                     </div>
                 );
@@ -108,70 +96,45 @@
 
             if (!joined) return (
                 <div className="overlay">
-                    <h1 style={{color:'var(--accent)', letterSpacing:'4px', marginBottom:'30px'}}>CROSS REALM</h1>
-                    <input className="btn" style={{background:'#111', color:'#fff', marginBottom:'10px', textAlign:'center', border:'1px solid #333'}} placeholder="USER NAME" value={name} onChange={e=>setName(e.target.value)} /><br/>
-                    <input className="btn" style={{background:'#111', color:'#fff', marginBottom:'20px', textAlign:'center', border:'1px solid #333'}} placeholder="ROOM ID" value={room} onChange={e=>setRoom(e.target.value)} /><br/>
-                    <button className="btn" onClick={()=>{if(room && name){socket.emit('join-room',{roomId:room,playerName:name});setJoined(true)}}}>ENTER REALM</button>
+                    <h1 style={{color:'var(--accent)'}}>CROSS REALM</h1>
+                    <input className="btn" style={{background:'#111', color:'#fff', marginBottom:'10px', textAlign:'center'}} placeholder="NAME" value={name} onChange={e=>setName(e.target.value)} /><br/>
+                    <input className="btn" style={{background:'#111', color:'#fff', marginBottom:'20px', textAlign:'center'}} placeholder="ROOM ID" value={room} onChange={e=>setRoom(e.target.value)} /><br/>
+                    <button className="btn" onClick={()=>{if(room && name){socket.emit('join-room',{roomId:room,playerName:name});setJoined(true)}}}>ENTER</button>
                 </div>
             );
 
             if (!gs || gs.status === 'waiting') return (
                 <div className="overlay">
-                    <h2 style={{opacity:0.6}}>WAITING FOR EXPLORERS...</h2>
-                    <p>{gs?.players?.length || 0} / 4 Players Joined</p>
-                    {gs?.players?.[0]?.id === socket.id && gs?.players?.length >= 2 && <button className="btn" onClick={()=>socket.emit('start-game',{roomId:room})}>START VOYAGE</button>}
+                    <h2>WAITING ({gs?.players?.length || 0}/4)</h2>
+                    {gs?.players?.[0]?.id === socket.id && gs?.players?.length >= 2 && <button className="btn" onClick={()=>socket.emit('start-game',{roomId:room})}>START</button>}
                 </div>
             );
 
             return (
-                <div style={{textAlign:'center', paddingTop:'50px'}}>
-                    {/* 属性選択ダイアログ */}
+                <div style={{textAlign:'center', paddingTop:'40px'}}>
                     {(selectorCard || (gs.needsInitialChoice && gs.players[0].id === socket.id)) && (
                         <div className="overlay">
-                            <h3>NEXT REALM...</h3>
-                            <div style={{display:'flex', flexWrap:'wrap', justifyContent:'center', maxWidth:'400px'}}>
-                                {['GEAR','ICEAGE','FOUNTAIN','BATTERY','MACHINE','ARCHIVE'].map(r=>(
-                                    <button key={r} className="choice-btn" onClick={()=>{
-                                        if(selectorCard) { 
-                                            socket.emit('play-card',{roomId:room, card:selectorCard, chosenRealm:r}); 
-                                            setSelectorCard(null); 
-                                        } else { 
-                                            socket.emit('set-initial-realm',{roomId:room, chosenRealm:r}); 
-                                        }
-                                    }}>{REALMS[r].n}</button>
-                                ))}
-                            </div>
+                            <h3>NEXT REALM</h3>
+                            {['GEAR','ICEAGE','FOUNTAIN','BATTERY','MACHINE','ARCHIVE'].map(r=>(
+                                <button key={r} className="choice-btn" onClick={()=>{
+                                    if(selectorCard) { socket.emit('play-card',{roomId:room, card:selectorCard, chosenRealm:r}); setSelectorCard(null); }
+                                    else { socket.emit('set-initial-realm',{roomId:room, chosenRealm:r}); }
+                                }}>{REALMS[r].n}</button>
+                            ))}
                         </div>
                     )}
-
-                    <div className="status-info" style={{color: gs.isReversed ? '#ffaa00' : '#44ff44'}}>
-                        {gs.isReversed ? '◀ REVERSE FLOW' : 'NORMAL FLOW ▶'}
-                    </div>
-
-                    <div style={{margin:'20px auto', display:'inline-block', transform:'scale(1.2)'}}>
-                        <CardView card={gs.fieldCard} field={true} />
-                    </div>
-                    
-                    <div style={{marginTop:'45px'}}>
+                    <div style={{fontSize:'12px', color:gs.isReversed?'orange':'#44ff44', marginBottom:'10px'}}>{gs.isReversed?'◀ REVERSE':'NORMAL ▶'}</div>
+                    {gs.nextDrawAmount > 1 && isMyTurn && <div className="warning">WARNING: +{gs.nextDrawAmount}!</div>}
+                    <div style={{margin:'10px auto', display:'inline-block', transform:'scale(1.1)'}}><CardView card={gs.fieldCard} field={true} /></div>
+                    <div style={{marginTop:'30px'}}>
                         <button className="btn" onClick={()=>socket.emit('draw-card',{roomId:room})} disabled={!isMyTurn || gs.needsInitialChoice}>
-                            {isMyTurn ? (gs.nextDrawAmount > 1 ? `DRAW ${gs.nextDrawAmount} CARDS` : "DRAW / PASS") : "WAITING..."}
+                            {gs.nextDrawAmount > 1 ? `TAKE ${gs.nextDrawAmount} CARDS` : "DRAW / PASS"}
                         </button>
                     </div>
-
                     <div className="hand-area">
                         {me.hand.map((c,i)=>(
                             <div key={c.id} className="slot" style={{zIndex:i}}>
-                                <CardView 
-                                    card={c} 
-                                    disabled={!canPlay(c)} 
-                                    onClick={() => {
-                                        if (c.realm === 'PLANET' || (c.realm === 'FOUNTAIN' && c.isSpecial)) {
-                                            setSelectorCard(c);
-                                        } else {
-                                            socket.emit('play-card',{roomId:room, card:c});
-                                        }
-                                    }}
-                                />
+                                <CardView card={c} disabled={!canPlay(c)} onClick={()=>(c.realm==='PLANET'||(c.realm==='FOUNTAIN'&&c.isSpecial))?setSelectorCard(c):socket.emit('play-card',{roomId:room, card:c})}/>
                             </div>
                         ))}
                     </div>
