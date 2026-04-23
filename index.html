@@ -12,8 +12,10 @@
         body { margin: 0; background-color: #1a1a1a; color: white; font-family: sans-serif; text-align: center; }
         .card { width: 75px; height: 110px; border-radius: 8px; color: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; border: 1px solid #000; }
         .field-card { width: 100px; height: 140px; border-radius: 10px; border: 4px solid #fff; margin: 20px auto; color: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .btn { padding: 10px 20px; background: #444; color: #fff; border: 1px solid #fff; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .btn { padding: 10px 20px; background: #444; color: #fff; border: 1px solid #fff; border-radius: 5px; cursor: pointer; margin: 10px; font-size: 1em; }
         .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .result-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        .result-text { font-size: 3em; font-weight: bold; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -35,31 +37,40 @@
             const [fieldCard, setFieldCard] = useState(null);
             const [myHand, setMyHand] = useState([]);
             const [isMyTurn, setIsMyTurn] = useState(false);
+            const [winner, setWinner] = useState(null); // 勝者のIDを保存
 
             useEffect(() => {
                 socket.on('init-game', (data) => {
                     setMyHand(data.hand);
                     setFieldCard(data.fieldCard);
                     setIsMyTurn(data.isMyTurn);
+                    setWinner(null); // ゲーム開始時にリセット
                 });
                 socket.on('update-game', (data) => {
                     setFieldCard(data.fieldCard);
                     setIsMyTurn(socket.id === data.currentTurnPlayerId);
                 });
-                return () => { socket.off('init-game'); socket.off('update-game'); };
+                socket.on('game-over', (data) => {
+                    setWinner(data.winnerId);
+                });
+                return () => { 
+                    socket.off('init-game'); socket.off('update-game'); socket.off('game-over'); 
+                };
             }, []);
 
             const canPlay = (card) => {
-                if (!isMyTurn || !fieldCard) return false;
+                if (!isMyTurn || !fieldCard || winner) return false;
                 if (REALMS[card.realm].isWild || REALMS[fieldCard.realm].isWild) return true;
                 return card.realm === fieldCard.realm || card.number === fieldCard.number;
             };
 
             const playCard = (card) => { if (canPlay(card)) socket.emit('play-card', { roomId, card }); };
-            const drawCard = () => { if (isMyTurn) socket.emit('draw-card', { roomId }); };
+            const drawCard = () => { if (isMyTurn && !winner) socket.emit('draw-card', { roomId }); };
+            const handleRematch = () => { socket.emit('request-rematch', roomId); };
 
             if (!isJoined) return (
                 <div style={{marginTop: '100px'}}>
+                    <h1>Cross Realm</h1>
                     <input value={roomId} onChange={e => setRoomId(e.target.value)} placeholder="合言葉" style={{padding: '10px'}} />
                     <button className="btn" onClick={() => { if(roomId) { socket.emit('join-room', roomId); setIsJoined(true); }}}>入室</button>
                 </div>
@@ -67,17 +78,29 @@
 
             return (
                 <div>
+                    {winner && (
+                        <div className="result-screen">
+                            <div className="result-text" style={{ color: winner === socket.id ? '#00FF7F' : '#FF4500' }}>
+                                {winner === socket.id ? "YOU WIN!" : "YOU LOSE..."}
+                            </div>
+                            <button className="btn" onClick={handleRematch}>もう一度遊ぶ</button>
+                        </div>
+                    )}
+
                     <div style={{ background: isMyTurn ? '#00FF7F' : '#333', color: isMyTurn ? '#000' : '#fff', padding: '10px' }}>
                         {isMyTurn ? "あなたの番です！" : "相手の番を待っています..."}
                     </div>
+
                     {fieldCard && (
                         <div className="field-card" style={{backgroundColor: REALMS[fieldCard.realm].color}}>
                             <small>{REALMS[fieldCard.realm].name}</small>
                             <div style={{fontSize: '2em'}}>{fieldCard.number}</div>
                         </div>
                     )}
+
                     <button className="btn" onClick={drawCard} disabled={!isMyTurn}>山札から引く (パス)</button>
-                    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px', marginTop: '30px' }}>
+
+                    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px', marginTop: '30px', padding: '10px' }}>
                         {myHand.map(card => (
                             <div key={card.id} className="card" onClick={() => playCard(card)} 
                                  style={{ backgroundColor: REALMS[card.realm].color, opacity: canPlay(card) ? 1 : 0.4 }}>
