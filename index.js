@@ -28,7 +28,8 @@ const startGame = (roomId) => {
   room.fieldCard = deck.pop();
   room.turnIndex = 0;
   room.winner = null;
-  room.nextDrawAmount = 1; // 初期化
+  room.nextDrawAmount = 1;
+  room.reverse = false; // リバース状態（多人数用）
 
   room.players.forEach((player, index) => {
     player.hand = room.deck.splice(0, 5);
@@ -57,21 +58,37 @@ io.on('connection', (socket) => {
     const room = rooms[data.roomId];
     if (!room || room.winner) return;
 
-    room.fieldCard = data.card;
+    const card = data.card;
+    room.fieldCard = card;
     const player = room.players.find(p => p.id === socket.id);
+    
     if (player) {
-      player.hand = player.hand.filter(c => c.id !== data.card.id);
+      player.hand = player.hand.filter(c => c.id !== card.id);
       if (player.hand.length === 0) {
         room.winner = socket.id;
         io.to(data.roomId).emit('game-over', { winnerId: socket.id });
         return;
       }
     }
-    
-    // 【修正】歯車の「0」だけがドロー2になる設定
-    room.nextDrawAmount = (data.card.realm === 'GEAR' && data.card.number === 0) ? 2 : 1;
 
-    room.turnIndex = (room.turnIndex + 1) % room.players.length;
+    // --- 特殊効果の判定 ---
+    let skipNext = false;
+    room.nextDrawAmount = 1;
+
+    // 1. 歯車0: ドロー2
+    if (card.realm === 'GEAR' && card.number === 0) {
+      room.nextDrawAmount = 2;
+    }
+    // 2. 機械0,1,2: リバース（2人対戦ではスキップ扱い）
+    if (card.realm === 'MACHINE' && card.number <= 2) {
+      skipNext = true; 
+    }
+
+    // ターン交代
+    if (!skipNext) {
+      room.turnIndex = (room.turnIndex + 1) % room.players.length;
+    }
+    
     io.to(data.roomId).emit('update-game', {
       fieldCard: room.fieldCard,
       currentTurnPlayerId: room.players[room.turnIndex].id,
@@ -89,13 +106,9 @@ io.on('connection', (socket) => {
       for (let i = 0; i < amount; i++) {
         if (room.deck.length > 0) player.hand.push(room.deck.pop());
       }
-      room.nextDrawAmount = 1; // 引いたらリセット
-
-      socket.emit('init-game', {
-        hand: player.hand,
-        fieldCard: room.fieldCard,
-        isMyTurn: false
-      });
+      room.nextDrawAmount = 1;
+      socket.emit('init-game', { hand: player.hand, fieldCard: room.fieldCard, isMyTurn: false });
+      
       room.turnIndex = (room.turnIndex + 1) % room.players.length;
       io.to(data.roomId).emit('update-game', {
         fieldCard: room.fieldCard,
@@ -105,9 +118,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('request-rematch', (roomId) => {
-    if (rooms[roomId]) startGame(roomId);
-  });
+  socket.on('request-rematch', (roomId) => { if (rooms[roomId]) startGame(roomId); });
 });
 
 const PORT = process.env.PORT || 3001;
