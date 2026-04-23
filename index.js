@@ -10,14 +10,25 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 const rooms = {};
 
-// デッキ作成（各属性12枚、特殊カード33%）
 const createDeck = () => {
-  const realms = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE', 'PLANET', 'RUINS'];
+  // 割合の調整
+  const realmCounts = {
+    GEAR: 15,     // 多め
+    MACHINE: 12,
+    FOUNTAIN: 12,
+    PLANET: 6,
+    RUINS: 6,
+    ICEAGE: 6,    // 削減
+    BATTERY: 6,   // 削減
+    ARCHIVE: 6    // 削減
+  };
+
   let deck = [];
-  realms.forEach(realm => {
-    for (let i = 0; i < 12; i++) {
+  Object.keys(realmCounts).forEach(realm => {
+    for (let i = 0; i < realmCounts[realm]; i++) {
       let card = { id: Math.random().toString(36).substr(2, 9), realm };
-      if (i % 3 === 0 && i < 10) card.isSpecial = true;
+      // 特殊カード確率を30%に設定
+      if (Math.random() < 0.3) card.isSpecial = true;
       deck.push(card);
     }
   });
@@ -57,30 +68,24 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
     if (!room) return;
     room.deck = createDeck();
-    const firstCard = room.deck.pop();
+    let firstCard = room.deck.pop();
     room.fieldCard = firstCard;
     room.status = 'playing';
     room.turnIndex = 0;
     room.nextDrawAmount = 1;
-    
-    // 開幕がワイルド系ならホストに選択させる
-    if (firstCard.realm === 'PLANET' || firstCard.realm === 'RUINS') {
-        room.needsInitialChoice = true;
-    }
-
+    room.isReversed = false;
+    room.needsInitialChoice = (firstCard.realm === 'PLANET' || firstCard.realm === 'RUINS');
     room.players.forEach(p => p.hand = room.deck.splice(0, 5));
     emitUpdate(roomId);
   });
 
   socket.on('play-card', ({ roomId, card, chosenRealm }) => {
     const room = rooms[roomId];
-    if (!room || room.status !== 'playing') return;
-    const player = room.players.find(p => p.id === socket.id);
-    if (!player || room.players[room.turnIndex].id !== socket.id) return;
+    if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
 
+    const player = room.players.find(p => p.id === socket.id);
     player.hand = player.hand.filter(c => c.id !== card.id);
     
-    // ワイルド処理
     const newFieldCard = { ...card };
     if (chosenRealm) {
         if (card.realm === 'PLANET') newFieldCard.wasPlanet = true;
@@ -89,7 +94,6 @@ io.on('connection', (socket) => {
     }
     room.fieldCard = newFieldCard;
 
-    // 特殊効果のスタックと反転
     if (card.isSpecial) {
       if (card.realm === 'GEAR') {
         room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
@@ -109,16 +113,13 @@ io.on('connection', (socket) => {
 
   socket.on('draw-card', ({ roomId }) => {
     const room = rooms[roomId];
-    if (!room || room.status !== 'playing') return;
-    const player = room.players[room.turnIndex];
-    if (player.id !== socket.id) return;
+    if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
 
-    const amount = room.nextDrawAmount;
-    for (let i = 0; i < amount; i++) {
+    const player = room.players[room.turnIndex];
+    for (let i = 0; i < room.nextDrawAmount; i++) {
       if (room.deck.length > 0) player.hand.push(room.deck.pop());
     }
     
-    // スタックリセットと強制ターン交代
     room.nextDrawAmount = 1;
     const direction = room.isReversed ? -1 : 1;
     room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
@@ -135,5 +136,4 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(process.env.PORT || 3001);
