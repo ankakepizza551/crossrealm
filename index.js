@@ -10,17 +10,13 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 const rooms = {}; 
 
-// デッキ作成: 各属性12枚。30%（4枚）を特殊カードに設定
 const createDeck = () => {
   const realms = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE', 'PLANET', 'RUINS'];
   let deck = [];
   realms.forEach(realm => {
     for (let i = 0; i < 12; i++) {
       let card = { id: Math.random().toString(36).substr(2, 9), realm };
-      // 12枚中4枚に特殊フラグを付与
-      if (i % 3 === 0 && i < 10) {
-        card.isSpecial = true;
-      }
+      if (i % 3 === 0 && i < 10) { card.isSpecial = true; }
       deck.push(card);
     }
   });
@@ -48,17 +44,22 @@ io.on('connection', (socket) => {
       rooms[roomId] = { status: 'waiting', deck: [], fieldCard: null, players: [], turnIndex: 0, nextDrawAmount: 1, isReversed: false };
     }
     const room = rooms[roomId];
+    
+    // 4人制限のチェック
     if (room.players.length < 4 && room.status === 'waiting') {
       if (!room.players.find(p => p.id === socket.id)) {
         room.players.push({ id: socket.id, name: playerName || `Player ${room.players.length + 1}`, hand: [] });
       }
       emitUpdate(roomId);
+    } else if (room.players.length >= 4) {
+      socket.emit('error-msg', 'このルームは満員です');
     }
   });
 
   socket.on('start-game', (data) => {
     const room = rooms[data.roomId];
-    if (room && room.players.length >= 2) {
+    // 2人〜4人のときのみ開始可能
+    if (room && room.players.length >= 2 && room.players.length <= 4) {
       room.deck = createDeck();
       room.fieldCard = room.deck.pop();
       room.status = 'playing';
@@ -73,14 +74,13 @@ io.on('connection', (socket) => {
   socket.on('play-card', (data) => {
     const room = rooms[data.roomId];
     if (!room || room.status !== 'playing') return;
-    const player = room.players.find(p => p.id === socket.id);
-    if (!player || room.players[room.turnIndex].id !== socket.id) return;
+    if (room.players[room.turnIndex].id !== socket.id) return;
 
+    const player = room.players.find(p => p.id === socket.id);
     const card = data.card;
     player.hand = player.hand.filter(c => c.id !== card.id);
     room.fieldCard = card;
 
-    // 特殊効果の発動
     if (card.isSpecial) {
       if (card.realm === 'GEAR') room.nextDrawAmount = 2;
       if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
@@ -99,17 +99,17 @@ io.on('connection', (socket) => {
   socket.on('draw-card', (data) => {
     const room = rooms[data.roomId];
     if (!room || room.status !== 'playing') return;
+    if (room.players[room.turnIndex].id !== socket.id) return;
+
     const player = room.players.find(p => p.id === socket.id);
-    if (player && room.players[room.turnIndex].id === socket.id) {
-      const amount = room.nextDrawAmount;
-      for (let i = 0; i < amount; i++) {
-        if (room.deck.length > 0) player.hand.push(room.deck.pop());
-      }
-      room.nextDrawAmount = 1;
-      const direction = room.isReversed ? -1 : 1;
-      room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
-      emitUpdate(data.roomId);
+    const amount = room.nextDrawAmount;
+    for (let i = 0; i < amount; i++) {
+      if (room.deck.length > 0) player.hand.push(room.deck.pop());
     }
+    room.nextDrawAmount = 1;
+    const direction = room.isReversed ? -1 : 1;
+    room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
+    emitUpdate(data.roomId);
   });
 });
 
