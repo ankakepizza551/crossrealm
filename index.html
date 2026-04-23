@@ -43,19 +43,16 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         }
 
-        /* サイクルガイド：レスポンシブ対応 */
         .cycle-guide {
             position: fixed; display: flex; z-index: 50; transition: 0.3s;
             background: rgba(0,0,0,0.6); padding: 8px; gap: 5px; align-items: center;
         }
 
-        /* PC：右側に縦並び */
         @media (min-width: 769px) {
             .cycle-guide { right: 20px; top: 50%; transform: translateY(-50%); flex-direction: column; border-left: 1px solid var(--border); }
             .center-stage { padding-right: 100px; }
         }
 
-        /* スマホ：上部に横並び */
         @media (max-width: 768px) {
             .cycle-guide { top: 65px; left: 10px; right: 10px; justify-content: center; border-bottom: 1px solid var(--border); border-radius: 8px; }
             .guide-arrow { transform: rotate(-90deg); }
@@ -147,15 +144,32 @@
                 return '#40E0D0';
             }, [gs]);
 
+            // --- 精密なルール判定ロジック ---
             const canPlay = (c) => {
                 if (!isMyTurn || !gs?.fieldCard || gs.needsInitialChoice) return false;
+                
+                // ドロー攻撃スタック時：特殊歯車のみOK
                 if (gs.nextDrawAmount > 1) return (c.realm === 'GEAR' && c.isSpecial); 
-                const f = gs.fieldCard.realm; 
-                const h = c.realm;           
-                if ((c.realm === 'FOUNTAIN' && c.isSpecial) || REALMS[h].w) return true;
+
+                const f = gs.fieldCard.realm; // 場の属性
+                const h = c.realm;           // 出そうとしているカードの属性
+
+                // 1. 手札がWILD属性(PLANET, RUINS)ならどこでもOK
+                if (REALMS[h].w) return true;
+
+                // 2. 場のカードがWILD系属性ならどこでもOK
                 if (REALMS[f].w) return true;
-                if (h === 'FOUNTAIN' && (f === 'ICEAGE' || f === 'FOUNTAIN')) return true;
+
+                // 3. 【重要修正】噴水WILDの判定
+                if (h === 'FOUNTAIN' && c.isSpecial) {
+                    // 氷河期の上、または噴水同士なら出せる
+                    return (f === 'ICEAGE' || f === 'FOUNTAIN');
+                }
+
+                // 4. 同じ属性（ただし氷河期などはDuplicate不可）
                 if (f === h) return REALMS[h].canDuplicate;
+
+                // 5. 属性サイクル（次の属性）
                 const fIdx = CYCLE_ORDER.indexOf(f);
                 if (fIdx !== -1) {
                     const nextRealm = CYCLE_ORDER[(fIdx + 1) % 6];
