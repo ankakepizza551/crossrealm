@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cross Realm Online - Illustrated</title>
+    <title>Cross Realm Online - Illustrated Edition</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        body { margin: 0; background-color: #1a1a1a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; }
-        .game-container { padding: 20px; max-width: 800px; margin: 0 auto; }
+        body { margin: 0; background-color: #1a1a1a; color: white; font-family: sans-serif; text-align: center; }
+        .game-container { padding: 20px; max-width: 900px; margin: 0 auto; }
         
-        /* カードの基本スタイル */
+        /* カードのデザイン */
         .card { 
-            width: 80px; height: 120px; 
-            border-radius: 8px; 
+            width: 85px; height: 125px; 
+            border-radius: 10px; 
             overflow: hidden; 
             position: relative; 
             display: flex; 
@@ -23,15 +23,15 @@
             cursor: pointer; 
             border: 2px solid #333; 
             transition: transform 0.2s, box-shadow 0.2s;
-            background-color: #2a2a2a; /* 画像がない時の予備色 */
+            background-color: #222;
         }
-        .card:hover { transform: translateY(-10px); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
         .card.disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-        /* カード内のイラスト */
+        /* イラスト画像 */
         .card img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* カード内のテキスト情報 */
+        /* カード情報のオーバーレイ */
         .card-info {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -39,17 +39,18 @@
             flex-direction: column;
             justify-content: space-between;
             padding: 6px;
-            background: linear-gradient(rgba(0,0,0,0.6) 0%, transparent 40%, rgba(0,0,0,0.7) 100%);
+            background: linear-gradient(rgba(0,0,0,0.7) 0%, transparent 40%, rgba(0,0,0,0.7) 100%);
             color: white;
             text-shadow: 1px 1px 3px #000;
-            pointer-events: none; /* クリックを阻害しない */
+            pointer-events: none;
         }
-        .realm-name { font-size: 0.65em; font-weight: bold; text-align: left; }
-        .card-number { font-size: 1.8em; font-weight: bold; text-align: right; line-height: 1; }
+        .realm-name { font-size: 0.6em; font-weight: bold; text-align: left; }
+        .card-number { font-size: 2em; font-weight: bold; text-align: right; line-height: 0.9; }
 
-        .field-section { margin: 40px 0; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px; }
-        .btn { padding: 10px 20px; background: #444; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer; margin: 10px; }
-        .btn:disabled { opacity: 0.5; }
+        .field-section { margin: 30px 0; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px; border: 1px solid #444; }
+        .btn { padding: 12px 24px; background: #333; color: white; border: 2px solid #666; border-radius: 8px; cursor: pointer; margin: 10px; font-weight: bold; }
+        .btn:hover { background: #444; border-color: #fff; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -57,8 +58,6 @@
 
     <script type="text/babel">
         const { useState, useEffect } = React;
-
-        // サーバー設定
         const socket = io('https://crossrealm-server.onrender.com');
 
         const REALMS = {
@@ -73,17 +72,23 @@
         };
 
         const Card = ({ card, onClick, disabled }) => {
-            // 画像ファイル名の決定ロジック
-            let imageName = `${card.realm}.png`;
-            if (card.realm === 'MACHINE' && card.number <= 2) imageName = 'MACHINE_reverse.png';
-            if (card.realm === 'FOUNTAIN' && card.number <= 2) imageName = 'FOUNTAIN_wild.png';
-            // もし通常画像とワイルド画像を分けるならここに追加
+            // 画像フォルダ内のファイル名と一致させるロジック
+            let imageName = "";
+            if (card.realm === 'MACHINE') {
+                imageName = card.number <= 2 ? 'MACHINE_reverse.png' : 'MACHINE_normal.png';
+            } else if (card.realm === 'FOUNTAIN') {
+                imageName = card.number <= 2 ? 'FOUNTAIN_wild.png' : 'FOUNTAIN_normal.png';
+            } else {
+                imageName = `${card.realm}.png`;
+            }
             
             const imageSrc = `./images/${imageName}`;
 
             return (
                 <div className={`card ${disabled ? 'disabled' : ''}`} onClick={onClick}>
-                    <img src={imageSrc} alt={card.realm} onError={(e) => e.target.style.visibility = 'hidden'} />
+                    <img src={imageSrc} alt={card.realm} onError={(e) => {
+                        e.target.style.display = 'none'; // 画像がない場合は非表示
+                    }} />
                     <div className="card-info">
                         <div className="realm-name">{REALMS[card.realm].name}</div>
                         <div className="card-number">{card.number}</div>
@@ -98,6 +103,7 @@
             const [isMyTurn, setIsMyTurn] = useState(false);
             const [roomId, setRoomId] = useState('');
             const [isJoined, setIsJoined] = useState(false);
+            const [nextDrawAmount, setNextDrawAmount] = useState(1);
 
             useEffect(() => {
                 socket.on('init-game', data => {
@@ -108,6 +114,7 @@
                 socket.on('update-game', data => {
                     setFieldCard(data.fieldCard);
                     setIsMyTurn(data.currentTurnPlayerId === socket.id);
+                    if(data.nextDrawAmount) setNextDrawAmount(data.nextDrawAmount);
                 });
                 return () => socket.off();
             }, []);
@@ -134,8 +141,10 @@
                 return (
                     <div className="game-container">
                         <h1>Cross Realm Online</h1>
-                        <input className="btn" style={{color: 'black'}} placeholder="ルームID" value={roomId} onChange={e => setRoomId(e.target.value)} />
-                        <button className="btn" onClick={joinRoom}>入室する</button>
+                        <div style={{marginTop: '50px'}}>
+                            <input className="btn" style={{color: 'black', background: 'white'}} placeholder="ルームIDを入力" value={roomId} onChange={e => setRoomId(e.target.value)} />
+                            <button className="btn" onClick={joinRoom}>ゲーム開始</button>
+                        </div>
                     </div>
                 );
             }
@@ -143,14 +152,16 @@
             return (
                 <div className="game-container">
                     <div className="field-section">
-                        <h3>場のカード</h3>
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <p>{isMyTurn ? "🔔 あなたの番です" : "⌛ 相手の番を待っています..."}</p>
+                        <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
                             {fieldCard && <Card card={fieldCard} disabled={false} />}
                         </div>
-                        <button className="btn" onClick={drawCard} disabled={!isMyTurn}>山札から引く</button>
+                        <button className="btn" onClick={drawCard} disabled={!isMyTurn}>
+                            {nextDrawAmount > 1 ? `${nextDrawAmount}枚引く` : "山札から引く"}
+                        </button>
                     </div>
 
-                    <h3>あなたの手札 ({isMyTurn ? "自分の番です" : "相手の番です"})</h3>
+                    <h3>手札 ({myHand.length}枚)</h3>
                     <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px' }}>
                         {myHand.map(card => (
                             <Card key={card.id} card={card} onClick={() => playCard(card)} disabled={!canPlay(card)} />
@@ -160,7 +171,8 @@
             );
         };
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
