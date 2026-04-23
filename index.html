@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm Online - Attribute Logic -</title>
+    <title>Cross Realm - Special Edition -</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        :root { --accent: #40E0D0; --bg: #121212; --card-w: 85px; --card-h: 120px; }
+        :root { --accent: #40E0D0; --bg: #0f0f0f; --card-w: 80px; --card-h: 115px; }
         body { margin: 0; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; }
         .overlay-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; text-align: center; }
-        .card { width: var(--card-w); height: var(--card-h); border-radius: 10px; border: 2px solid #444; background: #000; position: relative; transition: 0.2s; cursor: pointer; }
+        .card { width: var(--card-w); height: var(--card-h); border-radius: 8px; border: 2px solid #333; background: #000; position: relative; transition: 0.2s; cursor: pointer; }
         .card.disabled { opacity: 0.15; filter: grayscale(1); pointer-events: none; }
-        .card img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-        .card-name { position: absolute; bottom: 5px; width: 100%; text-align: center; font-size: 10px; font-weight: bold; text-shadow: 0 0 4px #000; }
-        .hand-area { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: -30px; }
-        .slot { margin-left: -30px; }
+        .card img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+        .card-ui { position: absolute; inset: 0; padding: 5px; display: flex; flex-direction: column; justify-content: space-between; background: rgba(0,0,0,0.4); pointer-events: none; }
+        .hand-area { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; }
+        .slot { margin-left: -35px; }
         .slot:first-child { margin-left: 0; }
         .btn { padding: 12px 30px; border-radius: 25px; border: none; background: var(--accent); color: #000; font-weight: bold; cursor: pointer; }
+        .badge { position: absolute; top: -10px; right: -10px; background: #ff4444; color: white; border-radius: 50%; padding: 4px 8px; font-size: 12px; font-weight: bold; border: 2px solid white; }
     </style>
 </head>
 <body>
@@ -54,18 +55,22 @@
             const me = gs?.players?.find(p => p.id === socket.id) || { hand: [] };
             const isMyTurn = gs?.currentTurnPlayerId === socket.id;
 
-            // ★ご指定の属性ロジック（数字無視）
             const canPlay = (c) => {
                 if (!isMyTurn || !gs?.fieldCard) return false;
                 const f = gs.fieldCard.realm;
                 const h = c.realm;
+                const hn = c.number;
                 
-                // ワイルドカード
+                // 1. ワイルドカード（惑星・廃墟）
                 if (REALMS[h].w) return true;
-                // 同じ属性は出せる
-                if (f === h) return true;
 
-                // 指定の繋がり
+                // 2. 噴水ワイルド（噴水の0,1,2番）: 氷河期 or 噴水の時に出せる
+                if (h === 'FOUNTAIN' && hn <= 2) {
+                    return f === 'ICEAGE' || f === 'FOUNTAIN';
+                }
+
+                // 3. 属性サイクルロジック（数字無視）
+                if (f === h) return true;
                 if (f === 'GEAR' && h === 'ICEAGE') return true;
                 if (f === 'ICEAGE' && h === 'FOUNTAIN') return true;
                 if (f === 'FOUNTAIN' && h === 'BATTERY') return true;
@@ -78,9 +83,9 @@
 
             if (!joined) return (
                 <div className="overlay-screen">
-                    <h1>CROSS REALM</h1>
-                    <input placeholder="名前" value={name} onChange={e=>setName(e.target.value)} /><br/>
-                    <input placeholder="ルームID" value={room} onChange={e=>setRoom(e.target.value)} /><br/>
+                    <h1 style={{color:'var(--accent)'}}>CROSS REALM</h1>
+                    <input className="btn" style={{background:'#fff', marginBottom:'10px'}} placeholder="名前" value={name} onChange={e=>setName(e.target.value)} /><br/>
+                    <input className="btn" style={{background:'#fff', marginBottom:'20px'}} placeholder="ルームID" value={room} onChange={e=>setRoom(e.target.value)} /><br/>
                     <button className="btn" onClick={() => { if(room && name) { socket.emit('join-room', { roomId: room, playerName: name }); setJoined(true); } }}>入室</button>
                 </div>
             );
@@ -93,20 +98,38 @@
             );
 
             return (
-                <div style={{textAlign:'center', paddingTop:'50px'}}>
-                    <div style={{color: isMyTurn ? var(--accent) : '#777'}}>{isMyTurn ? "あなたの番" : "待機中..."}</div>
-                    <div style={{margin:'30px auto', display:'inline-block'}}>
-                        <div className="card"><img src={`./images/${gs.fieldCard.realm}.png`} /><div className="card-name">{REALMS[gs.fieldCard.realm].n}</div></div>
+                <div style={{textAlign:'center', paddingTop:'40px'}}>
+                    <div style={{fontSize:'12px', color:'#777'}}>
+                        順序: {gs.isReversed ? '◀ 反時計回り' : '▶ 時計回り'}
                     </div>
-                    <br/>
-                    <button className="btn" onClick={()=>socket.emit('draw-card',{roomId:room})} disabled={!isMyTurn}>パス / 引く</button>
+                    <div style={{color: isMyTurn ? 'var(--accent)' : '#555', fontWeight:'bold', margin:'10px 0'}}>
+                        {isMyTurn ? "★ あなたのターン ★" : "相手のターンを待機中..."}
+                    </div>
+
+                    <div style={{margin:'20px auto', display:'inline-block'}}>
+                        <div className="card" style={{borderColor: isMyTurn ? 'var(--accent)' : '#333'}}>
+                            <img src={`./images/${gs.fieldCard.realm}.png`} onError={(e)=>e.target.style.opacity='0'}/>
+                            <div className="card-ui">
+                                <span style={{fontSize:'10px'}}>{REALMS[gs.fieldCard.realm].n}</span>
+                                <span style={{fontSize:'32px', fontWeight:'bold', textAlign:'right'}}>{gs.fieldCard.number}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style={{position:'relative', width:'fit-content', margin:'10px auto'}}>
+                        <button className="btn" onClick={()=>socket.emit('draw-card',{roomId:room})} disabled={!isMyTurn}>カードを引く</button>
+                        {gs.nextDrawAmount > 1 && <div className="badge">+{gs.nextDrawAmount}</div>}
+                    </div>
 
                     <div className="hand-area">
                         {me.hand.map((c, i) => (
                             <div key={c.id} className="slot" style={{zIndex: i}}>
                                 <div className={`card ${!canPlay(c) ? 'disabled' : ''}`} onClick={()=>canPlay(c) && socket.emit('play-card',{roomId:room, card:c})}>
-                                    <img src={`./images/${c.realm}.png`} />
-                                    <div className="card-name">{REALMS[c.realm].n}</div>
+                                    <img src={`./images/${c.realm}.png`} onError={(e)=>e.target.style.opacity='0'}/>
+                                    <div className="card-ui">
+                                        <span style={{fontSize:'10px'}}>{REALMS[c.realm].n}</span>
+                                        <span style={{fontSize:'32px', fontWeight:'bold', textAlign:'right'}}>{c.number}</span>
+                                    </div>
                                 </div>
                             </div>
                         ))}
