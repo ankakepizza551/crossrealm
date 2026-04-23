@@ -32,7 +32,8 @@ const emitUpdate = (roomId) => {
     fieldCard: room.fieldCard,
     currentTurnPlayerId: room.players[room.turnIndex]?.id,
     nextDrawAmount: room.nextDrawAmount,
-    isReversed: room.isReversed
+    isReversed: room.isReversed,
+    needsInitialChoice: room.needsInitialChoice
   });
 };
 
@@ -41,7 +42,7 @@ io.on('connection', (socket) => {
     const { roomId, playerName } = data;
     socket.join(roomId);
     if (!rooms[roomId]) {
-      rooms[roomId] = { status: 'waiting', deck: [], fieldCard: null, players: [], turnIndex: 0, nextDrawAmount: 1, isReversed: false };
+      rooms[roomId] = { status: 'waiting', deck: [], fieldCard: null, players: [], turnIndex: 0, nextDrawAmount: 1, isReversed: false, needsInitialChoice: false };
     }
     const room = rooms[roomId];
     if (room.players.length < 4 && room.status === 'waiting') {
@@ -56,40 +57,48 @@ io.on('connection', (socket) => {
     const room = rooms[data.roomId];
     if (room && room.players.length >= 2) {
       room.deck = createDeck();
-      room.fieldCard = room.deck.pop();
+      let first = room.deck.pop();
+      if (first.realm === 'PLANET' || first.realm === 'RUINS' || (first.realm === 'FOUNTAIN' && first.isSpecial)) {
+        room.needsInitialChoice = true;
+        if (first.realm === 'RUINS') first.wasRuins = true;
+        if (first.realm === 'PLANET') first.wasPlanet = true;
+      }
+      room.fieldCard = first;
       room.status = 'playing';
-      room.turnIndex = 0;
-      room.nextDrawAmount = 1;
-      room.isReversed = false;
       room.players.forEach(p => { p.hand = room.deck.splice(0, 5); });
+      emitUpdate(data.roomId);
+    }
+  });
+
+  socket.on('set-initial-realm', (data) => {
+    const room = rooms[data.roomId];
+    if (room && room.needsInitialChoice && room.players[0].id === socket.id) {
+      room.fieldCard.realm = data.chosenRealm;
+      room.needsInitialChoice = false;
       emitUpdate(data.roomId);
     }
   });
 
   socket.on('play-card', (data) => {
     const room = rooms[data.roomId];
-    if (!room || room.status !== 'playing') return;
+    if (!room || room.status !== 'playing' || room.needsInitialChoice) return;
     if (room.players[room.turnIndex].id !== socket.id) return;
 
     const player = room.players.find(p => p.id === socket.id);
     let card = data.card;
     player.hand = player.hand.filter(c => c.id !== card.id);
 
-    // 廃墟（RUINS）のランダム属性処理
     if (card.realm === 'RUINS') {
-      const normalRealms = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
-      card.realm = normalRealms[Math.floor(Math.random() * normalRealms.length)];
-      card.wasRuins = true; // 元が廃墟だったことを記録（画像表示のため）
+      const normal = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
+      card.realm = normal[Math.floor(Math.random() * normal.length)];
+      card.wasRuins = true;
     }
-
-    // 惑星や噴水ワイルドで属性が指定されている場合
     if (data.chosenRealm) {
       card.realm = data.chosenRealm;
       card.wasPlanet = true;
     }
 
     room.fieldCard = card;
-
     if (card.isSpecial) {
       if (card.realm === 'GEAR') room.nextDrawAmount = 2;
       if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
@@ -98,24 +107,24 @@ io.on('connection', (socket) => {
     if (player.hand.length === 0) {
       room.status = 'finished';
       io.to(data.roomId).emit('game-over', { winnerName: player.name });
+    } else {
+      const dir = room.isReversed ? -1 : 1;
+      room.turnIndex = (room.turnIndex + dir + room.players.length) % room.players.length;
     }
-
-    const direction = room.isReversed ? -1 : 1;
-    room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
     emitUpdate(data.roomId);
   });
 
   socket.on('draw-card', (data) => {
     const room = rooms[data.roomId];
-    if (!room || room.status !== 'playing') return;
+    if (!room || room.status !== 'playing' || room.needsInitialChoice) return;
     if (room.players[room.turnIndex].id !== socket.id) return;
     const player = room.players.find(p => p.id === socket.id);
     for (let i = 0; i < room.nextDrawAmount; i++) {
       if (room.deck.length > 0) player.hand.push(room.deck.pop());
     }
     room.nextDrawAmount = 1;
-    const direction = room.isReversed ? -1 : 1;
-    room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
+    const dir = room.isReversed ? -1 : 1;
+    room.turnIndex = (room.turnIndex + dir + room.players.length) % room.players.length;
     emitUpdate(data.roomId);
   });
 });
