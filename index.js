@@ -21,7 +21,6 @@ const createDeck = () => {
   return deck.sort(() => Math.random() - 0.5);
 };
 
-// ゲーム開始・リセットの共通処理
 const startGame = (roomId) => {
   const room = rooms[roomId];
   const deck = createDeck();
@@ -29,6 +28,7 @@ const startGame = (roomId) => {
   room.fieldCard = deck.pop();
   room.turnIndex = 0;
   room.winner = null;
+  room.nextDrawAmount = 1; // 初期化
 
   room.players.forEach((player, index) => {
     player.hand = room.deck.splice(0, 5);
@@ -44,14 +44,12 @@ io.on('connection', (socket) => {
   socket.on('join-room', (roomId) => {
     socket.join(roomId);
     if (!rooms[roomId]) {
-      rooms[roomId] = { deck: [], fieldCard: null, players: [], turnIndex: 0, winner: null };
+      rooms[roomId] = { deck: [], fieldCard: null, players: [], turnIndex: 0, winner: null, nextDrawAmount: 1 };
     }
     const room = rooms[roomId];
     if (room.players.length < 2) {
       room.players.push({ id: socket.id, hand: [] });
-      if (room.players.length === 2) {
-        startGame(roomId);
-      }
+      if (room.players.length === 2) startGame(roomId);
     }
   });
 
@@ -63,8 +61,6 @@ io.on('connection', (socket) => {
     const player = room.players.find(p => p.id === socket.id);
     if (player) {
       player.hand = player.hand.filter(c => c.id !== data.card.id);
-      
-      // 勝利判定
       if (player.hand.length === 0) {
         room.winner = socket.id;
         io.to(data.roomId).emit('game-over', { winnerId: socket.id });
@@ -72,10 +68,14 @@ io.on('connection', (socket) => {
       }
     }
     
+    // 【修正】歯車の「0」だけがドロー2になる設定
+    room.nextDrawAmount = (data.card.realm === 'GEAR' && data.card.number === 0) ? 2 : 1;
+
     room.turnIndex = (room.turnIndex + 1) % room.players.length;
     io.to(data.roomId).emit('update-game', {
       fieldCard: room.fieldCard,
-      currentTurnPlayerId: room.players[room.turnIndex].id
+      currentTurnPlayerId: room.players[room.turnIndex].id,
+      nextDrawAmount: room.nextDrawAmount
     });
   });
 
@@ -83,10 +83,14 @@ io.on('connection', (socket) => {
     const room = rooms[data.roomId];
     if (!room || room.deck.length === 0 || room.winner) return;
 
-    const drawnCard = room.deck.pop();
+    const amount = room.nextDrawAmount || 1;
     const player = room.players.find(p => p.id === socket.id);
     if (player) {
-      player.hand.push(drawnCard);
+      for (let i = 0; i < amount; i++) {
+        if (room.deck.length > 0) player.hand.push(room.deck.pop());
+      }
+      room.nextDrawAmount = 1; // 引いたらリセット
+
       socket.emit('init-game', {
         hand: player.hand,
         fieldCard: room.fieldCard,
@@ -95,12 +99,12 @@ io.on('connection', (socket) => {
       room.turnIndex = (room.turnIndex + 1) % room.players.length;
       io.to(data.roomId).emit('update-game', {
         fieldCard: room.fieldCard,
-        currentTurnPlayerId: room.players[room.turnIndex].id
+        currentTurnPlayerId: room.players[room.turnIndex].id,
+        nextDrawAmount: 1
       });
     }
   });
 
-  // 再戦リクエスト
   socket.on('request-rematch', (roomId) => {
     if (rooms[roomId]) startGame(roomId);
   });
