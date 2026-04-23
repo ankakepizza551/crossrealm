@@ -10,7 +10,8 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         body { margin: 0; background-color: #1a1a1a; color: white; font-family: sans-serif; text-align: center; }
-        .card { width: 75px; height: 110px; border-radius: 8px; color: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; border: 1px solid #000; }
+        .card { width: 75px; height: 110px; border-radius: 8px; color: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; border: 1px solid #000; position: relative; }
+        .special-badge { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 25px; height: 25px; font-size: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
         .field-card { width: 100px; height: 140px; border-radius: 10px; border: 4px solid #fff; margin: 20px auto; color: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .btn { padding: 10px 20px; background: #444; color: #fff; border: 1px solid #fff; border-radius: 5px; cursor: pointer; margin: 10px; font-size: 1em; }
         .btn:disabled { opacity: 0.3; cursor: not-allowed; }
@@ -37,25 +38,24 @@
             const [fieldCard, setFieldCard] = useState(null);
             const [myHand, setMyHand] = useState([]);
             const [isMyTurn, setIsMyTurn] = useState(false);
-            const [winner, setWinner] = useState(null); // 勝者のIDを保存
+            const [winner, setWinner] = useState(null);
+            const [nextDrawAmount, setNextDrawAmount] = useState(1);
 
             useEffect(() => {
                 socket.on('init-game', (data) => {
                     setMyHand(data.hand);
                     setFieldCard(data.fieldCard);
                     setIsMyTurn(data.isMyTurn);
-                    setWinner(null); // ゲーム開始時にリセット
+                    setWinner(null);
+                    setNextDrawAmount(1);
                 });
                 socket.on('update-game', (data) => {
                     setFieldCard(data.fieldCard);
                     setIsMyTurn(socket.id === data.currentTurnPlayerId);
+                    setNextDrawAmount(data.nextDrawAmount || 1);
                 });
-                socket.on('game-over', (data) => {
-                    setWinner(data.winnerId);
-                });
-                return () => { 
-                    socket.off('init-game'); socket.off('update-game'); socket.off('game-over'); 
-                };
+                socket.on('game-over', (data) => setWinner(data.winnerId));
+                return () => { socket.off('init-game'); socket.off('update-game'); socket.off('game-over'); };
             }, []);
 
             const canPlay = (card) => {
@@ -87,23 +87,27 @@
                         </div>
                     )}
 
-                    <div style={{ background: isMyTurn ? '#00FF7F' : '#333', color: isMyTurn ? '#000' : '#fff', padding: '10px' }}>
-                        {isMyTurn ? "あなたの番です！" : "相手の番を待っています..."}
+                    <div style={{ background: isMyTurn ? '#00FF7F' : '#333', color: isMyTurn ? '#000' : '#fff', padding: '10px', fontWeight: 'bold' }}>
+                        {isMyTurn ? (nextDrawAmount > 1 ? `⚠️警告: ${nextDrawAmount}枚引くか、歯車0で返せ！` : "あなたの番です！") : "相手の番を待っています..."}
                     </div>
 
                     {fieldCard && (
                         <div className="field-card" style={{backgroundColor: REALMS[fieldCard.realm].color}}>
+                            {fieldCard.realm === 'GEAR' && fieldCard.number === 0 && <div className="special-badge">+2</div>}
                             <small>{REALMS[fieldCard.realm].name}</small>
                             <div style={{fontSize: '2em'}}>{fieldCard.number}</div>
                         </div>
                     )}
 
-                    <button className="btn" onClick={drawCard} disabled={!isMyTurn}>山札から引く (パス)</button>
+                    <button className="btn" onClick={drawCard} disabled={!isMyTurn} style={{borderColor: nextDrawAmount > 1 ? 'red' : 'white'}}>
+                        {nextDrawAmount > 1 ? `${nextDrawAmount}枚引かされる！` : "山札から引く (パス)"}
+                    </button>
 
                     <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px', marginTop: '30px', padding: '10px' }}>
                         {myHand.map(card => (
                             <div key={card.id} className="card" onClick={() => playCard(card)} 
                                  style={{ backgroundColor: REALMS[card.realm].color, opacity: canPlay(card) ? 1 : 0.4 }}>
+                                {card.realm === 'GEAR' && card.number === 0 && <div className="special-badge">+2</div>}
                                 <small>{REALMS[card.realm].name}</small>
                                 <div>{card.number}</div>
                             </div>
