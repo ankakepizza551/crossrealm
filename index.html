@@ -3,127 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cross Realm Online</title>
+    <title>Cross Realm Online - Illustrated</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        body { margin: 0; background-color: #1a1a1a; color: white; font-family: sans-serif; text-align: center; }
-        .card { width: 75px; height: 110px; border-radius: 8px; color: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; border: 1px solid #000; position: relative; transition: transform 0.2s; }
-        .card:hover { transform: translateY(-5px); }
-        .special-badge { position: absolute; top: -5px; right: -5px; background: #ff4500; color: white; border-radius: 50%; width: 28px; height: 28px; font-size: 10px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .field-card { width: 100px; height: 140px; border-radius: 10px; border: 4px solid #fff; margin: 20px auto; color: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; }
-        .btn { padding: 12px 24px; background: #444; color: #fff; border: 1px solid #fff; border-radius: 5px; cursor: pointer; margin: 10px; font-size: 1em; }
-        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
-        .result-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        body { margin: 0; background-color: #1a1a1a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; }
+        .game-container { padding: 20px; max-width: 800px; margin: 0 auto; }
+        
+        /* カードの基本スタイル */
+        .card { 
+            width: 80px; height: 120px; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+            cursor: pointer; 
+            border: 2px solid #333; 
+            transition: transform 0.2s, box-shadow 0.2s;
+            background-color: #2a2a2a; /* 画像がない時の予備色 */
+        }
+        .card:hover { transform: translateY(-10px); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .card.disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        /* カード内のイラスト */
+        .card img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* カード内のテキスト情報 */
+        .card-info {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 6px;
+            background: linear-gradient(rgba(0,0,0,0.6) 0%, transparent 40%, rgba(0,0,0,0.7) 100%);
+            color: white;
+            text-shadow: 1px 1px 3px #000;
+            pointer-events: none; /* クリックを阻害しない */
+        }
+        .realm-name { font-size: 0.65em; font-weight: bold; text-align: left; }
+        .card-number { font-size: 1.8em; font-weight: bold; text-align: right; line-height: 1; }
+
+        .field-section { margin: 40px 0; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px; }
+        .btn { padding: 10px 20px; background: #444; color: white; border: 2px solid white; border-radius: 5px; cursor: pointer; margin: 10px; }
+        .btn:disabled { opacity: 0.5; }
     </style>
 </head>
 <body>
     <div id="root"></div>
+
     <script type="text/babel">
         const { useState, useEffect } = React;
+
+        // サーバー設定
         const socket = io('https://crossrealm-server.onrender.com');
 
         const REALMS = {
-            GEAR: { name: '歯車', color: '#B8860B' }, ICEAGE: { name: '氷河期', color: '#ADD8E6' },
-            FOUNTAIN: { name: '噴水', color: '#00BFFF' }, BATTERY: { name: 'バッテリー', color: '#FFFF00' },
-            MACHINE: { name: '機械', color: '#00FF7F' }, ARCHIVE: { name: '古文書', color: '#DEB887' },
-            PLANET: { name: '惑星', color: '#FFFACD', isWild: true }, RUINS: { name: '廃墟', color: '#696969', isWild: true }
+            GEAR:    { name: '歯車' },
+            ICEAGE:  { name: '氷河期' },
+            FOUNTAIN:{ name: '噴水' },
+            BATTERY: { name: 'バッテリー' },
+            MACHINE: { name: '機械' },
+            ARCHIVE: { name: '古文書' },
+            PLANET:  { name: '惑星', isWild: true },
+            RUINS:   { name: '廃墟', isWild: true }
+        };
+
+        const Card = ({ card, onClick, disabled }) => {
+            // 画像ファイル名の決定ロジック
+            let imageName = `${card.realm}.png`;
+            if (card.realm === 'MACHINE' && card.number <= 2) imageName = 'MACHINE_reverse.png';
+            if (card.realm === 'FOUNTAIN' && card.number <= 2) imageName = 'FOUNTAIN_wild.png';
+            // もし通常画像とワイルド画像を分けるならここに追加
+            
+            const imageSrc = `./images/${imageName}`;
+
+            return (
+                <div className={`card ${disabled ? 'disabled' : ''}`} onClick={onClick}>
+                    <img src={imageSrc} alt={card.realm} onError={(e) => e.target.style.visibility = 'hidden'} />
+                    <div className="card-info">
+                        <div className="realm-name">{REALMS[card.realm].name}</div>
+                        <div className="card-number">{card.number}</div>
+                    </div>
+                </div>
+            );
         };
 
         const App = () => {
+            const [myHand, setMyHand] = useState([]);
+            const [fieldCard, setFieldCard] = useState(null);
+            const [isMyTurn, setIsMyTurn] = useState(false);
             const [roomId, setRoomId] = useState('');
             const [isJoined, setIsJoined] = useState(false);
-            const [fieldCard, setFieldCard] = useState(null);
-            const [myHand, setMyHand] = useState([]);
-            const [isMyTurn, setIsMyTurn] = useState(false);
-            const [winner, setWinner] = useState(null);
-            const [nextDrawAmount, setNextDrawAmount] = useState(1);
 
             useEffect(() => {
-                socket.on('init-game', (data) => {
-                    setMyHand(data.hand); setFieldCard(data.fieldCard); setIsMyTurn(data.isMyTurn); setWinner(null); setNextDrawAmount(1);
+                socket.on('init-game', data => {
+                    setMyHand(data.hand);
+                    setFieldCard(data.fieldCard);
+                    setIsMyTurn(data.isMyTurn);
                 });
-                socket.on('update-game', (data) => {
-                    setFieldCard(data.fieldCard); setIsMyTurn(socket.id === data.currentTurnPlayerId); setNextDrawAmount(data.nextDrawAmount || 1);
+                socket.on('update-game', data => {
+                    setFieldCard(data.fieldCard);
+                    setIsMyTurn(data.currentTurnPlayerId === socket.id);
                 });
-                socket.on('game-over', (data) => setWinner(data.winnerId));
-                return () => { socket.off('init-game'); socket.off('update-game'); socket.off('game-over'); };
+                return () => socket.off();
             }, []);
 
-            // ワイルドカード判定の拡張
-            const isSpecialWild = (card) => {
-                if (REALMS[card.realm].isWild) return true; // 惑星・廃墟
-                if (card.realm === 'FOUNTAIN' && card.number <= 2) return true; // 噴水の0,1,2
-                return false;
-            };
-
+            const joinRoom = () => { if(roomId) { socket.emit('join-room', roomId); setIsJoined(true); } };
+            
             const canPlay = (card) => {
-                if (!isMyTurn || !fieldCard || winner) return false;
-                if (isSpecialWild(card)) return true; // 自分自身がワイルドなら出せる
-                if (isSpecialWild(fieldCard)) return true; // 場がワイルドなら何でも出せる
+                if (!isMyTurn || !fieldCard) return false;
+                if (REALMS[card.realm].isWild) return true;
+                if (card.realm === 'FOUNTAIN' && card.number <= 2) return true;
                 return card.realm === fieldCard.realm || card.number === fieldCard.number;
             };
 
-            const getSpecialLabel = (card) => {
-                if (card.realm === 'GEAR' && card.number === 0) return "+2";
-                if (card.realm === 'MACHINE' && card.number <= 2) return "REV";
-                if (isSpecialWild(card)) return "WILD";
-                return null;
+            const playCard = (card) => {
+                if (canPlay(card)) {
+                    socket.emit('play-card', { roomId, card });
+                    setMyHand(myHand.filter(c => c.id !== card.id));
+                }
             };
 
-            const playCard = (card) => { if (canPlay(card)) socket.emit('play-card', { roomId, card }); };
-            const drawCard = () => { if (isMyTurn && !winner) socket.emit('draw-card', { roomId }); };
+            const drawCard = () => { if (isMyTurn) socket.emit('draw-card', { roomId }); };
 
-            if (!isJoined) return (
-                <div style={{marginTop: '100px'}}>
-                    <h1>Cross Realm</h1>
-                    <input value={roomId} onChange={e => setRoomId(e.target.value)} placeholder="合言葉" style={{padding: '10px'}} />
-                    <button className="btn" onClick={() => { if(roomId) { socket.emit('join-room', roomId); setIsJoined(true); }}}>入室</button>
-                </div>
-            );
+            if (!isJoined) {
+                return (
+                    <div className="game-container">
+                        <h1>Cross Realm Online</h1>
+                        <input className="btn" style={{color: 'black'}} placeholder="ルームID" value={roomId} onChange={e => setRoomId(e.target.value)} />
+                        <button className="btn" onClick={joinRoom}>入室する</button>
+                    </div>
+                );
+            }
 
             return (
-                <div>
-                    {winner && (
-                        <div className="result-screen">
-                            <h2 style={{ fontSize: '3em', color: winner === socket.id ? '#00FF7F' : '#FF4500' }}>
-                                {winner === socket.id ? "YOU WIN!" : "YOU LOSE..."}
-                            </h2>
-                            <button className="btn" onClick={() => socket.emit('request-rematch', roomId)}>もう一度遊ぶ</button>
+                <div className="game-container">
+                    <div className="field-section">
+                        <h3>場のカード</h3>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            {fieldCard && <Card card={fieldCard} disabled={false} />}
                         </div>
-                    )}
-
-                    <div style={{ background: isMyTurn ? '#00FF7F' : '#333', color: isMyTurn ? '#000' : '#fff', padding: '10px', fontWeight: 'bold' }}>
-                        {isMyTurn ? (nextDrawAmount > 1 ? `⚠️ ${nextDrawAmount}枚引くか、対抗札を出せ！` : "あなたの番です") : "相手の番です..."}
+                        <button className="btn" onClick={drawCard} disabled={!isMyTurn}>山札から引く</button>
                     </div>
 
-                    {fieldCard && (
-                        <div className="field-card" style={{backgroundColor: REALMS[fieldCard.realm].color}}>
-                            {getSpecialLabel(fieldCard) && <div className="special-badge">{getSpecialLabel(fieldCard)}</div>}
-                            <small>{REALMS[fieldCard.realm].name}</small>
-                            <div style={{fontSize: '2.5em'}}>{fieldCard.number}</div>
-                        </div>
-                    )}
-
-                    <button className="btn" onClick={drawCard} disabled={!isMyTurn} style={{borderColor: nextDrawAmount > 1 ? 'red' : 'white'}}>
-                        {nextDrawAmount > 1 ? `${nextDrawAmount}枚引く` : "山札から引く"}
-                    </button>
-
-                    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px', marginTop: '20px', padding: '10px' }}>
+                    <h3>あなたの手札 ({isMyTurn ? "自分の番です" : "相手の番です"})</h3>
+                    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px' }}>
                         {myHand.map(card => (
-                            <div key={card.id} className="card" onClick={() => playCard(card)} 
-                                 style={{ backgroundColor: REALMS[card.realm].color, opacity: canPlay(card) ? 1 : 0.4 }}>
-                                {getSpecialLabel(card) && <div className="special-badge">{getSpecialLabel(card)}</div>}
-                                <small>{REALMS[card.realm].name}</small>
-                                <div style={{fontSize: '1.5em'}}>{card.number}</div>
-                            </div>
+                            <Card key={card.id} card={card} onClick={() => playCard(card)} disabled={!canPlay(card)} />
                         ))}
                     </div>
                 </div>
             );
         };
+
         ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
