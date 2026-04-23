@@ -8,8 +8,9 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-const rooms = {}; 
+const rooms = {};
 
+// デッキ作成（各属性12枚、特殊カード33%）
 const createDeck = () => {
   const realms = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE', 'PLANET', 'RUINS'];
   let deck = [];
@@ -38,8 +39,7 @@ const emitUpdate = (roomId) => {
 };
 
 io.on('connection', (socket) => {
-  socket.on('join-room', (data) => {
-    const { roomId, playerName } = data;
+  socket.on('join-room', ({ roomId, playerName }) => {
     socket.join(roomId);
     if (!rooms[roomId]) {
       rooms[roomId] = { status: 'waiting', deck: [], fieldCard: null, players: [], turnIndex: 0, nextDrawAmount: 1, isReversed: false, needsInitialChoice: false };
@@ -53,79 +53,85 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('start-game', (data) => {
-    const room = rooms[data.roomId];
-    if (room && room.players.length >= 2) {
-      room.deck = createDeck();
-      let first = room.deck.pop();
-      if (first.realm === 'PLANET' || first.realm === 'RUINS' || (first.realm === 'FOUNTAIN' && first.isSpecial)) {
+  socket.on('start-game', ({ roomId }) => {
+    const room = rooms[roomId];
+    if (!room) return;
+    room.deck = createDeck();
+    const firstCard = room.deck.pop();
+    room.fieldCard = firstCard;
+    room.status = 'playing';
+    room.turnIndex = 0;
+    room.nextDrawAmount = 1;
+    
+    // 開幕がワイルド系ならホストに選択させる
+    if (firstCard.realm === 'PLANET' || firstCard.realm === 'RUINS') {
         room.needsInitialChoice = true;
-        if (first.realm === 'RUINS') first.wasRuins = true;
-        if (first.realm === 'PLANET') first.wasPlanet = true;
-      }
-      room.fieldCard = first;
-      room.status = 'playing';
-      room.players.forEach(p => { p.hand = room.deck.splice(0, 5); });
-      emitUpdate(data.roomId);
     }
+
+    room.players.forEach(p => p.hand = room.deck.splice(0, 5));
+    emitUpdate(roomId);
   });
 
-  socket.on('set-initial-realm', (data) => {
-    const room = rooms[data.roomId];
-    if (room && room.needsInitialChoice && room.players[0].id === socket.id) {
-      room.fieldCard.realm = data.chosenRealm;
-      room.needsInitialChoice = false;
-      emitUpdate(data.roomId);
-    }
-  });
-
-  socket.on('play-card', (data) => {
-    const room = rooms[data.roomId];
-    if (!room || room.status !== 'playing' || room.needsInitialChoice) return;
-    if (room.players[room.turnIndex].id !== socket.id) return;
-
+  socket.on('play-card', ({ roomId, card, chosenRealm }) => {
+    const room = rooms[roomId];
+    if (!room || room.status !== 'playing') return;
     const player = room.players.find(p => p.id === socket.id);
-    let card = data.card;
+    if (!player || room.players[room.turnIndex].id !== socket.id) return;
+
     player.hand = player.hand.filter(c => c.id !== card.id);
-
-    if (card.realm === 'RUINS') {
-      const normal = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
-      card.realm = normal[Math.floor(Math.random() * normal.length)];
-      card.wasRuins = true;
+    
+    // ワイルド処理
+    const newFieldCard = { ...card };
+    if (chosenRealm) {
+        if (card.realm === 'PLANET') newFieldCard.wasPlanet = true;
+        if (card.realm === 'RUINS') newFieldCard.wasRuins = true;
+        newFieldCard.realm = chosenRealm;
     }
-    if (data.chosenRealm) {
-      card.realm = data.chosenRealm;
-      card.wasPlanet = true;
-    }
+    room.fieldCard = newFieldCard;
 
-    room.fieldCard = card;
+    // 特殊効果のスタックと反転
     if (card.isSpecial) {
-      if (card.realm === 'GEAR') room.nextDrawAmount = 2;
+      if (card.realm === 'GEAR') {
+        room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
+      }
       if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
     }
 
     if (player.hand.length === 0) {
       room.status = 'finished';
-      io.to(data.roomId).emit('game-over', { winnerName: player.name });
+      io.to(roomId).emit('game-over', { winnerName: player.name });
     } else {
-      const dir = room.isReversed ? -1 : 1;
-      room.turnIndex = (room.turnIndex + dir + room.players.length) % room.players.length;
+      const direction = room.isReversed ? -1 : 1;
+      room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
     }
-    emitUpdate(data.roomId);
+    emitUpdate(roomId);
   });
 
-  socket.on('draw-card', (data) => {
-    const room = rooms[data.roomId];
-    if (!room || room.status !== 'playing' || room.needsInitialChoice) return;
-    if (room.players[room.turnIndex].id !== socket.id) return;
-    const player = room.players.find(p => p.id === socket.id);
-    for (let i = 0; i < room.nextDrawAmount; i++) {
+  socket.on('draw-card', ({ roomId }) => {
+    const room = rooms[roomId];
+    if (!room || room.status !== 'playing') return;
+    const player = room.players[room.turnIndex];
+    if (player.id !== socket.id) return;
+
+    const amount = room.nextDrawAmount;
+    for (let i = 0; i < amount; i++) {
       if (room.deck.length > 0) player.hand.push(room.deck.pop());
     }
+    
+    // スタックリセットと強制ターン交代
     room.nextDrawAmount = 1;
-    const dir = room.isReversed ? -1 : 1;
-    room.turnIndex = (room.turnIndex + dir + room.players.length) % room.players.length;
-    emitUpdate(data.roomId);
+    const direction = room.isReversed ? -1 : 1;
+    room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
+    emitUpdate(roomId);
+  });
+
+  socket.on('set-initial-realm', ({ roomId, chosenRealm }) => {
+    const room = rooms[roomId];
+    if (room && room.needsInitialChoice) {
+      room.fieldCard.realm = chosenRealm;
+      room.needsInitialChoice = false;
+      emitUpdate(roomId);
+    }
   });
 });
 
