@@ -3,39 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm Online - Multiplayer</title>
+    <title>Cross Realm Online - Definitive Edition</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        :root { --accent: #40E0D0; --bg: #121212; }
-        body { margin: 0; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; }
+        :root { --accent: #40E0D0; --bg: #121212; --card-w: 80px; --card-h: 115px; }
+        body { margin: 0; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; touch-action: manipulation; }
         
-        /* ロビー画面 */
-        .lobby-container { padding: 50px 20px; text-align: center; }
-        .player-list { background: #1a1a1a; border-radius: 15px; padding: 20px; margin: 20px auto; max-width: 300px; border: 1px solid #333; }
-        .player-item { padding: 10px; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .player-item:last-child { border: none; }
-        .status-badge { background: var(--accent); color: #000; font-size: 0.7em; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        /* ログイン・ロビー画面 */
+        .overlay-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; text-align: center; }
+        .input-box { padding: 12px; border-radius: 8px; border: none; width: 200px; font-size: 16px; margin-bottom: 10px; color: #000; }
+        .player-list { background: #1a1a1a; width: 250px; border-radius: 12px; padding: 10px; margin: 15px 0; border: 1px solid #333; }
+        .player-tag { padding: 8px; border-bottom: 1px solid #333; font-size: 0.9em; }
 
-        /* ゲーム画面（共通パーツ） */
-        .opponents { display: flex; justify-content: center; gap: 10px; padding: 10px; background: rgba(0,0,0,0.4); border-bottom: 1px solid #333; height: 60px; }
-        .opp-box { text-align: center; padding: 4px 10px; border-radius: 10px; border: 1px solid #444; background: #1a1a1a; min-width: 60px; }
-        .opp-box.active { border-color: var(--accent); background: rgba(64, 224, 208, 0.1); }
-        .card { width: 85px; height: 125px; border-radius: 10px; overflow: hidden; position: relative; border: 2px solid #333; background: #000; transition: 0.2s; }
+        /* ゲームメインUI */
+        .header { display: flex; justify-content: center; gap: 10px; padding: 10px; background: rgba(0,0,0,0.5); border-bottom: 1px solid #333; height: 50px; }
+        .opp-card { padding: 5px 10px; border-radius: 8px; border: 1px solid #444; background: #1a1a1a; font-size: 0.8em; }
+        .opp-card.active { border-color: var(--accent); box-shadow: 0 0 8px var(--accent); }
+
+        .game-main { height: calc(100vh - 70px); display: flex; flex-direction: column; align-items: center; justify-content: space-around; }
+        
+        /* 属性サイクルバー */
+        .cycle-guide { font-size: 9px; color: #666; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 10px; }
+        .active-r { color: var(--accent); font-weight: bold; }
+
+        /* カード表示 */
+        .card { 
+            width: var(--card-w); height: var(--card-h); border-radius: 8px; overflow: hidden; 
+            position: relative; border: 2px solid #333; background: #000; transition: transform 0.2s;
+        }
         .card.disabled { opacity: 0.2; filter: grayscale(1); }
         .card img { width: 100%; height: 100%; object-fit: cover; }
-        .card-ui { position: absolute; inset: 0; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(rgba(0,0,0,0.6) 0%, transparent 50%, rgba(0,0,0,0.7) 100%); pointer-events: none; }
-        
-        /* 手札 */
-        .my-hand-wrapper { width: 100%; overflow-x: auto; padding: 20px 0; display: flex; justify-content: center; position: fixed; bottom: 0; }
-        .hand-slot { margin-left: -35px; transition: 0.2s; }
-        .hand-slot:first-child { margin-left: 0; }
-        .hand-slot:hover { transform: translateY(-20px); z-index: 100 !important; }
+        .card-ui { position: absolute; inset: 0; padding: 5px; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(rgba(0,0,0,0.6), transparent, rgba(0,0,0,0.7)); pointer-events: none; }
 
-        .btn { padding: 12px 24px; border-radius: 25px; border: 2px solid #555; background: #222; color: white; font-weight: bold; cursor: pointer; margin: 10px; }
-        .btn-start { background: var(--accent); color: #000; border-color: white; }
+        /* 手札の重なり */
+        .hand-scroll { width: 100%; overflow-x: auto; display: flex; justify-content: center; padding-bottom: 20px; }
+        .hand-layout { display: flex; padding: 0 30px; }
+        .slot { margin-left: -35px; transition: 0.2s; }
+        .slot:first-child { margin-left: 0; }
+        .slot:hover { transform: translateY(-15px); z-index: 100 !important; }
+
+        .btn { padding: 12px 25px; border-radius: 20px; border: 2px solid #555; background: #222; color: white; font-weight: bold; cursor: pointer; }
+        .btn:disabled { opacity: 0.5; }
+        .draw-btn-area { position: relative; }
+        .badge { position: absolute; top: -10px; right: -10px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; border: 1px solid white; }
     </style>
 </head>
 <body>
@@ -46,114 +59,112 @@
         const socket = io('https://crossrealm-server.onrender.com');
 
         const REALMS = { GEAR:{n:'歯車'}, ICEAGE:{n:'氷河期'}, FOUNTAIN:{n:'噴水'}, BATTERY:{n:'バッテリー'}, MACHINE:{n:'機械'}, ARCHIVE:{n:'古文書'}, PLANET:{n:'惑星',w:true}, RUINS:{n:'廃墟',w:true} };
-        const CYCLE = { GEAR:'ICEAGE', ICEAGE:'FOUNTAIN', FOUNTAIN:'BATTERY', BATTERY:'MACHINE', MACHINE:'ARCHIVE', ARCHIVE:'GEAR' };
+        const CYCLE_MAP = { GEAR:'ICEAGE', ICEAGE:'FOUNTAIN', FOUNTAIN:'BATTERY', BATTERY:'MACHINE', MACHINE:'ARCHIVE', ARCHIVE:'GEAR' };
 
-        const Card = ({ card, onClick, disabled }) => {
+        const CardView = ({ card, onClick, disabled }) => {
+            if(!card) return null;
             let img = card.realm === 'MACHINE' ? (card.number <= 2 ? 'MACHINE_reverse.png' : 'MACHINE_normal.png') :
                       card.realm === 'FOUNTAIN' ? (card.number <= 2 ? 'FOUNTAIN_wild.png' : 'FOUNTAIN_normal.png') :
                       (card.realm === 'GEAR' && card.number === 0) ? 'GEAR_frame.png' : `${card.realm}.png`;
             return (
                 <div className={`card ${disabled ? 'disabled' : ''}`} onClick={onClick}>
-                    <img src={`./images/${img}`} onError={(e)=>e.target.style.visibility='hidden'} />
+                    <img src={`./images/${img}`} onError={(e)=>e.target.style.opacity='0'} />
                     <div className="card-ui">
-                        <div style={{fontSize:'0.6em',fontWeight:'bold'}}>{REALMS[card.realm].n}</div>
-                        <div style={{fontSize:'2.2em',fontWeight:'bold',textAlign:'right',lineHeight:'0.8'}}>{card.number}</div>
+                        <div style={{fontSize:'0.6em',fontWeight:'bold'}}>{REALMS[card.realm]?.n || ''}</div>
+                        <div style={{fontSize:'2em',fontWeight:'bold',textAlign:'right'}}>{card.number}</div>
                     </div>
                 </div>
             );
         };
 
         const App = () => {
-            const [gameState, setGameState] = useState({ players: [], fieldCard: null, status: 'waiting' });
-            const [roomId, setRoomId] = useState('');
-            const [isJoined, setIsJoined] = useState(false);
+            const [gs, setGs] = useState(null); // GameState
+            const [room, setRoom] = useState('');
+            const [joined, setJoined] = useState(false);
 
             useEffect(() => {
-                socket.on('update-game', setGameState);
+                socket.on('update-game', setGs);
                 return () => socket.off();
             }, []);
 
-            const me = gameState.players.find(p => p.id === socket.id) || { hand: [] };
-            const isHost = gameState.players[0]?.id === socket.id; // 最初の人がホスト
-            const isMyTurn = gameState.currentTurnPlayerId === socket.id;
+            const me = gs?.players?.find(p => p.id === socket.id) || { hand: [] };
+            const isMyTurn = gs?.currentTurnPlayerId === socket.id;
+            const isHost = gs?.players?.[0]?.id === socket.id;
 
-            const handleJoin = () => { if(roomId) { socket.emit('join-room', roomId); setIsJoined(true); } };
-            const handleStart = () => { socket.emit('start-game', { roomId }); };
-
-            // ログイン前
-            if (!isJoined) return (
-                <div className="lobby-container">
-                    <h1>Cross Realm</h1>
-                    <input className="btn" style={{background:'#fff', color:'#000'}} value={roomId} onChange={e=>setRoomId(e.target.value)} placeholder="ルームID" />
-                    <button className="btn" onClick={handleJoin}>入室する</button>
-                </div>
-            );
-
-            // ロビー待機中
-            if (gameState.status === 'waiting') return (
-                <div className="lobby-container">
-                    <h2>待機ロビー</h2>
-                    <p>ROOM ID: <strong>{roomId}</strong></p>
-                    <div className="player-list">
-                        {gameState.players.map((p, i) => (
-                            <div key={p.id} className="player-item">
-                                👤 Player {i+1} {p.id === socket.id && <span className="status-badge">YOU</span>}
-                                {i === 0 && <span>👑</span>}
-                            </div>
-                        ))}
-                        {[...Array(Math.max(0, 4 - gameState.players.length))].map((_, i) => (
-                            <div key={i} className="player-item" style={{opacity: 0.3}}>待機中...</div>
-                        ))}
-                    </div>
-                    <p>{gameState.players.length} / 4 人が参加中</p>
-                    {isHost ? (
-                        <button className="btn btn-start" onClick={handleStart} disabled={gameState.players.length < 2}>
-                            ゲームを開始する
-                        </button>
-                    ) : (
-                        <p style={{color: var(--accent)}}>ホストが開始するのを待っています...</p>
-                    )}
-                </div>
-            );
-
-            // ゲーム本編
-            const others = gameState.players.filter(p => p.id !== socket.id);
             const canPlay = (c) => {
-                if (!isMyTurn || !gameState.fieldCard) return false;
-                if (REALMS[c.realm].w || (c.realm === 'FOUNTAIN' && c.number <= 2)) return true;
-                const f = gameState.fieldCard;
-                return c.realm === f.realm || c.number === f.number || CYCLE[f.realm] === c.realm;
+                if (!isMyTurn || !gs?.fieldCard) return false;
+                if (REALMS[c.realm]?.w || (c.realm === 'FOUNTAIN' && c.number <= 2)) return true;
+                const f = gs.fieldCard;
+                return c.realm === f.realm || c.number === f.number || CYCLE_MAP[f.realm] === c.realm;
             };
+
+            // 1. 入室画面
+            if (!joined) return (
+                <div className="overlay-screen">
+                    <h1>Cross Realm</h1>
+                    <input className="input-box" value={room} onChange={e=>setRoom(e.target.value)} placeholder="ルームID" />
+                    <button className="btn" onClick={()=>{if(room){socket.emit('join-room', room); setJoined(true)}}}>入室</button>
+                </div>
+            );
+
+            // 2. 待機中
+            if (!gs || gs.status === 'waiting') return (
+                <div className="overlay-screen">
+                    <h2>待機ロビー: {room}</h2>
+                    <div className="player-list">
+                        {gs?.players?.map((p, i) => (
+                            <div key={p.id} className="player-tag">
+                                {i===0?'👑 ':''}Player {i+1} {p.id===socket.id?'(YOU)':''}
+                            </div>
+                        )) || <p>接続中...</p>}
+                    </div>
+                    {isHost ? 
+                        <button className="btn" style={{background: 'var(--accent)', color: '#000'}} onClick={()=>socket.emit('start-game', {roomId: room})} disabled={(gs?.players?.length || 0) < 2}>開始する</button>
+                        : <p>ホストの開始を待っています...</p>}
+                </div>
+            );
+
+            // 3. ゲーム本編
+            const others = gs.players.filter(p => p.id !== socket.id);
 
             return (
                 <div>
-                    <div className="opponents">
+                    <div className="header">
                         {others.map(p => (
-                            <div key={p.id} className={`opp-box ${gameState.currentTurnPlayerId === p.id ? 'active' : ''}`}>
-                                <div style={{fontSize:'9px'}}>PLAYER</div>
-                                <div style={{fontWeight:'bold'}}>🎴 {p.handCount}</div>
+                            <div key={p.id} className={`opp-card ${gs.currentTurnPlayerId === p.id ? 'active' : ''}`}>
+                                P: 🎴{p.handCount}
                             </div>
                         ))}
                     </div>
 
-                    <div style={{textAlign:'center', marginTop:'20px'}}>
-                        <div style={{color: var(--accent), fontWeight:'bold', marginBottom: '10px'}}>
-                            {isMyTurn ? "★ あなたの番です ★" : "相手の番を待っています..."}
+                    <div className="game-main">
+                        <div className="cycle-guide">
+                            {Object.keys(CYCLE_MAP).map(r => (
+                                <span key={r} className={gs.fieldCard?.realm === r ? 'active-r' : ''}>{REALMS[r].n}➔</span>
+                            ))}<span>歯車</span>
                         </div>
-                        <div style={{display:'flex', justifyContent:'center', position:'relative'}}>
-                            {gameState.fieldCard && <Card card={gameState.fieldCard} />}
-                            {gameState.nextDrawAmount > 1 && <div style={{position:'absolute', top:'-10px', right:'30%', background:'red', borderRadius:'50%', width:'25px', height:'25px', display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid white'}}>+{gameState.nextDrawAmount}</div>}
-                        </div>
-                        <button className="btn" onClick={()=>socket.emit('draw-card',{roomId})} disabled={!isMyTurn}>カードを引く</button>
-                    </div>
 
-                    <div className="my-hand-wrapper">
-                        <div style={{display:'flex', padding:'0 40px'}}>
-                            {me.hand.map((c, i) => (
-                                <div key={c.id} className="hand-slot" style={{zIndex: i}}>
-                                    <Card card={c} onClick={()=>isMyTurn && canPlay(c) && socket.emit('play-card',{roomId, card:c})} disabled={!canPlay(c)} />
-                                </div>
-                            ))}
+                        <div style={{textAlign:'center'}}>
+                            <div style={{color:isMyTurn? 'var(--accent)':'#777', fontWeight:'bold', marginBottom:'10px'}}>
+                                {isMyTurn ? "★ YOUR TURN ★" : "Opponent Turn..."}
+                            </div>
+                            <div style={{display:'flex', justifyContent:'center'}}>
+                                <CardView card={gs.fieldCard} />
+                            </div>
+                            <div className="draw-btn-area" style={{marginTop:'15px'}}>
+                                <button className="btn" onClick={()=>socket.emit('draw-card',{roomId:room})} disabled={!isMyTurn}>DRAW</button>
+                                {gs.nextDrawAmount > 1 && <div className="badge">+{gs.nextDrawAmount}</div>}
+                            </div>
+                        </div>
+
+                        <div className="hand-scroll">
+                            <div className="hand-layout">
+                                {me.hand.map((c, i) => (
+                                    <div key={c.id} className="slot" style={{zIndex: i}}>
+                                        <CardView card={c} onClick={()=>isMyTurn && canPlay(c) && socket.emit('play-card',{roomId:room, card:c})} disabled={!canPlay(c)} />
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
