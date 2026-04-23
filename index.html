@@ -10,13 +10,13 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         body { margin: 0; background-color: #1a1a1a; color: white; font-family: sans-serif; text-align: center; }
-        .card { width: 75px; height: 110px; border-radius: 8px; color: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; border: 1px solid #000; position: relative; }
-        .special-badge { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 25px; height: 25px; font-size: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
-        .field-card { width: 100px; height: 140px; border-radius: 10px; border: 4px solid #fff; margin: 20px auto; color: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .btn { padding: 10px 20px; background: #444; color: #fff; border: 1px solid #fff; border-radius: 5px; cursor: pointer; margin: 10px; font-size: 1em; }
+        .card { width: 75px; height: 110px; border-radius: 8px; color: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; border: 1px solid #000; position: relative; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); }
+        .special-badge { position: absolute; top: -5px; right: -5px; background: #ff4500; color: white; border-radius: 50%; width: 28px; height: 28px; font-size: 10px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .field-card { width: 100px; height: 140px; border-radius: 10px; border: 4px solid #fff; margin: 20px auto; color: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; }
+        .btn { padding: 12px 24px; background: #444; color: #fff; border: 1px solid #fff; border-radius: 5px; cursor: pointer; margin: 10px; font-size: 1em; }
         .btn:disabled { opacity: 0.3; cursor: not-allowed; }
         .result-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
-        .result-text { font-size: 3em; font-weight: bold; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -43,30 +43,38 @@
 
             useEffect(() => {
                 socket.on('init-game', (data) => {
-                    setMyHand(data.hand);
-                    setFieldCard(data.fieldCard);
-                    setIsMyTurn(data.isMyTurn);
-                    setWinner(null);
-                    setNextDrawAmount(1);
+                    setMyHand(data.hand); setFieldCard(data.fieldCard); setIsMyTurn(data.isMyTurn); setWinner(null); setNextDrawAmount(1);
                 });
                 socket.on('update-game', (data) => {
-                    setFieldCard(data.fieldCard);
-                    setIsMyTurn(socket.id === data.currentTurnPlayerId);
-                    setNextDrawAmount(data.nextDrawAmount || 1);
+                    setFieldCard(data.fieldCard); setIsMyTurn(socket.id === data.currentTurnPlayerId); setNextDrawAmount(data.nextDrawAmount || 1);
                 });
                 socket.on('game-over', (data) => setWinner(data.winnerId));
                 return () => { socket.off('init-game'); socket.off('update-game'); socket.off('game-over'); };
             }, []);
 
+            // ワイルドカード判定の拡張
+            const isSpecialWild = (card) => {
+                if (REALMS[card.realm].isWild) return true; // 惑星・廃墟
+                if (card.realm === 'FOUNTAIN' && card.number <= 2) return true; // 噴水の0,1,2
+                return false;
+            };
+
             const canPlay = (card) => {
                 if (!isMyTurn || !fieldCard || winner) return false;
-                if (REALMS[card.realm].isWild || REALMS[fieldCard.realm].isWild) return true;
+                if (isSpecialWild(card)) return true; // 自分自身がワイルドなら出せる
+                if (isSpecialWild(fieldCard)) return true; // 場がワイルドなら何でも出せる
                 return card.realm === fieldCard.realm || card.number === fieldCard.number;
+            };
+
+            const getSpecialLabel = (card) => {
+                if (card.realm === 'GEAR' && card.number === 0) return "+2";
+                if (card.realm === 'MACHINE' && card.number <= 2) return "REV";
+                if (isSpecialWild(card)) return "WILD";
+                return null;
             };
 
             const playCard = (card) => { if (canPlay(card)) socket.emit('play-card', { roomId, card }); };
             const drawCard = () => { if (isMyTurn && !winner) socket.emit('draw-card', { roomId }); };
-            const handleRematch = () => { socket.emit('request-rematch', roomId); };
 
             if (!isJoined) return (
                 <div style={{marginTop: '100px'}}>
@@ -80,36 +88,36 @@
                 <div>
                     {winner && (
                         <div className="result-screen">
-                            <div className="result-text" style={{ color: winner === socket.id ? '#00FF7F' : '#FF4500' }}>
+                            <h2 style={{ fontSize: '3em', color: winner === socket.id ? '#00FF7F' : '#FF4500' }}>
                                 {winner === socket.id ? "YOU WIN!" : "YOU LOSE..."}
-                            </div>
-                            <button className="btn" onClick={handleRematch}>もう一度遊ぶ</button>
+                            </h2>
+                            <button className="btn" onClick={() => socket.emit('request-rematch', roomId)}>もう一度遊ぶ</button>
                         </div>
                     )}
 
                     <div style={{ background: isMyTurn ? '#00FF7F' : '#333', color: isMyTurn ? '#000' : '#fff', padding: '10px', fontWeight: 'bold' }}>
-                        {isMyTurn ? (nextDrawAmount > 1 ? `⚠️警告: ${nextDrawAmount}枚引くか、歯車0で返せ！` : "あなたの番です！") : "相手の番を待っています..."}
+                        {isMyTurn ? (nextDrawAmount > 1 ? `⚠️ ${nextDrawAmount}枚引くか、対抗札を出せ！` : "あなたの番です") : "相手の番です..."}
                     </div>
 
                     {fieldCard && (
                         <div className="field-card" style={{backgroundColor: REALMS[fieldCard.realm].color}}>
-                            {fieldCard.realm === 'GEAR' && fieldCard.number === 0 && <div className="special-badge">+2</div>}
+                            {getSpecialLabel(fieldCard) && <div className="special-badge">{getSpecialLabel(fieldCard)}</div>}
                             <small>{REALMS[fieldCard.realm].name}</small>
-                            <div style={{fontSize: '2em'}}>{fieldCard.number}</div>
+                            <div style={{fontSize: '2.5em'}}>{fieldCard.number}</div>
                         </div>
                     )}
 
                     <button className="btn" onClick={drawCard} disabled={!isMyTurn} style={{borderColor: nextDrawAmount > 1 ? 'red' : 'white'}}>
-                        {nextDrawAmount > 1 ? `${nextDrawAmount}枚引かされる！` : "山札から引く (パス)"}
+                        {nextDrawAmount > 1 ? `${nextDrawAmount}枚引く` : "山札から引く"}
                     </button>
 
-                    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px', marginTop: '30px', padding: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px', marginTop: '20px', padding: '10px' }}>
                         {myHand.map(card => (
                             <div key={card.id} className="card" onClick={() => playCard(card)} 
                                  style={{ backgroundColor: REALMS[card.realm].color, opacity: canPlay(card) ? 1 : 0.4 }}>
-                                {card.realm === 'GEAR' && card.number === 0 && <div className="special-badge">+2</div>}
+                                {getSpecialLabel(card) && <div className="special-badge">{getSpecialLabel(card)}</div>}
                                 <small>{REALMS[card.realm].name}</small>
-                                <div>{card.number}</div>
+                                <div style={{fontSize: '1.5em'}}>{card.number}</div>
                             </div>
                         ))}
                     </div>
