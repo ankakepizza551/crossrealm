@@ -37,7 +37,8 @@ const emitUpdate = (roomId) => {
     currentTurnPlayerId: room.players[room.turnIndex]?.id,
     nextDrawAmount: room.nextDrawAmount,
     isReversed: room.isReversed,
-    needsInitialChoice: room.needsInitialChoice
+    needsInitialChoice: room.needsInitialChoice,
+    readyPlayers: Array.from(room.readyPlayers)
   });
 };
 
@@ -45,7 +46,7 @@ io.on('connection', (socket) => {
   socket.on('join-room', ({ roomId, playerName }) => {
     socket.join(roomId);
     if (!rooms[roomId]) {
-      rooms[roomId] = { status: 'waiting', deck: [], fieldCard: null, players: [], turnIndex: 0, nextDrawAmount: 1, isReversed: false, needsInitialChoice: false };
+      rooms[roomId] = { status: 'waiting', deck: [], fieldCard: null, players: [], turnIndex: 0, nextDrawAmount: 1, isReversed: false, needsInitialChoice: false, readyPlayers: new Set() };
     }
     const room = rooms[roomId];
     if (room.players.length < 4 && room.status === 'waiting') {
@@ -60,13 +61,13 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
     if (!room) return;
     room.deck = createDeck();
-    let firstCard = room.deck.pop();
-    room.fieldCard = firstCard;
+    room.fieldCard = room.deck.pop();
     room.status = 'playing';
     room.turnIndex = 0;
     room.nextDrawAmount = 1;
     room.isReversed = false;
-    room.needsInitialChoice = (firstCard.realm === 'PLANET' || firstCard.realm === 'RUINS');
+    room.readyPlayers.clear();
+    room.needsInitialChoice = (room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS');
     room.players.forEach(p => p.hand = room.deck.splice(0, 5));
     emitUpdate(roomId);
   });
@@ -89,7 +90,6 @@ io.on('connection', (socket) => {
     }
     if (player.hand.length === 0) {
       room.status = 'finished';
-      io.to(roomId).emit('game-over', { winnerName: player.name });
     } else {
       const direction = room.isReversed ? -1 : 1;
       room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
@@ -108,6 +108,35 @@ io.on('connection', (socket) => {
     emitUpdate(roomId);
   });
 
+  socket.on('play-again', ({ roomId }) => {
+    const room = rooms[roomId];
+    if (!room) return;
+    room.readyPlayers.add(socket.id);
+    if (room.readyPlayers.size === room.players.length) {
+        // 再戦開始
+        room.deck = createDeck();
+        room.fieldCard = room.deck.pop();
+        room.status = 'playing';
+        room.turnIndex = 0;
+        room.nextDrawAmount = 1;
+        room.isReversed = false;
+        room.readyPlayers.clear();
+        room.needsInitialChoice = (room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS');
+        room.players.forEach(p => p.hand = room.deck.splice(0, 5));
+    }
+    emitUpdate(roomId);
+  });
+
+  socket.on('leave-room', ({ roomId }) => {
+    const room = rooms[roomId];
+    if (room) {
+      room.players = room.players.filter(p => p.id !== socket.id);
+      if (room.players.length === 0) delete rooms[roomId];
+      else emitUpdate(roomId);
+    }
+    socket.leave(roomId);
+  });
+
   socket.on('set-initial-realm', ({ roomId, chosenRealm }) => {
     const room = rooms[roomId];
     if (room && room.needsInitialChoice) {
@@ -118,4 +147,4 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(process.env.PORT || 3001, () => console.log('Server running...'));
+server.listen(process.env.PORT || 3001);
