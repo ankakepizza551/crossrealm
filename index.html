@@ -53,12 +53,14 @@
         @media (min-width: 769px) {
             .cycle-guide { right: 20px; top: 50%; transform: translateY(-50%); flex-direction: column; border-left: 1px solid var(--border); border-radius: 12px; }
             .center-stage { padding-right: 100px; }
+            .login-title { font-size: 42px; letter-spacing: 12px; }
         }
 
         @media (max-width: 768px) {
             .cycle-guide { top: 65px; left: 10px; right: 10px; justify-content: center; border-bottom: 1px solid var(--border); border-radius: 8px; }
             .guide-arrow { transform: rotate(-90deg); }
             .center-stage { flex-direction: column; gap: 20px; justify-content: center; }
+            .login-title { font-size: 24px; letter-spacing: 6px; white-space: nowrap; } /* スマホ向けサイズ調整 */
             :root { --card-w: 70px; --card-h: 100px; }
         }
 
@@ -73,27 +75,28 @@
         }
         .guide-arrow { font-size: 9px; opacity: 0.3; }
 
-        /* ログイン・待機画面のオーバーレイ（画像のデザインを再現） */
+        /* ログイン・待機画面のオーバーレイ */
         .overlay { 
             position: fixed; inset: 0; background: var(--bg); 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             z-index: 1000; padding: 20px;
         }
         .login-title {
-            font-size: 42px; letter-spacing: 12px; font-weight: 900; 
+            font-weight: 900; 
             color: var(--accent); margin-bottom: 40px; text-shadow: 0 0 20px rgba(64,224,208,0.3);
+            text-align: center;
         }
         .input-field {
-            width: 280px; padding: 15px 25px; border-radius: 30px; 
+            width: 260px; padding: 15px 20px; border-radius: 30px; 
             border: 1.5px solid var(--accent); background: transparent;
             color: white; font-size: 14px; text-align: center; margin-bottom: 15px;
-            transition: 0.3s; outline: none;
+            transition: 0.3s; outline: none; box-sizing: border-box;
         }
         .input-field::placeholder { color: rgba(255,255,255,0.3); letter-spacing: 2px; }
         .input-field:focus { box-shadow: 0 0 15px var(--accent); background: rgba(255,255,255,0.05); }
 
         .btn-main {
-            width: 280px; padding: 15px; border-radius: 30px; border: none;
+            width: 260px; padding: 15px; border-radius: 30px; border: none;
             background: var(--accent); color: #000; font-weight: 900; 
             font-size: 14px; letter-spacing: 4px; cursor: pointer; transition: 0.3s;
         }
