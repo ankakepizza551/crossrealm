@@ -28,7 +28,9 @@ const emitUpdate = (roomId) => {
     status: room.status,
     players: room.players.map(p => ({ id: p.id, name: p.name, handCount: p.hand.length, hand: p.hand })),
     fieldCard: room.fieldCard,
-    currentTurnPlayerId: room.players[room.turnIndex]?.id
+    currentTurnPlayerId: room.players[room.turnIndex]?.id,
+    nextDrawAmount: room.nextDrawAmount,
+    isReversed: room.isReversed
   });
 };
 
@@ -37,7 +39,7 @@ io.on('connection', (socket) => {
     const { roomId, playerName } = data;
     socket.join(roomId);
     if (!rooms[roomId]) {
-      rooms[roomId] = { status: 'waiting', deck: [], fieldCard: null, players: [], turnIndex: 0 };
+      rooms[roomId] = { status: 'waiting', deck: [], fieldCard: null, players: [], turnIndex: 0, nextDrawAmount: 1, isReversed: false };
     }
     const room = rooms[roomId];
     if (room.players.length < 4 && room.status === 'waiting') {
@@ -55,6 +57,8 @@ io.on('connection', (socket) => {
       room.fieldCard = room.deck.pop();
       room.status = 'playing';
       room.turnIndex = 0;
+      room.nextDrawAmount = 1;
+      room.isReversed = false;
       room.players.forEach(p => { p.hand = room.deck.splice(0, 5); });
       emitUpdate(data.roomId);
     }
@@ -64,15 +68,29 @@ io.on('connection', (socket) => {
     const room = rooms[data.roomId];
     if (!room || room.status !== 'playing') return;
     const player = room.players.find(p => p.id === socket.id);
-    if (player) {
-      player.hand = player.hand.filter(c => c.id !== data.card.id);
-      room.fieldCard = data.card;
-      if (player.hand.length === 0) {
-        room.status = 'finished';
-        io.to(data.roomId).emit('game-over', { winnerName: player.name });
-      }
+    if (!player) return;
+
+    const card = data.card;
+    player.hand = player.hand.filter(c => c.id !== card.id);
+    room.fieldCard = card;
+
+    // --- 特殊効果: 歯車 0番 (ドロー2) ---
+    if (card.realm === 'GEAR' && card.number === 0) {
+      room.nextDrawAmount = 2;
     }
-    room.turnIndex = (room.turnIndex + 1) % room.players.length;
+    // --- 特殊効果: 機械 0, 1, 2番 (リバース) ---
+    if (card.realm === 'MACHINE' && card.number <= 2) {
+      room.isReversed = !room.isReversed;
+    }
+
+    if (player.hand.length === 0) {
+      room.status = 'finished';
+      io.to(data.roomId).emit('game-over', { winnerName: player.name });
+    }
+
+    // 次のターン計算
+    const direction = room.isReversed ? -1 : 1;
+    room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
     emitUpdate(data.roomId);
   });
 
@@ -81,8 +99,13 @@ io.on('connection', (socket) => {
     if (!room || room.status !== 'playing') return;
     const player = room.players.find(p => p.id === socket.id);
     if (player && room.players[room.turnIndex].id === socket.id) {
-      if (room.deck.length > 0) player.hand.push(room.deck.pop());
-      room.turnIndex = (room.turnIndex + 1) % room.players.length;
+      const amount = room.nextDrawAmount;
+      for (let i = 0; i < amount; i++) {
+        if (room.deck.length > 0) player.hand.push(room.deck.pop());
+      }
+      room.nextDrawAmount = 1; // ドロー枚数リセット
+      const direction = room.isReversed ? -1 : 1;
+      room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
       emitUpdate(data.roomId);
     }
   });
