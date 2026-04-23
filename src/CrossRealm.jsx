@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-const socket = io('https://crossrealm-server.onrender.com');
+const socket = io('https://crossrealm-server.onrender.com/');
 
 const REALMS = {
   GEAR:    { name: '歯車', color: '#B8860B' },
