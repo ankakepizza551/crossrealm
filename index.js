@@ -10,12 +10,18 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 const rooms = {}; 
 
+// デッキ作成: 各属性12枚。30%（4枚）を特殊カードに設定
 const createDeck = () => {
   const realms = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE', 'PLANET', 'RUINS'];
   let deck = [];
   realms.forEach(realm => {
-    for (let i = 0; i <= 9; i++) {
-      deck.push({ id: Math.random().toString(36).substr(2, 9), realm, number: i });
+    for (let i = 0; i < 12; i++) {
+      let card = { id: Math.random().toString(36).substr(2, 9), realm };
+      // 12枚中4枚に特殊フラグを付与
+      if (i % 3 === 0 && i < 10) {
+        card.isSpecial = true;
+      }
+      deck.push(card);
     }
   });
   return deck.sort(() => Math.random() - 0.5);
@@ -68,19 +74,16 @@ io.on('connection', (socket) => {
     const room = rooms[data.roomId];
     if (!room || room.status !== 'playing') return;
     const player = room.players.find(p => p.id === socket.id);
-    if (!player) return;
+    if (!player || room.players[room.turnIndex].id !== socket.id) return;
 
     const card = data.card;
     player.hand = player.hand.filter(c => c.id !== card.id);
     room.fieldCard = card;
 
-    // --- 特殊効果: 歯車 0番 (ドロー2) ---
-    if (card.realm === 'GEAR' && card.number === 0) {
-      room.nextDrawAmount = 2;
-    }
-    // --- 特殊効果: 機械 0, 1, 2番 (リバース) ---
-    if (card.realm === 'MACHINE' && card.number <= 2) {
-      room.isReversed = !room.isReversed;
+    // 特殊効果の発動
+    if (card.isSpecial) {
+      if (card.realm === 'GEAR') room.nextDrawAmount = 2;
+      if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
     }
 
     if (player.hand.length === 0) {
@@ -88,7 +91,6 @@ io.on('connection', (socket) => {
       io.to(data.roomId).emit('game-over', { winnerName: player.name });
     }
 
-    // 次のターン計算
     const direction = room.isReversed ? -1 : 1;
     room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
     emitUpdate(data.roomId);
@@ -103,7 +105,7 @@ io.on('connection', (socket) => {
       for (let i = 0; i < amount; i++) {
         if (room.deck.length > 0) player.hand.push(room.deck.pop());
       }
-      room.nextDrawAmount = 1; // ドロー枚数リセット
+      room.nextDrawAmount = 1;
       const direction = room.isReversed ? -1 : 1;
       room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
       emitUpdate(data.roomId);
