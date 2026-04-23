@@ -132,8 +132,8 @@
                     return (c.realm === 'GEAR' && c.isSpecial); 
                 }
 
-                const f = gs.fieldCard.realm; // 場の属性
-                const h = c.realm;           // 手札の属性
+                const f = gs.fieldCard.realm; 
+                const h = c.realm;           
 
                 // 2. 特殊FOUNTAIN (WILD) または 手札がWILD属性(PLANET, RUINS)
                 if ((c.realm === 'FOUNTAIN' && c.isSpecial) || REALMS[h].w) return true;
@@ -286,7 +286,11 @@
                                 <div style={{display:'flex', flexWrap:'wrap', justifyContent:'center', maxWidth:'340px'}}>
                                     {['GEAR','ICEAGE','FOUNTAIN','BATTERY','MACHINE','ARCHIVE'].map(r=>(
                                         <button key={r} className="btn" style={{margin:'6px', borderColor:REALMS[r].color, color:REALMS[r].color}} onClick={()=>{
-                                            if(selectorCard) { socket.emit('play-card',{roomId:room, card:selectorCard, chosenRealm:r}); setSelectorCard(null); }
+                                            if(selectorCard) {
+                                                // ワイルド系で「歯車」を選んでもドロー効果が発生しないようにサーバーに伝える
+                                                socket.emit('play-card',{roomId:room, card:selectorCard, chosenRealm:r, preventSpecial:true});
+                                                setSelectorCard(null);
+                                            }
                                             else { socket.emit('set-initial-realm',{roomId:room, chosenRealm:r}); }
                                         }}>{REALMS[r].n}</button>
                                     ))}
