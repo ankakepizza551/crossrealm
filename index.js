@@ -10,7 +10,6 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 const rooms = {}; 
 
-// デッキ作成
 const createDeck = () => {
   const realms = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE', 'PLANET', 'RUINS'];
   let deck = [];
@@ -22,7 +21,6 @@ const createDeck = () => {
   return deck.sort(() => Math.random() - 0.5);
 };
 
-// 全員に現在のゲーム状態を送信する共通関数
 const emitUpdate = (roomId) => {
   const room = rooms[roomId];
   if (!room) return;
@@ -31,7 +29,7 @@ const emitUpdate = (roomId) => {
     id: p.id,
     name: p.name,
     handCount: p.hand.length,
-    hand: p.hand // フロント側で自分のIDのものだけを表示に使用
+    hand: p.hand
   }));
 
   io.to(roomId).emit('update-game', {
@@ -44,7 +42,6 @@ const emitUpdate = (roomId) => {
 };
 
 io.on('connection', (socket) => {
-  // 入室処理（名前対応）
   socket.on('join-room', (data) => {
     const { roomId, playerName } = data;
     socket.join(roomId);
@@ -56,13 +53,11 @@ io.on('connection', (socket) => {
         fieldCard: null, 
         players: [], 
         turnIndex: 0, 
-        nextDrawAmount: 1,
-        isReverse: false 
+        nextDrawAmount: 1
       };
     }
     
     const room = rooms[roomId];
-    
     if (room.players.length < 4 && room.status === 'waiting') {
       if (!room.players.find(p => p.id === socket.id)) {
         room.players.push({ 
@@ -75,7 +70,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // ゲーム開始
   socket.on('start-game', (data) => {
     const room = rooms[data.roomId];
     if (room && room.players.length >= 2) {
@@ -84,8 +78,6 @@ io.on('connection', (socket) => {
       room.status = 'playing';
       room.turnIndex = 0;
       room.nextDrawAmount = 1;
-      room.isReverse = false;
-
       room.players.forEach(p => {
         p.hand = room.deck.splice(0, 5);
       });
@@ -93,7 +85,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // カードを出す
   socket.on('play-card', (data) => {
     const room = rooms[data.roomId];
     if (!room || room.status !== 'playing') return;
@@ -110,25 +101,16 @@ io.on('connection', (socket) => {
       }
     }
 
-    // 特殊効果の処理
-    let skipNext = false;
-    // 歯車0: 次の人に+2枚
+    // 歯車0: 次の人に+2枚（スキップは削除されました）
     if (card.realm === 'GEAR' && card.number === 0) {
       room.nextDrawAmount = 2;
     }
-    // 機械0,1,2: スキップ（2人ならリバースと同じ挙動）
-    if (card.realm === 'MACHINE' && card.number <= 2) {
-      skipNext = true;
-    }
 
-    // 次のターンへ
-    const step = skipNext ? 2 : 1;
-    room.turnIndex = (room.turnIndex + step) % room.players.length;
-    
+    // 常に次のターンへ
+    room.turnIndex = (room.turnIndex + 1) % room.players.length;
     emitUpdate(data.roomId);
   });
 
-  // カードを引く
   socket.on('draw-card', (data) => {
     const room = rooms[data.roomId];
     if (!room || room.status !== 'playing') return;
@@ -140,16 +122,12 @@ io.on('connection', (socket) => {
         if (room.deck.length > 0) player.hand.push(room.deck.pop());
       }
       room.nextDrawAmount = 1;
-      // 引いた後は次の人の番
       room.turnIndex = (room.turnIndex + 1) % room.players.length;
       emitUpdate(data.roomId);
     }
   });
 
-  // 切断時の処理
-  socket.on('disconnect', () => {
-    // 簡略化のため今回はそのまま（必要に応じて部屋の削除などを追加）
-  });
+  socket.on('disconnect', () => {});
 });
 
 const PORT = process.env.PORT || 3001;
