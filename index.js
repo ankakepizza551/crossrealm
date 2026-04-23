@@ -16,7 +16,7 @@ const createDeck = () => {
   realms.forEach(realm => {
     for (let i = 0; i < 12; i++) {
       let card = { id: Math.random().toString(36).substr(2, 9), realm };
-      if (i % 3 === 0 && i < 10) { card.isSpecial = true; }
+      if (i % 3 === 0 && i < 10) card.isSpecial = true;
       deck.push(card);
     }
   });
@@ -44,22 +44,17 @@ io.on('connection', (socket) => {
       rooms[roomId] = { status: 'waiting', deck: [], fieldCard: null, players: [], turnIndex: 0, nextDrawAmount: 1, isReversed: false };
     }
     const room = rooms[roomId];
-    
-    // 4人制限のチェック
     if (room.players.length < 4 && room.status === 'waiting') {
       if (!room.players.find(p => p.id === socket.id)) {
         room.players.push({ id: socket.id, name: playerName || `Player ${room.players.length + 1}`, hand: [] });
       }
       emitUpdate(roomId);
-    } else if (room.players.length >= 4) {
-      socket.emit('error-msg', 'このルームは満員です');
     }
   });
 
   socket.on('start-game', (data) => {
     const room = rooms[data.roomId];
-    // 2人〜4人のときのみ開始可能
-    if (room && room.players.length >= 2 && room.players.length <= 4) {
+    if (room && room.players.length >= 2) {
       room.deck = createDeck();
       room.fieldCard = room.deck.pop();
       room.status = 'playing';
@@ -77,8 +72,22 @@ io.on('connection', (socket) => {
     if (room.players[room.turnIndex].id !== socket.id) return;
 
     const player = room.players.find(p => p.id === socket.id);
-    const card = data.card;
+    let card = data.card;
     player.hand = player.hand.filter(c => c.id !== card.id);
+
+    // 廃墟（RUINS）のランダム属性処理
+    if (card.realm === 'RUINS') {
+      const normalRealms = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
+      card.realm = normalRealms[Math.floor(Math.random() * normalRealms.length)];
+      card.wasRuins = true; // 元が廃墟だったことを記録（画像表示のため）
+    }
+
+    // 惑星や噴水ワイルドで属性が指定されている場合
+    if (data.chosenRealm) {
+      card.realm = data.chosenRealm;
+      card.wasPlanet = true;
+    }
+
     room.fieldCard = card;
 
     if (card.isSpecial) {
@@ -100,10 +109,8 @@ io.on('connection', (socket) => {
     const room = rooms[data.roomId];
     if (!room || room.status !== 'playing') return;
     if (room.players[room.turnIndex].id !== socket.id) return;
-
     const player = room.players.find(p => p.id === socket.id);
-    const amount = room.nextDrawAmount;
-    for (let i = 0; i < amount; i++) {
+    for (let i = 0; i < room.nextDrawAmount; i++) {
       if (room.deck.length > 0) player.hand.push(room.deck.pop());
     }
     room.nextDrawAmount = 1;
