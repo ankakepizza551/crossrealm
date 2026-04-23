@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cross Realm Online - Illustrated Edition</title>
+    <title>Cross Realm Online - Cycle Edition</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        body { margin: 0; background-color: #1a1a1a; color: white; font-family: sans-serif; text-align: center; }
+        body { margin: 0; background-color: #121212; color: white; font-family: 'Hiragino Kaku Gothic ProN', sans-serif; text-align: center; }
         .game-container { padding: 20px; max-width: 900px; margin: 0 auto; }
         
-        /* カードのデザイン */
+        /* 属性サイクルの表示 */
+        .cycle-info { font-size: 0.8em; color: #aaa; margin-bottom: 10px; }
+        .cycle-active { color: #00ff7f; font-weight: bold; }
+
+        /* カードデザイン */
         .card { 
             width: 85px; height: 125px; 
             border-radius: 10px; 
@@ -25,13 +29,11 @@
             transition: transform 0.2s, box-shadow 0.2s;
             background-color: #222;
         }
-        .card:hover { transform: translateY(-8px); box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
-        .card.disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .card:hover:not(.disabled) { transform: translateY(-8px); box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
+        .card.disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(80%); }
 
-        /* イラスト画像 */
         .card img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* カード情報のオーバーレイ */
         .card-info {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -47,10 +49,10 @@
         .realm-name { font-size: 0.6em; font-weight: bold; text-align: left; }
         .card-number { font-size: 2em; font-weight: bold; text-align: right; line-height: 0.9; }
 
-        .field-section { margin: 30px 0; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px; border: 1px solid #444; }
+        .field-section { margin: 20px 0; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px; border: 1px solid #444; }
         .btn { padding: 12px 24px; background: #333; color: white; border: 2px solid #666; border-radius: 8px; cursor: pointer; margin: 10px; font-weight: bold; }
-        .btn:hover { background: #444; border-color: #fff; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn:hover:not(:disabled) { background: #444; border-color: #fff; }
+        .btn:disabled { opacity: 0.5; }
     </style>
 </head>
 <body>
@@ -60,6 +62,7 @@
         const { useState, useEffect } = React;
         const socket = io('https://crossrealm-server.onrender.com');
 
+        // 属性データ
         const REALMS = {
             GEAR:    { name: '歯車' },
             ICEAGE:  { name: '氷河期' },
@@ -71,8 +74,18 @@
             RUINS:   { name: '廃墟', isWild: true }
         };
 
+        // ★提案の属性サイクル
+        const REALM_CYCLE = {
+            'GEAR': 'ICEAGE',
+            'ICEAGE': 'FOUNTAIN',
+            'FOUNTAIN': 'BATTERY',
+            'BATTERY': 'MACHINE',
+            'MACHINE': 'ARCHIVE',
+            'ARCHIVE': 'GEAR'
+        };
+
         const Card = ({ card, onClick, disabled }) => {
-            // 画像フォルダ内のファイル名と一致させるロジック
+            // 画像ファイル名判定ロジック（GitHubの構成に準拠）
             let imageName = "";
             if (card.realm === 'MACHINE') {
                 imageName = card.number <= 2 ? 'MACHINE_reverse.png' : 'MACHINE_normal.png';
@@ -82,13 +95,9 @@
                 imageName = `${card.realm}.png`;
             }
             
-            const imageSrc = `./images/${imageName}`;
-
             return (
                 <div className={`card ${disabled ? 'disabled' : ''}`} onClick={onClick}>
-                    <img src={imageSrc} alt={card.realm} onError={(e) => {
-                        e.target.style.display = 'none'; // 画像がない場合は非表示
-                    }} />
+                    <img src={`./images/${imageName}`} alt={card.realm} onError={(e) => e.target.style.display='none'} />
                     <div className="card-info">
                         <div className="realm-name">{REALMS[card.realm].name}</div>
                         <div className="card-number">{card.number}</div>
@@ -121,11 +130,21 @@
 
             const joinRoom = () => { if(roomId) { socket.emit('join-room', roomId); setIsJoined(true); } };
             
+            // ★プレイ可否判定（ここにサイクルロジックを追加）
             const canPlay = (card) => {
                 if (!isMyTurn || !fieldCard) return false;
+                
+                // 1. ワイルドカード判定
                 if (REALMS[card.realm].isWild) return true;
                 if (card.realm === 'FOUNTAIN' && card.number <= 2) return true;
-                return card.realm === fieldCard.realm || card.number === fieldCard.number;
+
+                // 2. 通常判定（同じ属性 or 同じ数字）
+                if (card.realm === fieldCard.realm || card.number === fieldCard.number) return true;
+
+                // 3. ★サイクル判定（例：場が歯車なら、数字が違っても氷河期が出せる）
+                if (REALM_CYCLE[fieldCard.realm] === card.realm) return true;
+
+                return false;
             };
 
             const playCard = (card) => {
@@ -141,28 +160,29 @@
                 return (
                     <div className="game-container">
                         <h1>Cross Realm Online</h1>
-                        <div style={{marginTop: '50px'}}>
-                            <input className="btn" style={{color: 'black', background: 'white'}} placeholder="ルームIDを入力" value={roomId} onChange={e => setRoomId(e.target.value)} />
-                            <button className="btn" onClick={joinRoom}>ゲーム開始</button>
-                        </div>
+                        <input className="btn" style={{color: 'black', background: '#fff'}} placeholder="Room ID" value={roomId} onChange={e => setRoomId(e.target.value)} />
+                        <button className="btn" onClick={joinRoom}>入室</button>
                     </div>
                 );
             }
 
             return (
                 <div className="game-container">
+                    <div className="cycle-info">
+                        サイクル: 歯車 ➔ <span className={fieldCard?.realm==='GEAR'?'cycle-active':''}>氷河期</span> ➔ <span className={fieldCard?.realm==='ICEAGE'?'cycle-active':''}>噴水</span> ➔ <span className={fieldCard?.realm==='FOUNTAIN'?'cycle-active':''}>バッテリー</span> ➔ <span className={fieldCard?.realm==='BATTERY'?'cycle-active':''}>機械</span> ➔ <span className={fieldCard?.realm==='MACHINE'?'cycle-active':''}>古文書</span> ➔ <span className={fieldCard?.realm==='ARCHIVE'?'cycle-active':''}>歯車</span>
+                    </div>
+
                     <div className="field-section">
-                        <p>{isMyTurn ? "🔔 あなたの番です" : "⌛ 相手の番を待っています..."}</p>
-                        <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
                             {fieldCard && <Card card={fieldCard} disabled={false} />}
                         </div>
+                        <p>{isMyTurn ? "🔔 あなたの番" : "相手の番..."}</p>
                         <button className="btn" onClick={drawCard} disabled={!isMyTurn}>
                             {nextDrawAmount > 1 ? `${nextDrawAmount}枚引く` : "山札から引く"}
                         </button>
                     </div>
 
-                    <h3>手札 ({myHand.length}枚)</h3>
-                    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '8px' }}>
                         {myHand.map(card => (
                             <Card key={card.id} card={card} onClick={() => playCard(card)} disabled={!canPlay(card)} />
                         ))}
