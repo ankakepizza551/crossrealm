@@ -29,7 +29,9 @@
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect } = React;
-        const socket = io('https://crossrealm-server.onrender.com'); 
+        
+        // ★ ローカル実行なら localhost、デプロイ済みならそのURLに変更してください
+        const socket = io('http://localhost:3001'); 
 
         const REALMS = {
             GEAR: { n: '歯車', can: true }, ICEAGE: { n: '氷河期', can: false },
