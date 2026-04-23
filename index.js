@@ -11,23 +11,15 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 
 const createDeck = () => {
-  // 割合の調整
   const realmCounts = {
-    GEAR: 15,     // 多め
-    MACHINE: 12,
-    FOUNTAIN: 12,
-    PLANET: 6,
-    RUINS: 6,
-    ICEAGE: 6,    // 削減
-    BATTERY: 6,   // 削減
-    ARCHIVE: 6    // 削減
+    GEAR: 15, MACHINE: 12, FOUNTAIN: 12,
+    PLANET: 6, RUINS: 6,
+    ICEAGE: 6, BATTERY: 6, ARCHIVE: 6
   };
-
   let deck = [];
   Object.keys(realmCounts).forEach(realm => {
     for (let i = 0; i < realmCounts[realm]; i++) {
       let card = { id: Math.random().toString(36).substr(2, 9), realm };
-      // 特殊カード確率を30%に設定
       if (Math.random() < 0.3) card.isSpecial = true;
       deck.push(card);
     }
@@ -82,10 +74,8 @@ io.on('connection', (socket) => {
   socket.on('play-card', ({ roomId, card, chosenRealm }) => {
     const room = rooms[roomId];
     if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
-
     const player = room.players.find(p => p.id === socket.id);
     player.hand = player.hand.filter(c => c.id !== card.id);
-    
     const newFieldCard = { ...card };
     if (chosenRealm) {
         if (card.realm === 'PLANET') newFieldCard.wasPlanet = true;
@@ -93,14 +83,10 @@ io.on('connection', (socket) => {
         newFieldCard.realm = chosenRealm;
     }
     room.fieldCard = newFieldCard;
-
     if (card.isSpecial) {
-      if (card.realm === 'GEAR') {
-        room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
-      }
+      if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
       if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
     }
-
     if (player.hand.length === 0) {
       room.status = 'finished';
       io.to(roomId).emit('game-over', { winnerName: player.name });
@@ -114,12 +100,8 @@ io.on('connection', (socket) => {
   socket.on('draw-card', ({ roomId }) => {
     const room = rooms[roomId];
     if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
-
     const player = room.players[room.turnIndex];
-    for (let i = 0; i < room.nextDrawAmount; i++) {
-      if (room.deck.length > 0) player.hand.push(room.deck.pop());
-    }
-    
+    for (let i = 0; i < room.nextDrawAmount; i++) if (room.deck.length > 0) player.hand.push(room.deck.pop());
     room.nextDrawAmount = 1;
     const direction = room.isReversed ? -1 : 1;
     room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
@@ -136,4 +118,4 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(process.env.PORT || 3001);
+server.listen(process.env.PORT || 3001, () => console.log('Server running...'));
