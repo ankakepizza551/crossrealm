@@ -271,7 +271,9 @@
                 return (
                     <div className="container" style={{justifyContent:'center', alignItems:'center'}}>
                         <div style={{width:50, height:50, border:'4px solid rgba(64, 224, 208, 0.1)', borderTopColor:'var(--accent)', borderRadius:'50%', animation:'spin 1s linear infinite'}}></div>
-                        <h2 style={{letterSpacing:12, opacity:0.6, marginTop:30, fontSize:16, fontWeight:900}}>WAITING FOR PILOTS</h2>
+                        <h2 style={{letterSpacing:12, opacity:0.6, marginTop:30, fontSize:16, fontWeight:900}}>WAITING FOR PLAYER</h2>
+                        <div style={{marginTop:10, opacity:0.4, fontSize:12, fontWeight:900, letterSpacing:2, color:'var(--accent)'}}>SECTOR ID: {room}</div>
+                        
                         <div style={{marginTop:30, display:'flex', gap:12}}>
                             {gs?.players.map(p => <div key={p.id} style={{padding:'8px 20px', background:'var(--glass)', borderRadius:30, border:'1.5px solid var(--border)', fontSize:12, fontWeight:900}}>{p.name}</div>)}
                         </div>
