@@ -169,6 +169,8 @@
             font-size: 140px; font-weight: 900; opacity: 0.04; pointer-events: none;
             white-space: nowrap; z-index: 0; letter-spacing: -5px; font-style: italic;
         }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -193,8 +195,8 @@
         const App = () => {
             const [socket, setSocket] = useState(null);
             const [gs, setGs] = useState(null);
-            const [room, setRoom] = useState('ALPHA');
-            const [name, setName] = useState('USER-' + Math.floor(Math.random() * 999));
+            const [room, setRoom] = useState('ALPHA-1');
+            const [name, setName] = useState('PILOT-' + Math.floor(Math.random() * 999));
             const [joined, setJoined] = useState(false);
             const [selectorCard, setSelectorCard] = useState(null);
 
@@ -205,38 +207,43 @@
                 return () => s.disconnect();
             }, []);
 
-            const me = gs?.players?.find(p => p.id === socket?.id) || { hand: [] };
-            const isMyTurn = gs?.currentTurnPlayerId === socket?.id;
-            const others = gs?.players?.filter(p => p.id !== socket?.id) || [];
+            // プレビュー用にモックデータを生成するロジック
+            const effectiveGameState = useMemo(() => {
+                if (gs) return gs;
+                if (joined) {
+                    // サーバー未接続時のプレビュー用ダミーデータ
+                    return {
+                        status: 'waiting',
+                        players: [
+                            { id: 'mock-me', name: name, handCount: 0 },
+                            { id: 'mock-1', name: 'Z-NEO', handCount: 0 },
+                            { id: 'mock-2', name: 'RAY-X', handCount: 0 }
+                        ]
+                    };
+                }
+                return null;
+            }, [gs, joined, name]);
+
+            const me = effectiveGameState?.players?.find(p => p.id === (socket?.id || 'mock-me')) || { hand: [] };
+            const isMyTurn = effectiveGameState?.currentTurnPlayerId === (socket?.id || 'mock-me');
+            const others = effectiveGameState?.players?.filter(p => p.id !== (socket?.id || 'mock-me')) || [];
 
             const canPlay = (card) => {
-                if (!isMyTurn || gs.status !== 'playing' || gs.needsInitialChoice) return false;
-                
-                // ドロー攻撃中の制限
-                if (gs.nextDrawAmount > 1) {
+                if (!isMyTurn || effectiveGameState.status !== 'playing' || effectiveGameState.needsInitialChoice) return false;
+                if (effectiveGameState.nextDrawAmount > 1) {
                     return (card.realm === 'GEAR' && card.isSpecial);
                 }
-
-                const field = gs.fieldCard.realm;
+                const field = effectiveGameState.fieldCard.realm;
                 const hand = card.realm;
-
-                // ワイルド系
                 if (hand === 'PLANET' || hand === 'RUINS') return true;
                 if (hand === 'FOUNTAIN' && card.isSpecial) return true;
-                
-                // 同じレルム
                 if (field === hand) return true;
-
-                // サイクル
                 const currentIdx = CYCLE_ORDER.indexOf(field);
                 const nextRealm = CYCLE_ORDER[(currentIdx + 1) % 6];
                 if (hand === nextRealm) return true;
-
-                // 特殊コンボ
                 if (field === 'ARCHIVE' && hand === 'ICEAGE') return true;
                 if (field === 'ICEAGE' && hand === 'BATTERY') return true;
                 if (field === 'ICEAGE' && hand === 'FOUNTAIN') return true;
-
                 return false;
             };
 
@@ -249,49 +256,49 @@
                 }
             };
 
-            const selectRealm = (r) => {
-                socket.emit('play-card', { roomId: room, card: selectorCard, chosenRealm: r });
-                setSelectorCard(null);
-            };
-
             if (!joined) {
                 return (
                     <div className="overlay">
                         <div className="panel">
                             <h1 style={{color:'var(--accent)', fontSize:32, marginBottom:40, fontWeight:900, letterSpacing:4, fontStyle:'italic'}}>CROSS REALM</h1>
-                            <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="PILOT NAME" style={{width:'100%', padding:18, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:15, borderRadius:14, fontSize:14, fontWeight:'bold'}} />
-                            <input type="text" value={room} onChange={e=>setRoom(e.target.value)} placeholder="SECTOR ID" style={{width:'100%', padding:18, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:25, borderRadius:14, fontSize:14, fontWeight:'bold'}} />
-                            <button onClick={()=>{socket.emit('join-room',{roomId:room, playerName:name}); setJoined(true);}} style={{width:'100%', padding:18, background:'var(--accent)', color:'#000', border:'none', borderRadius:14, fontWeight:900, fontSize:16, cursor:'pointer', letterSpacing:1}}>INITIALIZE LINK</button>
+                            <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="PILOT NAME" style={{width:'100%', padding:18, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:15, borderRadius:14, fontSize:14, fontWeight:'bold', outline:'none'}} />
+                            <input type="text" value={room} onChange={e=>setRoom(e.target.value)} placeholder="SECTOR ID" style={{width:'100%', padding:18, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:25, borderRadius:14, fontSize:14, fontWeight:'bold', outline:'none'}} />
+                            <button onClick={()=>{ if(socket) socket.emit('join-room',{roomId:room, playerName:name}); setJoined(true);}} style={{width:'100%', padding:18, background:'var(--accent)', color:'#000', border:'none', borderRadius:14, fontWeight:900, fontSize:16, cursor:'pointer', letterSpacing:1}}>INITIALIZE LINK</button>
                         </div>
                     </div>
                 );
             }
 
-            if (!gs || gs.status === 'waiting') {
+            if (!effectiveGameState || effectiveGameState.status === 'waiting') {
                 return (
                     <div className="container" style={{justifyContent:'center', alignItems:'center'}}>
                         <div style={{width:50, height:50, border:'4px solid rgba(64, 224, 208, 0.1)', borderTopColor:'var(--accent)', borderRadius:'50%', animation:'spin 1s linear infinite'}}></div>
-                        <h2 style={{letterSpacing:12, opacity:0.6, marginTop:30, fontSize:16, fontWeight:900}}>WAITING FOR PLAYER</h2>
-                        <div style={{marginTop:10, opacity:0.4, fontSize:12, fontWeight:900, letterSpacing:2, color:'var(--accent)'}}>SECTOR ID: {room}</div>
+                        <h2 style={{letterSpacing:12, opacity:0.6, marginTop:30, fontSize:16, fontWeight:900, textAlign:'center'}}>WAITING FOR PLAYER</h2>
+                        <div style={{marginTop:10, opacity:0.4, fontSize:12, fontWeight:900, letterSpacing:2, color:'var(--accent)', textTransform:'uppercase'}}>SECTOR ID: {room}</div>
                         
-                        <div style={{marginTop:30, display:'flex', gap:12}}>
-                            {gs?.players.map(p => <div key={p.id} style={{padding:'8px 20px', background:'var(--glass)', borderRadius:30, border:'1.5px solid var(--border)', fontSize:12, fontWeight:900}}>{p.name}</div>)}
+                        <div style={{marginTop:40, display:'flex', gap:12, flexWrap:'wrap', justifyContent:'center'}}>
+                            {effectiveGameState?.players.map(p => (
+                                <div key={p.id} style={{padding:'10px 24px', background:'var(--glass)', borderRadius:30, border:'1px solid var(--border)', fontSize:12, fontWeight:900, backdropFilter:'blur(10px)'}}>
+                                    <span style={{opacity:0.5, marginRight:8}}>#</span>{p.name}
+                                </div>
+                            ))}
                         </div>
-                        {gs?.players[0]?.id === socket?.id && gs?.players.length >= 2 && (
-                            <button onClick={()=>socket.emit('start-game',{roomId:room})} style={{marginTop:50, padding:'18px 50px', borderRadius:40, border:'2px solid var(--accent)', background:'transparent', color:'var(--accent)', fontWeight:900, cursor:'pointer', fontSize:18, transition:'0.3s'}}>ENGAGE CORE</button>
+                        {effectiveGameState?.players[0]?.id === (socket?.id || 'mock-me') && effectiveGameState?.players.length >= 2 && (
+                            <button onClick={()=>{ if(socket) socket.emit('start-game',{roomId:room}) }} style={{marginTop:60, padding:'20px 60px', borderRadius:40, border:'2px solid var(--accent)', background:'transparent', color:'var(--accent)', fontWeight:900, cursor:'pointer', fontSize:18, transition:'0.3s', textTransform:'uppercase', letterSpacing:2}}>ENGAGE CORE</button>
                         )}
-                        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                        {!socket?.connected && (
+                            <div style={{position:'absolute', bottom:20, opacity:0.3, fontSize:10, fontWeight: 'bold'}}>PREVIEW MODE: DISCONNECTED FROM SERVER</div>
+                        )}
                     </div>
                 );
             }
 
             return (
-                <div className="container" style={{ '--realm-color': REALMS[gs.fieldCard.realm]?.color }}>
+                <div className="container" style={{ '--realm-color': REALMS[effectiveGameState.fieldCard.realm]?.color }}>
                     <div className="bg-aurora"></div>
-                    
                     <div className="opponents scrollbar-hide">
                         {others.map(p => (
-                            <div key={p.id} className={`opp-card ${gs.currentTurnPlayerId === p.id ? 'active' : ''}`}>
+                            <div key={p.id} className={`opp-card ${effectiveGameState.currentTurnPlayerId === p.id ? 'active' : ''}`}>
                                 <div className="opp-name">{p.name}</div>
                                 <div className="opp-count">{p.handCount}</div>
                             </div>
@@ -300,27 +307,20 @@
 
                     <div className="field">
                         <div className="turn-indicator">{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
-                        
-                        {gs.nextDrawAmount > 1 && (
-                            <div className="status-badge">DRAW +{gs.nextDrawAmount} !!</div>
-                        )}
-                        {gs.isReversed && (
-                            <div style={{color:'var(--accent)', fontSize:13, fontWeight:900, marginBottom:15, letterSpacing:2}}>🔄 REVERSE ACTIVE</div>
-                        )}
+                        {effectiveGameState.nextDrawAmount > 1 && <div className="status-badge">DRAW +{effectiveGameState.nextDrawAmount} !!</div>}
+                        {effectiveGameState.isReversed && <div style={{color:'var(--accent)', fontSize:13, fontWeight:900, marginBottom:15, letterSpacing:2}}>🔄 REVERSE ACTIVE</div>}
 
                         <div className="field-card-container">
-                            <div className={`card ${REALMS[gs.fieldCard.realm].class}`}>
-                                <div className="card-header">{REALMS[gs.fieldCard.realm].n}</div>
-                                <div className="card-body">{REALMS[gs.fieldCard.realm].icon}</div>
-                                <div className="card-footer">
-                                    {gs.fieldCard.isSpecial ? 'SPECIAL ABILITY' : 'NORMAL UNIT'}
-                                </div>
+                            <div className={`card ${REALMS[effectiveGameState.fieldCard.realm].class}`}>
+                                <div className="card-header">{REALMS[effectiveGameState.fieldCard.realm].n}</div>
+                                <div className="card-body">{REALMS[effectiveGameState.fieldCard.realm].icon}</div>
+                                <div className="card-footer">{effectiveGameState.fieldCard.isSpecial ? 'SPECIAL ABILITY' : 'NORMAL UNIT'}</div>
                             </div>
                         </div>
                     </div>
 
                     <button className="btn-draw" disabled={!isMyTurn} onClick={()=>socket.emit('draw-card',{roomId:room})}>
-                        {gs.nextDrawAmount > 1 ? `DRAW +${gs.nextDrawAmount}` : 'DRAW / PASS'}
+                        {effectiveGameState.nextDrawAmount > 1 ? `DRAW +${effectiveGameState.nextDrawAmount}` : 'DRAW / PASS'}
                     </button>
 
                     <div className="my-hand-area">
@@ -328,14 +328,9 @@
                             {me.hand.map((card, i) => {
                                 const playable = canPlay(card);
                                 const rotation = (i - (me.hand.length - 1) / 2) * (me.hand.length > 8 ? 4 : 7);
-                                const xOff = (i - (me.hand.length - 1) / 2) * (me.hand.length > 10 ? 30 : 0);
                                 return (
-                                    <div 
-                                        key={card.id} 
-                                        className={`card my-card ${REALMS[card.realm].class} ${playable ? 'playable' : 'not-playable'}`}
-                                        style={{ transform: `rotate(${rotation}deg) translateX(${xOff}px)` }}
-                                        onClick={() => playCard(card)}
-                                    >
+                                    <div key={card.id} className={`card my-card ${REALMS[card.realm].class} ${playable ? 'playable' : 'not-playable'}`}
+                                         style={{ transform: `rotate(${rotation}deg)` }} onClick={() => playCard(card)}>
                                         <div className="card-header">{REALMS[card.realm].n}</div>
                                         <div className="card-body">{REALMS[card.realm].icon}</div>
                                         {card.isSpecial && <div style={{position:'absolute', top:8, right:8, fontSize:12}}>⭐</div>}
@@ -344,55 +339,6 @@
                             })}
                         </div>
                     </div>
-
-                    {selectorCard && (
-                        <div className="overlay">
-                            <div className="panel">
-                                <h3 style={{fontSize:20, fontWeight:900, marginBottom:25, letterSpacing:2}}>SELECT TARGET REALM</h3>
-                                <div className="realm-grid">
-                                    {CYCLE_ORDER.map(r => (
-                                        <button key={r} className="realm-btn" style={{borderColor:REALMS[r].color, color:REALMS[r].color}} onClick={()=>selectRealm(r)}>
-                                            {REALMS[r].n}
-                                        </button>
-                                    ))}
-                                </div>
-                                <button onClick={()=>setSelectorCard(null)} style={{marginTop:30, opacity:0.4, background:'transparent', border:'none', color:'#fff', cursor:'pointer', fontWeight:900, fontSize:12}}>CANCEL TRANSITION</button>
-                            </div>
-                        </div>
-                    )}
-
-                    {gs.needsInitialChoice && gs.players[0].id === socket.id && (
-                        <div className="overlay">
-                            <div className="panel">
-                                <h3 style={{fontSize:20, fontWeight:900, marginBottom:25, letterSpacing:2}}>INITIAL STABILITY</h3>
-                                <div className="realm-grid">
-                                    {CYCLE_ORDER.map(r => (
-                                        <button key={r} className="realm-btn" style={{borderColor:REALMS[r].color, color:REALMS[r].color}} onClick={()=>socket.emit('set-initial-realm',{roomId:room, chosenRealm:r})}>
-                                            {REALMS[r].n}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {gs.status === 'finished' && (
-                        <div className="overlay">
-                            <div className="panel">
-                                <h2 style={{color:'var(--accent)', fontSize:38, fontWeight:900, fontStyle:'italic', marginBottom:10}}>GAME OVER</h2>
-                                <p style={{fontSize:12, opacity:0.5, marginBottom:30, fontWeight:900}}>MISSION COMPLETE</p>
-                                <div style={{margin:'20px 0'}}>
-                                    {gs.players.slice().sort((a,b)=>a.handCount-b.handCount).map((p,i)=>(
-                                        <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'15px 10px', borderBottom:'1px solid var(--border)'}}>
-                                            <span style={{fontWeight:900, fontSize:14}}>{i+1}. {p.name} {p.id === socket.id && "(YOU)"}</span>
-                                            <span style={{color:'var(--accent)', fontWeight:900}}>{p.handCount} units</span>
-                                        </div>
-                                    ))}
-                                </div>
-                                <button onClick={()=>socket.emit('play-again',{roomId:room})} style={{width:'100%', padding:20, background:'var(--accent)', color:'#000', border:'none', borderRadius:16, fontWeight:900, fontSize:18, marginTop:20, cursor:'pointer'}}>RE-ESTABLISH LINK</button>
-                            </div>
-                        </div>
-                    )}
                 </div>
             );
         };
