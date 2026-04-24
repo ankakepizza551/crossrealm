@@ -9,7 +9,6 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        /* 【修正2】カードサイズをさらに大きく、重なり幅も変数化 */
         :root { 
             --accent: #40E0D0; 
             --bg: #050505; 
@@ -77,7 +76,6 @@
             .guide-title { writing-mode: horizontal-tb; transform: none; margin-right: 10px; }
             .center-stage { flex-direction: column; gap: 20px; justify-content: center; }
             .login-title { font-size: 24px; letter-spacing: 6px; white-space: nowrap; }
-            /* スマホ用もさらに大きく */
             :root { --card-w: 85px; --card-h: 122px; --slot-ml: -45px; }
         }
 
@@ -221,10 +219,13 @@
 
             const CardView = ({ card, disabled, onClick }) => {
                 if (!card) return null;
+                
+                // 【バグ修正】WILDが属性を変えた後も本来の絵柄（WILD）を維持する
                 let src = `./images/${card.realm}.png`;
                 if (card.wasRuins) src = './images/RUINS.png';
                 if (card.wasPlanet) src = './images/PLANET.png';
-                if (card.realm === 'MACHINE') src = card.isSpecial ? './images/MACHINE_reverse.png' : './images/MACHINE_normal.png';
+                if (card.wasFountain) src = './images/FOUNTAIN_wild.png';
+                else if (card.realm === 'MACHINE') src = card.isSpecial ? './images/MACHINE_reverse.png' : './images/MACHINE_normal.png';
                 else if (card.realm === 'FOUNTAIN') src = card.isSpecial ? './images/FOUNTAIN_wild.png' : './images/FOUNTAIN_normal.png';
                 else if (card.realm === 'GEAR' && card.isSpecial) src = './images/GEAR_frame.png';
 
@@ -232,8 +233,13 @@
                     <div className={`card ${disabled ? 'disabled' : ''}`} onClick={onClick}>
                         <img src={src} alt={card.realm} />
                         {card.realm === 'GEAR' && card.isSpecial && <div className="badge" style={{background:'#FF4500', color:'#fff'}}>+2</div>}
-                        {card.realm === 'FOUNTAIN' && card.isSpecial && <div className="badge" style={{background:'#00CED1', color:'#000'}}>WILD</div>}
+                        
+                        {/* WILDバッジの維持 */}
+                        {(card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) && <div className="badge" style={{background:'#00CED1', color:'#000'}}>WILD</div>}
+                        
                         {card.realm === 'MACHINE' && card.isSpecial && <div className="badge" style={{background:'#FFA500', color:'#000'}}>REV</div>}
+                        
+                        {/* 場に出た後は「現在選ばれている属性名」を表示 */}
                         <div className="card-ui" style={{borderTop:`2px solid ${REALMS[card.realm].color}`}}>{REALMS[card.realm].n}</div>
                     </div>
                 );
@@ -322,7 +328,6 @@
                         <div className="hand-flex">
                             {sortedHand.map((c,i)=>(
                                 <div key={c.id} className="slot" style={{zIndex:i}}>
-                                    {/* 【修正1】ワイルドカードでの勝利時のスキップ処理 */}
                                     <CardView card={c} disabled={!canPlay(c)} onClick={()=>{
                                         if(!canPlay(c)) return;
                                         const isWild = (c.realm === 'PLANET' || c.realm === 'RUINS' || (c.realm === 'FOUNTAIN' && c.isSpecial));
@@ -331,7 +336,6 @@
                                             if (me.hand.length > 1) {
                                                 setSelectorCard(c);
                                             } else {
-                                                // 最後の1枚ならダミー属性を付与して即アガリ
                                                 socket.emit('play-card', {roomId:room, card:c, chosenRealm: 'GEAR'});
                                             }
                                         } else {
