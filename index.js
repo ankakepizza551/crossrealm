@@ -63,7 +63,7 @@ io.on('connection', (socket) => {
       room.deck = createDeck();
       room.fieldCard = room.deck.pop();
       room.status = 'playing';
-      // 【修正】開始手番をランダムに
+      // 【ランダム手番】
       room.turnIndex = Math.floor(Math.random() * room.players.length); 
       room.nextDrawAmount = 1;
       room.isReversed = false;
@@ -84,7 +84,8 @@ io.on('connection', (socket) => {
 
   socket.on('draw-card', ({ roomId }) => {
     const room = rooms[roomId];
-    if (!room || room.players[room.turnIndex].id !== socket.id || room.needsInitialChoice) return;
+    // 【バグ防止】ゲーム終了後は操作を受け付けない
+    if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id || room.needsInitialChoice) return;
     
     const p = room.players[room.turnIndex];
     if (room.deck.length < room.nextDrawAmount) {
@@ -93,7 +94,7 @@ io.on('connection', (socket) => {
     }
     
     p.hand.push(...room.deck.splice(0, room.nextDrawAmount));
-    room.nextDrawAmount = 1; // ドローした後はリセット
+    room.nextDrawAmount = 1; 
     
     const direction = room.isReversed ? -1 : 1;
     room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
@@ -102,7 +103,8 @@ io.on('connection', (socket) => {
 
   socket.on('play-card', ({ roomId, card, chosenRealm, preventSpecial }) => {
     const room = rooms[roomId];
-    if (!room || room.players[room.turnIndex].id !== socket.id || room.needsInitialChoice) return;
+    // 【バグ防止】ゲーム終了後は操作を受け付けない
+    if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id || room.needsInitialChoice) return;
 
     const p = room.players[room.turnIndex];
     const cardIndex = p.hand.findIndex(c => c.id === card.id);
@@ -126,11 +128,9 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // 【修正】特殊効果の適用
     if (!preventSpecial && playedCard.isSpecial) {
       switch (playedCard.realm) {
         case 'GEAR':
-          // +2を累積させる
           room.nextDrawAmount = room.nextDrawAmount === 1 ? 2 : room.nextDrawAmount + 2;
           break;
         case 'MACHINE':
@@ -138,9 +138,6 @@ io.on('connection', (socket) => {
           break;
       }
     }
-
-    // ドロー攻撃中でない（カードを出せた）なら、通常は累積を維持または上記で加算。
-    // ここで一律1にリセットしてはいけない。
     
     const direction = room.isReversed ? -1 : 1;
     room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
@@ -156,7 +153,6 @@ io.on('connection', (socket) => {
         room.discardPile = [];
         room.fieldCard = room.deck.pop();
         room.status = 'playing';
-        // 【修正】リトライ時も手番をランダムに
         room.turnIndex = Math.floor(Math.random() * room.players.length); 
         room.nextDrawAmount = 1;
         room.isReversed = false;
