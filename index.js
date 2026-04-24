@@ -11,16 +11,16 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 const HAND_LIMIT = 12;
 
-// タクティカル・ルールの属性サイクル定義 (内部キーは BATTERY のまま)
+// タクティカル・ルールの属性サイクル定義
 const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
 
 const createDeck = () => {
   const realmConfig = {
-    GEAR: { total: 10, special: 3 },      
-    MACHINE: { total: 10, special: 3 },   
-    FOUNTAIN: { total: 10, special: 3 },  
-    PLANET: { total: 3, special: 0 },    
-    RUINS: { total: 3, special: 0 },     
+    GEAR: { total: 10, special: 3 },      // 特殊(S)のみ +2
+    MACHINE: { total: 10, special: 3 },   // 特殊(S)のみ リバース
+    FOUNTAIN: { total: 10, special: 3 },  // 特殊(S)のみ ワイルド
+    PLANET: { total: 3, special: 0 },     
+    RUINS: { total: 3, special: 0 },      
     ICEAGE: { total: 5, special: 0 },
     BATTERY: { total: 5, special: 0 },
     ARCHIVE: { total: 5, special: 0 }
@@ -43,6 +43,7 @@ const createDeck = () => {
 
 const canPlayCard = (room, card) => {
   if (room.nextDrawAmount > 1) {
+    // ドロー蓄積中は、特殊(S)なGEARでのみ回避・累積可能
     return (card.realm === 'GEAR' && card.isSpecial);
   }
   const field = room.fieldCard.realm;
@@ -148,25 +149,22 @@ io.on('connection', (socket) => {
     if (player.hand.length === 0) {
       room.status = 'finished';
     } else {
+      // 特殊効果の処理 (S付きカードのみ)
       if (card.isSpecial) {
         switch (card.realm) {
-          case 'GEAR': room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2; break;
-          case 'MACHINE': room.isReversed = !room.isReversed; break;
+          case 'GEAR': 
+            room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2; 
+            break;
+          case 'MACHINE': 
+            room.isReversed = !room.isReversed; 
+            break;
+          // FOUNTAIN(S)はワイルドとしてクライアント側で処理済み
         }
       }
       const direction = room.isReversed ? -1 : 1;
       room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
     }
     emitUpdate(roomId);
-  });
-
-  socket.on('set-initial-realm', ({ roomId, chosenRealm }) => {
-    const room = rooms[roomId];
-    if (room && room.needsInitialChoice) {
-      room.fieldCard.realm = chosenRealm;
-      room.needsInitialChoice = false;
-      emitUpdate(roomId);
-    }
   });
 
   socket.on('play-again', ({ roomId }) => {
@@ -182,4 +180,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => console.log(`Tactical Server Running`));
+server.listen(PORT, () => console.log(`Tactical Server Online`));
