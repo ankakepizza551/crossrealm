@@ -11,7 +11,10 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 const HAND_LIMIT = 12;
 
-// デッキ作成時に確実にユニークなIDを生成
+/**
+ * デッキ作成
+ * 各カードに確実にユニークなIDを付与し、Reactのレンダリングエラーを防止します。
+ */
 const createDeck = () => {
   const realmConfig = {
     GEAR: { total: 10, special: 3 },
@@ -30,7 +33,6 @@ const createDeck = () => {
     const { total, special } = realmConfig[realm];
     for (let i = 0; i < total; i++) {
       deck.push({
-        // ランダムな文字列 + カウンターで確実に重複を避ける
         id: `card-${realm}-${counter++}-${Math.random().toString(36).substr(2, 5)}`,
         realm: realm,
         isSpecial: i < special
@@ -62,6 +64,7 @@ const emitUpdate = (roomId) => {
 };
 
 io.on('connection', (socket) => {
+  // ルーム参加
   socket.on('join-room', ({ roomId, playerName }) => {
     if (!rooms[roomId]) {
       rooms[roomId] = {
@@ -79,22 +82,21 @@ io.on('connection', (socket) => {
     }
     const room = rooms[roomId];
     
-    // 同一ソケットIDのプレイヤーが既に入っているか確認（二重登録防止）
+    // 同一プレイヤーの二重登録を防止
     const existingPlayerIndex = room.players.findIndex(p => p.id === socket.id);
-    
     if (existingPlayerIndex === -1) {
       if (room.players.length < 4) {
         room.players.push({ id: socket.id, name: playerName, hand: [] });
         socket.join(roomId);
       }
     } else {
-      // 既に参加している場合は名前のみ更新
       room.players[existingPlayerIndex].name = playerName;
       socket.join(roomId);
     }
     emitUpdate(roomId);
   });
 
+  // ゲーム開始
   socket.on('start-game', ({ roomId }) => {
     const room = rooms[roomId];
     if (!room) return;
@@ -102,10 +104,14 @@ io.on('connection', (socket) => {
     room.players.forEach(p => p.hand = room.deck.splice(0, 5));
     room.fieldCard = room.deck.pop();
     room.status = 'playing';
+    room.turnIndex = Math.floor(Math.random() * room.players.length);
+    room.nextDrawAmount = 1;
+    room.isReversed = false;
     room.needsInitialChoice = (room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS');
     emitUpdate(roomId);
   });
 
+  // ドロー処理
   socket.on('draw-card', ({ roomId }) => {
     const room = rooms[roomId];
     if (!room || room.status !== 'playing') return;
@@ -114,10 +120,14 @@ io.on('connection', (socket) => {
 
     const count = room.nextDrawAmount;
     for (let i = 0; i < count; i++) {
-      if (room.deck.length === 0) break;
+      if (room.deck.length === 0) {
+          // デッキが空なら捨て札からリシャッフル等の処理（今回は簡易的に停止）
+          break;
+      }
       player.hand.push(room.deck.pop());
     }
 
+    // バースト判定 (12枚制限)
     if (player.hand.length > HAND_LIMIT) {
       room.status = 'finished';
       emitUpdate(roomId);
@@ -130,6 +140,7 @@ io.on('connection', (socket) => {
     emitUpdate(roomId);
   });
 
+  // カードをプレイ
   socket.on('play-card', ({ roomId, card, chosenRealm }) => {
     const room = rooms[roomId];
     if (!room || room.status !== 'playing') return;
@@ -191,6 +202,7 @@ io.on('connection', (socket) => {
     if (room.readyPlayers.size === room.players.length) {
       room.status = 'waiting';
       room.readyPlayers.clear();
+      // start-game を促す状態に戻る
     }
     emitUpdate(roomId);
   });
