@@ -11,7 +11,7 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 const HAND_LIMIT = 12;
 
-// 属性サイクル定義
+// 内部的なレルムキー（表示名ではなくロジック用）
 const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
 
 const createDeck = () => {
@@ -41,34 +41,37 @@ const createDeck = () => {
   return deck.sort(() => Math.random() - 0.5);
 };
 
-// サーバー側バリデーション：噴水(S)の条件を変更
+// サーバー側バリデーション：全特殊移動ルールを完全網羅
 const canPlayCard = (room, card) => {
   if (room.nextDrawAmount > 1) {
     return (card.realm === 'GEAR' && card.isSpecial);
   }
-  const field = room.fieldCard.realm;
+
+  const field = room.fieldCard.realm; 
   const hand = card.realm;
 
-  // 純粋ワイルドカード（惑星・廃墟）
+  // 1. 純粋ワイルド
   if (hand === 'PLANET' || hand === 'RUINS') return true;
 
-  // 限定ワイルド：噴水(S)
-  // 「氷河期」または「噴水」の上でのみ発動可能
+  // 2. 限定ワイルド：噴水(S) - 氷河期か噴水の上のみ
   if (hand === 'FOUNTAIN' && card.isSpecial) {
     return (field === 'ICEAGE' || field === 'FOUNTAIN');
   }
 
-  // 同じレルム
+  // 3. 同属性
   if (field === hand) return true;
 
-  // 基本サイクル
+  // 4. 基本サイクル (ARCHIVE -> GEAR を含む環状判定)
   const currentIdx = CYCLE_ORDER.indexOf(field);
-  if (currentIdx !== -1 && hand === CYCLE_ORDER[(currentIdx + 1) % 6]) return true;
+  if (currentIdx !== -1) {
+    const nextIdx = (currentIdx + 1) % 6;
+    if (hand === CYCLE_ORDER[nextIdx]) return true;
+  }
 
-  // 特殊ショートカット
-  if (field === 'ARCHIVE' && hand === 'ICEAGE') return true;
-  if (field === 'ICEAGE' && (hand === 'BATTERY' || hand === 'FOUNTAIN')) return true;
-  if (field === 'BATTERY' && hand === 'GEAR') return true;
+  // 5. 特殊ショートカット
+  if (field === 'ARCHIVE' && hand === 'ICEAGE') return true; // 歴史の凍結
+  if (field === 'ICEAGE' && (hand === 'BATTERY' || hand === 'FOUNTAIN')) return true; // 融解
+  if (field === 'BATTERY' && hand === 'GEAR') return true; // オーバーロード
 
   return false;
 };
@@ -130,16 +133,22 @@ io.on('connection', (socket) => {
     if (!room || room.status !== 'playing') return;
     const player = room.players[room.turnIndex];
     if (player.id !== socket.id) return;
+
     const count = room.nextDrawAmount;
     for (let i = 0; i < count; i++) {
-      if (room.deck.length === 0) break;
+      if (room.deck.length === 0) {
+        // 山札切れ：捨て山からシャッフル（簡易版：新しく生成）
+        room.deck = createDeck();
+      }
       player.hand.push(room.deck.pop());
     }
+
     if (player.hand.length > HAND_LIMIT) {
       room.status = 'finished';
       emitUpdate(roomId);
       return;
     }
+
     room.nextDrawAmount = 1;
     const direction = room.isReversed ? -1 : 1;
     room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
@@ -151,9 +160,12 @@ io.on('connection', (socket) => {
     if (!room || room.status !== 'playing') return;
     const player = room.players[room.turnIndex];
     if (player.id !== socket.id) return;
+
     if (!canPlayCard(room, card)) return;
+
     player.hand = player.hand.filter(c => c.id !== card.id);
     const newFieldCard = { ...card };
+    
     if (chosenRealm) {
       if (card.realm === 'RUINS') newFieldCard.wasRuins = true;
       if (card.realm === 'PLANET') newFieldCard.wasPlanet = true;
@@ -161,7 +173,9 @@ io.on('connection', (socket) => {
       newFieldCard.realm = chosenRealm;
       newFieldCard.isSpecial = false; 
     }
+    
     room.fieldCard = newFieldCard;
+
     if (player.hand.length === 0) {
       room.status = 'finished';
     } else {
@@ -189,5 +203,5 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = 3001;
-server.listen(PORT, () => console.log(`Server Ready`));
+const PORT = process.env.PORT || 3001;
+server.listen(PORT, () => console.log(`Tactical Logic Online`));
