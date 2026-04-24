@@ -31,7 +31,6 @@
             height: 100vh; overflow: hidden;
         }
 
-        /* 縦16:9を維持 */
         .screen-wrapper {
             width: 100vw; height: 100vh;
             max-width: calc(100vh * 9 / 16); max-height: 100vh;
@@ -45,24 +44,14 @@
 
         /* 背景レイヤー */
         .bg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-        
         .bg-watermark {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 165%; height: 165%;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="90" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.8"/><circle cx="100" cy="100" r="70" fill="none" stroke="rgba(64,224,208,0.04)" stroke-width="0.6"/><path d="M100 10l10 90h-20z" fill="rgba(212,175,55,0.01)"/></svg>');
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="90" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.8"/><circle cx="100" cy="100" r="70" fill="none" stroke="rgba(64,224,208,0.04)" stroke-width="0.6"/></svg>');
             animation: rotate-eternal 200s linear infinite;
         }
-
-        .bg-gears {
-            position: absolute; width: 250%; height: 250%; top: -75%; left: -75%;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><path fill="rgba(212,175,55,0.03)" d="M50 5l5 12h12l-10 8 4 12-11-9-11 9 4-12-10-8h12z"/></svg>');
-            animation: rotate-reverse-eternal 120s linear infinite;
-            opacity: 0.7;
-        }
-
         @keyframes rotate-eternal { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
-        @keyframes rotate-reverse-eternal { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
-        
+
         .bg-magic-aura {
             position: absolute; inset: 0;
             background: radial-gradient(circle at center, var(--realm-color, #111) 0%, transparent 85%);
@@ -77,7 +66,7 @@
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
 
-        /* ヘッダー */
+        /* 相手エリア */
         .opponents-area {
             display: flex; flex-direction: column; gap: 12px; padding: 30px 15px 15px 15px;
             background: linear-gradient(to bottom, rgba(5,5,10,0.98), transparent);
@@ -86,7 +75,7 @@
         .opp-row {
             display: flex; align-items: center; justify-content: space-between;
             padding: 14px 20px; border-radius: 8px; background: rgba(255,255,255,0.03);
-            border-left: 6px solid var(--border); transition: all 0.3s;
+            border-left: 6px solid var(--border); transition: 0.3s;
         }
         .opp-row.active { border-left-color: var(--accent); background: rgba(64, 224, 208, 0.12); box-shadow: inset 0 0 25px rgba(64, 224, 208, 0.2); }
         .opp-name { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700; color: var(--steam-gold); letter-spacing: 2px; }
@@ -96,10 +85,6 @@
             background: linear-gradient(135deg, #111, #222);
             border: 1.5px solid var(--steam-gold); border-radius: 4px;
             box-shadow: -4px 0 12px rgba(0,0,0,0.9);
-            position: relative;
-        }
-        .mini-card-back::after {
-            content: ''; position: absolute; inset: 2px; border: 1px solid rgba(212,175,55,0.1);
         }
 
         /* 属性サイクル（上部バー） */
@@ -110,25 +95,23 @@
         }
         .cycle-dot {
             flex: 1; height: 6px; border-radius: 3px; background: #1a1a1a; position: relative;
-            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: 0.5s;
         }
         .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 15px var(--dot-color); }
         .cycle-dot.active::after {
             content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
             width: 18px; height: 18px; border-radius: 50%; background: var(--dot-color);
             box-shadow: 0 0 20px var(--dot-color), inset 0 0 5px #fff;
-            z-index: 5;
         }
         .cycle-label { 
             position: absolute; top: 18px; left: 50%; transform: translateX(-50%); 
-            font-size: 11px; font-weight: 900; color: #fff; opacity: 0.4;
+            font-size: 12px; font-weight: 900; color: #fff; opacity: 0.4;
             letter-spacing: 1px; transition: 0.3s;
         }
-        .cycle-dot.active .cycle-label { opacity: 1; color: var(--dot-color); text-shadow: 0 0 10px rgba(0,0,0,1); }
+        .cycle-dot.active .cycle-label { opacity: 1; color: var(--dot-color); font-size: 13px; text-shadow: 0 0 10px #000; }
 
         /* フィールド */
         .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; gap: 30px; }
-        
         .field-main-area { display: flex; align-items: center; gap: 30px; width: 100%; justify-content: center; z-index: 10; }
 
         .info-panel {
@@ -136,17 +119,15 @@
             padding: 22px; border-radius: 12px; backdrop-filter: blur(15px);
             box-shadow: 0 0 40px rgba(0,0,0,0.8); max-width: 230px;
         }
-        .realm-title { font-family: 'Cinzel', serif; font-size: 28px; font-weight: 900; color: var(--realm-color); margin-bottom: 10px; letter-spacing: 3px; text-shadow: 0 0 15px var(--realm-color); }
-        .realm-desc { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.6; opacity: 1; }
-        .next-hint { margin-top: 15px; padding-top: 12px; border-top: 2px solid rgba(212,175,55,0.3); font-size: 13px; font-weight: 900; color: var(--accent); }
+        .realm-title { font-family: 'Cinzel', serif; font-size: 30px; font-weight: 900; color: var(--realm-color); margin-bottom: 10px; letter-spacing: 3px; text-shadow: 0 0 15px var(--realm-color); }
+        .realm-desc { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.6; }
+        .next-hint { margin-top: 15px; padding-top: 12px; border-top: 2px solid rgba(212,175,55,0.3); font-size: 14px; font-weight: 900; color: var(--accent); }
 
         .turn-watermark {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             font-family: 'Cinzel', serif; font-size: 130px; font-weight: 900; opacity: 0.05;
             color: var(--accent); white-space: nowrap; pointer-events: none;
-            animation: pulse-aura 6s infinite ease-in-out;
         }
-        @keyframes pulse-aura { 0%, 100% { scale: 1; opacity: 0.04; } 50% { scale: 1.15; opacity: 0.08; } }
 
         /* カード */
         .card {
@@ -154,34 +135,32 @@
             border-radius: 6px; border: 3px solid var(--steam-gold);
             background: #000; overflow: hidden; position: relative;
             box-shadow: 0 20px 60px rgba(0,0,0,1);
-            transition: all 0.4s cubic-bezier(0.2, 1, 0.3, 1);
         }
-        .card img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.9); }
+        .card img { width: 100%; height: 100%; object-fit: cover; }
         .card-footer {
-            position: absolute; bottom: 0; width: 100%; background: rgba(5,5,10,0.98);
-            font-size: 12px; font-weight: 900; padding: 10px 0; text-align: center;
+            position: absolute; bottom: 0; width: 100%; background: rgba(10,10,15,0.98);
+            font-size: 13px; font-weight: 900; padding: 10px 0; text-align: center;
             border-top: 3px solid var(--r-color); color: var(--steam-gold); font-family: 'Cinzel', serif;
         }
 
         /* 手札ホバー */
         .my-card { margin-left: -55px; transform-origin: bottom center; cursor: pointer; }
         .my-card.playable:hover {
-            transform: translateY(-70px) scale(1.5) !important;
+            transform: translateY(-70px) scale(1.45) !important;
             z-index: 1000 !important;
             border-color: #fff;
             box-shadow: 0 40px 80px rgba(0,0,0,1), 0 0 50px var(--accent);
         }
-        .my-card.not-playable { opacity: 0.2; filter: grayscale(1) brightness(0.3); cursor: not-allowed; }
+        .my-card.not-playable { opacity: 0.2; filter: grayscale(1) brightness(0.3); }
 
         /* アクションボタン */
         .action-area { padding: 20px; display: flex; justify-content: center; z-index: 100; }
         .btn-main {
             background: linear-gradient(135deg, var(--steam-gold), #B8860B);
             color: #000; border: 4px solid #000;
-            padding: 22px 0; border-radius: 8px; font-weight: 900; font-size: 20px;
+            padding: 22px 0; border-radius: 8px; font-weight: 900; font-size: 22px;
             box-shadow: 0 0 35px rgba(212,175,55,0.5); cursor: pointer;
-            width: 90%; transition: all 0.3s; letter-spacing: 8px; font-family: 'Cinzel', serif;
-            position: relative; overflow: hidden;
+            width: 90%; transition: 0.3s; letter-spacing: 8px; font-family: 'Cinzel', serif;
         }
         .btn-main:hover:not(:disabled) { filter: brightness(1.3); transform: scale(1.04); box-shadow: 0 0 60px var(--accent); }
         .btn-main:disabled { background: #222; color: #555; border-color: #333; cursor: not-allowed; }
@@ -192,39 +171,22 @@
         }
         .hand-flex { display: flex; justify-content: center; padding: 30px 60px; min-height: 220px; align-items: flex-end; }
 
-        /* モーダル・パネル */
+        /* オーバーレイ */
         .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.97); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
         .panel { 
-            background: #08080c; border: 4px solid var(--steam-gold); 
-            padding: 65px 40px; border-radius: 12px; text-align: center; 
-            width: 85%; display: flex; flex-direction: column; align-items: center; gap: 35px;
-            box-shadow: 0 0 80px rgba(212,175,55,0.3);
+            background: #08080c; border: 4px solid var(--steam-gold); padding: 65px 40px; border-radius: 12px;
+            text-align: center; width: 85%; display: flex; flex-direction: column; align-items: center; gap: 35px;
         }
         .panel input {
             width: 100%; padding: 24px; background: #000; border: 3px solid var(--steam-gold); 
-            color: var(--accent); text-align: center; font-size: 20px; font-family: 'Exo 2', sans-serif;
-            border-radius: 8px; outline: none; transition: 0.3s; font-weight: 700;
+            color: var(--accent); text-align: center; font-size: 22px; border-radius: 8px; outline: none; font-weight: 700;
         }
-        .panel input:focus { border-color: var(--accent); box-shadow: 0 0 30px rgba(64,224,208,0.3); }
 
         .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
-        .realm-btn { 
-            padding: 20px; border: 3px solid var(--steam-gold); 
-            background: rgba(255,255,255,0.04); color: #fff; font-weight: 900; 
-            cursor: pointer; font-size: 15px; transition: 0.3s; font-family: 'Cinzel', serif;
-        }
-        .realm-btn:hover { background: var(--steam-gold); color: #000; }
+        .realm-btn { padding: 20px; border: 3px solid var(--steam-gold); background: rgba(255,255,255,0.04); color: #fff; font-weight: 900; font-size: 16px; font-family: 'Cinzel', serif; cursor: pointer; }
 
-        .status-badge { 
-            background: #000; color: var(--danger); border: 3px solid var(--danger);
-            padding: 16px 40px; font-weight: 900; font-size: 18px; margin-bottom: 40px; 
-            animation: glitch-fx 0.3s infinite; text-transform: uppercase; letter-spacing: 6px;
-        }
-        @keyframes glitch-fx {
-            0% { transform: translate(0); text-shadow: 4px 0 var(--accent); }
-            50% { transform: translate(-5px, 2px); text-shadow: -4px 0 var(--cyber-pink); }
-            100% { transform: translate(0); }
-        }
+        .status-badge { background: #000; color: var(--danger); border: 3px solid var(--danger); padding: 16px 40px; font-weight: 900; font-size: 20px; margin-bottom: 40px; animation: glitch 0.3s infinite; text-transform: uppercase; letter-spacing: 6px; }
+        @keyframes glitch { 0% { transform: translate(0); text-shadow: 4px 0 var(--accent); } 50% { transform: translate(-5px, 2px); text-shadow: -4px 0 var(--cyber-pink); } 100% { transform: translate(0); } }
     </style>
 </head>
 <body>
@@ -237,7 +199,7 @@
             GEAR: { n: '歯車', color: '#FF8C00', desc: '機構の歯車。次に2枚引かせる。' },
             ICEAGE: { n: '氷河期', color: '#00BFFF', desc: '全てを凍結させる領域。' },
             FOUNTAIN: { n: '噴水', color: '#4169E1', desc: '魔法の泉。属性を自在に変える。' },
-            BATTERY: { n: 'バッテリー', color: '#32CD32', desc: '動力を蓄える緑の魔力。' },
+            BATTERY: { n: '電池', color: '#32CD32', desc: '動力を蓄える緑の魔力。' },
             MACHINE: { n: '機械', color: '#2F4F4F', desc: '因果を操る。順番を逆転させる。' },
             ARCHIVE: { n: '古文書', color: '#8B4513', desc: '古の記録。智恵の貯蔵庫。' },
             PLANET: { n: '惑星', color: '#9400D3', desc: '星々の加護。属性を上書き。' },
@@ -253,7 +215,6 @@
             const [name, setName] = useState('');
             const [joined, setJoined] = useState(false);
             const [selectorCard, setSelectorCard] = useState(null);
-            const [previewStatus, setPreviewStatus] = useState('waiting');
 
             useEffect(() => {
                 const s = io('https://crossrealm-server.onrender.com'); 
@@ -264,7 +225,7 @@
 
             // 手札の自動ソート (サイクル順)
             const sortedHand = useMemo(() => {
-                const playerMe = gs?.players?.find(p => p.id === (socket?.id || 'mock-me'));
+                const playerMe = gs?.players?.find(p => p.id === socket?.id);
                 if (!playerMe || !playerMe.hand) return [];
                 return [...playerMe.hand].sort((a, b) => {
                     let idxA = CYCLE_ORDER.indexOf(a.realm);
@@ -276,7 +237,7 @@
                 });
             }, [gs, socket]);
 
-            const isMyTurn = gs?.currentTurnPlayerId === (socket?.id || 'mock-me') && gs?.status === 'playing';
+            const isMyTurn = gs?.currentTurnPlayerId === socket?.id && gs?.status === 'playing';
             const currentRealm = gs?.fieldCard?.realm || 'GEAR';
             const nextRealm = useMemo(() => {
                 const idx = CYCLE_ORDER.indexOf(currentRealm);
@@ -320,7 +281,7 @@
                         <div className="panel">
                             <h1 style={{color:'var(--steam-gold)', fontSize:36, fontWeight:900, fontFamily:'Cinzel', letterSpacing:6}}>CROSS REALM</h1>
                             <p style={{fontSize:11, color:'var(--accent)', letterSpacing:10, marginBottom:10}}>ETERNAL PUNK PROTOCOL</p>
-                            <input type="text" value={name} onChange={e=>setName(e.target.value.toUpperCase())} placeholder="プレイヤー名" />
+                            <input type="text" value={name} onChange={e=>setName(e.target.value.toUpperCase())} placeholder="プレイヤー名" maxLength={10} />
                             <input type="text" value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} placeholder="ルームID" />
                             <button onClick={()=>{setJoined(true); if(socket?.connected) socket.emit('join-room',{roomId:room, playerName:name});}} className="btn-main">接続</button>
                         </div>
@@ -333,10 +294,10 @@
                     <div className="bg-layer bg-watermark"></div>
                     <div className="container" style={{display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', padding:40, zIndex:100}}>
                         <h2 style={{letterSpacing:12, opacity:0.8, fontSize:22, fontWeight:900, fontFamily:'Cinzel', color:'var(--steam-gold)'}}>AWAITING LINKAGE</h2>
-                        <div style={{marginTop:15, fontSize:16, color:'var(--accent)', fontWeight:900, letterSpacing:4, textShadow:'0 0 10px rgba(64,224,208,0.5)'}}>ルームID: {room}</div>
+                        <div style={{marginTop:15, fontSize:20, color:'var(--accent)', fontWeight:900, letterSpacing:4, textShadow:'0 0 10px rgba(64,224,208,0.5)'}}>ルームID: {room}</div>
                         <div style={{marginTop:50, display:'flex', flexDirection:'column', gap:20, width:'100%'}}>
                             {gs?.players?.map(p => (
-                                <div key={p.id} style={{padding:24, background:'rgba(255,255,255,0.06)', borderLeft:'6px solid var(--steam-gold)', fontSize:18, fontWeight:900, letterSpacing:2}}>
+                                <div key={p.id} style={{padding:24, background:'rgba(255,255,255,0.06)', borderLeft:'6px solid var(--steam-gold)', fontSize:20, fontWeight:900}}>
                                     {p.name}
                                 </div>
                             ))}
@@ -356,7 +317,7 @@
 
                     <div className="game-container">
                         <div className="opponents-area">
-                            {gs.players.filter(p => p.id !== (socket?.id || 'mock-me')).map(p => (
+                            {gs.players.filter(p => p.id !== socket?.id).map(p => (
                                 <div key={p.id} className={`opp-row ${gs.currentTurnPlayerId === p.id ? 'active' : ''}`}>
                                     <div className="opp-info">
                                         <div className="opp-name">{p.name}</div>
@@ -364,7 +325,7 @@
                                             {[...Array(p.handCount)].map((_, i) => <div key={i} className="mini-card-back" />)}
                                         </div>
                                     </div>
-                                    <div style={{fontWeight:900, color: 'var(--accent)', fontSize:24}}>{p.handCount} Units</div>
+                                    <div style={{fontWeight:900, color: 'var(--accent)', fontSize:26}}>{p.handCount} Units</div>
                                 </div>
                             ))}
                         </div>
@@ -409,7 +370,7 @@
                                               }} />
                                 ))}
                             </div>
-                            <div style={{textAlign:'center', fontSize:12, fontWeight:900, marginTop:18, opacity:0.7, color:'var(--steam-gold)', letterSpacing:5}}>
+                            <div style={{textAlign:'center', fontSize:13, fontWeight:900, marginTop:18, opacity:0.8, color:'var(--steam-gold)', letterSpacing:5}}>
                                 CORE SYNC: {sortedHand.length} / 12
                             </div>
                         </div>
@@ -418,7 +379,7 @@
                     {selectorCard && (
                         <div className="overlay">
                             <div className="panel">
-                                <h3 style={{fontSize:24, fontWeight:900, marginBottom:15, color:'var(--steam-gold)', fontFamily:'Cinzel'}}>REALM RE-ALIGN</h3>
+                                <h3 style={{fontSize:26, fontWeight:900, marginBottom:15, color:'var(--steam-gold)', fontFamily:'Cinzel'}}>REALM RE-ALIGN</h3>
                                 <div className="realm-grid">
                                     {CYCLE_ORDER.map(r => (
                                         <button key={r} className="realm-btn" style={{borderColor:REALMS[r].color, color:REALMS[r].color}} 
@@ -428,7 +389,7 @@
                                                 }}>{r}</button>
                                     ))}
                                 </div>
-                                <button onClick={()=>setSelectorCard(null)} style={{marginTop:35, opacity:0.8, color:'#fff', cursor:'pointer', border:'none', background:'none', fontWeight:900, fontSize:18}}>キャンセル</button>
+                                <button onClick={()=>setSelectorCard(null)} style={{marginTop:35, opacity:0.8, color:'#fff', cursor:'pointer', border:'none', background:'none', fontWeight:900, fontSize:20}}>キャンセル</button>
                             </div>
                         </div>
                     )}
@@ -436,10 +397,10 @@
                     {gs?.status === 'finished' && (
                         <div className="overlay">
                             <div className="panel">
-                                <h2 style={{color:'var(--steam-gold)', fontSize:32, fontWeight:900, fontFamily:'Cinzel'}}>MISSION END</h2>
+                                <h2 style={{color:'var(--steam-gold)', fontSize:36, fontWeight:900, fontFamily:'Cinzel'}}>MISSION END</h2>
                                 <div style={{width:'100%', margin:'40px 0'}}>
                                     {gs.players.slice().sort((a,b)=>a.handCount-b.handCount).map((p,i)=>(
-                                        <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'22px 15px', borderBottom:'1px solid var(--border)', fontSize:18}}>
+                                        <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'22px 15px', borderBottom:'1px solid var(--border)', fontSize:20}}>
                                             <span style={{fontWeight:900}}>{i+1}. {p.name}</span>
                                             <span style={{color:'var(--steam-gold)', fontWeight:900}}>{p.handCount} Units</span>
                                         </div>
