@@ -11,16 +11,16 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 const HAND_LIMIT = 12;
 
-// 戦術サイクル順
+// --- タクティカル・エディション専用：属性サイクル定義 ---
 const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
 
 const createDeck = () => {
   const realmConfig = {
-    GEAR: { total: 10, special: 3 },
-    MACHINE: { total: 10, special: 3 },
-    FOUNTAIN: { total: 10, special: 3 },
-    PLANET: { total: 3, special: 0 },
-    RUINS: { total: 3, special: 0 },
+    GEAR: { total: 10, special: 3 },      // ドロー2
+    MACHINE: { total: 10, special: 3 },   // リバース
+    FOUNTAIN: { total: 10, special: 3 },  // Specialはワイルド
+    PLANET: { total: 3, special: 0 },    // ワイルド
+    RUINS: { total: 3, special: 0 },     // ワイルド
     ICEAGE: { total: 5, special: 0 },
     BATTERY: { total: 5, special: 0 },
     ARCHIVE: { total: 5, special: 0 }
@@ -39,6 +39,38 @@ const createDeck = () => {
     }
   });
   return deck.sort(() => Math.random() - 0.5);
+};
+
+// サーバー側バリデーション：タクティカル・ルール
+const canPlayCard = (room, card) => {
+  // 1. ドロー蓄積中のチェック：特殊なGEAR以外は出せない
+  if (room.nextDrawAmount > 1) {
+    return (card.realm === 'GEAR' && card.isSpecial);
+  }
+
+  const field = room.fieldCard.realm;
+  const hand = card.realm;
+
+  // 2. ワイルドカード（PLANET / RUINS / Special FOUNTAIN）は常に出せる
+  if (hand === 'PLANET' || hand === 'RUINS') return true;
+  if (hand === 'FOUNTAIN' && card.isSpecial) return true;
+
+  // 3. 同じレルムなら出せる
+  if (field === hand) return true;
+
+  // 4. 戦術サイクルチェック (次の属性なら出せる)
+  const currentIdx = CYCLE_ORDER.indexOf(field);
+  if (currentIdx !== -1) {
+    const nextRealm = CYCLE_ORDER[(currentIdx + 1) % 6];
+    if (hand === nextRealm) return true;
+  }
+
+  // 5. 特殊相性コンボ
+  if (field === 'ARCHIVE' && hand === 'ICEAGE') return true; // 古文書を凍らせる
+  if (field === 'ICEAGE' && hand === 'BATTERY') return true;  // 氷河期を充電
+  if (field === 'ICEAGE' && hand === 'FOUNTAIN') return true; // 氷を溶かす
+
+  return false;
 };
 
 const emitUpdate = (roomId) => {
@@ -62,50 +94,18 @@ const emitUpdate = (roomId) => {
   io.to(roomId).emit('update-game', data);
 };
 
-// 出せるかどうかのバリデーションロジック (Server Side)
-const canPlayCard = (room, card) => {
-  // 1. ドロー蓄積中のチェック
-  if (room.nextDrawAmount > 1) {
-    return (card.realm === 'GEAR' && card.isSpecial);
-  }
-
-  const field = room.fieldCard.realm;
-  const hand = card.realm;
-
-  // 2. WILDカード (PLANET/RUINS) または FOUNTAIN(Special)
-  if (hand === 'PLANET' || hand === 'RUINS') return true;
-  if (hand === 'FOUNTAIN' && card.isSpecial) return true;
-
-  // 3. 同じレルムならOK
-  if (field === hand) return true;
-
-  // 4. 戦術サイクルチェック
-  const currentIdx = CYCLE_ORDER.indexOf(field);
-  if (currentIdx !== -1) {
-    const nextRealm = CYCLE_ORDER[(currentIdx + 1) % 6];
-    if (hand === nextRealm) return true;
-  }
-
-  // 5. 特殊コンボ (Tactical Edition 仕様)
-  if (field === 'ARCHIVE' && hand === 'ICEAGE') return true; // 古文書を凍らせる
-  if (field === 'ICEAGE' && hand === 'BATTERY') return true; // 氷河期を充電
-  if (field === 'ICEAGE' && hand === 'FOUNTAIN') return true; // 氷を溶かす
-
-  return false;
-};
-
 io.on('connection', (socket) => {
   socket.on('join-room', ({ roomId, playerName }) => {
     if (!rooms[roomId]) {
       rooms[roomId] = {
-        players: [], deck: [], discardPile: [], fieldCard: null,
+        players: [], deck: [], fieldCard: null,
         status: 'waiting', turnIndex: 0, nextDrawAmount: 1, isReversed: false,
         readyPlayers: new Set(), needsInitialChoice: false
       };
     }
     const room = rooms[roomId];
     if (room.players.findIndex(p => p.id === socket.id) === -1 && room.players.length < 4) {
-      room.players.push({ id: socket.id, name: playerName, hand: [] });
+      room.players.push({ id: socket.id, name: playerName || "ANON", hand: [] });
       socket.join(roomId);
     }
     emitUpdate(roomId);
@@ -113,7 +113,8 @@ io.on('connection', (socket) => {
 
   socket.on('start-game', ({ roomId }) => {
     const room = rooms[roomId];
-    if (!room) return;
+    if (!room || room.players.length < 2) return;
+    
     room.deck = createDeck();
     room.players.forEach(p => p.hand = room.deck.splice(0, 5));
     room.fieldCard = room.deck.pop();
@@ -121,7 +122,10 @@ io.on('connection', (socket) => {
     room.turnIndex = Math.floor(Math.random() * room.players.length);
     room.nextDrawAmount = 1;
     room.isReversed = false;
-    room.needsInitialChoice = (room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS');
+    
+    // 最初のカードがワイルドだった場合の処理
+    room.needsInitialChoice = (room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS' || (room.fieldCard.realm === 'FOUNTAIN' && room.fieldCard.isSpecial));
+    
     emitUpdate(roomId);
   });
 
@@ -151,25 +155,24 @@ io.on('connection', (socket) => {
 
   socket.on('play-card', ({ roomId, card, chosenRealm }) => {
     const room = rooms[roomId];
-    if (!room || room.status !== 'playing' || room.needsInitialChoice) return;
+    if (!room || room.status !== 'playing') return;
     const player = room.players[room.turnIndex];
     if (player.id !== socket.id) return;
 
-    // サーバーサイドでのルールバリデーション
-    if (!canPlayCard(room, card)) {
-      console.log(`Invalid move rejected: ${player.name} tried to play ${card.realm} on ${room.fieldCard.realm}`);
-      return; 
-    }
+    // サーバー側バリデーション
+    if (!canPlayCard(room, card)) return;
 
-    // 手札から削除
     player.hand = player.hand.filter(c => c.id !== card.id);
     
     const newFieldCard = { ...card };
     
-    // WILD/特殊効果によるレルム変更
+    // ワイルドカード使用時の処理
     if (chosenRealm) {
+      if (card.realm === 'RUINS') newFieldCard.wasRuins = true;
+      if (card.realm === 'PLANET') newFieldCard.wasPlanet = true;
+      if (card.realm === 'FOUNTAIN') newFieldCard.wasFountain = true;
       newFieldCard.realm = chosenRealm;
-      newFieldCard.isSpecial = false; 
+      newFieldCard.isSpecial = false; // 属性変更後は通常カード扱い
     }
     
     room.fieldCard = newFieldCard;
@@ -177,7 +180,6 @@ io.on('connection', (socket) => {
     if (player.hand.length === 0) {
       room.status = 'finished';
     } else {
-      // 特殊効果の発動
       if (card.isSpecial) {
         switch (card.realm) {
           case 'GEAR':
@@ -225,4 +227,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => console.log(`Tactical Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Tactical Eternal Server running on port ${PORT}`));
