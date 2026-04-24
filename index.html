@@ -77,16 +77,21 @@
             overflow: hidden; position: relative; box-shadow: 0 30px 60px rgba(0,0,0,0.7);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; }
         .card-header { 
             height: 35%; display: flex; align-items: center; justify-content: center; 
             font-weight: 900; font-size: 16px; letter-spacing: 1px;
             background: rgba(255,255,255,0.04);
+            position: absolute; top: 0; width: 100%; z-index: 2;
+            pointer-events: none;
         }
-        .card-body { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 48px; }
         .card-footer { 
             height: 25%; padding: 8px; font-size: 10px; font-weight: bold;
-            text-align: center; background: rgba(0,0,0,0.5); opacity: 0.7;
+            text-align: center; background: rgba(0,0,0,0.85); opacity: 0.9;
             display: flex; align-items: center; justify-content: center;
+            position: absolute; bottom: 0; width: 100%; z-index: 2;
+            border-top: 2px solid var(--realm-color);
+            pointer-events: none;
         }
 
         .status-badge {
@@ -106,7 +111,11 @@
         .hand-container {
             display: flex; justify-content: center; height: 220px;
             align-items: flex-end; perspective: 1500px;
+            overflow-x: auto; scrollbar-width: none;
         }
+        .hand-container::-webkit-scrollbar { display: none; }
+        .hand-flex { display: flex; align-items: flex-end; padding: 0 80px; }
+
         .my-card {
             margin-left: -55px; cursor: pointer; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             box-shadow: -12px 0 35px rgba(0,0,0,0.6);
@@ -154,17 +163,17 @@
         }
         .realm-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
 
-        /* レルムカラー（ index (2).html 仕様 ） */
-        .r-gear { background: linear-gradient(135deg, #FF8C00, #FFA500); --r-color: #FF8C00; }
-        .r-iceage { background: linear-gradient(135deg, #00BFFF, #1E90FF); --r-color: #00BFFF; }
-        .r-fountain { background: linear-gradient(135deg, #4169E1, #0000FF); --r-color: #4169E1; }
-        .r-battery { background: linear-gradient(135deg, #32CD32, #7FFF00); --r-color: #32CD32; }
-        .r-machine { background: linear-gradient(135deg, #2F4F4F, #008080); --r-color: #2F4F4F; }
-        .r-archive { background: linear-gradient(135deg, #8B4513, #A0522D); --r-color: #8B4513; }
-        .r-planet { background: linear-gradient(135deg, #9400D3, #8B008B); --r-color: #9400D3; }
-        .r-ruins { background: linear-gradient(135deg, #696969, #808080); --r-color: #696969; }
+        /* レルムカラー・定義 */
+        .r-gear { --realm-color: #FF8C00; }
+        .r-iceage { --realm-color: #00BFFF; }
+        .r-fountain { --realm-color: #4169E1; }
+        .r-battery { --realm-color: #32CD32; }
+        .r-machine { --realm-color: #2F4F4F; }
+        .r-archive { --realm-color: #8B4513; }
+        .r-planet { --realm-color: #9400D3; }
+        .r-ruins { --realm-color: #696969; }
 
-        /* 背景透かし文字（ YOUR TURN アニメーション復活 ） */
+        /* 背景透かし文字 */
         .turn-indicator {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             font-size: 150px; font-weight: 900; opacity: 0.05; pointer-events: none;
@@ -184,17 +193,17 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useMemo, useRef } = React;
 
         const REALMS = {
-            GEAR: { n: 'GEAR', color: '#FF8C00', icon: '⚙️', class: 'r-gear' },
-            ICEAGE: { n: 'ICEAGE', color: '#00BFFF', icon: '❄️', class: 'r-iceage' },
-            FOUNTAIN: { n: 'FOUNTAIN', color: '#4169E1', icon: '⛲', class: 'r-fountain' },
-            BATTERY: { n: 'BATTERY', color: '#32CD32', icon: '🔋', class: 'r-battery' },
-            MACHINE: { n: 'MACHINE', color: '#2F4F4F', icon: '🤖', class: 'r-machine' },
-            ARCHIVE: { n: 'ARCHIVE', color: '#8B4513', icon: '📜', class: 'r-archive' },
-            PLANET: { n: 'PLANET', color: '#9400D3', icon: '🪐', class: 'r-planet' },
-            RUINS: { n: 'RUINS', color: '#696969', icon: '🏛️', class: 'r-ruins' }
+            GEAR: { n: 'GEAR', color: '#FF8C00', class: 'r-gear' },
+            ICEAGE: { n: 'ICEAGE', color: '#00BFFF', class: 'r-iceage' },
+            FOUNTAIN: { n: 'FOUNTAIN', color: '#4169E1', class: 'r-fountain' },
+            BATTERY: { n: 'BATTERY', color: '#32CD32', class: 'r-battery' },
+            MACHINE: { n: 'MACHINE', color: '#2F4F4F', class: 'r-machine' },
+            ARCHIVE: { n: 'ARCHIVE', color: '#8B4513', class: 'r-archive' },
+            PLANET: { n: 'PLANET', color: '#9400D3', class: 'r-planet' },
+            RUINS: { n: 'RUINS', color: '#696969', class: 'r-ruins' }
         };
 
         const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
@@ -206,16 +215,16 @@
             const [name, setName] = useState('PILOT-' + Math.floor(Math.random() * 999));
             const [joined, setJoined] = useState(false);
             const [selectorCard, setSelectorCard] = useState(null);
-            const [previewStatus, setPreviewStatus] = useState('waiting'); 
+            const [previewStatus, setPreviewStatus] = useState('waiting');
+            const [focusedCardId, setFocusedCardId] = useState(null);
 
             useEffect(() => {
-                const s = io(); 
+                const s = io('https://crossrealm-server.onrender.com'); 
                 setSocket(s);
                 s.on('update-game', (data) => setGs(data));
                 return () => s.disconnect();
             }, []);
 
-            // プレビューおよびサーバーからのゲーム状態を統合
             const effectiveGameState = useMemo(() => {
                 if (gs) return gs;
                 if (joined) {
@@ -247,33 +256,54 @@
 
             const canPlay = (card) => {
                 if (!isMyTurn || effectiveGameState.status !== 'playing' || effectiveGameState.needsInitialChoice) return false;
-                
-                // ドロー攻撃中の制限（サーバー同期ルール）
-                if (effectiveGameState.nextDrawAmount > 1) {
-                    return (card.realm === 'GEAR' && card.isSpecial);
-                }
-
+                if (effectiveGameState.nextDrawAmount > 1) return (card.realm === 'GEAR' && card.isSpecial);
                 const field = effectiveGameState.fieldCard?.realm || 'GEAR';
                 const hand = card.realm;
-
-                // WILD系
                 if (hand === 'PLANET' || hand === 'RUINS') return true;
                 if (hand === 'FOUNTAIN' && card.isSpecial) return true;
-                
-                // 同じレルム
                 if (field === hand) return true;
-
-                // 戦術サイクル
                 const currentIdx = CYCLE_ORDER.indexOf(field);
                 const nextRealm = CYCLE_ORDER[(currentIdx + 1) % 6];
                 if (hand === nextRealm) return true;
-
-                // 特殊コンボ（ Tactical Edition オリジナル ）
-                if (field === 'ARCHIVE' && hand === 'ICEAGE') return true; // 古文書を凍らせる
-                if (field === 'ICEAGE' && hand === 'BATTERY') return true; // 氷河期を充電
-                if (field === 'ICEAGE' && hand === 'FOUNTAIN') return true; // 氷を溶かす
-
+                if (field === 'ARCHIVE' && hand === 'ICEAGE') return true;
+                if (field === 'ICEAGE' && hand === 'BATTERY') return true;
+                if (field === 'ICEAGE' && hand === 'FOUNTAIN') return true;
                 return false;
+            };
+
+            const CardView = ({ card, disabled, onClick, isField, isFocused }) => {
+                if (!card) return null;
+                
+                // 画像ファイル名の解決ロジック
+                let src = `./images/${card.realm}.png`;
+                if (card.wasRuins) src = './images/RUINS.png';
+                else if (card.wasPlanet) src = './images/PLANET.png';
+                else if (card.wasFountain) src = './images/FOUNTAIN_wild.png';
+                else if (card.realm === 'MACHINE') {
+                    src = card.isSpecial ? './images/MACHINE_reverse.png' : './images/MACHINE_normal.png';
+                } else if (card.realm === 'FOUNTAIN') {
+                    src = card.isSpecial ? './images/FOUNTAIN_wild.png' : './images/FOUNTAIN_normal.png';
+                } else if (card.realm === 'GEAR' && card.isSpecial) {
+                    src = './images/GEAR_frame.png';
+                }
+
+                return (
+                    <div className={`card ${REALMS[card.realm].class} ${isField ? 'field-card' : 'hand-card'} ${disabled ? 'not-playable' : 'playable'} ${isFocused ? 'focused' : ''}`} 
+                         onClick={onClick} style={isField ? {borderColor: REALMS[card.realm].color, transform: 'scale(1.15)'} : {}}>
+                        
+                        <div style={{position:'absolute', top:10, left:10, display:'flex', flexDirection:'column', gap:4, zIndex:5}}>
+                            {card.realm === 'GEAR' && card.isSpecial && <div style={{background:'#FF4500', color:'#fff', padding:'2px 8px', borderRadius:4, fontSize:9, fontWeight:900, boxShadow:'0 4px 10px rgba(0,0,0,0.5)'}}>+2 DRAW</div>}
+                            {(card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) && <div style={{background:'#00CED1', color:'#fff', padding:'2px 8px', borderRadius:4, fontSize:9, fontWeight:900, boxShadow:'0 4px 10px rgba(0,0,0,0.5)'}}>WILD</div>}
+                            {card.realm === 'MACHINE' && card.isSpecial && <div style={{background:'#ADFF2F', color:'#000', padding:'2px 8px', borderRadius:4, fontSize:9, fontWeight:900, boxShadow:'0 4px 10px rgba(0,0,0,0.5)'}}>REVERSE</div>}
+                        </div>
+
+                        <img src={src} alt={card.realm} onError={(e) => { e.target.src = 'https://via.placeholder.com/130x185/111/444?text=' + card.realm; }} />
+                        
+                        <div className="card-footer" style={{'--realm-color': REALMS[card.realm].color}}>
+                            {REALMS[card.realm].n}
+                        </div>
+                    </div>
+                );
             };
 
             const playCard = (card) => {
@@ -284,6 +314,7 @@
                     if (socket?.connected) {
                         socket.emit('play-card', { roomId: room, card });
                     }
+                    setFocusedCardId(null);
                 }
             };
 
@@ -292,30 +323,28 @@
                     socket.emit('play-card', { roomId: room, card: selectorCard, chosenRealm: r });
                 }
                 setSelectorCard(null);
+                setFocusedCardId(null);
             };
 
-            // ログイン画面
             if (!joined) {
                 return (
                     <div className="overlay">
+                        <h1 style={{color:'var(--accent)', fontSize:32, marginBottom:40, fontWeight:900, letterSpacing:5, fontStyle:'italic', textShadow:'0 0 20px rgba(64,224,208,0.4)'}}>CROSS REALM</h1>
                         <div className="panel">
-                            <h1 style={{color:'var(--accent)', fontSize:32, marginBottom:40, fontWeight:900, letterSpacing:5, fontStyle:'italic', textShadow:'0 0 20px rgba(64,224,208,0.4)'}}>CROSS REALM</h1>
-                            <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="PILOT NAME" style={{width:'100%', padding:20, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:15, borderRadius:16, fontSize:14, fontWeight:'bold', outline:'none'}} />
-                            <input type="text" value={room} onChange={e=>setRoom(e.target.value)} placeholder="SECTOR ID" style={{width:'100%', padding:20, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:30, borderRadius:16, fontSize:14, fontWeight:'bold', outline:'none'}} />
+                            <input type="text" value={name} onChange={e=>setName(e.target.value.toUpperCase())} placeholder="PILOT NAME" style={{width:'100%', padding:20, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:15, borderRadius:16, fontSize:14, fontWeight:'bold', outline:'none', textAlign:'center'}} />
+                            <input type="text" value={room} onChange={e=>setRoom(e.target.value)} placeholder="SECTOR ID" style={{width:'100%', padding:20, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:30, borderRadius:16, fontSize:14, fontWeight:'bold', outline:'none', textAlign:'center'}} />
                             <button onClick={()=>{ if(socket?.connected) socket.emit('join-room',{roomId:room, playerName:name}); setJoined(true);}} style={{width:'100%', padding:20, background:'var(--accent)', color:'#000', border:'none', borderRadius:16, fontWeight:900, fontSize:16, cursor:'pointer', letterSpacing:1.5}}>INITIALIZE LINK</button>
                         </div>
                     </div>
                 );
             }
 
-            // 待機画面
             if (!effectiveGameState || effectiveGameState.status === 'waiting') {
                 return (
                     <div className="container" style={{justifyContent:'center', alignItems:'center'}}>
                         <div style={{width:60, height:60, border:'5px solid rgba(64, 224, 208, 0.1)', borderTopColor:'var(--accent)', borderRadius:'50%', animation:'spin 0.8s linear infinite'}}></div>
                         <h2 style={{letterSpacing:15, opacity:0.6, marginTop:35, fontSize:18, fontWeight:900, textAlign:'center'}}>WAITING FOR PLAYER</h2>
                         <div style={{marginTop:12, opacity:0.5, fontSize:13, fontWeight:900, letterSpacing:3, color:'var(--accent)', textTransform:'uppercase'}}>SECTOR ID: {room}</div>
-                        
                         <div style={{marginTop:45, display:'flex', gap:15, flexWrap:'wrap', justifyContent:'center'}}>
                             {effectiveGameState?.players.map(p => (
                                 <div key={p.id} style={{padding:'12px 28px', background:'var(--glass)', borderRadius:35, border:'1px solid var(--border)', fontSize:13, fontWeight:900, backdropFilter:'blur(15px)', color:'rgba(255,255,255,0.9)'}}>
@@ -331,14 +360,12 @@
                 );
             }
 
-            // --- メイン対戦画面（ index (2).html の構成を完全復元 ） ---
             const currentRealm = effectiveGameState.fieldCard?.realm || 'GEAR';
 
             return (
                 <div className="container" style={{ '--realm-color': REALMS[currentRealm]?.color }}>
                     <div className="bg-aurora"></div>
                     
-                    {/* 対戦相手リスト */}
                     <div className="opponents scrollbar-hide">
                         {others.map(p => (
                             <div key={p.id} className={`opp-card ${effectiveGameState.currentTurnPlayerId === p.id ? 'active' : ''}`}>
@@ -348,59 +375,65 @@
                         ))}
                     </div>
 
-                    {/* フィールド中央 */}
                     <div className="field">
                         <div className="turn-indicator">{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
-                        
                         {effectiveGameState.nextDrawAmount > 1 && (
                             <div className="status-badge">DRAW +{effectiveGameState.nextDrawAmount} !!</div>
                         )}
-                        
                         {effectiveGameState.isReversed && (
                             <div style={{color:'var(--accent)', fontSize:14, fontWeight:900, marginBottom:20, letterSpacing:2, textShadow:'0 0 10px rgba(64,224,208,0.5)'}}>🔄 REVERSE ACTIVE</div>
                         )}
-
                         <div className="field-card-container">
-                            <div className={`card ${REALMS[currentRealm].class}`}>
-                                <div className="card-header">{REALMS[currentRealm].n}</div>
-                                <div className="card-body">{REALMS[currentRealm].icon}</div>
-                                <div className="card-footer">
-                                    {effectiveGameState.fieldCard?.isSpecial ? 'SPECIAL ABILITY' : 'NORMAL UNIT'}
-                                </div>
+                            <CardView card={effectiveGameState.fieldCard} isField={true} />
+                        </div>
+                        <div style={{marginTop: 35, textAlign:'center'}}>
+                            <div style={{fontSize: 20, fontWeight: 900, color: REALMS[currentRealm].color}}>{REALMS[currentRealm].n}</div>
+                            <div style={{fontSize: 11, opacity: 0.6, marginTop: 5, maxWidth: 200}}>
+                                NEXT REALM: <span style={{fontWeight:900, color: REALMS[CYCLE_ORDER[(CYCLE_ORDER.indexOf(currentRealm) + 1) % 6]]?.color}}>
+                                    {REALMS[CYCLE_ORDER[(CYCLE_ORDER.indexOf(currentRealm) + 1) % 6]]?.n}
+                                </span>
                             </div>
                         </div>
                     </div>
 
-                    {/* ドローボタン */}
                     <button className="btn-draw" disabled={!isMyTurn} onClick={()=>{ if(socket?.connected) socket.emit('draw-card',{roomId:room}) }}>
                         {effectiveGameState.nextDrawAmount > 1 ? `DRAW +${effectiveGameState.nextDrawAmount}` : 'DRAW / PASS'}
                     </button>
 
-                    {/* 自分の手札（ 扇形レイアウト ） */}
                     <div className="my-hand-area">
                         <div className="hand-container">
-                            {(me.hand || []).map((card, i) => {
-                                const playable = canPlay(card);
-                                const total = me.hand.length;
-                                const rotation = (i - (total - 1) / 2) * (total > 8 ? 5 : 8);
-                                const xOff = (i - (total - 1) / 2) * (total > 10 ? 35 : 0);
-                                return (
-                                    <div 
-                                        key={card.id} 
-                                        className={`card my-card ${REALMS[card.realm].class} ${playable ? 'playable' : 'not-playable'}`}
-                                        style={{ transform: `rotate(${rotation}deg) translateX(${xOff}px)` }}
-                                        onClick={() => playCard(card)}
-                                    >
-                                        <div className="card-header">{REALMS[card.realm].n}</div>
-                                        <div className="card-body">{REALMS[card.realm].icon}</div>
-                                        {card.isSpecial && <div style={{position:'absolute', top:10, right:10, fontSize:12}}>⭐</div>}
-                                    </div>
-                                );
-                            })}
+                            <div className="hand-flex">
+                                {(me.hand || []).map((card, i) => {
+                                    const playable = canPlay(card);
+                                    const total = me.hand.length;
+                                    const rotation = (i - (total - 1) / 2) * (total > 8 ? 5 : 8);
+                                    const xOff = (i - (total - 1) / 2) * (total > 10 ? 30 : 0);
+                                    return (
+                                        <div 
+                                            key={card.id} 
+                                            className="my-card-slot"
+                                            style={{ transform: `rotate(${rotation}deg) translateX(${xOff}px)`, marginLeft: i === 0 ? 0 : -55, zIndex: focusedCardId === card.id ? 200 : i }}
+                                        >
+                                            <CardView 
+                                                card={card} 
+                                                disabled={!playable} 
+                                                isFocused={focusedCardId === card.id}
+                                                onClick={() => {
+                                                    if(!playable) return;
+                                                    if(focusedCardId === card.id) playCard(card);
+                                                    else setFocusedCardId(card.id);
+                                                }} 
+                                            />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        <div style={{textAlign:'center', fontSize:12, fontWeight:900, marginTop:15, opacity:0.7}}>
+                            MY HAND: {me.hand.length} / 12
                         </div>
                     </div>
 
-                    {/* WILD選択 / 初期レルム選択パネル */}
                     {(selectorCard || effectiveGameState.needsInitialChoice) && (
                         <div className="overlay">
                             <div className="panel">
@@ -424,12 +457,10 @@
                         </div>
                     )}
 
-                    {/* 終了画面 */}
                     {effectiveGameState.status === 'finished' && (
                         <div className="overlay">
                             <div className="panel">
                                 <h2 style={{color:'var(--accent)', fontSize:42, fontWeight:900, fontStyle:'italic', marginBottom:15}}>GAME OVER</h2>
-                                <p style={{fontSize:13, opacity:0.5, marginBottom:35, fontWeight:900, letterSpacing:5}}>MISSION COMPLETE</p>
                                 <div style={{margin:'25px 0', textAlign:'left'}}>
                                     {effectiveGameState.players.slice().sort((a,b)=>a.handCount-b.handCount).map((p,i)=>(
                                         <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'18px 12px', borderBottom:'1.5px solid var(--border)', background:p.id === (socket?.id || 'mock-me') ? 'rgba(64,224,208,0.05)' : 'transparent'}}>
