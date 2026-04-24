@@ -12,9 +12,10 @@
         :root { 
             --accent: #40E0D0; 
             --bg: #050505; 
-            --card-w: 110px; 
-            --card-h: 158px;
-            --slot-ml: -55px;
+            /* PC版のカードサイズを大幅にアップ */
+            --card-w: 150px; 
+            --card-h: 215px;
+            --slot-ml: -75px;
             --glass: rgba(255, 255, 255, 0.03);
             --border: rgba(255, 255, 255, 0.1);
         }
@@ -76,7 +77,8 @@
             .guide-title { writing-mode: horizontal-tb; transform: none; margin-right: 10px; }
             .center-stage { flex-direction: column; gap: 20px; justify-content: center; }
             .login-title { font-size: 24px; letter-spacing: 6px; white-space: nowrap; }
-            :root { --card-w: 85px; --card-h: 122px; --slot-ml: -45px; }
+            /* スマホ版も少しだけ限界まで大きく */
+            :root { --card-w: 100px; --card-h: 143px; --slot-ml: -50px; }
         }
 
         .guide-item {
@@ -109,7 +111,8 @@
         .card:hover:not(.disabled) { transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 10px var(--accent); z-index: 100;}
         .card.disabled { filter: brightness(0.3); border-color: #333; cursor: not-allowed; transform: translateY(5px); }
         .card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-        .card-ui { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); padding: 2px 0; text-align: center; font-size: 10px; font-weight: bold; }
+        /* カードサイズに合わせてテキストを少し大きく */
+        .card-ui { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); padding: 4px 0; text-align: center; font-size: 11px; font-weight: bold; }
         
         .center-stage { flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 20px; z-index: 10; }
         .btn-action { padding: 12px 20px; border-radius: 20px; border: 1px solid var(--accent); background: rgba(0,0,0,0.5); color: var(--accent); font-weight: bold; cursor: pointer; font-size: 11px; transition: 0.3s; backdrop-filter: blur(5px); }
@@ -120,7 +123,8 @@
         .hand-flex { display: flex; justify-content: center; padding: 0 20px; }
         .slot { margin-left: var(--slot-ml); transition: 0.2s; }
         .slot:first-child { margin-left: 0; }
-        .badge { position: absolute; top: 8px; left: 8px; font-size: 11px; padding: 3px 6px; border-radius: 4px; font-weight: bold; z-index: 10; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
+        /* バッジもカードに合わせて少し大きく調整 */
+        .badge { position: absolute; top: 8px; left: 8px; font-size: 12px; padding: 4px 8px; border-radius: 4px; font-weight: bold; z-index: 10; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
 
         .wild-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 15vh; z-index: 1000; }
         .login-title { font-weight: 900; color: var(--accent); margin-bottom: 40px; text-shadow: 0 0 20px rgba(64,224,208,0.3); text-align: center; }
