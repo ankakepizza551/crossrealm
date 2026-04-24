@@ -3,43 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm - Tactical Edition</title>
+    <title>Cross Realm - Tactical Edition -</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;600;900&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Exo 2', sans-serif;
-            background-color: #020617;
-            color: white;
-            margin: 0;
+        :root { 
+            --accent: #40E0D0; 
+            --danger: #FF4500;
+            --bg: #030303; 
+            --card-w: 130px; 
+            --card-h: 185px;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.12);
+        }
+        
+        body { 
+            margin: 0; background: var(--bg); color: white; 
+            font-family: 'Exo 2', 'Hiragino Kaku Gothic ProN', sans-serif;
             overflow: hidden;
+            height: 100vh;
         }
-        .glass {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+
+        /* 背景演出（オーラ） */
+        .bg-aurora {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, var(--realm-color, #111) 0%, #000 80%);
+            opacity: 0.2; z-index: -1; transition: background 1.5s ease;
         }
-        .card-fan-item {
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+        .container {
+            display: flex; flex-direction: column; height: 100vh; position: relative;
+            background: radial-gradient(circle at top right, rgba(64, 224, 208, 0.05), transparent 40%);
         }
-        .card-fan-item:hover {
-            transform: translateY(-40px) scale(1.1) !important;
-            z-index: 50 !important;
+
+        /* プレイヤーエリア */
+        .opponents {
+            display: flex; justify-content: center; gap: 20px; padding: 25px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+            z-index: 10;
         }
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
+        .opp-card {
+            background: var(--glass); border: 1px solid var(--border);
+            padding: 12px 20px; border-radius: 12px; min-width: 130px;
+            text-align: center; backdrop-filter: blur(8px); transition: all 0.4s;
         }
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); opacity: 0.5; }
-            50% { transform: scale(1.05); opacity: 0.8; }
-            100% { transform: scale(0.95); opacity: 0.5; }
+        .opp-card.active { 
+            border-color: var(--accent); 
+            box-shadow: 0 0 20px rgba(64, 224, 208, 0.2), inset 0 0 10px rgba(64, 224, 208, 0.1); 
+            transform: translateY(5px);
         }
-        .active-turn-ring {
-            animation: pulse-ring 2s infinite;
+        .opp-name { font-size: 11px; font-weight: bold; margin-bottom: 5px; opacity: 0.6; letter-spacing: 1px; }
+        .opp-count { font-size: 20px; font-weight: 900; color: var(--accent); }
+
+        /* フィールドエリア */
+        .field {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .field-card-container {
+            position: relative; z-index: 5;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        /* カード基本スタイル */
+        .card {
+            width: var(--card-w); height: var(--card-h);
+            border-radius: 18px; border: 1.5px solid var(--border);
+            background: #0a0a0a; display: flex; flex-direction: column;
+            overflow: hidden; position: relative; box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-header { 
+            height: 35%; display: flex; align-items: center; justify-content: center; 
+            font-weight: 900; font-size: 15px; letter-spacing: 1px;
+            background: rgba(255,255,255,0.03);
+        }
+        .card-body { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 45px; }
+        .card-footer { 
+            height: 25%; padding: 8px; font-size: 10px; font-weight: bold;
+            text-align: center; background: rgba(0,0,0,0.4); opacity: 0.7;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .status-badge {
+            background: var(--danger); color: white; padding: 8px 20px; border-radius: 30px;
+            font-weight: 900; font-size: 16px; margin-bottom: 25px; 
+            box-shadow: 0 0 20px rgba(255, 69, 0, 0.4);
+            animation: bounce 1.2s infinite; z-index: 10;
+        }
+        @keyframes bounce { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.05); } }
+
+        /* 手札エリア */
+        .my-hand-area {
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+            padding: 40px 20px 60px 20px; position: relative;
+            z-index: 20;
+        }
+        .hand-container {
+            display: flex; justify-content: center; height: 210px;
+            align-items: flex-end; perspective: 1200px;
+        }
+        .my-card {
+            margin-left: -50px; cursor: pointer; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            transform-origin: bottom center;
+        }
+        .my-card:first-child { margin-left: 0; }
+        .my-card:hover { 
+            transform: translateY(-50px) rotate(0deg) scale(1.2) !important; 
+            z-index: 100 !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+        }
+        .my-card.playable { border-color: rgba(255,255,255,0.6); }
+        .my-card.not-playable { opacity: 0.3; filter: grayscale(1) blur(1px); cursor: not-allowed; }
+
+        /* アクションボタン */
+        .btn-draw {
+            position: absolute; right: 50px; bottom: 160px;
+            background: var(--accent); color: #000; border: none;
+            padding: 18px 45px; border-radius: 40px; font-weight: 900;
+            font-size: 16px; letter-spacing: 1px;
+            cursor: pointer; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            transition: all 0.3s ease; z-index: 30;
+        }
+        .btn-draw:hover { transform: scale(1.08) translateY(-3px); box-shadow: 0 20px 40px rgba(64, 224, 208, 0.3); }
+        .btn-draw:active { transform: scale(0.95); }
+        .btn-draw:disabled { background: #222; color: #555; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* モーダル */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            display: flex; align-items: center; justify-content: center; z-index: 1000;
+            backdrop-filter: blur(15px);
+        }
+        .panel {
+            background: #080808; border: 1.5px solid var(--border);
+            padding: 45px; border-radius: 28px; text-align: center; width: 90%; max-width: 420px;
+            box-shadow: 0 0 60px rgba(0,0,0,1);
+        }
+        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 25px; }
+        .realm-btn {
+            padding: 18px; border: 1.5px solid var(--border); border-radius: 14px;
+            background: rgba(255,255,255,0.02); color: white; font-weight: 900; cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 13px; letter-spacing: 1px;
+        }
+        .realm-btn:hover { background: rgba(255,255,255,0.08); transform: scale(1.03); }
+
+        /* レルムカラー・定義 */
+        .r-gear { background: linear-gradient(135deg, #FF8C00, #FFA500); --r-color: #FF8C00; }
+        .r-iceage { background: linear-gradient(135deg, #00BFFF, #1E90FF); --r-color: #00BFFF; }
+        .r-fountain { background: linear-gradient(135deg, #4169E1, #0000FF); --r-color: #4169E1; }
+        .r-battery { background: linear-gradient(135deg, #32CD32, #7FFF00); --r-color: #32CD32; }
+        .r-machine { background: linear-gradient(135deg, #2F4F4F, #008080); --r-color: #2F4F4F; }
+        .r-archive { background: linear-gradient(135deg, #8B4513, #A0522D); --r-color: #8B4513; }
+        .r-planet { background: linear-gradient(135deg, #9400D3, #8B008B); --r-color: #9400D3; }
+        .r-ruins { background: linear-gradient(135deg, #696969, #808080); --r-color: #696969; }
+
+        /* 背景透かし文字 */
+        .turn-indicator {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 140px; font-weight: 900; opacity: 0.04; pointer-events: none;
+            white-space: nowrap; z-index: 0; letter-spacing: -5px; font-style: italic;
         }
     </style>
 </head>
@@ -47,49 +175,44 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo, useRef } = React;
+        const { useState, useEffect, useMemo } = React;
 
-        // --- 定数定義 ---
         const REALMS = {
-            GEAR: { n: '歯車', color: 'from-orange-500 to-yellow-600', icon: '⚙️', desc: '機構が動き出す。+2ドロー攻撃。' },
-            ICEAGE: { n: '氷河期', color: 'from-cyan-400 to-blue-500', icon: '❄️', desc: 'すべてを凍結させる。古文書を上書き。' },
-            FOUNTAIN: { n: '噴水', color: 'from-blue-500 to-indigo-600', icon: '⛲', desc: '魔力が溢れ出す。WILD能力を持つ。' },
-            BATTERY: { n: 'バッテリー', color: 'from-yellow-400 to-lime-500', icon: '🔋', desc: '氷河期の中でこそ真価を発揮する。' },
-            MACHINE: { n: '機械', color: 'from-green-500 to-emerald-700', icon: '🤖', desc: '因果を逆転させる。リバース発動。' },
-            ARCHIVE: { n: '古文書', color: 'from-amber-700 to-orange-900', icon: '📜', desc: '智恵が未来を創る。' },
-            PLANET: { n: '惑星', color: 'from-purple-600 to-pink-600', icon: '🪐', desc: '未知の天体。あらゆる領域へ遷移可能。' },
-            RUINS: { n: '遺跡', color: 'from-slate-600 to-stone-800', icon: '🏛️', desc: '古の記憶。あらゆる領域へ遷移可能。' }
+            GEAR: { n: 'GEAR', color: '#FF8C00', icon: '⚙️', class: 'r-gear' },
+            ICEAGE: { n: 'ICEAGE', color: '#00BFFF', icon: '❄️', class: 'r-iceage' },
+            FOUNTAIN: { n: 'FOUNTAIN', color: '#4169E1', icon: '⛲', class: 'r-fountain' },
+            BATTERY: { n: 'BATTERY', color: '#32CD32', icon: '🔋', class: 'r-battery' },
+            MACHINE: { n: 'MACHINE', color: '#2F4F4F', icon: '🤖', class: 'r-machine' },
+            ARCHIVE: { n: 'ARCHIVE', color: '#8B4513', icon: '📜', class: 'r-archive' },
+            PLANET: { n: 'PLANET', color: '#9400D3', icon: '🪐', class: 'r-planet' },
+            RUINS: { n: 'RUINS', color: '#696969', icon: '🏛️', class: 'r-ruins' }
         };
 
         const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
 
-        // --- メインコンポーネント ---
         const App = () => {
             const [socket, setSocket] = useState(null);
             const [gs, setGs] = useState(null);
             const [room, setRoom] = useState('ALPHA');
-            const [name, setName] = useState('PILOT-' + Math.floor(Math.random() * 900 + 100));
+            const [name, setName] = useState('USER-' + Math.floor(Math.random() * 999));
             const [joined, setJoined] = useState(false);
-            const [showWildMenu, setShowWildMenu] = useState(null); // card object
-            
-            const serverUrl = 'https://crossrealm-server.onrender.com'; // 実際のサーバーURLに書き換えてください
+            const [selectorCard, setSelectorCard] = useState(null);
 
             useEffect(() => {
-                const s = io(serverUrl);
+                const s = io(); 
                 setSocket(s);
                 s.on('update-game', (data) => setGs(data));
                 return () => s.disconnect();
             }, []);
 
             const me = gs?.players?.find(p => p.id === socket?.id) || { hand: [] };
-            const isMyTurn = gs?.currentTurnPlayerId === socket?.id && gs?.status === 'playing';
+            const isMyTurn = gs?.currentTurnPlayerId === socket?.id;
             const others = gs?.players?.filter(p => p.id !== socket?.id) || [];
 
-            // 出せるかどうかのバリデーション (Tactical Edition ルール)
             const canPlay = (card) => {
-                if (!isMyTurn || gs.needsInitialChoice) return false;
+                if (!isMyTurn || gs.status !== 'playing' || gs.needsInitialChoice) return false;
                 
-                // ドロー2蓄積中のバリデーション
+                // ドロー攻撃中の制限
                 if (gs.nextDrawAmount > 1) {
                     return (card.realm === 'GEAR' && card.isSpecial);
                 }
@@ -97,59 +220,48 @@
                 const field = gs.fieldCard.realm;
                 const hand = card.realm;
 
-                // ワイルドカードは常に出せる
-                if (hand === 'PLANET' || hand === 'RUINS' || (hand === 'FOUNTAIN' && card.isSpecial)) return true;
+                // ワイルド系
+                if (hand === 'PLANET' || hand === 'RUINS') return true;
+                if (hand === 'FOUNTAIN' && card.isSpecial) return true;
                 
-                // 同じレルムなら出せる
+                // 同じレルム
                 if (field === hand) return true;
 
-                // 基本サイクルチェック
+                // サイクル
                 const currentIdx = CYCLE_ORDER.indexOf(field);
                 const nextRealm = CYCLE_ORDER[(currentIdx + 1) % 6];
                 if (hand === nextRealm) return true;
 
                 // 特殊コンボ
-                if (field === 'ARCHIVE' && hand === 'ICEAGE') return true; // 古文書を凍らせる
-                if (field === 'ICEAGE' && hand === 'BATTERY') return true; // 氷河期を充電
-                if (field === 'ICEAGE' && hand === 'FOUNTAIN') return true; // 氷を溶かす
+                if (field === 'ARCHIVE' && hand === 'ICEAGE') return true;
+                if (field === 'ICEAGE' && hand === 'BATTERY') return true;
+                if (field === 'ICEAGE' && hand === 'FOUNTAIN') return true;
 
                 return false;
             };
 
-            const handlePlay = (card) => {
+            const playCard = (card) => {
                 if (!canPlay(card)) return;
-                
-                // WILD効果を持つ場合
                 if (card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial)) {
-                    setShowWildMenu(card);
+                    setSelectorCard(card);
                 } else {
                     socket.emit('play-card', { roomId: room, card });
                 }
             };
 
-            const selectWildRealm = (targetRealm) => {
-                socket.emit('play-card', { roomId: room, card: showWildMenu, chosenRealm: targetRealm });
-                setShowWildMenu(null);
+            const selectRealm = (r) => {
+                socket.emit('play-card', { roomId: room, card: selectorCard, chosenRealm: r });
+                setSelectorCard(null);
             };
 
             if (!joined) {
                 return (
-                    <div className="h-screen flex items-center justify-center bg-slate-950 px-6">
-                        <div className="glass p-10 rounded-3xl w-full max-w-md border-cyan-500/30 shadow-[0_0_50px_rgba(6,182,212,0.15)] text-center">
-                            <h1 className="text-4xl font-black italic tracking-tighter mb-2 text-cyan-400">CROSS REALM</h1>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-10">Tactical Command Link</p>
-                            
-                            <div className="space-y-6">
-                                <div className="text-left">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block ml-1">Pilot Signature</label>
-                                    <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full bg-black/40 border border-slate-700 p-4 rounded-xl focus:ring-2 focus:ring-cyan-500 outline-none font-bold" />
-                                </div>
-                                <div className="text-left">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block ml-1">Sector Code</label>
-                                    <input type="text" value={room} onChange={e => setRoom(e.target.value)} className="w-full bg-black/40 border border-slate-700 p-4 rounded-xl focus:ring-2 focus:ring-cyan-500 outline-none font-bold" />
-                                </div>
-                                <button onClick={() => { socket.emit('join-room', { roomId: room, playerName: name }); setJoined(true); }} className="w-full bg-cyan-600 hover:bg-cyan-500 py-5 rounded-2xl font-black text-xl shadow-lg transition-all active:scale-95">ESTABLISH LINK</button>
-                            </div>
+                    <div className="overlay">
+                        <div className="panel">
+                            <h1 style={{color:'var(--accent)', fontSize:32, marginBottom:40, fontWeight:900, letterSpacing:4, fontStyle:'italic'}}>CROSS REALM</h1>
+                            <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="PILOT NAME" style={{width:'100%', padding:18, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:15, borderRadius:14, fontSize:14, fontWeight:'bold'}} />
+                            <input type="text" value={room} onChange={e=>setRoom(e.target.value)} placeholder="SECTOR ID" style={{width:'100%', padding:18, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:25, borderRadius:14, fontSize:14, fontWeight:'bold'}} />
+                            <button onClick={()=>{socket.emit('join-room',{roomId:room, playerName:name}); setJoined(true);}} style={{width:'100%', padding:18, background:'var(--accent)', color:'#000', border:'none', borderRadius:14, fontWeight:900, fontSize:16, cursor:'pointer', letterSpacing:1}}>INITIALIZE LINK</button>
                         </div>
                     </div>
                 );
@@ -157,205 +269,125 @@
 
             if (!gs || gs.status === 'waiting') {
                 return (
-                    <div className="h-screen flex flex-col items-center justify-center bg-slate-950">
-                        <div className="mb-12 text-center">
-                            <div className="w-20 h-20 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin mx-auto mb-6"></div>
-                            <h2 className="text-2xl font-black italic text-cyan-400">WAITING FOR PILOTS...</h2>
-                            <p className="text-slate-500 font-bold uppercase tracking-widest mt-2">Room: {room}</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4 w-full max-w-lg px-6">
-                            {gs?.players.map((p, i) => (
-                                <div key={i} className="glass p-4 rounded-2xl flex items-center gap-4 border-slate-800">
-                                    <div className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center text-xl">👨‍🚀</div>
-                                    <span className="font-bold truncate">{p.name}</span>
-                                </div>
-                            ))}
+                    <div className="container" style={{justifyContent:'center', alignItems:'center'}}>
+                        <div style={{width:50, height:50, border:'4px solid rgba(64, 224, 208, 0.1)', borderTopColor:'var(--accent)', borderRadius:'50%', animation:'spin 1s linear infinite'}}></div>
+                        <h2 style={{letterSpacing:12, opacity:0.6, marginTop:30, fontSize:16, fontWeight:900}}>WAITING FOR PILOTS</h2>
+                        <div style={{marginTop:30, display:'flex', gap:12}}>
+                            {gs?.players.map(p => <div key={p.id} style={{padding:'8px 20px', background:'var(--glass)', borderRadius:30, border:'1.5px solid var(--border)', fontSize:12, fontWeight:900}}>{p.name}</div>)}
                         </div>
                         {gs?.players[0]?.id === socket?.id && gs?.players.length >= 2 && (
-                            <button onClick={() => socket.emit('start-game', { roomId: room })} className="mt-12 bg-emerald-600 px-12 py-5 rounded-full font-black text-2xl hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-900/20">MISSION START</button>
+                            <button onClick={()=>socket.emit('start-game',{roomId:room})} style={{marginTop:50, padding:'18px 50px', borderRadius:40, border:'2px solid var(--accent)', background:'transparent', color:'var(--accent)', fontWeight:900, cursor:'pointer', fontSize:18, transition:'0.3s'}}>ENGAGE CORE</button>
                         )}
+                        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
                     </div>
                 );
             }
 
             return (
-                <div className="h-screen flex flex-col overflow-hidden relative">
-                    {/* 背景オーラ */}
-                    <div className={`absolute inset-0 transition-all duration-1000 opacity-20 pointer-events-none bg-gradient-to-b ${REALMS[gs.fieldCard.realm].color} to-transparent`}></div>
+                <div className="container" style={{ '--realm-color': REALMS[gs.fieldCard.realm]?.color }}>
+                    <div className="bg-aurora"></div>
                     
-                    {/* ヘッダー: 敵プレイヤー */}
-                    <div className="p-4 glass border-b border-white/5 z-10 flex gap-4 overflow-x-auto scrollbar-hide">
-                        {others.map((p, i) => (
-                            <div key={i} className={`flex-shrink-0 min-w-[140px] p-3 rounded-xl border transition-all ${gs.currentTurnPlayerId === p.id ? 'border-cyan-500 bg-cyan-950/30 active-turn-ring' : 'border-slate-800 bg-slate-900/50'}`}>
-                                <div className="flex justify-between items-start mb-1">
-                                    <span className="text-xs font-black truncate max-w-[80px]">{p.name}</span>
-                                    <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded font-black text-cyan-400">{p.handCount}</span>
-                                </div>
-                                <div className="flex gap-0.5 h-1.5">
-                                    {[...Array(Math.min(p.handCount, 12))].map((_, idx) => (
-                                        <div key={idx} className="flex-1 bg-cyan-500/40 rounded-full"></div>
-                                    ))}
-                                </div>
+                    <div className="opponents scrollbar-hide">
+                        {others.map(p => (
+                            <div key={p.id} className={`opp-card ${gs.currentTurnPlayerId === p.id ? 'active' : ''}`}>
+                                <div className="opp-name">{p.name}</div>
+                                <div className="opp-count">{p.handCount}</div>
                             </div>
                         ))}
                     </div>
 
-                    {/* 中央: フィールド */}
-                    <div className="flex-1 flex flex-col items-center justify-center relative p-6">
-                        {/* サイクルステータス */}
-                        <div className="absolute top-4 glass py-2 px-4 rounded-full flex items-center gap-4 border-slate-800 scale-90 md:scale-100">
-                            {CYCLE_ORDER.map((r, i) => {
-                                const isActive = gs.fieldCard.realm === r;
+                    <div className="field">
+                        <div className="turn-indicator">{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
+                        
+                        {gs.nextDrawAmount > 1 && (
+                            <div className="status-badge">DRAW +{gs.nextDrawAmount} !!</div>
+                        )}
+                        {gs.isReversed && (
+                            <div style={{color:'var(--accent)', fontSize:13, fontWeight:900, marginBottom:15, letterSpacing:2}}>🔄 REVERSE ACTIVE</div>
+                        )}
+
+                        <div className="field-card-container">
+                            <div className={`card ${REALMS[gs.fieldCard.realm].class}`}>
+                                <div className="card-header">{REALMS[gs.fieldCard.realm].n}</div>
+                                <div className="card-body">{REALMS[gs.fieldCard.realm].icon}</div>
+                                <div className="card-footer">
+                                    {gs.fieldCard.isSpecial ? 'SPECIAL ABILITY' : 'NORMAL UNIT'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button className="btn-draw" disabled={!isMyTurn} onClick={()=>socket.emit('draw-card',{roomId:room})}>
+                        {gs.nextDrawAmount > 1 ? `DRAW +${gs.nextDrawAmount}` : 'DRAW / PASS'}
+                    </button>
+
+                    <div className="my-hand-area">
+                        <div className="hand-container">
+                            {me.hand.map((card, i) => {
+                                const playable = canPlay(card);
+                                const rotation = (i - (me.hand.length - 1) / 2) * (me.hand.length > 8 ? 4 : 7);
+                                const xOff = (i - (me.hand.length - 1) / 2) * (me.hand.length > 10 ? 30 : 0);
                                 return (
-                                    <React.Fragment key={r}>
-                                        <span className={`text-xs font-black transition-all ${isActive ? 'text-white scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 'text-slate-600'}`}>{REALMS[r].n}</span>
-                                        {i < 5 && <span className="text-slate-800">→</span>}
-                                    </React.Fragment>
+                                    <div 
+                                        key={card.id} 
+                                        className={`card my-card ${REALMS[card.realm].class} ${playable ? 'playable' : 'not-playable'}`}
+                                        style={{ transform: `rotate(${rotation}deg) translateX(${xOff}px)` }}
+                                        onClick={() => playCard(card)}
+                                    >
+                                        <div className="card-header">{REALMS[card.realm].n}</div>
+                                        <div className="card-body">{REALMS[card.realm].icon}</div>
+                                        {card.isSpecial && <div style={{position:'absolute', top:8, right:8, fontSize:12}}>⭐</div>}
+                                    </div>
                                 );
                             })}
                         </div>
-
-                        {/* 特殊状態表示 */}
-                        <div className="absolute right-6 top-20 flex flex-col gap-2 items-end">
-                            {gs.nextDrawAmount > 1 && (
-                                <div className="bg-red-600 px-4 py-2 rounded-xl font-black text-lg animate-bounce shadow-lg flex items-center gap-2">
-                                    <span>⚠️</span> DRAW +{gs.nextDrawAmount}
-                                </div>
-                            )}
-                            {gs.isReversed && (
-                                <div className="bg-indigo-600 px-4 py-2 rounded-xl font-black text-xs uppercase tracking-tighter shadow-lg">
-                                    🔄 REVERSED
-                                </div>
-                            )}
-                        </div>
-
-                        {/* 場札本体 */}
-                        <div className="relative group">
-                            <div className={`absolute -inset-8 blur-3xl opacity-30 bg-gradient-to-br ${REALMS[gs.fieldCard.realm].color}`}></div>
-                            <div className={`w-48 h-64 md:w-56 md:h-80 glass rounded-3xl border-2 border-white/20 shadow-2xl relative flex flex-col overflow-hidden`}>
-                                <div className={`p-4 bg-gradient-to-br ${REALMS[gs.fieldCard.realm].color} flex justify-between items-center`}>
-                                    <span className="font-black italic text-xl drop-shadow-md">{REALMS[gs.fieldCard.realm].n}</span>
-                                    <span className="text-2xl">{REALMS[gs.fieldCard.realm].icon}</span>
-                                </div>
-                                <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Current Realm</div>
-                                    <div className="text-xs font-medium px-4 opacity-80 leading-relaxed">{REALMS[gs.fieldCard.realm].desc}</div>
-                                </div>
-                                {gs.fieldCard.isSpecial && (
-                                    <div className="absolute bottom-4 left-0 right-0 text-center">
-                                        <span className="bg-white text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Special Triggered</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* ターン表示 */}
-                        <div className="mt-8 text-center z-10">
-                            <div className={`text-xl font-black italic tracking-widest uppercase ${isMyTurn ? 'text-cyan-400 animate-pulse' : 'text-slate-600'}`}>
-                                {isMyTurn ? ">>> Your Turn <<<" : `Waiting for Pilot...`}
-                            </div>
-                        </div>
                     </div>
 
-                    {/* 下部: アクションと手札 */}
-                    <div className="p-6 glass border-t border-white/10 z-20">
-                        <div className="max-w-4xl mx-auto flex flex-col">
-                            <div className="flex justify-between items-end mb-4">
-                                <div>
-                                    <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Deck Stability</div>
-                                    <div className={`text-2xl font-black italic ${me.hand.length >= 10 ? 'text-red-500' : 'text-white'}`}>
-                                        {me.hand.length} <span className="text-sm text-slate-600">/ 12</span>
-                                    </div>
-                                </div>
-                                <button 
-                                    onClick={() => socket.emit('draw-card', { roomId: room })}
-                                    disabled={!isMyTurn}
-                                    className={`px-8 py-4 rounded-2xl font-black text-lg transition-all ${isMyTurn ? 'bg-cyan-600 hover:bg-cyan-500 shadow-lg shadow-cyan-900/30' : 'bg-slate-800 text-slate-600 opacity-50'}`}
-                                >
-                                    {gs.nextDrawAmount > 1 ? `DRAW +${gs.nextDrawAmount}` : "DRAW / PASS"}
-                                </button>
-                            </div>
-
-                            {/* 手札のファン表示 */}
-                            <div className="relative h-48 flex justify-center mt-6">
-                                <div className="flex justify-center w-full max-w-full overflow-x-auto scrollbar-hide py-4 px-20">
-                                    <div className="relative flex items-end h-40" style={{ width: `${me.hand.length * 50 + 150}px` }}>
-                                        {me.hand.map((card, idx) => {
-                                            const playable = canPlay(card);
-                                            const total = me.hand.length;
-                                            const angle = (idx - (total - 1) / 2) * (total > 8 ? 6 : 10);
-                                            const xPos = (idx - (total - 1) / 2) * (total > 10 ? 35 : 55);
-                                            const yPos = Math.abs(idx - (total - 1) / 2) * 4;
-
-                                            return (
-                                                <div 
-                                                    key={card.id}
-                                                    onClick={() => handlePlay(card)}
-                                                    className={`card-fan-item absolute bottom-0 w-32 h-44 rounded-2xl border-2 transition-all cursor-pointer shadow-xl flex flex-col overflow-hidden bg-slate-900 
-                                                        ${playable ? 'border-white z-20' : 'border-slate-800 grayscale-[0.6] opacity-60 pointer-events-none'}`}
-                                                    style={{
-                                                        transform: `translateX(${xPos}px) rotate(${angle}deg) translateY(${yPos}px)`,
-                                                        zIndex: idx
-                                                    }}
-                                                >
-                                                    <div className={`h-1.5 w-full bg-gradient-to-r ${REALMS[card.realm].color}`}></div>
-                                                    <div className="p-2 flex justify-between items-start">
-                                                        <span className="text-[10px] font-black truncate">{REALMS[card.realm].n}</span>
-                                                        <span className="text-xs">{REALMS[card.realm].icon}</span>
-                                                    </div>
-                                                    <div className="flex-1 flex items-center justify-center opacity-30 text-2xl">
-                                                        {REALMS[card.realm].icon}
-                                                    </div>
-                                                    {card.isSpecial && (
-                                                        <div className="bg-white/10 py-1 text-center">
-                                                            <span className="text-[8px] font-black text-white/60 uppercase">Special</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* WILD選択モーダル */}
-                    {showWildMenu && (
-                        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-6">
-                            <div className="glass p-8 rounded-3xl max-w-sm w-full text-center border-white/10">
-                                <h2 className="text-2xl font-black italic mb-2">REALM SHIFT</h2>
-                                <p className="text-xs font-bold text-slate-500 uppercase mb-8">遷移先の領域を選択してください</p>
-                                <div className="grid grid-cols-2 gap-3">
+                    {selectorCard && (
+                        <div className="overlay">
+                            <div className="panel">
+                                <h3 style={{fontSize:20, fontWeight:900, marginBottom:25, letterSpacing:2}}>SELECT TARGET REALM</h3>
+                                <div className="realm-grid">
                                     {CYCLE_ORDER.map(r => (
-                                        <button key={r} onClick={() => selectWildRealm(r)} className={`p-4 rounded-xl font-black text-sm bg-gradient-to-br ${REALMS[r].color} shadow-lg active:scale-95 transition-transform`}>
+                                        <button key={r} className="realm-btn" style={{borderColor:REALMS[r].color, color:REALMS[r].color}} onClick={()=>selectRealm(r)}>
                                             {REALMS[r].n}
                                         </button>
                                     ))}
                                 </div>
-                                <button onClick={() => setShowWildMenu(null)} className="mt-8 text-slate-500 font-bold hover:text-white transition-colors">CANCEL</button>
+                                <button onClick={()=>setSelectorCard(null)} style={{marginTop:30, opacity:0.4, background:'transparent', border:'none', color:'#fff', cursor:'pointer', fontWeight:900, fontSize:12}}>CANCEL TRANSITION</button>
                             </div>
                         </div>
                     )}
 
-                    {/* 終了画面 */}
+                    {gs.needsInitialChoice && gs.players[0].id === socket.id && (
+                        <div className="overlay">
+                            <div className="panel">
+                                <h3 style={{fontSize:20, fontWeight:900, marginBottom:25, letterSpacing:2}}>INITIAL STABILITY</h3>
+                                <div className="realm-grid">
+                                    {CYCLE_ORDER.map(r => (
+                                        <button key={r} className="realm-btn" style={{borderColor:REALMS[r].color, color:REALMS[r].color}} onClick={()=>socket.emit('set-initial-realm',{roomId:room, chosenRealm:r})}>
+                                            {REALMS[r].n}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {gs.status === 'finished' && (
-                        <div className="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-[200] flex flex-col items-center justify-center p-6">
-                            <h2 className="text-6xl font-black italic text-cyan-400 mb-2 rotate-[-4deg]">SESSION END</h2>
-                            <div className="glass p-10 rounded-3xl max-w-md w-full border-cyan-500/20 shadow-2xl">
-                                <div className="text-xs font-black text-slate-500 uppercase tracking-[0.4em] mb-8 text-center">Pilot Standings</div>
-                                <div className="space-y-4 mb-10">
-                                    {gs.players.slice().sort((a,b) => a.handCount - b.handCount).map((p, i) => (
-                                        <div key={p.id} className={`flex items-center justify-between p-4 rounded-xl border ${p.handCount === 0 ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800'}`}>
-                                            <div className="flex items-center gap-4">
-                                                <span className="font-black italic text-slate-500 text-xl">#{i+1}</span>
-                                                <span className="font-bold">{p.name}</span>
-                                            </div>
-                                            <span className="font-black text-cyan-400">{p.handCount} CARDS</span>
+                        <div className="overlay">
+                            <div className="panel">
+                                <h2 style={{color:'var(--accent)', fontSize:38, fontWeight:900, fontStyle:'italic', marginBottom:10}}>GAME OVER</h2>
+                                <p style={{fontSize:12, opacity:0.5, marginBottom:30, fontWeight:900}}>MISSION COMPLETE</p>
+                                <div style={{margin:'20px 0'}}>
+                                    {gs.players.slice().sort((a,b)=>a.handCount-b.handCount).map((p,i)=>(
+                                        <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'15px 10px', borderBottom:'1px solid var(--border)'}}>
+                                            <span style={{fontWeight:900, fontSize:14}}>{i+1}. {p.name} {p.id === socket.id && "(YOU)"}</span>
+                                            <span style={{color:'var(--accent)', fontWeight:900}}>{p.handCount} units</span>
                                         </div>
                                     ))}
                                 </div>
-                                <button onClick={() => socket.emit('play-again', { roomId: room })} className="w-full bg-cyan-600 hover:bg-cyan-500 py-5 rounded-2xl font-black text-xl shadow-lg shadow-cyan-900/30">RE-ESTABLISH LINK</button>
+                                <button onClick={()=>socket.emit('play-again',{roomId:room})} style={{width:'100%', padding:20, background:'var(--accent)', color:'#000', border:'none', borderRadius:16, fontWeight:900, fontSize:18, marginTop:20, cursor:'pointer'}}>RE-ESTABLISH LINK</button>
                             </div>
                         </div>
                     )}
