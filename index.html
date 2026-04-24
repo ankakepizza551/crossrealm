@@ -107,7 +107,7 @@
             position: absolute; top: 18px; left: 50%; transform: translateX(-50%); 
             font-size: 11px; font-weight: 900; color: #fff; opacity: 0.4;
             letter-spacing: 0.5px; transition: 0.3s;
-            white-space: nowrap; /* 改行を禁止 */
+            white-space: nowrap;
         }
         .cycle-dot.active .cycle-label { opacity: 1; color: var(--dot-color); font-size: 12px; text-shadow: 0 0 10px #000; }
 
@@ -122,6 +122,10 @@
         }
         .realm-title { font-family: 'Cinzel', serif; font-size: 30px; font-weight: 900; color: var(--realm-color); margin-bottom: 10px; letter-spacing: 3px; text-shadow: 0 0 15px var(--realm-color); }
         .realm-desc { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.6; }
+        .effect-badge { 
+            display: inline-block; margin-top: 10px; padding: 4px 10px; 
+            background: var(--danger); color: #fff; font-size: 11px; font-weight: 900; border-radius: 3px; 
+        }
         .next-hint { margin-top: 15px; padding-top: 12px; border-top: 2px solid rgba(212,175,55,0.3); font-size: 14px; font-weight: 900; color: var(--accent); }
 
         .turn-watermark {
@@ -172,7 +176,7 @@
         }
         .hand-flex { display: flex; justify-content: center; padding: 30px 60px; min-height: 220px; align-items: flex-end; }
 
-        /* モーダル・パネル */
+        /* モーダル */
         .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.97); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
         .panel { 
             background: #08080c; border: 4px solid var(--steam-gold); padding: 65px 40px; border-radius: 12px;
@@ -184,8 +188,7 @@
         }
 
         .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
-        .realm-btn { padding: 20px; border: 3px solid var(--steam-gold); background: rgba(255,255,255,0.04); color: #fff; font-weight: 900; font-size: 16px; font-family: 'Cinzel', serif; cursor: pointer; transition: 0.2s; }
-        .realm-btn:hover { background: var(--steam-gold); color: #000; transform: scale(1.05); }
+        .realm-btn { padding: 20px; border: 3px solid var(--steam-gold); background: rgba(255,255,255,0.04); color: #fff; font-weight: 900; font-size: 16px; font-family: 'Cinzel', serif; cursor: pointer; }
 
         .status-badge { background: #000; color: var(--danger); border: 3px solid var(--danger); padding: 16px 40px; font-weight: 900; font-size: 20px; margin-bottom: 40px; animation: glitch 0.3s infinite; text-transform: uppercase; letter-spacing: 6px; }
         @keyframes glitch { 0% { transform: translate(0); text-shadow: 4px 0 var(--accent); } 50% { transform: translate(-5px, 2px); text-shadow: -4px 0 var(--cyber-pink); } 100% { transform: translate(0); } }
@@ -198,14 +201,14 @@
         const { useState, useEffect, useMemo } = React;
 
         const REALMS = {
-            GEAR: { n: '歯車', color: '#FF8C00', desc: '機構の歯車。次に2枚引かせる。' },
-            ICEAGE: { n: '氷河期', color: '#00BFFF', desc: '全てを凍結させる領域。' },
-            FOUNTAIN: { n: '噴水', color: '#4169E1', desc: '魔法の泉。属性を自在に変える。' },
-            BATTERY: { n: '電池', color: '#32CD32', desc: '動力を蓄える緑の魔力。' },
-            MACHINE: { n: '機械', color: '#2F4F4F', desc: '因果を操る。順番を逆転させる。' },
-            ARCHIVE: { n: '古文書', color: '#8B4513', desc: '古の記録。智恵の貯蔵庫。' },
-            PLANET: { n: '惑星', color: '#9400D3', desc: '星々の加護。属性を上書き。' },
-            RUINS: { n: '廃墟', color: '#696969', desc: '遺跡の記憶。属性を上書き。' }
+            GEAR: { n: '歯車', color: '#FF8C00', desc: '機構の歯車。', effect: '特殊(S): +2ドロー上乗せ' },
+            ICEAGE: { n: '氷河期', color: '#00BFFF', desc: '全てを凍結させる領域。', effect: '' },
+            FOUNTAIN: { n: '噴水', color: '#4169E1', desc: '魔法の泉。', effect: '特殊(S): 属性ワイルド' },
+            BATTERY: { n: '電池', color: '#32CD32', desc: '動力を蓄える魔導電池。', effect: '' },
+            MACHINE: { n: '機械', color: '#2F4F4F', desc: '因果を操る精密機械。', effect: '特殊(S): 順番反転' },
+            ARCHIVE: { n: '古文書', color: '#8B4513', desc: '古の記録。智恵の貯蔵庫。', effect: '' },
+            PLANET: { n: '惑星', color: '#9400D3', desc: '星々の加護。属性を上書き。', effect: '常にワイルド' },
+            RUINS: { n: '廃墟', color: '#696969', desc: '遺跡の記憶。属性を上書き。', effect: '常にワイルド' }
         };
 
         const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
@@ -225,7 +228,6 @@
                 return () => s.disconnect();
             }, []);
 
-            // 手札の自動ソート (サイクル順)
             const sortedHand = useMemo(() => {
                 const playerMe = gs?.players?.find(p => p.id === socket?.id);
                 if (!playerMe || !playerMe.hand) return [];
@@ -272,7 +274,9 @@
                     <div className={`card ${isField ? '' : (playable ? 'playable my-card' : 'not-playable my-card')}`} 
                          style={{'--r-color': REALMS[card.realm].color}} onClick={onClick}>
                         <img src={src} onError={(e) => { e.target.src = 'https://via.placeholder.com/130x185/000/D4AF37?text=' + card.realm; }} />
-                        <div className="card-footer">{REALMS[card.realm].n}</div>
+                        <div className="card-footer">
+                            {REALMS[card.realm].n} {card.isSpecial ? '(S)' : ''}
+                        </div>
                     </div>
                 );
             };
@@ -348,7 +352,12 @@
                                 <CardView card={gs.fieldCard} isField={true} />
                                 <div className="info-panel">
                                     <div className="realm-title" style={{'--realm-color': REALMS[currentRealm].color}}>{REALMS[currentRealm].n}</div>
-                                    <div className="realm-desc">{REALMS[currentRealm].desc}</div>
+                                    <div className="realm-desc">
+                                        {REALMS[currentRealm].desc}
+                                        {gs.fieldCard?.isSpecial && REALMS[currentRealm].effect && (
+                                            <div className="effect-badge">{REALMS[currentRealm].effect}</div>
+                                        )}
+                                    </div>
                                     <div className="next-hint">NEXT: <span style={{color: REALMS[nextRealm].color}}>{REALMS[nextRealm].n}</span> / 同属性</div>
                                 </div>
                             </div>
@@ -373,7 +382,7 @@
                                 ))}
                             </div>
                             <div style={{textAlign:'center', fontSize:13, fontWeight:900, marginTop:18, opacity:0.8, color:'var(--steam-gold)', letterSpacing:5}}>
-                                CORE SYNC: {sortedHand.length} / 12
+                                CORE SYNC: {sortedHand.length} / {gs.handLimit}
                             </div>
                         </div>
                     </div>
@@ -401,7 +410,7 @@
                             <div className="panel">
                                 <h2 style={{color:'var(--steam-gold)', fontSize:36, fontWeight:900, fontFamily:'Cinzel'}}>MISSION END</h2>
                                 <div style={{width:'100%', margin:'40px 0'}}>
-                                    {gs.players.slice().sort((a,b)=>a.handCount-b.handCount).map((p,i)=>(
+                                    {gs.players.slice().sort((a,b) => a.handCount - b.handCount).map((p, i) => (
                                         <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'22px 15px', borderBottom:'1px solid var(--border)', fontSize:20}}>
                                             <span style={{fontWeight:900}}>{i+1}. {p.name}</span>
                                             <span style={{color:'var(--steam-gold)', fontWeight:900}}>{p.handCount} Units</span>
