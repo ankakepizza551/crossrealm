@@ -11,19 +11,30 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 
 const createDeck = () => {
-  const realmCounts = {
-    GEAR: 15, MACHINE: 12, FOUNTAIN: 12,
-    PLANET: 6, RUINS: 6,
-    ICEAGE: 6, BATTERY: 6, ARCHIVE: 6
+  // 【修正】サブ属性を各5枚、完全ワイルドを各3枚に調整（デッキ総数51枚）
+  const realmConfig = {
+    GEAR: { total: 10, special: 3 },     // 10枚中3枚が「+2」
+    MACHINE: { total: 10, special: 3 },  // 10枚中3枚が「REV」
+    FOUNTAIN: { total: 10, special: 3 }, // 10枚中3枚が「WILD」
+    PLANET: { total: 3, special: 0 },    // 完全ワイルド（3枚）
+    RUINS: { total: 3, special: 0 },     // 完全ワイルド（3枚）
+    ICEAGE: { total: 5, special: 0 },    // サブ属性（5枚）
+    BATTERY: { total: 5, special: 0 },   // サブ属性（5枚）
+    ARCHIVE: { total: 5, special: 0 }    // サブ属性（5枚）
   };
+  
   let deck = [];
-  Object.keys(realmCounts).forEach(realm => {
-    for (let i = 0; i < realmCounts[realm]; i++) {
+  Object.keys(realmConfig).forEach(realm => {
+    const { total, special } = realmConfig[realm];
+    for (let i = 0; i < total; i++) {
       let card = { id: Math.random().toString(36).substr(2, 9), realm };
-      if (Math.random() < 0.3) card.isSpecial = true;
+      // 最初の数枚（specialで指定した枚数分）だけを特殊カードにする
+      if (i < special) card.isSpecial = true;
       deck.push(card);
     }
   });
+  
+  // 生成された全51枚をシャッフル
   return deck.sort(() => Math.random() - 0.5);
 };
 
@@ -52,7 +63,7 @@ io.on('connection', (socket) => {
     }
     const room = rooms[roomId];
     
-    // 【重要修正】同じ名前のプレイヤーがいたら再接続（復帰）させる
+    // 【再接続システム】同じ名前のプレイヤーがいたら自動で復帰させる
     const existingPlayer = room.players.find(p => p.name === playerName);
     if (existingPlayer) {
         existingPlayer.id = socket.id;
@@ -61,7 +72,6 @@ io.on('connection', (socket) => {
         return;
     }
 
-    // 新規参加
     if (room.status !== 'waiting') return;
     room.players.push({ id: socket.id, name: playerName, hand: [] });
     socket.join(roomId);
@@ -98,7 +108,7 @@ io.on('connection', (socket) => {
     
     const p = room.players[room.turnIndex];
     
-    // 【重要修正】山札補充時に元の山札を消さないように修正
+    // 山札が足りない場合は捨て札をシャッフルして補充
     if (room.deck.length < room.nextDrawAmount) {
         room.deck = [...room.deck, ...room.discardPile].sort(() => Math.random() - 0.5);
         room.discardPile = [];
@@ -178,7 +188,7 @@ io.on('connection', (socket) => {
     if (room) {
       room.players = room.players.filter(p => p.id !== socket.id);
       if (room.players.length < 2 && room.status === 'playing') {
-          room.status = 'waiting'; // 対戦中に人が抜けたら待機画面に戻す
+          room.status = 'waiting'; 
       }
       if (room.players.length === 0) delete rooms[roomId];
       else emitUpdate(roomId);
