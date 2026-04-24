@@ -51,6 +51,17 @@ io.on('connection', (socket) => {
       };
     }
     const room = rooms[roomId];
+    
+    // 【重要修正】同じ名前のプレイヤーがいたら再接続（復帰）させる
+    const existingPlayer = room.players.find(p => p.name === playerName);
+    if (existingPlayer) {
+        existingPlayer.id = socket.id;
+        socket.join(roomId);
+        emitUpdate(roomId);
+        return;
+    }
+
+    // 新規参加
     if (room.status !== 'waiting') return;
     room.players.push({ id: socket.id, name: playerName, hand: [] });
     socket.join(roomId);
@@ -63,7 +74,6 @@ io.on('connection', (socket) => {
       room.deck = createDeck();
       room.fieldCard = room.deck.pop();
       room.status = 'playing';
-      // 【ランダム手番】
       room.turnIndex = Math.floor(Math.random() * room.players.length); 
       room.nextDrawAmount = 1;
       room.isReversed = false;
@@ -84,12 +94,13 @@ io.on('connection', (socket) => {
 
   socket.on('draw-card', ({ roomId }) => {
     const room = rooms[roomId];
-    // 【バグ防止】ゲーム終了後は操作を受け付けない
     if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id || room.needsInitialChoice) return;
     
     const p = room.players[room.turnIndex];
+    
+    // 【重要修正】山札補充時に元の山札を消さないように修正
     if (room.deck.length < room.nextDrawAmount) {
-        room.deck = [...room.discardPile].sort(() => Math.random() - 0.5);
+        room.deck = [...room.deck, ...room.discardPile].sort(() => Math.random() - 0.5);
         room.discardPile = [];
     }
     
@@ -103,7 +114,6 @@ io.on('connection', (socket) => {
 
   socket.on('play-card', ({ roomId, card, chosenRealm, preventSpecial }) => {
     const room = rooms[roomId];
-    // 【バグ防止】ゲーム終了後は操作を受け付けない
     if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id || room.needsInitialChoice) return;
 
     const p = room.players[room.turnIndex];
@@ -167,6 +177,9 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
     if (room) {
       room.players = room.players.filter(p => p.id !== socket.id);
+      if (room.players.length < 2 && room.status === 'playing') {
+          room.status = 'waiting'; // 対戦中に人が抜けたら待機画面に戻す
+      }
       if (room.players.length === 0) delete rooms[roomId];
       else emitUpdate(roomId);
     }
