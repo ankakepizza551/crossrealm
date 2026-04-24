@@ -201,6 +201,37 @@
                 </div>
             );
 
+            if (gs.status === 'finished') {
+                const winner = gs.players.find(p => p.handCount === 0);
+                const isMeReady = gs.readyPlayers.includes(socket.id);
+                return (
+                    <div className="overlay">
+                        <div className="bg-aura" style={{'--realm-color': '#FFD700', opacity: 0.3}}></div>
+                        <div className="glass-panel" style={{padding:'40px', textAlign:'center', width:'300px', border: '1px solid #FFD700', boxShadow: '0 0 20px rgba(255, 215, 0, 0.3)'}}>
+                            <h2 style={{letterSpacing:'4px', margin:'0 0 10px 0', color: '#FFD700'}}>GAME SET</h2>
+                            <h3 style={{margin:'0 0 20px 0', fontSize: '24px'}}>{winner ? winner.name : 'Someone'} WINS!</h3>
+                            <p style={{fontSize:'12px', opacity:0.8, marginBottom: '20px'}}>
+                                NEXT BATTLE: {gs.readyPlayers.length} / {gs.players.length} READY
+                            </p>
+                            <button 
+                                className="btn-main" 
+                                style={{
+                                    marginTop:'10px', 
+                                    width:'100%', 
+                                    background: isMeReady ? 'transparent' : 'var(--accent)',
+                                    color: isMeReady ? 'white' : '#000',
+                                    border: isMeReady ? '1px solid var(--border)' : 'none'
+                                }} 
+                                onClick={() => !isMeReady && socket.emit('play-again', {roomId: room})}
+                                disabled={isMeReady}
+                            >
+                                {isMeReady ? 'WAITING FOR OTHERS...' : 'PLAY AGAIN'}
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
             return (
                 <div className="game-container" style={{'--realm-color': currentRealmColor}}>
                     <div className="bg-aura"></div>
