@@ -9,8 +9,9 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
 const rooms = {};
-const HAND_LIMIT = 12; // 手札の上限を12枚に設定
+const HAND_LIMIT = 12;
 
+// デッキ作成時に確実にユニークなIDを生成
 const createDeck = () => {
   const realmConfig = {
     GEAR: { total: 10, special: 3 },
@@ -24,11 +25,13 @@ const createDeck = () => {
   };
   
   let deck = [];
+  let counter = 0;
   Object.keys(realmConfig).forEach(realm => {
     const { total, special } = realmConfig[realm];
     for (let i = 0; i < total; i++) {
       deck.push({
-        id: Math.random().toString(36).substr(2, 9),
+        // ランダムな文字列 + カウンターで確実に重複を避ける
+        id: `card-${realm}-${counter++}-${Math.random().toString(36).substr(2, 5)}`,
         realm: realm,
         isSpecial: i < special
       });
@@ -52,7 +55,7 @@ const emitUpdate = (roomId) => {
       id: p.id,
       name: p.name,
       handCount: p.hand.length,
-      hand: p.hand // 本来は自分のみに送るべきだが、開発の簡略化のため含める
+      hand: p.hand 
     }))
   };
   io.to(roomId).emit('update-game', data);
@@ -75,11 +78,21 @@ io.on('connection', (socket) => {
       };
     }
     const room = rooms[roomId];
-    if (room.players.length < 4) {
-      room.players.push({ id: socket.id, name: playerName, hand: [] });
+    
+    // 同一ソケットIDのプレイヤーが既に入っているか確認（二重登録防止）
+    const existingPlayerIndex = room.players.findIndex(p => p.id === socket.id);
+    
+    if (existingPlayerIndex === -1) {
+      if (room.players.length < 4) {
+        room.players.push({ id: socket.id, name: playerName, hand: [] });
+        socket.join(roomId);
+      }
+    } else {
+      // 既に参加している場合は名前のみ更新
+      room.players[existingPlayerIndex].name = playerName;
       socket.join(roomId);
-      emitUpdate(roomId);
     }
+    emitUpdate(roomId);
   });
 
   socket.on('start-game', ({ roomId }) => {
@@ -105,10 +118,8 @@ io.on('connection', (socket) => {
       player.hand.push(room.deck.pop());
     }
 
-    // バースト判定 (12枚を超えたら敗北)
     if (player.hand.length > HAND_LIMIT) {
       room.status = 'finished';
-      // 他のプレイヤーの誰かを勝者とする（簡易版）
       emitUpdate(roomId);
       return;
     }
@@ -180,7 +191,6 @@ io.on('connection', (socket) => {
     if (room.readyPlayers.size === room.players.length) {
       room.status = 'waiting';
       room.readyPlayers.clear();
-      // 再スタート処理
     }
     emitUpdate(roomId);
   });
