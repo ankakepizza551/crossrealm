@@ -19,8 +19,8 @@ const createDeck = () => {
     GEAR: { total: 10, special: 3 },      // ドロー2
     MACHINE: { total: 10, special: 3 },   // リバース
     FOUNTAIN: { total: 10, special: 3 },  // Specialはワイルド
-    PLANET: { total: 3, special: 0 },    // ワイルド
-    RUINS: { total: 3, special: 0 },     // ワイルド
+    PLANET: { total: 3, special: 0 },     // ワイルド
+    RUINS: { total: 3, special: 0 },      // ワイルド
     ICEAGE: { total: 5, special: 0 },
     BATTERY: { total: 5, special: 0 },
     ARCHIVE: { total: 5, special: 0 }
@@ -41,34 +41,33 @@ const createDeck = () => {
   return deck.sort(() => Math.random() - 0.5);
 };
 
-// サーバー側バリデーション：タクティカル・ルール
+// サーバー側バリデーション：タクティカル・ルールを厳格に適用
 const canPlayCard = (room, card) => {
-  // 1. ドロー蓄積中のチェック：特殊なGEAR以外は出せない
   if (room.nextDrawAmount > 1) {
+    // ドロー攻撃中は特殊なGEARでのみ対抗可能
     return (card.realm === 'GEAR' && card.isSpecial);
   }
 
   const field = room.fieldCard.realm;
   const hand = card.realm;
 
-  // 2. ワイルドカード（PLANET / RUINS / Special FOUNTAIN）は常に出せる
+  // WILDカードは常に許可
   if (hand === 'PLANET' || hand === 'RUINS') return true;
   if (hand === 'FOUNTAIN' && card.isSpecial) return true;
 
-  // 3. 同じレルムなら出せる
+  // 同じレルムなら許可
   if (field === hand) return true;
 
-  // 4. 戦術サイクルチェック (次の属性なら出せる)
+  // 属性サイクル判定
   const currentIdx = CYCLE_ORDER.indexOf(field);
   if (currentIdx !== -1) {
     const nextRealm = CYCLE_ORDER[(currentIdx + 1) % 6];
     if (hand === nextRealm) return true;
   }
 
-  // 5. 特殊相性コンボ
-  if (field === 'ARCHIVE' && hand === 'ICEAGE') return true; // 古文書を凍らせる
-  if (field === 'ICEAGE' && hand === 'BATTERY') return true;  // 氷河期を充電
-  if (field === 'ICEAGE' && hand === 'FOUNTAIN') return true; // 氷を溶かす
+  // 特殊コンボ判定
+  if (field === 'ARCHIVE' && hand === 'ICEAGE') return true; 
+  if (field === 'ICEAGE' && (hand === 'BATTERY' || hand === 'FOUNTAIN')) return true;
 
   return false;
 };
@@ -105,7 +104,7 @@ io.on('connection', (socket) => {
     }
     const room = rooms[roomId];
     if (room.players.findIndex(p => p.id === socket.id) === -1 && room.players.length < 4) {
-      room.players.push({ id: socket.id, name: playerName || "ANON", hand: [] });
+      room.players.push({ id: socket.id, name: playerName || "匿名", hand: [] });
       socket.join(roomId);
     }
     emitUpdate(roomId);
@@ -123,7 +122,7 @@ io.on('connection', (socket) => {
     room.nextDrawAmount = 1;
     room.isReversed = false;
     
-    // 最初のカードがワイルドだった場合の処理
+    // 初手WILD対応
     room.needsInitialChoice = (room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS' || (room.fieldCard.realm === 'FOUNTAIN' && room.fieldCard.isSpecial));
     
     emitUpdate(roomId);
@@ -159,20 +158,17 @@ io.on('connection', (socket) => {
     const player = room.players[room.turnIndex];
     if (player.id !== socket.id) return;
 
-    // サーバー側バリデーション
     if (!canPlayCard(room, card)) return;
 
     player.hand = player.hand.filter(c => c.id !== card.id);
-    
     const newFieldCard = { ...card };
     
-    // ワイルドカード使用時の処理
     if (chosenRealm) {
       if (card.realm === 'RUINS') newFieldCard.wasRuins = true;
       if (card.realm === 'PLANET') newFieldCard.wasPlanet = true;
       if (card.realm === 'FOUNTAIN') newFieldCard.wasFountain = true;
       newFieldCard.realm = chosenRealm;
-      newFieldCard.isSpecial = false; // 属性変更後は通常カード扱い
+      newFieldCard.isSpecial = false; 
     }
     
     room.fieldCard = newFieldCard;
@@ -205,15 +201,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('leave-room', ({ roomId }) => {
-    const room = rooms[roomId];
-    if (room) {
-      room.players = room.players.filter(p => p.id !== socket.id);
-      if (room.players.length === 0) delete rooms[roomId];
-      else emitUpdate(roomId);
-    }
-  });
-
   socket.on('play-again', ({ roomId }) => {
     const room = rooms[roomId];
     if (!room) return;
@@ -227,4 +214,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => console.log(`Tactical Eternal Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Eternal Tactical Server running on port ${PORT}`));
