@@ -78,7 +78,6 @@ io.on('connection', (socket) => {
     if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
     const player = room.players.find(p => p.id === socket.id);
     
-    // 現在の場のカードを捨て札に移動（ワイルドカードは元の状態にリセット）
     if (room.fieldCard) {
       let discard = { ...room.fieldCard };
       if (discard.wasPlanet) discard.realm = 'PLANET';
@@ -96,10 +95,12 @@ io.on('connection', (socket) => {
         newFieldCard.realm = chosenRealm;
     }
     room.fieldCard = newFieldCard;
+
     if (card.isSpecial) {
       if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
       if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
     }
+
     if (player.hand.length === 0) {
       room.status = 'finished';
     } else {
@@ -115,16 +116,14 @@ io.on('connection', (socket) => {
     const player = room.players[room.turnIndex];
 
     for (let i = 0; i < room.nextDrawAmount; i++) {
-      // 山札が空なら捨て札を補充
       if (room.deck.length === 0) {
         if (room.discardPile.length > 0) {
           room.deck = room.discardPile.sort(() => Math.random() - 0.5);
           room.discardPile = [];
         } else {
-          break; // 全カードが手元にある場合は終了
+          break;
         }
       }
-      // 15枚制限チェック
       if (player.hand.length < 15) {
         player.hand.push(room.deck.pop());
       } else {
