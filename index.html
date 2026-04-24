@@ -21,7 +21,7 @@
         }
         
         body { 
-            margin: 0; background: var(--bg); color: white; 
+            margin: 0; background: #000; color: white; 
             font-family: 'Exo 2', 'Hiragino Kaku Gothic ProN', sans-serif;
             overflow: hidden;
             height: 100vh;
@@ -31,129 +31,130 @@
         .bg-aurora {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at 50% 50%, var(--realm-color, #111) 0%, #000 80%);
-            opacity: 0.2; z-index: -1; transition: background 1.5s ease;
+            opacity: 0.25; z-index: -1; transition: background 1.5s ease;
         }
 
         .container {
             display: flex; flex-direction: column; height: 100vh; position: relative;
-            background: radial-gradient(circle at top right, rgba(64, 224, 208, 0.05), transparent 40%);
+            background: radial-gradient(circle at top right, rgba(64, 224, 208, 0.08), transparent 40%);
         }
 
         /* プレイヤーエリア */
         .opponents {
             display: flex; justify-content: center; gap: 20px; padding: 25px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
             z-index: 10;
         }
         .opp-card {
-            background: var(--glass); border: 1px solid var(--border);
+            background: var(--glass); border: 1.5px solid var(--border);
             padding: 12px 20px; border-radius: 12px; min-width: 130px;
-            text-align: center; backdrop-filter: blur(8px); transition: all 0.4s;
+            text-align: center; backdrop-filter: blur(10px); transition: all 0.4s;
         }
         .opp-card.active { 
             border-color: var(--accent); 
-            box-shadow: 0 0 20px rgba(64, 224, 208, 0.2), inset 0 0 10px rgba(64, 224, 208, 0.1); 
+            box-shadow: 0 0 25px rgba(64, 224, 208, 0.25);
             transform: translateY(5px);
         }
-        .opp-name { font-size: 11px; font-weight: bold; margin-bottom: 5px; opacity: 0.6; letter-spacing: 1px; }
-        .opp-count { font-size: 20px; font-weight: 900; color: var(--accent); }
+        .opp-name { font-size: 11px; font-weight: bold; margin-bottom: 5px; opacity: 0.6; letter-spacing: 1.5px; }
+        .opp-count { font-size: 22px; font-weight: 900; color: var(--accent); }
 
         /* フィールドエリア */
         .field {
             flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
             position: relative;
         }
+        
         .field-card-container {
             position: relative; z-index: 5;
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
         /* カード基本スタイル */
         .card {
             width: var(--card-w); height: var(--card-h);
-            border-radius: 18px; border: 1.5px solid var(--border);
-            background: #0a0a0a; display: flex; flex-direction: column;
-            overflow: hidden; position: relative; box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+            border-radius: 20px; border: 1.5px solid var(--border);
+            background: #080808; display: flex; flex-direction: column;
+            overflow: hidden; position: relative; box-shadow: 0 30px 60px rgba(0,0,0,0.7);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .card-header { 
             height: 35%; display: flex; align-items: center; justify-content: center; 
-            font-weight: 900; font-size: 15px; letter-spacing: 1px;
-            background: rgba(255,255,255,0.03);
+            font-weight: 900; font-size: 16px; letter-spacing: 1px;
+            background: rgba(255,255,255,0.04);
         }
-        .card-body { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 45px; }
+        .card-body { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 48px; }
         .card-footer { 
             height: 25%; padding: 8px; font-size: 10px; font-weight: bold;
-            text-align: center; background: rgba(0,0,0,0.4); opacity: 0.7;
+            text-align: center; background: rgba(0,0,0,0.5); opacity: 0.7;
             display: flex; align-items: center; justify-content: center;
         }
 
         .status-badge {
-            background: var(--danger); color: white; padding: 8px 20px; border-radius: 30px;
-            font-weight: 900; font-size: 16px; margin-bottom: 25px; 
-            box-shadow: 0 0 20px rgba(255, 69, 0, 0.4);
-            animation: bounce 1.2s infinite; z-index: 10;
+            background: var(--danger); color: white; padding: 10px 25px; border-radius: 40px;
+            font-weight: 900; font-size: 18px; margin-bottom: 30px; 
+            box-shadow: 0 0 25px rgba(255, 69, 0, 0.5);
+            animation: bounce 1s infinite; z-index: 10;
         }
-        @keyframes bounce { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-8px) scale(1.05); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
         /* 手札エリア */
         .my-hand-area {
-            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
-            padding: 40px 20px 60px 20px; position: relative;
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 70%, transparent 100%);
+            padding: 40px 20px 70px 20px; position: relative;
             z-index: 20;
         }
         .hand-container {
-            display: flex; justify-content: center; height: 210px;
-            align-items: flex-end; perspective: 1200px;
+            display: flex; justify-content: center; height: 220px;
+            align-items: flex-end; perspective: 1500px;
         }
         .my-card {
-            margin-left: -50px; cursor: pointer; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            margin-left: -55px; cursor: pointer; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-shadow: -12px 0 35px rgba(0,0,0,0.6);
             transform-origin: bottom center;
         }
         .my-card:first-child { margin-left: 0; }
         .my-card:hover { 
-            transform: translateY(-50px) rotate(0deg) scale(1.2) !important; 
+            transform: translateY(-60px) rotate(0deg) scale(1.25) !important; 
             z-index: 100 !important;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.9);
         }
-        .my-card.playable { border-color: rgba(255,255,255,0.6); }
-        .my-card.not-playable { opacity: 0.3; filter: grayscale(1) blur(1px); cursor: not-allowed; }
+        .my-card.playable { border-color: rgba(255,255,255,0.7); border-width: 2px; }
+        .my-card.not-playable { opacity: 0.25; filter: grayscale(1) blur(1.5px); cursor: not-allowed; }
 
         /* アクションボタン */
         .btn-draw {
-            position: absolute; right: 50px; bottom: 160px;
+            position: absolute; right: 60px; bottom: 180px;
             background: var(--accent); color: #000; border: none;
-            padding: 18px 45px; border-radius: 40px; font-weight: 900;
-            font-size: 16px; letter-spacing: 1px;
-            cursor: pointer; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-            transition: all 0.3s ease; z-index: 30;
+            padding: 20px 50px; border-radius: 50px; font-weight: 900;
+            font-size: 18px; letter-spacing: 1.5px;
+            cursor: pointer; box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 30;
         }
-        .btn-draw:hover { transform: scale(1.08) translateY(-3px); box-shadow: 0 20px 40px rgba(64, 224, 208, 0.3); }
-        .btn-draw:active { transform: scale(0.95); }
-        .btn-draw:disabled { background: #222; color: #555; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-draw:hover { transform: scale(1.1) translateY(-5px); box-shadow: 0 20px 45px rgba(64, 224, 208, 0.4); }
+        .btn-draw:active { transform: scale(0.92); }
+        .btn-draw:disabled { background: #1a1a1a; color: #444; cursor: not-allowed; transform: none; box-shadow: none; }
 
         /* モーダル */
         .overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
             display: flex; align-items: center; justify-content: center; z-index: 1000;
-            backdrop-filter: blur(15px);
+            backdrop-filter: blur(20px);
         }
         .panel {
-            background: #080808; border: 1.5px solid var(--border);
-            padding: 45px; border-radius: 28px; text-align: center; width: 90%; max-width: 420px;
-            box-shadow: 0 0 60px rgba(0,0,0,1);
+            background: #050505; border: 1.5px solid var(--border);
+            padding: 50px; border-radius: 30px; text-align: center; width: 90%; max-width: 440px;
+            box-shadow: 0 0 70px rgba(0,0,0,1);
         }
-        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 25px; }
+        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px; }
         .realm-btn {
-            padding: 18px; border: 1.5px solid var(--border); border-radius: 14px;
-            background: rgba(255,255,255,0.02); color: white; font-weight: 900; cursor: pointer;
+            padding: 20px; border: 2px solid var(--border); border-radius: 16px;
+            background: rgba(255,255,255,0.03); color: white; font-weight: 900; cursor: pointer;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 13px; letter-spacing: 1px;
+            font-size: 14px; letter-spacing: 1px;
         }
-        .realm-btn:hover { background: rgba(255,255,255,0.08); transform: scale(1.03); }
+        .realm-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
 
-        /* レルムカラー・定義 */
+        /* レルムカラー（ index (2).html 仕様 ） */
         .r-gear { background: linear-gradient(135deg, #FF8C00, #FFA500); --r-color: #FF8C00; }
         .r-iceage { background: linear-gradient(135deg, #00BFFF, #1E90FF); --r-color: #00BFFF; }
         .r-fountain { background: linear-gradient(135deg, #4169E1, #0000FF); --r-color: #4169E1; }
@@ -163,11 +164,17 @@
         .r-planet { background: linear-gradient(135deg, #9400D3, #8B008B); --r-color: #9400D3; }
         .r-ruins { background: linear-gradient(135deg, #696969, #808080); --r-color: #696969; }
 
-        /* 背景透かし文字 */
+        /* 背景透かし文字（ YOUR TURN アニメーション復活 ） */
         .turn-indicator {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 140px; font-weight: 900; opacity: 0.04; pointer-events: none;
-            white-space: nowrap; z-index: 0; letter-spacing: -5px; font-style: italic;
+            font-size: 150px; font-weight: 900; opacity: 0.05; pointer-events: none;
+            white-space: nowrap; z-index: 0; letter-spacing: -8px; font-style: italic;
+            text-shadow: 0 0 30px rgba(64, 224, 208, 0.2);
+            animation: pulse-text 3s infinite ease-in-out;
+        }
+        @keyframes pulse-text {
+            0%, 100% { opacity: 0.03; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.07; transform: translate(-50%, -50%) scale(1.05); }
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -199,7 +206,7 @@
             const [name, setName] = useState('PILOT-' + Math.floor(Math.random() * 999));
             const [joined, setJoined] = useState(false);
             const [selectorCard, setSelectorCard] = useState(null);
-            const [previewStatus, setPreviewStatus] = useState('waiting'); // プレビュー用の状態管理
+            const [previewStatus, setPreviewStatus] = useState('waiting'); 
 
             useEffect(() => {
                 const s = io(); 
@@ -240,20 +247,32 @@
 
             const canPlay = (card) => {
                 if (!isMyTurn || effectiveGameState.status !== 'playing' || effectiveGameState.needsInitialChoice) return false;
+                
+                // ドロー攻撃中の制限（サーバー同期ルール）
                 if (effectiveGameState.nextDrawAmount > 1) {
                     return (card.realm === 'GEAR' && card.isSpecial);
                 }
+
                 const field = effectiveGameState.fieldCard?.realm || 'GEAR';
                 const hand = card.realm;
+
+                // WILD系
                 if (hand === 'PLANET' || hand === 'RUINS') return true;
                 if (hand === 'FOUNTAIN' && card.isSpecial) return true;
+                
+                // 同じレルム
                 if (field === hand) return true;
+
+                // 戦術サイクル
                 const currentIdx = CYCLE_ORDER.indexOf(field);
                 const nextRealm = CYCLE_ORDER[(currentIdx + 1) % 6];
                 if (hand === nextRealm) return true;
-                if (field === 'ARCHIVE' && hand === 'ICEAGE') return true;
-                if (field === 'ICEAGE' && hand === 'BATTERY') return true;
-                if (field === 'ICEAGE' && hand === 'FOUNTAIN') return true;
+
+                // 特殊コンボ（ Tactical Edition オリジナル ）
+                if (field === 'ARCHIVE' && hand === 'ICEAGE') return true; // 古文書を凍らせる
+                if (field === 'ICEAGE' && hand === 'BATTERY') return true; // 氷河期を充電
+                if (field === 'ICEAGE' && hand === 'FOUNTAIN') return true; // 氷を溶かす
+
                 return false;
             };
 
@@ -264,59 +283,62 @@
                 } else {
                     if (socket?.connected) {
                         socket.emit('play-card', { roomId: room, card });
-                    } else {
-                        // プレビューモードでの擬似動作
-                        console.log("Preview Play:", card.realm);
                     }
                 }
             };
 
+            const selectRealm = (r) => {
+                if (socket?.connected) {
+                    socket.emit('play-card', { roomId: room, card: selectorCard, chosenRealm: r });
+                }
+                setSelectorCard(null);
+            };
+
+            // ログイン画面
             if (!joined) {
                 return (
                     <div className="overlay">
                         <div className="panel">
-                            <h1 style={{color:'var(--accent)', fontSize:32, marginBottom:40, fontWeight:900, letterSpacing:4, fontStyle:'italic'}}>CROSS REALM</h1>
-                            <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="PILOT NAME" style={{width:'100%', padding:18, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:15, borderRadius:14, fontSize:14, fontWeight:'bold', outline:'none'}} />
-                            <input type="text" value={room} onChange={e=>setRoom(e.target.value)} placeholder="SECTOR ID" style={{width:'100%', padding:18, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:25, borderRadius:14, fontSize:14, fontWeight:'bold', outline:'none'}} />
-                            <button onClick={()=>{ if(socket?.connected) socket.emit('join-room',{roomId:room, playerName:name}); setJoined(true);}} style={{width:'100%', padding:18, background:'var(--accent)', color:'#000', border:'none', borderRadius:14, fontWeight:900, fontSize:16, cursor:'pointer', letterSpacing:1}}>INITIALIZE LINK</button>
+                            <h1 style={{color:'var(--accent)', fontSize:32, marginBottom:40, fontWeight:900, letterSpacing:5, fontStyle:'italic', textShadow:'0 0 20px rgba(64,224,208,0.4)'}}>CROSS REALM</h1>
+                            <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="PILOT NAME" style={{width:'100%', padding:20, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:15, borderRadius:16, fontSize:14, fontWeight:'bold', outline:'none'}} />
+                            <input type="text" value={room} onChange={e=>setRoom(e.target.value)} placeholder="SECTOR ID" style={{width:'100%', padding:20, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:30, borderRadius:16, fontSize:14, fontWeight:'bold', outline:'none'}} />
+                            <button onClick={()=>{ if(socket?.connected) socket.emit('join-room',{roomId:room, playerName:name}); setJoined(true);}} style={{width:'100%', padding:20, background:'var(--accent)', color:'#000', border:'none', borderRadius:16, fontWeight:900, fontSize:16, cursor:'pointer', letterSpacing:1.5}}>INITIALIZE LINK</button>
                         </div>
                     </div>
                 );
             }
 
+            // 待機画面
             if (!effectiveGameState || effectiveGameState.status === 'waiting') {
                 return (
                     <div className="container" style={{justifyContent:'center', alignItems:'center'}}>
-                        <div style={{width:50, height:50, border:'4px solid rgba(64, 224, 208, 0.1)', borderTopColor:'var(--accent)', borderRadius:'50%', animation:'spin 1s linear infinite'}}></div>
-                        <h2 style={{letterSpacing:12, opacity:0.6, marginTop:30, fontSize:16, fontWeight:900, textAlign:'center'}}>WAITING FOR PLAYER</h2>
-                        <div style={{marginTop:10, opacity:0.4, fontSize:12, fontWeight:900, letterSpacing:2, color:'var(--accent)', textTransform:'uppercase'}}>SECTOR ID: {room}</div>
+                        <div style={{width:60, height:60, border:'5px solid rgba(64, 224, 208, 0.1)', borderTopColor:'var(--accent)', borderRadius:'50%', animation:'spin 0.8s linear infinite'}}></div>
+                        <h2 style={{letterSpacing:15, opacity:0.6, marginTop:35, fontSize:18, fontWeight:900, textAlign:'center'}}>WAITING FOR PLAYER</h2>
+                        <div style={{marginTop:12, opacity:0.5, fontSize:13, fontWeight:900, letterSpacing:3, color:'var(--accent)', textTransform:'uppercase'}}>SECTOR ID: {room}</div>
                         
-                        <div style={{marginTop:40, display:'flex', gap:12, flexWrap:'wrap', justifyContent:'center'}}>
+                        <div style={{marginTop:45, display:'flex', gap:15, flexWrap:'wrap', justifyContent:'center'}}>
                             {effectiveGameState?.players.map(p => (
-                                <div key={p.id} style={{padding:'10px 24px', background:'var(--glass)', borderRadius:30, border:'1px solid var(--border)', fontSize:12, fontWeight:900, backdropFilter:'blur(10px)'}}>
-                                    <span style={{opacity:0.5, marginRight:8}}>#</span>{p.name}
+                                <div key={p.id} style={{padding:'12px 28px', background:'var(--glass)', borderRadius:35, border:'1px solid var(--border)', fontSize:13, fontWeight:900, backdropFilter:'blur(15px)', color:'rgba(255,255,255,0.9)'}}>
+                                    <span style={{color:'var(--accent)', marginRight:10}}>#</span>{p.name}
                                 </div>
                             ))}
                         </div>
                         {effectiveGameState?.players[0]?.id === (socket?.id || 'mock-me') && (
-                            <div style={{marginTop:60, display:'flex', flexDirection:'column', gap:15}}>
-                                <button onClick={()=>{ if(socket?.connected) { socket.emit('start-game',{roomId:room}); } else { setPreviewStatus('playing'); } }} style={{padding:'20px 60px', borderRadius:40, border:'2px solid var(--accent)', background:'transparent', color:'var(--accent)', fontWeight:900, cursor:'pointer', fontSize:18, transition:'0.3s', textTransform:'uppercase', letterSpacing:2}}>ENGAGE CORE</button>
-                                {!socket?.connected && (
-                                    <span style={{fontSize:10, opacity:0.3, textAlign:'center'}}>※プレビュー時は強制開始できます</span>
-                                )}
-                            </div>
+                            <button onClick={()=>{ if(socket?.connected) { socket.emit('start-game',{roomId:room}); } else { setPreviewStatus('playing'); } }} style={{marginTop:65, padding:'22px 65px', borderRadius:45, border:'2px solid var(--accent)', background:'transparent', color:'var(--accent)', fontWeight:900, cursor:'pointer', fontSize:20, transition:'0.3s', textTransform:'uppercase', letterSpacing:2.5}}>ENGAGE CORE</button>
                         )}
                         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
                     </div>
                 );
             }
 
-            // --- メイン対戦画面 ---
+            // --- メイン対戦画面（ index (2).html の構成を完全復元 ） ---
             const currentRealm = effectiveGameState.fieldCard?.realm || 'GEAR';
 
             return (
                 <div className="container" style={{ '--realm-color': REALMS[currentRealm]?.color }}>
                     <div className="bg-aurora"></div>
+                    
+                    {/* 対戦相手リスト */}
                     <div className="opponents scrollbar-hide">
                         {others.map(p => (
                             <div key={p.id} className={`opp-card ${effectiveGameState.currentTurnPlayerId === p.id ? 'active' : ''}`}>
@@ -326,44 +348,99 @@
                         ))}
                     </div>
 
+                    {/* フィールド中央 */}
                     <div className="field">
                         <div className="turn-indicator">{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
-                        {effectiveGameState.nextDrawAmount > 1 && <div className="status-badge">DRAW +{effectiveGameState.nextDrawAmount} !!</div>}
-                        {effectiveGameState.isReversed && <div style={{color:'var(--accent)', fontSize:13, fontWeight:900, marginBottom:15, letterSpacing:2}}>🔄 REVERSE ACTIVE</div>}
+                        
+                        {effectiveGameState.nextDrawAmount > 1 && (
+                            <div className="status-badge">DRAW +{effectiveGameState.nextDrawAmount} !!</div>
+                        )}
+                        
+                        {effectiveGameState.isReversed && (
+                            <div style={{color:'var(--accent)', fontSize:14, fontWeight:900, marginBottom:20, letterSpacing:2, textShadow:'0 0 10px rgba(64,224,208,0.5)'}}>🔄 REVERSE ACTIVE</div>
+                        )}
 
                         <div className="field-card-container">
                             <div className={`card ${REALMS[currentRealm].class}`}>
                                 <div className="card-header">{REALMS[currentRealm].n}</div>
                                 <div className="card-body">{REALMS[currentRealm].icon}</div>
-                                <div className="card-footer">{effectiveGameState.fieldCard?.isSpecial ? 'SPECIAL ABILITY' : 'NORMAL UNIT'}</div>
+                                <div className="card-footer">
+                                    {effectiveGameState.fieldCard?.isSpecial ? 'SPECIAL ABILITY' : 'NORMAL UNIT'}
+                                </div>
                             </div>
                         </div>
                     </div>
 
+                    {/* ドローボタン */}
                     <button className="btn-draw" disabled={!isMyTurn} onClick={()=>{ if(socket?.connected) socket.emit('draw-card',{roomId:room}) }}>
                         {effectiveGameState.nextDrawAmount > 1 ? `DRAW +${effectiveGameState.nextDrawAmount}` : 'DRAW / PASS'}
                     </button>
 
+                    {/* 自分の手札（ 扇形レイアウト ） */}
                     <div className="my-hand-area">
                         <div className="hand-container">
                             {(me.hand || []).map((card, i) => {
                                 const playable = canPlay(card);
-                                const rotation = (i - (me.hand.length - 1) / 2) * (me.hand.length > 8 ? 4 : 7);
+                                const total = me.hand.length;
+                                const rotation = (i - (total - 1) / 2) * (total > 8 ? 5 : 8);
+                                const xOff = (i - (total - 1) / 2) * (total > 10 ? 35 : 0);
                                 return (
-                                    <div key={card.id} className={`card my-card ${REALMS[card.realm].class} ${playable ? 'playable' : 'not-playable'}`}
-                                         style={{ transform: `rotate(${rotation}deg)` }} onClick={() => playCard(card)}>
+                                    <div 
+                                        key={card.id} 
+                                        className={`card my-card ${REALMS[card.realm].class} ${playable ? 'playable' : 'not-playable'}`}
+                                        style={{ transform: `rotate(${rotation}deg) translateX(${xOff}px)` }}
+                                        onClick={() => playCard(card)}
+                                    >
                                         <div className="card-header">{REALMS[card.realm].n}</div>
                                         <div className="card-body">{REALMS[card.realm].icon}</div>
-                                        {card.isSpecial && <div style={{position:'absolute', top:8, right:8, fontSize:12}}>⭐</div>}
+                                        {card.isSpecial && <div style={{position:'absolute', top:10, right:10, fontSize:12}}>⭐</div>}
                                     </div>
                                 );
                             })}
                         </div>
                     </div>
-                    
-                    {/* デバッグ用：プレビューをリセット */}
-                    {!socket?.connected && (
-                        <button onClick={()=>setPreviewStatus('waiting')} style={{position:'fixed', bottom:10, left:10, opacity:0.2, background:'none', border:'none', color:'white', fontSize:10}}>RESET PREVIEW</button>
+
+                    {/* WILD選択 / 初期レルム選択パネル */}
+                    {(selectorCard || effectiveGameState.needsInitialChoice) && (
+                        <div className="overlay">
+                            <div className="panel">
+                                <h3 style={{fontSize:22, fontWeight:900, marginBottom:30, letterSpacing:2, color:'var(--accent)'}}>
+                                    {selectorCard ? 'SELECT TARGET REALM' : 'INITIAL STABILITY'}
+                                </h3>
+                                <div className="realm-grid">
+                                    {CYCLE_ORDER.map(r => (
+                                        <button key={r} className="realm-btn" style={{borderColor:REALMS[r].color, color:REALMS[r].color}} onClick={() => {
+                                            if(selectorCard) selectRealm(r);
+                                            else if(socket?.connected) socket.emit('set-initial-realm',{roomId:room, chosenRealm:r});
+                                        }}>
+                                            {REALMS[r].n}
+                                        </button>
+                                    ))}
+                                </div>
+                                {selectorCard && (
+                                    <button onClick={()=>setSelectorCard(null)} style={{marginTop:35, opacity:0.4, background:'transparent', border:'none', color:'#fff', cursor:'pointer', fontWeight:900, fontSize:13}}>CANCEL TRANSITION</button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 終了画面 */}
+                    {effectiveGameState.status === 'finished' && (
+                        <div className="overlay">
+                            <div className="panel">
+                                <h2 style={{color:'var(--accent)', fontSize:42, fontWeight:900, fontStyle:'italic', marginBottom:15}}>GAME OVER</h2>
+                                <p style={{fontSize:13, opacity:0.5, marginBottom:35, fontWeight:900, letterSpacing:5}}>MISSION COMPLETE</p>
+                                <div style={{margin:'25px 0', textAlign:'left'}}>
+                                    {effectiveGameState.players.slice().sort((a,b)=>a.handCount-b.handCount).map((p,i)=>(
+                                        <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'18px 12px', borderBottom:'1.5px solid var(--border)', background:p.id === (socket?.id || 'mock-me') ? 'rgba(64,224,208,0.05)' : 'transparent'}}>
+                                            <span style={{fontWeight:900, fontSize:15}}>{i+1}. {p.name}</span>
+                                            <span style={{color:'var(--accent)', fontWeight:900}}>{p.handCount} units</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <button onClick={()=>{ if(socket?.connected) socket.emit('play-again',{roomId:room}); else setPreviewStatus('waiting'); }} style={{width:'100%', padding:22, background:'var(--accent)', color:'#000', border:'none', borderRadius:18, fontWeight:900, fontSize:18, marginTop:25, cursor:'pointer', letterSpacing:2}}>RE-ESTABLISH LINK</button>
+                            </div>
+                        </div>
                     )}
                 </div>
             );
