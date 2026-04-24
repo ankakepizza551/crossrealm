@@ -249,7 +249,7 @@
                 <div className="overlay">
                     <div className="bg-aura" style={{'--realm-color': '#40E0D0', opacity: 0.2}}></div>
                     <h1 className="login-title">CROSS REALM</h1>
-                    <input className="input-field" placeholder="NAME" value={name} onChange={e=>setName(e.target.value)} />
+                    <input className="input-field" placeholder="NAME" value={name} maxLength={10} onChange={e=>setName(e.target.value)} />
                     <input className="input-field" placeholder="ROOM ID" value={room} onChange={e=>setRoom(e.target.value)} />
                     <button className="btn-main" onClick={()=>{if(room&&name){socket.emit('join-room',{roomId:room,playerName:name});setJoined(true)}}}>LOGIN</button>
                 </div>
