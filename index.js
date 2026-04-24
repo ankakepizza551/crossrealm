@@ -126,18 +126,36 @@ io.on('connection', (socket) => {
     const player = room.players[room.turnIndex];
     if (player.id !== socket.id) return;
 
+    // --- カード出しのバリデーション ---
+    
+    // 1. ドロー蓄積中のチェック
+    if (room.nextDrawAmount > 1) {
+      // GEARの特殊カードのみ上乗せ可能
+      if (!(card.realm === 'GEAR' && card.isSpecial)) {
+        // 条件を満たさない場合は何もしない（クライアント側にも通知するのが理想だが、ここでは無視）
+        return; 
+      }
+    } else {
+      // 2. 通常時のチェック（レルム一致か、ワイルドカードか）
+      const isValidRealm = (card.realm === room.fieldCard.realm);
+      const isWild = (card.realm === 'PLANET' || card.realm === 'RUINS');
+      
+      if (!isValidRealm && !isWild) {
+        return;
+      }
+    }
+
+    // --- バリデーション通過後の処理 ---
     player.hand = player.hand.filter(c => c.id !== card.id);
     
     const newFieldCard = { ...card };
     
-    // 【重要】バグ修正：WILDカードが移動先の特殊能力を継承しないようにする
+    // WILDカードが移動先の特殊能力を継承しないようにする
     if (chosenRealm) {
       newFieldCard.realm = chosenRealm;
       if (card.realm === 'RUINS') newFieldCard.wasRuins = true;
       if (card.realm === 'PLANET') newFieldCard.wasPlanet = true;
       if (card.realm === 'FOUNTAIN') newFieldCard.wasFountain = true;
-      
-      // WILDで出したカード自体に特殊能力（+2やREV）を付与させない
       newFieldCard.isSpecial = false; 
     }
     
@@ -146,10 +164,10 @@ io.on('connection', (socket) => {
     if (player.hand.length === 0) {
       room.status = 'finished';
     } else {
-      // 元のカードが特殊カードだった場合の効果（WILDは既にisSpecial=falseになっている）
       if (card.isSpecial) {
         switch (card.realm) {
           case 'GEAR':
+            // ドロー上乗せ（初期値1なら2に、それ以上なら+2）
             room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
             break;
           case 'MACHINE':
