@@ -147,11 +147,8 @@
                 const h = c.realm;           
                 if (REALMS[h].w || REALMS[f].w) return true;
                 if (h === 'FOUNTAIN' && c.isSpecial) return (f === 'ICEAGE' || f === 'FOUNTAIN');
-
-                // --- 追加ロジック: 特殊な接続ルート ---
-                if (f === 'ICEAGE' && h === 'BATTERY') return true;  // 氷河期 → バッテリー
-                if (f === 'ARCHIVE' && h === 'ICEAGE') return true;  // 古文書 → 氷河期
-                // ------------------------------------
+                if (f === 'ICEAGE' && h === 'BATTERY') return true;
+                if (f === 'ARCHIVE' && h === 'ICEAGE') return true;
 
                 if (f === h) return REALMS[h].canDuplicate;
                 const fIdx = CYCLE_ORDER.indexOf(f);
@@ -234,7 +231,9 @@
                             </div>
                         </div>
                         <button className="btn-action" onClick={()=>socket.emit('draw-card',{roomId:room})} disabled={!isMyTurn}>
-                            {gs.nextDrawAmount > 1 ? `DRAW +${gs.nextDrawAmount}` : "DRAW / PASS"}
+                            {me.hand.length >= 15 
+                                ? "PASS (MAX 15)" 
+                                : (gs.nextDrawAmount > 1 ? `DRAW +${gs.nextDrawAmount}` : "DRAW / PASS")}
                         </button>
                     </div>
 
