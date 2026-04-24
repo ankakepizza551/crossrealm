@@ -13,197 +13,152 @@
         :root { 
             --accent: #40E0D0; 
             --danger: #FF4500;
-            --bg: #030303; 
-            --card-w: 130px; 
-            --card-h: 185px;
+            --bg: #000; 
+            --card-w: 110px; 
+            --card-h: 155px;
+            --opp-card-w: 24px;
+            --opp-card-h: 36px;
             --glass: rgba(255, 255, 255, 0.05);
             --border: rgba(255, 255, 255, 0.12);
         }
         
         body { 
-            margin: 0; background: #000; color: white; 
-            font-family: 'Exo 2', 'Hiragino Kaku Gothic ProN', sans-serif;
-            overflow: hidden;
+            margin: 0; background: #111; color: white; 
+            font-family: 'Exo 2', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden;
+        }
+
+        /* PCでも縦16:9を維持するためのラッパー */
+        .screen-wrapper {
+            width: 100vw;
             height: 100vh;
-        }
-
-        /* 背景演出（オーラ） */
-        .bg-aurora {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 50%, var(--realm-color, #111) 0%, #000 80%);
-            opacity: 0.25; z-index: -1; transition: background 1.5s ease;
-        }
-
-        .container {
-            display: flex; flex-direction: column; height: 100vh; position: relative;
-            background: radial-gradient(circle at top right, rgba(64, 224, 208, 0.08), transparent 40%);
-        }
-
-        /* プレイヤーエリア */
-        .opponents {
-            display: flex; justify-content: center; gap: 20px; padding: 25px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
-            z-index: 10;
-        }
-        .opp-card {
-            background: var(--glass); border: 1.5px solid var(--border);
-            padding: 12px 20px; border-radius: 12px; min-width: 130px;
-            text-align: center; backdrop-filter: blur(10px); transition: all 0.4s;
-        }
-        .opp-card.active { 
-            border-color: var(--accent); 
-            box-shadow: 0 0 25px rgba(64, 224, 208, 0.25);
-            transform: translateY(5px);
-        }
-        .opp-name { font-size: 11px; font-weight: bold; margin-bottom: 5px; opacity: 0.6; letter-spacing: 1.5px; }
-        .opp-count { font-size: 22px; font-weight: 900; color: var(--accent); }
-
-        /* フィールドエリア */
-        .field {
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            max-width: calc(100vh * 9 / 16);
+            max-height: 100vh;
+            background: var(--bg);
             position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 100px rgba(0,0,0,0.8);
+            display: flex; flex-direction: column;
         }
-        
-        .field-card-container {
-            position: relative; z-index: 5;
-            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+        .bg-aurora {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 50%, var(--realm-color, #111) 0%, #000 85%);
+            opacity: 0.3; z-index: 0; transition: background 1.5s ease;
+            pointer-events: none;
         }
-        
-        /* カード基本スタイル */
+
+        .game-container {
+            flex: 1; display: flex; flex-direction: column; position: relative; z-index: 1;
+        }
+
+        /* 相手の手札表示 */
+        .opponents-area {
+            display: flex; flex-direction: column; gap: 15px; padding: 15px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+        }
+        .opp-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px; border-radius: 12px; background: var(--glass);
+            border: 1px solid var(--border); backdrop-filter: blur(5px);
+        }
+        .opp-row.active { border-color: var(--accent); box-shadow: 0 0 15px rgba(64, 224, 208, 0.2); }
+        .opp-info { text-align: left; }
+        .opp-name { font-size: 10px; font-weight: 900; opacity: 0.5; letter-spacing: 1px; }
+        .opp-hand-visual { display: flex; gap: -8px; margin-top: 5px; }
+        .mini-card-back {
+            width: var(--opp-card-w); height: var(--opp-card-h);
+            background: linear-gradient(135deg, #222, #000);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 4px;
+            margin-left: -18px; box-shadow: -2px 0 5px rgba(0,0,0,0.5);
+        }
+        .mini-card-back:first-child { margin-left: 0; }
+
+        /* フィールド */
+        .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .turn-indicator {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 80px; font-weight: 900; opacity: 0.05; pointer-events: none; font-style: italic;
+            animation: pulse-text 3s infinite ease-in-out; white-space: nowrap;
+        }
+        @keyframes pulse-text { 0%, 100% { opacity: 0.03; scale: 1; } 50% { opacity: 0.08; scale: 1.05; } }
+
+        /* カードの判例（凡例） */
+        .cycle-legend {
+            position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+            background: rgba(0,0,0,0.6); padding: 10px; border-radius: 10px;
+            border: 1px solid var(--border); backdrop-filter: blur(10px);
+            display: flex; flex-direction: column; gap: 8px; z-index: 10;
+        }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 9px; font-weight: 900; }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .legend-arrow { font-size: 8px; opacity: 0.3; margin-left: 10px; }
+
+        /* カードスタイル */
         .card {
             width: var(--card-w); height: var(--card-h);
-            border-radius: 20px; border: 1.5px solid var(--border);
-            background: #080808; display: flex; flex-direction: column;
-            overflow: hidden; position: relative; box-shadow: 0 30px 60px rgba(0,0,0,0.7);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 15px; border: 1.5px solid var(--border);
+            background: #080808; overflow: hidden; position: relative;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.6); transition: all 0.3s cubic-bezier(0.2, 1, 0.3, 1);
         }
-        .card img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; }
-        .card-header { 
-            height: 35%; display: flex; align-items: center; justify-content: center; 
-            font-weight: 900; font-size: 16px; letter-spacing: 1px;
-            background: rgba(255,255,255,0.04);
-            position: absolute; top: 0; width: 100%; z-index: 2;
-            pointer-events: none;
-        }
-        .card-footer { 
-            height: 25%; padding: 8px; font-size: 10px; font-weight: bold;
-            text-align: center; background: rgba(0,0,0,0.85); opacity: 0.9;
-            display: flex; align-items: center; justify-content: center;
-            position: absolute; bottom: 0; width: 100%; z-index: 2;
-            border-top: 2px solid var(--realm-color);
-            pointer-events: none;
+        .card img { width: 100%; height: 100%; object-fit: cover; }
+        .card-footer {
+            position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85);
+            font-size: 9px; font-weight: 900; padding: 6px 0; text-align: center;
+            border-top: 2.5px solid var(--r-color); text-transform: uppercase;
         }
 
-        .status-badge {
-            background: var(--danger); color: white; padding: 10px 25px; border-radius: 40px;
-            font-weight: 900; font-size: 18px; margin-bottom: 30px; 
-            box-shadow: 0 0 25px rgba(255, 69, 0, 0.5);
-            animation: bounce 1s infinite; z-index: 10;
+        /* 手札のホバー演出：出せるカードだけポップアップ */
+        .my-card { margin-left: -45px; transform-origin: bottom center; cursor: pointer; }
+        .my-card.playable:hover {
+            transform: translateY(-50px) scale(1.3) !important;
+            z-index: 1000 !important;
+            border-color: #fff;
+            box-shadow: 0 20px 40px rgba(0,0,0,1), 0 0 20px rgba(64, 224, 208, 0.4);
         }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-
-        /* 手札エリア */
-        .my-hand-area {
-            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 70%, transparent 100%);
-            padding: 40px 20px 70px 20px; position: relative;
-            z-index: 20;
-        }
-        .hand-container {
-            display: flex; justify-content: center; height: 220px;
-            align-items: flex-end; perspective: 1500px;
-            overflow-x: auto; scrollbar-width: none;
-        }
-        .hand-container::-webkit-scrollbar { display: none; }
-        .hand-flex { display: flex; align-items: flex-end; padding: 0 80px; }
-
-        .my-card {
-            margin-left: -55px; cursor: pointer; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            box-shadow: -12px 0 35px rgba(0,0,0,0.6);
-            transform-origin: bottom center;
-        }
-        .my-card:first-child { margin-left: 0; }
-        .my-card:hover { 
-            transform: translateY(-60px) rotate(0deg) scale(1.25) !important; 
-            z-index: 100 !important;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.9);
-        }
-        .my-card.playable { border-color: rgba(255,255,255,0.7); border-width: 2px; }
-        .my-card.not-playable { opacity: 0.25; filter: grayscale(1) blur(1.5px); cursor: not-allowed; }
+        .my-card.not-playable { opacity: 0.3; filter: grayscale(1); cursor: not-allowed; }
 
         /* アクションボタン */
         .btn-draw {
-            position: absolute; right: 60px; bottom: 180px;
+            position: absolute; right: 20px; bottom: 220px;
             background: var(--accent); color: #000; border: none;
-            padding: 20px 50px; border-radius: 50px; font-weight: 900;
-            font-size: 18px; letter-spacing: 1.5px;
-            cursor: pointer; box-shadow: 0 15px 40px rgba(0,0,0,0.6);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 30;
+            padding: 15px 25px; border-radius: 30px; font-weight: 900; font-size: 14px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5); cursor: pointer; z-index: 50;
         }
-        .btn-draw:hover { transform: scale(1.1) translateY(-5px); box-shadow: 0 20px 45px rgba(64, 224, 208, 0.4); }
-        .btn-draw:active { transform: scale(0.92); }
-        .btn-draw:disabled { background: #1a1a1a; color: #444; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-draw:disabled { background: #222; color: #555; box-shadow: none; }
 
-        /* モーダル */
-        .overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            display: flex; align-items: center; justify-content: center; z-index: 1000;
-            backdrop-filter: blur(20px);
+        .my-hand-area {
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            padding-bottom: 40px; min-height: 200px; display: flex; flex-direction: column; justify-content: flex-end;
         }
-        .panel {
-            background: #050505; border: 1.5px solid var(--border);
-            padding: 50px; border-radius: 30px; text-align: center; width: 90%; max-width: 440px;
-            box-shadow: 0 0 70px rgba(0,0,0,1);
-        }
-        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px; }
-        .realm-btn {
-            padding: 20px; border: 2px solid var(--border); border-radius: 16px;
-            background: rgba(255,255,255,0.03); color: white; font-weight: 900; cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 14px; letter-spacing: 1px;
-        }
-        .realm-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+        .hand-container { display: flex; justify-content: center; padding: 0 50px; }
 
-        /* レルムカラー・定義 */
-        .r-gear { --realm-color: #FF8C00; }
-        .r-iceage { --realm-color: #00BFFF; }
-        .r-fountain { --realm-color: #4169E1; }
-        .r-battery { --realm-color: #32CD32; }
-        .r-machine { --realm-color: #2F4F4F; }
-        .r-archive { --realm-color: #8B4513; }
-        .r-planet { --realm-color: #9400D3; }
-        .r-ruins { --realm-color: #696969; }
+        /* モーダル系 */
+        .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .panel { background: #050505; border: 1px solid var(--border); padding: 30px; border-radius: 20px; text-align: center; width: 85%; }
+        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .realm-btn { padding: 15px; border-radius: 10px; border: 2px solid var(--border); background: transparent; color: #fff; font-weight: 900; cursor: pointer; font-size: 12px; }
 
-        /* 背景透かし文字 */
-        .turn-indicator {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 150px; font-weight: 900; opacity: 0.05; pointer-events: none;
-            white-space: nowrap; z-index: 0; letter-spacing: -8px; font-style: italic;
-            text-shadow: 0 0 30px rgba(64, 224, 208, 0.2);
-            animation: pulse-text 3s infinite ease-in-out;
-        }
-        @keyframes pulse-text {
-            0%, 100% { opacity: 0.03; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 0.07; transform: translate(-50%, -50%) scale(1.05); }
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .status-badge { background: var(--danger); color: white; padding: 8px 20px; border-radius: 20px; font-weight: 900; font-size: 14px; margin-bottom: 20px; animation: bounce 1s infinite; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo, useRef } = React;
+        const { useState, useEffect, useMemo } = React;
 
         const REALMS = {
-            GEAR: { n: 'GEAR', color: '#FF8C00', class: 'r-gear' },
-            ICEAGE: { n: 'ICEAGE', color: '#00BFFF', class: 'r-iceage' },
-            FOUNTAIN: { n: 'FOUNTAIN', color: '#4169E1', class: 'r-fountain' },
-            BATTERY: { n: 'BATTERY', color: '#32CD32', class: 'r-battery' },
-            MACHINE: { n: 'MACHINE', color: '#2F4F4F', class: 'r-machine' },
-            ARCHIVE: { n: 'ARCHIVE', color: '#8B4513', class: 'r-archive' },
-            PLANET: { n: 'PLANET', color: '#9400D3', class: 'r-planet' },
-            RUINS: { n: 'RUINS', color: '#696969', class: 'r-ruins' }
+            GEAR: { n: 'GEAR', color: '#FF8C00', icon: '⚙️' },
+            ICEAGE: { n: 'ICEAGE', color: '#00BFFF', icon: '❄️' },
+            FOUNTAIN: { n: 'FOUNTAIN', color: '#4169E1', icon: '⛲' },
+            BATTERY: { n: 'BATTERY', color: '#32CD32', icon: '🔋' },
+            MACHINE: { n: 'MACHINE', color: '#2F4F4F', icon: '🤖' },
+            ARCHIVE: { n: 'ARCHIVE', color: '#8B4513', icon: '📜' },
+            PLANET: { n: 'PLANET', color: '#9400D3', icon: '🪐' },
+            RUINS: { n: 'RUINS', color: '#696969', icon: '🏛️' }
         };
 
         const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
@@ -211,12 +166,11 @@
         const App = () => {
             const [socket, setSocket] = useState(null);
             const [gs, setGs] = useState(null);
-            const [room, setRoom] = useState('ALPHA-1');
+            const [room, setRoom] = useState('ALPHA');
             const [name, setName] = useState('PILOT-' + Math.floor(Math.random() * 999));
             const [joined, setJoined] = useState(false);
             const [selectorCard, setSelectorCard] = useState(null);
             const [previewStatus, setPreviewStatus] = useState('waiting');
-            const [focusedCardId, setFocusedCardId] = useState(null);
 
             useEffect(() => {
                 const s = io('https://crossrealm-server.onrender.com'); 
@@ -241,7 +195,7 @@
                                 { id: 'c5', realm: 'MACHINE', isSpecial: true }
                             ] },
                             { id: 'mock-1', name: 'Z-NEO', handCount: 3 },
-                            { id: 'mock-2', name: 'RAY-X', handCount: 8 }
+                            { id: 'mock-2', name: 'RAY-X', handCount: 6 }
                         ],
                         nextDrawAmount: 1,
                         isReversed: false
@@ -255,53 +209,34 @@
             const others = effectiveGameState?.players?.filter(p => p.id !== (socket?.id || 'mock-me')) || [];
 
             const canPlay = (card) => {
-                if (!isMyTurn || effectiveGameState.status !== 'playing' || effectiveGameState.needsInitialChoice) return false;
+                if (!isMyTurn || effectiveGameState.status !== 'playing') return false;
                 if (effectiveGameState.nextDrawAmount > 1) return (card.realm === 'GEAR' && card.isSpecial);
                 const field = effectiveGameState.fieldCard?.realm || 'GEAR';
                 const hand = card.realm;
-                if (hand === 'PLANET' || hand === 'RUINS') return true;
-                if (hand === 'FOUNTAIN' && card.isSpecial) return true;
+                if (hand === 'PLANET' || hand === 'RUINS' || (hand === 'FOUNTAIN' && card.isSpecial)) return true;
                 if (field === hand) return true;
                 const currentIdx = CYCLE_ORDER.indexOf(field);
-                const nextRealm = CYCLE_ORDER[(currentIdx + 1) % 6];
-                if (hand === nextRealm) return true;
+                if (currentIdx !== -1 && hand === CYCLE_ORDER[(currentIdx + 1) % 6]) return true;
                 if (field === 'ARCHIVE' && hand === 'ICEAGE') return true;
                 if (field === 'ICEAGE' && hand === 'BATTERY') return true;
                 if (field === 'ICEAGE' && hand === 'FOUNTAIN') return true;
                 return false;
             };
 
-            const CardView = ({ card, disabled, onClick, isField, isFocused }) => {
-                if (!card) return null;
-                
-                // 画像ファイル名の解決ロジック
+            const Card = ({ card, playable, onClick, isField }) => {
                 let src = `./images/${card.realm}.png`;
                 if (card.wasRuins) src = './images/RUINS.png';
                 else if (card.wasPlanet) src = './images/PLANET.png';
-                else if (card.wasFountain) src = './images/FOUNTAIN_wild.png';
-                else if (card.realm === 'MACHINE') {
-                    src = card.isSpecial ? './images/MACHINE_reverse.png' : './images/MACHINE_normal.png';
-                } else if (card.realm === 'FOUNTAIN') {
-                    src = card.isSpecial ? './images/FOUNTAIN_wild.png' : './images/FOUNTAIN_normal.png';
-                } else if (card.realm === 'GEAR' && card.isSpecial) {
-                    src = './images/GEAR_frame.png';
-                }
+                else if (card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) src = './images/FOUNTAIN_wild.png';
+                else if (card.realm === 'MACHINE') src = card.isSpecial ? './images/MACHINE_reverse.png' : './images/MACHINE_normal.png';
+                else if (card.realm === 'GEAR' && card.isSpecial) src = './images/GEAR_frame.png';
+                else if (card.realm === 'FOUNTAIN') src = './images/FOUNTAIN_normal.png';
 
                 return (
-                    <div className={`card ${REALMS[card.realm].class} ${isField ? 'field-card' : 'hand-card'} ${disabled ? 'not-playable' : 'playable'} ${isFocused ? 'focused' : ''}`} 
-                         onClick={onClick} style={isField ? {borderColor: REALMS[card.realm].color, transform: 'scale(1.15)'} : {}}>
-                        
-                        <div style={{position:'absolute', top:10, left:10, display:'flex', flexDirection:'column', gap:4, zIndex:5}}>
-                            {card.realm === 'GEAR' && card.isSpecial && <div style={{background:'#FF4500', color:'#fff', padding:'2px 8px', borderRadius:4, fontSize:9, fontWeight:900, boxShadow:'0 4px 10px rgba(0,0,0,0.5)'}}>+2 DRAW</div>}
-                            {(card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) && <div style={{background:'#00CED1', color:'#fff', padding:'2px 8px', borderRadius:4, fontSize:9, fontWeight:900, boxShadow:'0 4px 10px rgba(0,0,0,0.5)'}}>WILD</div>}
-                            {card.realm === 'MACHINE' && card.isSpecial && <div style={{background:'#ADFF2F', color:'#000', padding:'2px 8px', borderRadius:4, fontSize:9, fontWeight:900, boxShadow:'0 4px 10px rgba(0,0,0,0.5)'}}>REVERSE</div>}
-                        </div>
-
-                        <img src={src} alt={card.realm} onError={(e) => { e.target.src = 'https://via.placeholder.com/130x185/111/444?text=' + card.realm; }} />
-                        
-                        <div className="card-footer" style={{'--realm-color': REALMS[card.realm].color}}>
-                            {REALMS[card.realm].n}
-                        </div>
+                    <div className={`card ${playable ? 'playable' : 'not-playable'} my-card`} 
+                         style={{'--r-color': REALMS[card.realm].color}} onClick={onClick}>
+                        <img src={src} onError={(e) => { e.target.src = 'https://via.placeholder.com/130x185/111/444?text=' + card.realm; }} />
+                        <div className="card-footer">{REALMS[card.realm].n}</div>
                     </div>
                 );
             };
@@ -311,148 +246,127 @@
                 if (card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial)) {
                     setSelectorCard(card);
                 } else {
-                    if (socket?.connected) {
-                        socket.emit('play-card', { roomId: room, card });
-                    }
-                    setFocusedCardId(null);
+                    if (socket?.connected) socket.emit('play-card', { roomId: room, card });
+                    else console.log("Preview play");
                 }
-            };
-
-            const selectRealm = (r) => {
-                if (socket?.connected) {
-                    socket.emit('play-card', { roomId: room, card: selectorCard, chosenRealm: r });
-                }
-                setSelectorCard(null);
-                setFocusedCardId(null);
             };
 
             if (!joined) {
                 return (
-                    <div className="overlay">
-                        <h1 style={{color:'var(--accent)', fontSize:32, marginBottom:40, fontWeight:900, letterSpacing:5, fontStyle:'italic', textShadow:'0 0 20px rgba(64,224,208,0.4)'}}>CROSS REALM</h1>
-                        <div className="panel">
-                            <input type="text" value={name} onChange={e=>setName(e.target.value.toUpperCase())} placeholder="PILOT NAME" style={{width:'100%', padding:20, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:15, borderRadius:16, fontSize:14, fontWeight:'bold', outline:'none', textAlign:'center'}} />
-                            <input type="text" value={room} onChange={e=>setRoom(e.target.value)} placeholder="SECTOR ID" style={{width:'100%', padding:20, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:30, borderRadius:16, fontSize:14, fontWeight:'bold', outline:'none', textAlign:'center'}} />
-                            <button onClick={()=>{ if(socket?.connected) socket.emit('join-room',{roomId:room, playerName:name}); setJoined(true);}} style={{width:'100%', padding:20, background:'var(--accent)', color:'#000', border:'none', borderRadius:16, fontWeight:900, fontSize:16, cursor:'pointer', letterSpacing:1.5}}>INITIALIZE LINK</button>
+                    <div className="screen-wrapper">
+                        <div className="overlay">
+                            <div className="panel">
+                                <h1 style={{color:'var(--accent)', fontSize:24, marginBottom:30, fontWeight:900, fontStyle:'italic'}}>CROSS REALM</h1>
+                                <input type="text" value={name} onChange={e=>setName(e.target.value.toUpperCase())} placeholder="PILOT NAME" style={{width:'100%', padding:15, background:'#111', border:'1px solid var(--border)', color:'#fff', marginBottom:15, borderRadius:10, textAlign:'center', fontSize:14}} />
+                                <input type="text" value={room} onChange={e=>setRoom(e.target.value)} placeholder="SECTOR ID" style={{width:'100%', padding:15, background:'#111', border:'1px solid var(--border)', color:'#fff', marginBottom:30, borderRadius:10, textAlign:'center', fontSize:14}} />
+                                <button onClick={()=>{setJoined(true); if(socket?.connected) socket.emit('join-room',{roomId:room, playerName:name});}} style={{width:'100%', padding:18, background:'var(--accent)', color:'#000', border:'none', borderRadius:10, fontWeight:900, fontSize:16, cursor:'pointer'}}>CONNECT LINK</button>
+                            </div>
                         </div>
                     </div>
                 );
             }
 
-            if (!effectiveGameState || effectiveGameState.status === 'waiting') {
+            if (effectiveGameState?.status === 'waiting') {
                 return (
-                    <div className="container" style={{justifyContent:'center', alignItems:'center'}}>
-                        <div style={{width:60, height:60, border:'5px solid rgba(64, 224, 208, 0.1)', borderTopColor:'var(--accent)', borderRadius:'50%', animation:'spin 0.8s linear infinite'}}></div>
-                        <h2 style={{letterSpacing:15, opacity:0.6, marginTop:35, fontSize:18, fontWeight:900, textAlign:'center'}}>WAITING FOR PLAYER</h2>
-                        <div style={{marginTop:12, opacity:0.5, fontSize:13, fontWeight:900, letterSpacing:3, color:'var(--accent)', textTransform:'uppercase'}}>SECTOR ID: {room}</div>
-                        <div style={{marginTop:45, display:'flex', gap:15, flexWrap:'wrap', justifyContent:'center'}}>
-                            {effectiveGameState?.players.map(p => (
-                                <div key={p.id} style={{padding:'12px 28px', background:'var(--glass)', borderRadius:35, border:'1px solid var(--border)', fontSize:13, fontWeight:900, backdropFilter:'blur(15px)', color:'rgba(255,255,255,0.9)'}}>
-                                    <span style={{color:'var(--accent)', marginRight:10}}>#</span>{p.name}
+                    <div className="screen-wrapper">
+                        <div className="container" style={{display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%'}}>
+                            <h2 style={{letterSpacing:8, opacity:0.6, fontSize:14, fontWeight:900}}>WAITING FOR PLAYER</h2>
+                            <div style={{marginTop:10, fontSize:10, color:'var(--accent)', fontWeight:900}}>SECTOR: {room}</div>
+                            <div style={{marginTop:30, display:'flex', flexDirection:'column', gap:10, width:'80%'}}>
+                                {effectiveGameState.players.map(p => (
+                                    <div key={p.id} style={{padding:12, background:'var(--glass)', border:'1px solid var(--border)', borderRadius:10, textAlign:'center', fontSize:12, fontWeight:900}}>
+                                        {p.name}
+                                    </div>
+                                ))}
+                            </div>
+                            <button onClick={()=>{ if(socket?.connected) socket.emit('start-game',{roomId:room}); else setPreviewStatus('playing'); }} style={{marginTop:40, padding:'15px 40px', borderRadius:30, border:'2px solid var(--accent)', background:'transparent', color:'var(--accent)', fontWeight:900, cursor:'pointer'}}>ENGAGE CORE</button>
+                        </div>
+                    </div>
+                );
+            }
+
+            const currentRealm = effectiveGameState?.fieldCard?.realm || 'GEAR';
+
+            return (
+                <div className="screen-wrapper">
+                    <div className="bg-aurora" style={{ '--realm-color': REALMS[currentRealm].color }}></div>
+                    <div className="game-container">
+                        
+                        <div className="opponents-area">
+                            {others.map(p => (
+                                <div key={p.id} className={`opp-row ${effectiveGameState.currentTurnPlayerId === p.id ? 'active' : ''}`}>
+                                    <div className="opp-info">
+                                        <div className="opp-name">{p.name}</div>
+                                        <div className="opp-hand-visual">
+                                            {[...Array(p.handCount)].map((_, i) => <div key={i} className="mini-card-back" />)}
+                                        </div>
+                                    </div>
+                                    <div style={{fontWeight:900, color:var(--accent), fontSize:16}}>{p.handCount}</div>
                                 </div>
                             ))}
                         </div>
-                        {effectiveGameState?.players[0]?.id === (socket?.id || 'mock-me') && (
-                            <button onClick={()=>{ if(socket?.connected) { socket.emit('start-game',{roomId:room}); } else { setPreviewStatus('playing'); } }} style={{marginTop:65, padding:'22px 65px', borderRadius:45, border:'2px solid var(--accent)', background:'transparent', color:'var(--accent)', fontWeight:900, cursor:'pointer', fontSize:20, transition:'0.3s', textTransform:'uppercase', letterSpacing:2.5}}>ENGAGE CORE</button>
-                        )}
-                        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                    </div>
-                );
-            }
 
-            const currentRealm = effectiveGameState.fieldCard?.realm || 'GEAR';
-
-            return (
-                <div className="container" style={{ '--realm-color': REALMS[currentRealm]?.color }}>
-                    <div className="bg-aurora"></div>
-                    
-                    <div className="opponents scrollbar-hide">
-                        {others.map(p => (
-                            <div key={p.id} className={`opp-card ${effectiveGameState.currentTurnPlayerId === p.id ? 'active' : ''}`}>
-                                <div className="opp-name">{p.name}</div>
-                                <div className="opp-count">{p.handCount}</div>
+                        <div className="field">
+                            <div className="turn-indicator">{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
+                            
+                            <div className="cycle-legend">
+                                <div style={{fontSize:8, fontWeight:900, opacity:0.5, marginBottom:5}}>CYCLE</div>
+                                {CYCLE_ORDER.map((r, i) => (
+                                    <div key={r} className="legend-item" style={{opacity: currentRealm === r ? 1 : 0.3}}>
+                                        <div className="legend-dot" style={{background: REALMS[r].color}} />
+                                        <span>{r}</span>
+                                    </div>
+                                ))}
+                                <div className="legend-arrow">▼</div>
+                                <div className="legend-item" style={{opacity:0.3}}><div className="legend-dot" style={{background: REALMS['GEAR'].color}} /> GEAR</div>
                             </div>
-                        ))}
-                    </div>
 
-                    <div className="field">
-                        <div className="turn-indicator">{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
-                        {effectiveGameState.nextDrawAmount > 1 && (
-                            <div className="status-badge">DRAW +{effectiveGameState.nextDrawAmount} !!</div>
-                        )}
-                        {effectiveGameState.isReversed && (
-                            <div style={{color:'var(--accent)', fontSize:14, fontWeight:900, marginBottom:20, letterSpacing:2, textShadow:'0 0 10px rgba(64,224,208,0.5)'}}>🔄 REVERSE ACTIVE</div>
-                        )}
-                        <div className="field-card-container">
-                            <CardView card={effectiveGameState.fieldCard} isField={true} />
-                        </div>
-                        <div style={{marginTop: 35, textAlign:'center'}}>
-                            <div style={{fontSize: 20, fontWeight: 900, color: REALMS[currentRealm].color}}>{REALMS[currentRealm].n}</div>
-                            <div style={{fontSize: 11, opacity: 0.6, marginTop: 5, maxWidth: 200}}>
-                                NEXT REALM: <span style={{fontWeight:900, color: REALMS[CYCLE_ORDER[(CYCLE_ORDER.indexOf(currentRealm) + 1) % 6]]?.color}}>
-                                    {REALMS[CYCLE_ORDER[(CYCLE_ORDER.indexOf(currentRealm) + 1) % 6]]?.n}
-                                </span>
+                            {effectiveGameState.nextDrawAmount > 1 && <div className="status-badge">DRAW +{effectiveGameState.nextDrawAmount} !!</div>}
+                            
+                            <div className="field-card-container">
+                                <Card card={effectiveGameState.fieldCard} playable={true} isField={true} />
                             </div>
                         </div>
-                    </div>
 
-                    <button className="btn-draw" disabled={!isMyTurn} onClick={()=>{ if(socket?.connected) socket.emit('draw-card',{roomId:room}) }}>
-                        {effectiveGameState.nextDrawAmount > 1 ? `DRAW +${effectiveGameState.nextDrawAmount}` : 'DRAW / PASS'}
-                    </button>
+                        <button className="btn-draw" disabled={!isMyTurn} onClick={() => {if(socket?.connected) socket.emit('draw-card',{roomId:room})}}>
+                            {effectiveGameState.nextDrawAmount > 1 ? `DRAW +${effectiveGameState.nextDrawAmount}` : 'DRAW / PASS'}
+                        </button>
 
-                    <div className="my-hand-area">
-                        <div className="hand-container">
-                            <div className="hand-flex">
-                                {(me.hand || []).map((card, i) => {
+                        <div className="my-hand-area">
+                            <div className="hand-container">
+                                {me.hand.map((card, i) => {
                                     const playable = canPlay(card);
-                                    const total = me.hand.length;
-                                    const rotation = (i - (total - 1) / 2) * (total > 8 ? 5 : 8);
-                                    const xOff = (i - (total - 1) / 2) * (total > 10 ? 30 : 0);
+                                    const rotation = (i - (me.hand.length - 1) / 2) * (me.hand.length > 8 ? 4 : 7);
                                     return (
-                                        <div 
-                                            key={card.id} 
-                                            className="my-card-slot"
-                                            style={{ transform: `rotate(${rotation}deg) translateX(${xOff}px)`, marginLeft: i === 0 ? 0 : -55, zIndex: focusedCardId === card.id ? 200 : i }}
-                                        >
-                                            <CardView 
-                                                card={card} 
-                                                disabled={!playable} 
-                                                isFocused={focusedCardId === card.id}
-                                                onClick={() => {
-                                                    if(!playable) return;
-                                                    if(focusedCardId === card.id) playCard(card);
-                                                    else setFocusedCardId(card.id);
-                                                }} 
-                                            />
-                                        </div>
+                                        <Card key={card.id} card={card} playable={playable} 
+                                              onClick={() => playCard(card)} />
                                     );
                                 })}
                             </div>
+                            <div style={{textAlign:'center', fontSize:10, fontWeight:900, marginTop:15, opacity:0.5, letterSpacing:2}}>
+                                DECK STATUS: {me.hand.length} / 12
+                            </div>
                         </div>
-                        <div style={{textAlign:'center', fontSize:12, fontWeight:900, marginTop:15, opacity:0.7}}>
-                            MY HAND: {me.hand.length} / 12
-                        </div>
+
                     </div>
 
                     {(selectorCard || effectiveGameState.needsInitialChoice) && (
                         <div className="overlay">
                             <div className="panel">
-                                <h3 style={{fontSize:22, fontWeight:900, marginBottom:30, letterSpacing:2, color:'var(--accent)'}}>
-                                    {selectorCard ? 'SELECT TARGET REALM' : 'INITIAL STABILITY'}
-                                </h3>
+                                <h3 style={{fontSize:16, fontWeight:900, marginBottom:20, color:'var(--accent)'}}>SELECT TARGET REALM</h3>
                                 <div className="realm-grid">
                                     {CYCLE_ORDER.map(r => (
-                                        <button key={r} className="realm-btn" style={{borderColor:REALMS[r].color, color:REALMS[r].color}} onClick={() => {
-                                            if(selectorCard) selectRealm(r);
-                                            else if(socket?.connected) socket.emit('set-initial-realm',{roomId:room, chosenRealm:r});
-                                        }}>
-                                            {REALMS[r].n}
-                                        </button>
+                                        <button key={r} className="realm-btn" style={{borderColor:REALMS[r].color, color:REALMS[r].color}} 
+                                                onClick={() => {
+                                                    if(selectorCard) {
+                                                        if(socket?.connected) socket.emit('play-card', {roomId:room, card:selectorCard, chosenRealm:r});
+                                                        setSelectorCard(null);
+                                                    } else {
+                                                        if(socket?.connected) socket.emit('set-initial-realm', {roomId:room, chosenRealm:r});
+                                                    }
+                                                }}>{r}</button>
                                     ))}
                                 </div>
-                                {selectorCard && (
-                                    <button onClick={()=>setSelectorCard(null)} style={{marginTop:35, opacity:0.4, background:'transparent', border:'none', color:'#fff', cursor:'pointer', fontWeight:900, fontSize:13}}>CANCEL TRANSITION</button>
-                                )}
                             </div>
                         </div>
                     )}
@@ -460,16 +374,16 @@
                     {effectiveGameState.status === 'finished' && (
                         <div className="overlay">
                             <div className="panel">
-                                <h2 style={{color:'var(--accent)', fontSize:42, fontWeight:900, fontStyle:'italic', marginBottom:15}}>GAME OVER</h2>
-                                <div style={{margin:'25px 0', textAlign:'left'}}>
+                                <h2 style={{color:'var(--accent)', fontSize:28, fontWeight:900, fontStyle:'italic'}}>GAME OVER</h2>
+                                <div style={{margin:'20px 0', textAlign:'left'}}>
                                     {effectiveGameState.players.slice().sort((a,b)=>a.handCount-b.handCount).map((p,i)=>(
-                                        <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'18px 12px', borderBottom:'1.5px solid var(--border)', background:p.id === (socket?.id || 'mock-me') ? 'rgba(64,224,208,0.05)' : 'transparent'}}>
-                                            <span style={{fontWeight:900, fontSize:15}}>{i+1}. {p.name}</span>
+                                        <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'12px 0', borderBottom:'1px solid var(--border)'}}>
+                                            <span style={{fontWeight:900, fontSize:12}}>{i+1}. {p.name}</span>
                                             <span style={{color:'var(--accent)', fontWeight:900}}>{p.handCount} units</span>
                                         </div>
                                     ))}
                                 </div>
-                                <button onClick={()=>{ if(socket?.connected) socket.emit('play-again',{roomId:room}); else setPreviewStatus('waiting'); }} style={{width:'100%', padding:22, background:'var(--accent)', color:'#000', border:'none', borderRadius:18, fontWeight:900, fontSize:18, marginTop:25, cursor:'pointer', letterSpacing:2}}>RE-ESTABLISH LINK</button>
+                                <button onClick={()=>{ if(socket?.connected) socket.emit('play-again',{roomId:room}); else setPreviewStatus('waiting'); }} style={{width:'100%', padding:15, background:'var(--accent)', color:'#000', border:'none', borderRadius:10, fontWeight:900, cursor:'pointer'}}>REMATCH</button>
                             </div>
                         </div>
                     )}
