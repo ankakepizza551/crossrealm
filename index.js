@@ -11,16 +11,16 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 const HAND_LIMIT = 12;
 
-// タクティカル・ルールの属性サイクル定義
+// タクティカル・ルールの属性サイクル定義 (内部キーは BATTERY のまま)
 const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
 
 const createDeck = () => {
   const realmConfig = {
-    GEAR: { total: 10, special: 3 },      // +2ドロー
-    MACHINE: { total: 10, special: 3 },   // リバース
-    FOUNTAIN: { total: 10, special: 3 },  // Specialはワイルド扱い
-    PLANET: { total: 3, special: 0 },     // ワイルド
-    RUINS: { total: 3, special: 0 },      // ワイルド
+    GEAR: { total: 10, special: 3 },      
+    MACHINE: { total: 10, special: 3 },   
+    FOUNTAIN: { total: 10, special: 3 },  
+    PLANET: { total: 3, special: 0 },    
+    RUINS: { total: 3, special: 0 },     
     ICEAGE: { total: 5, special: 0 },
     BATTERY: { total: 5, special: 0 },
     ARCHIVE: { total: 5, special: 0 }
@@ -41,7 +41,6 @@ const createDeck = () => {
   return deck.sort(() => Math.random() - 0.5);
 };
 
-// サーバー側でのプレイ可否判定
 const canPlayCard = (room, card) => {
   if (room.nextDrawAmount > 1) {
     return (card.realm === 'GEAR' && card.isSpecial);
@@ -89,7 +88,7 @@ io.on('connection', (socket) => {
     }
     const room = rooms[roomId];
     if (room.players.findIndex(p => p.id === socket.id) === -1 && room.players.length < 4) {
-      room.players.push({ id: socket.id, name: playerName || "匿名", hand: [] });
+      room.players.push({ id: socket.id, name: playerName || "PILOT", hand: [] });
       socket.join(roomId);
     }
     emitUpdate(roomId);
@@ -183,4 +182,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => console.log(`Cross Realm Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Tactical Server Running`));
