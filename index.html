@@ -126,9 +126,20 @@
         .input-field { width: 260px; padding: 15px 20px; border-radius: 30px; border: 1.5px solid var(--accent); background: transparent; color: white; font-size: 14px; text-align: center; margin-bottom: 15px; outline: none; box-sizing: border-box; }
         .btn-main { width: 260px; padding: 15px; border-radius: 30px; border: none; background: var(--accent); color: #000; font-weight: 900; font-size: 14px; letter-spacing: 4px; cursor: pointer; transition: 0.3s; }
 
-        /* ゲーム終了画面 */
-        .result-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .winner-text { font-size: 48px; font-weight: 900; color: var(--accent); text-shadow: 0 0 30px var(--accent); margin-bottom: 30px; letter-spacing: 4px; }
+        /* 終了画面のアニメーションと配置修正 */
+        .result-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+            z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+        }
+        .winner-text { 
+            font-size: 56px; font-weight: 900; color: var(--accent); text-shadow: 0 0 40px var(--accent); 
+            margin-bottom: 30px; letter-spacing: 6px; 
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -164,7 +175,7 @@
             }, []);
 
             const me = gs?.players?.find(p => p.id === socket.id) || { hand: [] };
-            const isMyTurn = gs?.currentTurnPlayerId === socket.id;
+            const isMyTurn = gs?.currentTurnPlayerId === socket.id && gs?.status === 'playing';
             const activePlayer = gs?.players?.find(p => p.id === gs?.currentTurnPlayerId);
             const others = gs?.players?.filter(p => p.id !== socket.id) || [];
             
@@ -216,20 +227,6 @@
                 );
             };
 
-            // 【復活】ゲーム終了画面
-            if (gs?.status === 'finished') {
-                const winner = gs.players.find(p => p.handCount === 0);
-                const amIReady = gs.readyPlayers?.includes(socket.id);
-                return (
-                    <div className="result-overlay">
-                        <div className="winner-text">{winner?.name} WIN</div>
-                        <button className="btn-main" onClick={() => socket.emit('play-again', {roomId: room})} disabled={amIReady}>
-                            {amIReady ? 'WAITING...' : 'REBOOT SYSTEM'}
-                        </button>
-                    </div>
-                );
-            }
-
             if (!joined) return (
                 <div className="overlay">
                     <div className="bg-aura" style={{'--realm-color': '#40E0D0', opacity: 0.2}}></div>
@@ -279,7 +276,7 @@
                         </div>
                         <div style={{display:'flex', gap:'10px', overflowX:'auto'}}>
                             {others.map(p => {
-                                const isOpponentTurn = gs.currentTurnPlayerId === p.id;
+                                const isOpponentTurn = gs.currentTurnPlayerId === p.id && gs.status === 'playing';
                                 return (
                                     <div key={p.id} className={`opponent-status ${isOpponentTurn ? 'active' : ''}`}>
                                         <div style={{fontSize:'9px', color: isOpponentTurn ? currentRealmColor : '#bbb'}}>
@@ -323,7 +320,17 @@
                         </div>
                     </div>
 
-                    {(selectorCard || (gs.needsInitialChoice && gs.players[0].id === socket.id)) && (
+                    {/* 【修正箇所】ゲーム終了画面をゲームボード上に安全に重ねるように変更 */}
+                    {gs?.status === 'finished' && (
+                        <div className="result-overlay">
+                            <div className="winner-text">{gs.players.find(p => p.handCount === 0)?.name} WIN</div>
+                            <button className="btn-main" onClick={() => socket.emit('play-again', {roomId: room})} disabled={gs.readyPlayers?.includes(socket.id)}>
+                                {gs.readyPlayers?.includes(socket.id) ? 'WAITING...' : 'REBOOT SYSTEM'}
+                            </button>
+                        </div>
+                    )}
+
+                    {(selectorCard || (gs.needsInitialChoice && gs.players[0].id === socket.id)) && gs?.status === 'playing' && (
                         <div className="wild-modal-overlay">
                             <div className="glass-panel" style={{padding:'20px', textAlign:'center', background:'rgba(0,0,0,0.85)'}}>
                                 <h4 style={{margin:'0 0 15px 0', letterSpacing:'2px'}}>TARGET REALM</h4>
