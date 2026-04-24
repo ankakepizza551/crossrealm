@@ -199,6 +199,7 @@
             const [name, setName] = useState('PILOT-' + Math.floor(Math.random() * 999));
             const [joined, setJoined] = useState(false);
             const [selectorCard, setSelectorCard] = useState(null);
+            const [previewStatus, setPreviewStatus] = useState('waiting'); // プレビュー用の状態管理
 
             useEffect(() => {
                 const s = io(); 
@@ -207,22 +208,31 @@
                 return () => s.disconnect();
             }, []);
 
-            // プレビュー用にモックデータを生成するロジック
+            // プレビューおよびサーバーからのゲーム状態を統合
             const effectiveGameState = useMemo(() => {
                 if (gs) return gs;
                 if (joined) {
-                    // サーバー未接続時のプレビュー用ダミーデータ
                     return {
-                        status: 'waiting',
+                        status: previewStatus,
+                        currentTurnPlayerId: 'mock-me',
+                        fieldCard: { realm: 'GEAR', isSpecial: false },
                         players: [
-                            { id: 'mock-me', name: name, handCount: 0 },
-                            { id: 'mock-1', name: 'Z-NEO', handCount: 0 },
-                            { id: 'mock-2', name: 'RAY-X', handCount: 0 }
-                        ]
+                            { id: 'mock-me', name: name, handCount: 5, hand: [
+                                { id: 'c1', realm: 'GEAR', isSpecial: true },
+                                { id: 'c2', realm: 'ICEAGE', isSpecial: false },
+                                { id: 'c3', realm: 'PLANET', isSpecial: false },
+                                { id: 'c4', realm: 'ARCHIVE', isSpecial: false },
+                                { id: 'c5', realm: 'MACHINE', isSpecial: true }
+                            ] },
+                            { id: 'mock-1', name: 'Z-NEO', handCount: 3 },
+                            { id: 'mock-2', name: 'RAY-X', handCount: 8 }
+                        ],
+                        nextDrawAmount: 1,
+                        isReversed: false
                     };
                 }
                 return null;
-            }, [gs, joined, name]);
+            }, [gs, joined, name, previewStatus]);
 
             const me = effectiveGameState?.players?.find(p => p.id === (socket?.id || 'mock-me')) || { hand: [] };
             const isMyTurn = effectiveGameState?.currentTurnPlayerId === (socket?.id || 'mock-me');
@@ -233,7 +243,7 @@
                 if (effectiveGameState.nextDrawAmount > 1) {
                     return (card.realm === 'GEAR' && card.isSpecial);
                 }
-                const field = effectiveGameState.fieldCard.realm;
+                const field = effectiveGameState.fieldCard?.realm || 'GEAR';
                 const hand = card.realm;
                 if (hand === 'PLANET' || hand === 'RUINS') return true;
                 if (hand === 'FOUNTAIN' && card.isSpecial) return true;
@@ -252,7 +262,12 @@
                 if (card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial)) {
                     setSelectorCard(card);
                 } else {
-                    socket.emit('play-card', { roomId: room, card });
+                    if (socket?.connected) {
+                        socket.emit('play-card', { roomId: room, card });
+                    } else {
+                        // プレビューモードでの擬似動作
+                        console.log("Preview Play:", card.realm);
+                    }
                 }
             };
 
@@ -263,7 +278,7 @@
                             <h1 style={{color:'var(--accent)', fontSize:32, marginBottom:40, fontWeight:900, letterSpacing:4, fontStyle:'italic'}}>CROSS REALM</h1>
                             <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="PILOT NAME" style={{width:'100%', padding:18, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:15, borderRadius:14, fontSize:14, fontWeight:'bold', outline:'none'}} />
                             <input type="text" value={room} onChange={e=>setRoom(e.target.value)} placeholder="SECTOR ID" style={{width:'100%', padding:18, background:'#000', border:'1.5px solid var(--border)', color:'#fff', marginBottom:25, borderRadius:14, fontSize:14, fontWeight:'bold', outline:'none'}} />
-                            <button onClick={()=>{ if(socket) socket.emit('join-room',{roomId:room, playerName:name}); setJoined(true);}} style={{width:'100%', padding:18, background:'var(--accent)', color:'#000', border:'none', borderRadius:14, fontWeight:900, fontSize:16, cursor:'pointer', letterSpacing:1}}>INITIALIZE LINK</button>
+                            <button onClick={()=>{ if(socket?.connected) socket.emit('join-room',{roomId:room, playerName:name}); setJoined(true);}} style={{width:'100%', padding:18, background:'var(--accent)', color:'#000', border:'none', borderRadius:14, fontWeight:900, fontSize:16, cursor:'pointer', letterSpacing:1}}>INITIALIZE LINK</button>
                         </div>
                     </div>
                 );
@@ -283,18 +298,24 @@
                                 </div>
                             ))}
                         </div>
-                        {effectiveGameState?.players[0]?.id === (socket?.id || 'mock-me') && effectiveGameState?.players.length >= 2 && (
-                            <button onClick={()=>{ if(socket) socket.emit('start-game',{roomId:room}) }} style={{marginTop:60, padding:'20px 60px', borderRadius:40, border:'2px solid var(--accent)', background:'transparent', color:'var(--accent)', fontWeight:900, cursor:'pointer', fontSize:18, transition:'0.3s', textTransform:'uppercase', letterSpacing:2}}>ENGAGE CORE</button>
+                        {effectiveGameState?.players[0]?.id === (socket?.id || 'mock-me') && (
+                            <div style={{marginTop:60, display:'flex', flexDirection:'column', gap:15}}>
+                                <button onClick={()=>{ if(socket?.connected) { socket.emit('start-game',{roomId:room}); } else { setPreviewStatus('playing'); } }} style={{padding:'20px 60px', borderRadius:40, border:'2px solid var(--accent)', background:'transparent', color:'var(--accent)', fontWeight:900, cursor:'pointer', fontSize:18, transition:'0.3s', textTransform:'uppercase', letterSpacing:2}}>ENGAGE CORE</button>
+                                {!socket?.connected && (
+                                    <span style={{fontSize:10, opacity:0.3, textAlign:'center'}}>※プレビュー時は強制開始できます</span>
+                                )}
+                            </div>
                         )}
-                        {!socket?.connected && (
-                            <div style={{position:'absolute', bottom:20, opacity:0.3, fontSize:10, fontWeight: 'bold'}}>PREVIEW MODE: DISCONNECTED FROM SERVER</div>
-                        )}
+                        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
                     </div>
                 );
             }
 
+            // --- メイン対戦画面 ---
+            const currentRealm = effectiveGameState.fieldCard?.realm || 'GEAR';
+
             return (
-                <div className="container" style={{ '--realm-color': REALMS[effectiveGameState.fieldCard.realm]?.color }}>
+                <div className="container" style={{ '--realm-color': REALMS[currentRealm]?.color }}>
                     <div className="bg-aurora"></div>
                     <div className="opponents scrollbar-hide">
                         {others.map(p => (
@@ -311,21 +332,21 @@
                         {effectiveGameState.isReversed && <div style={{color:'var(--accent)', fontSize:13, fontWeight:900, marginBottom:15, letterSpacing:2}}>🔄 REVERSE ACTIVE</div>}
 
                         <div className="field-card-container">
-                            <div className={`card ${REALMS[effectiveGameState.fieldCard.realm].class}`}>
-                                <div className="card-header">{REALMS[effectiveGameState.fieldCard.realm].n}</div>
-                                <div className="card-body">{REALMS[effectiveGameState.fieldCard.realm].icon}</div>
-                                <div className="card-footer">{effectiveGameState.fieldCard.isSpecial ? 'SPECIAL ABILITY' : 'NORMAL UNIT'}</div>
+                            <div className={`card ${REALMS[currentRealm].class}`}>
+                                <div className="card-header">{REALMS[currentRealm].n}</div>
+                                <div className="card-body">{REALMS[currentRealm].icon}</div>
+                                <div className="card-footer">{effectiveGameState.fieldCard?.isSpecial ? 'SPECIAL ABILITY' : 'NORMAL UNIT'}</div>
                             </div>
                         </div>
                     </div>
 
-                    <button className="btn-draw" disabled={!isMyTurn} onClick={()=>socket.emit('draw-card',{roomId:room})}>
+                    <button className="btn-draw" disabled={!isMyTurn} onClick={()=>{ if(socket?.connected) socket.emit('draw-card',{roomId:room}) }}>
                         {effectiveGameState.nextDrawAmount > 1 ? `DRAW +${effectiveGameState.nextDrawAmount}` : 'DRAW / PASS'}
                     </button>
 
                     <div className="my-hand-area">
                         <div className="hand-container">
-                            {me.hand.map((card, i) => {
+                            {(me.hand || []).map((card, i) => {
                                 const playable = canPlay(card);
                                 const rotation = (i - (me.hand.length - 1) / 2) * (me.hand.length > 8 ? 4 : 7);
                                 return (
@@ -339,6 +360,11 @@
                             })}
                         </div>
                     </div>
+                    
+                    {/* デバッグ用：プレビューをリセット */}
+                    {!socket?.connected && (
+                        <button onClick={()=>setPreviewStatus('waiting')} style={{position:'fixed', bottom:10, left:10, opacity:0.2, background:'none', border:'none', color:'white', fontSize:10}}>RESET PREVIEW</button>
+                    )}
                 </div>
             );
         };
