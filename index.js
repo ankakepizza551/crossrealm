@@ -11,14 +11,14 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 const HAND_LIMIT = 12;
 
-// --- タクティカル・エディション専用：属性サイクル定義 ---
+// タクティカル・ルールの属性サイクル定義
 const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
 
 const createDeck = () => {
   const realmConfig = {
-    GEAR: { total: 10, special: 3 },      // ドロー2
+    GEAR: { total: 10, special: 3 },      // +2ドロー
     MACHINE: { total: 10, special: 3 },   // リバース
-    FOUNTAIN: { total: 10, special: 3 },  // Specialはワイルド
+    FOUNTAIN: { total: 10, special: 3 },  // Specialはワイルド扱い
     PLANET: { total: 3, special: 0 },     // ワイルド
     RUINS: { total: 3, special: 0 },      // ワイルド
     ICEAGE: { total: 5, special: 0 },
@@ -41,34 +41,19 @@ const createDeck = () => {
   return deck.sort(() => Math.random() - 0.5);
 };
 
-// サーバー側バリデーション：タクティカル・ルールを厳格に適用
+// サーバー側でのプレイ可否判定
 const canPlayCard = (room, card) => {
   if (room.nextDrawAmount > 1) {
-    // ドロー攻撃中は特殊なGEARでのみ対抗可能
     return (card.realm === 'GEAR' && card.isSpecial);
   }
-
   const field = room.fieldCard.realm;
   const hand = card.realm;
-
-  // WILDカードは常に許可
-  if (hand === 'PLANET' || hand === 'RUINS') return true;
-  if (hand === 'FOUNTAIN' && card.isSpecial) return true;
-
-  // 同じレルムなら許可
+  if (hand === 'PLANET' || hand === 'RUINS' || (hand === 'FOUNTAIN' && card.isSpecial)) return true;
   if (field === hand) return true;
-
-  // 属性サイクル判定
   const currentIdx = CYCLE_ORDER.indexOf(field);
-  if (currentIdx !== -1) {
-    const nextRealm = CYCLE_ORDER[(currentIdx + 1) % 6];
-    if (hand === nextRealm) return true;
-  }
-
-  // 特殊コンボ判定
-  if (field === 'ARCHIVE' && hand === 'ICEAGE') return true; 
+  if (currentIdx !== -1 && hand === CYCLE_ORDER[(currentIdx + 1) % 6]) return true;
+  if (field === 'ARCHIVE' && hand === 'ICEAGE') return true;
   if (field === 'ICEAGE' && (hand === 'BATTERY' || hand === 'FOUNTAIN')) return true;
-
   return false;
 };
 
@@ -113,7 +98,6 @@ io.on('connection', (socket) => {
   socket.on('start-game', ({ roomId }) => {
     const room = rooms[roomId];
     if (!room || room.players.length < 2) return;
-    
     room.deck = createDeck();
     room.players.forEach(p => p.hand = room.deck.splice(0, 5));
     room.fieldCard = room.deck.pop();
@@ -121,10 +105,7 @@ io.on('connection', (socket) => {
     room.turnIndex = Math.floor(Math.random() * room.players.length);
     room.nextDrawAmount = 1;
     room.isReversed = false;
-    
-    // 初手WILD対応
     room.needsInitialChoice = (room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS' || (room.fieldCard.realm === 'FOUNTAIN' && room.fieldCard.isSpecial));
-    
     emitUpdate(roomId);
   });
 
@@ -133,19 +114,16 @@ io.on('connection', (socket) => {
     if (!room || room.status !== 'playing') return;
     const player = room.players[room.turnIndex];
     if (player.id !== socket.id) return;
-
     const count = room.nextDrawAmount;
     for (let i = 0; i < count; i++) {
       if (room.deck.length === 0) break;
       player.hand.push(room.deck.pop());
     }
-
     if (player.hand.length > HAND_LIMIT) {
       room.status = 'finished';
       emitUpdate(roomId);
       return;
     }
-
     room.nextDrawAmount = 1;
     const direction = room.isReversed ? -1 : 1;
     room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
@@ -157,12 +135,9 @@ io.on('connection', (socket) => {
     if (!room || room.status !== 'playing') return;
     const player = room.players[room.turnIndex];
     if (player.id !== socket.id) return;
-
     if (!canPlayCard(room, card)) return;
-
     player.hand = player.hand.filter(c => c.id !== card.id);
     const newFieldCard = { ...card };
-    
     if (chosenRealm) {
       if (card.realm === 'RUINS') newFieldCard.wasRuins = true;
       if (card.realm === 'PLANET') newFieldCard.wasPlanet = true;
@@ -170,20 +145,14 @@ io.on('connection', (socket) => {
       newFieldCard.realm = chosenRealm;
       newFieldCard.isSpecial = false; 
     }
-    
     room.fieldCard = newFieldCard;
-
     if (player.hand.length === 0) {
       room.status = 'finished';
     } else {
       if (card.isSpecial) {
         switch (card.realm) {
-          case 'GEAR':
-            room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
-            break;
-          case 'MACHINE':
-            room.isReversed = !room.isReversed;
-            break;
+          case 'GEAR': room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2; break;
+          case 'MACHINE': room.isReversed = !room.isReversed; break;
         }
       }
       const direction = room.isReversed ? -1 : 1;
@@ -214,4 +183,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => console.log(`Eternal Tactical Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Cross Realm Server running on port ${PORT}`));
