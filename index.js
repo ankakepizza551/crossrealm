@@ -11,7 +11,6 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 
 const createDeck = () => {
-  // 【修正】サブ属性を各5枚、完全ワイルドを各3枚に調整（デッキ総数51枚）
   const realmConfig = {
     GEAR: { total: 10, special: 3 },     // 10枚中3枚が「+2」
     MACHINE: { total: 10, special: 3 },  // 10枚中3枚が「REV」
@@ -28,13 +27,11 @@ const createDeck = () => {
     const { total, special } = realmConfig[realm];
     for (let i = 0; i < total; i++) {
       let card = { id: Math.random().toString(36).substr(2, 9), realm };
-      // 最初の数枚（specialで指定した枚数分）だけを特殊カードにする
       if (i < special) card.isSpecial = true;
       deck.push(card);
     }
   });
   
-  // 生成された全51枚をシャッフル
   return deck.sort(() => Math.random() - 0.5);
 };
 
@@ -63,7 +60,6 @@ io.on('connection', (socket) => {
     }
     const room = rooms[roomId];
     
-    // 【再接続システム】同じ名前のプレイヤーがいたら自動で復帰させる
     const existingPlayer = room.players.find(p => p.name === playerName);
     if (existingPlayer) {
         existingPlayer.id = socket.id;
@@ -108,7 +104,6 @@ io.on('connection', (socket) => {
     
     const p = room.players[room.turnIndex];
     
-    // 山札が足りない場合は捨て札をシャッフルして補充
     if (room.deck.length < room.nextDrawAmount) {
         room.deck = [...room.deck, ...room.discardPile].sort(() => Math.random() - 0.5);
         room.discardPile = [];
@@ -134,10 +129,14 @@ io.on('connection', (socket) => {
     
     let playedCard = p.hand.splice(cardIndex, 1)[0];
     
+    // 【バグ修正】WILD系を出して属性を変えた時、別の特殊カードに化けないように処理
     if (chosenRealm) {
         if(playedCard.realm === 'PLANET') playedCard.wasPlanet = true;
         if(playedCard.realm === 'RUINS') playedCard.wasRuins = true;
+        if(playedCard.realm === 'FOUNTAIN' && playedCard.isSpecial) playedCard.wasFountain = true;
+        
         playedCard.realm = chosenRealm;
+        playedCard.isSpecial = false; // 属性変更後は特殊バッジを剥奪（誤作動防止）
     }
     
     room.fieldCard = playedCard;
@@ -148,6 +147,7 @@ io.on('connection', (socket) => {
       return;
     }
 
+    // GEAR(+2)とMACHINE(REV)の効果適用は健在です！
     if (!preventSpecial && playedCard.isSpecial) {
       switch (playedCard.realm) {
         case 'GEAR':
