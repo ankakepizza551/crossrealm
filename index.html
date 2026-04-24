@@ -51,7 +51,7 @@
             padding: 10px; box-sizing: border-box; position: relative; z-index: 1;
         }
 
-        /* 他プレイヤーのエリア */
+        /* 対戦相手のエリア */
         .opponents-area {
             display: flex; flex-direction: column; gap: 8px; padding: 10px;
             margin-bottom: 10px; min-height: 100px;
@@ -90,12 +90,23 @@
             padding: 10px 0; text-align: center; font-size: 15px; font-weight: 900;
         }
 
+        /* 出せるカードのマウスオーバーポップアップ */
+        .hand-card:not(.disabled):hover {
+            transform: translateY(-25px);
+            z-index: 100;
+            border-color: var(--accent);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.8), 0 0 20px var(--accent);
+        }
+
+        /* 選択(フォーカス)状態 - ホバーより優先される演出 */
         .hand-card.focused {
             transform: translateY(-60px) scale(1.25) !important;
             z-index: 500 !important;
             box-shadow: 0 30px 60px rgba(0,0,0,1), 0 0 30px var(--accent);
             border-color: #fff;
         }
+
+        .hand-card.disabled { opacity: 0.3; cursor: not-allowed; }
 
         .center-stage { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
         
@@ -163,7 +174,7 @@
 
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
-        // 実際のデプロイ先URLに置き換えてください
+        // サーバーURLは環境に合わせて調整してください
         const socket = io('https://crossrealm-server.onrender.com');
 
         const REALMS = {
@@ -257,7 +268,11 @@
                 else if (card.realm === 'GEAR' && card.isSpecial) src = './images/GEAR_frame.png';
 
                 return (
-                    <div className={`card ${isField ? 'field-card' : 'hand-card'} ${disabled ? 'disabled' : ''} ${isFocused ? 'focused' : ''}`} onClick={onClick} style={isField ? {borderColor: REALMS[card.realm].color, scale: '1.15'} : {}}>
+                    <div 
+                        className={`card ${isField ? 'field-card' : 'hand-card'} ${disabled ? 'disabled' : ''} ${isFocused ? 'focused' : ''}`} 
+                        onClick={onClick} 
+                        style={isField ? {borderColor: REALMS[card.realm].color, scale: '1.15'} : {}}
+                    >
                         {card.realm === 'GEAR' && card.isSpecial && <div className="special-badge">+2 DRAW</div>}
                         {(card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) && <div className="special-badge" style={{'--badge-bg':'#00CED1'}}>WILD</div>}
                         <img src={src} alt={card.realm} />
