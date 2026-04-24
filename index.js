@@ -11,16 +11,16 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 const HAND_LIMIT = 12;
 
-// タクティカル・ルールの属性サイクル定義
+// 属性サイクル定義
 const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
 
 const createDeck = () => {
   const realmConfig = {
-    GEAR: { total: 10, special: 3 },      // 特殊(S)のみ +2
-    MACHINE: { total: 10, special: 3 },   // 特殊(S)のみ リバース
-    FOUNTAIN: { total: 10, special: 3 },  // 特殊(S)のみ ワイルド
-    PLANET: { total: 3, special: 0 },     
-    RUINS: { total: 3, special: 0 },      
+    GEAR: { total: 10, special: 3 },      
+    MACHINE: { total: 10, special: 3 },   
+    FOUNTAIN: { total: 10, special: 3 },  
+    PLANET: { total: 3, special: 0 },    
+    RUINS: { total: 3, special: 0 },     
     ICEAGE: { total: 5, special: 0 },
     BATTERY: { total: 5, special: 0 },
     ARCHIVE: { total: 5, special: 0 }
@@ -41,19 +41,35 @@ const createDeck = () => {
   return deck.sort(() => Math.random() - 0.5);
 };
 
+// サーバー側バリデーション：噴水(S)の条件を変更
 const canPlayCard = (room, card) => {
   if (room.nextDrawAmount > 1) {
-    // ドロー蓄積中は、特殊(S)なGEARでのみ回避・累積可能
     return (card.realm === 'GEAR' && card.isSpecial);
   }
   const field = room.fieldCard.realm;
   const hand = card.realm;
-  if (hand === 'PLANET' || hand === 'RUINS' || (hand === 'FOUNTAIN' && card.isSpecial)) return true;
+
+  // 純粋ワイルドカード（惑星・廃墟）
+  if (hand === 'PLANET' || hand === 'RUINS') return true;
+
+  // 限定ワイルド：噴水(S)
+  // 「氷河期」または「噴水」の上でのみ発動可能
+  if (hand === 'FOUNTAIN' && card.isSpecial) {
+    return (field === 'ICEAGE' || field === 'FOUNTAIN');
+  }
+
+  // 同じレルム
   if (field === hand) return true;
+
+  // 基本サイクル
   const currentIdx = CYCLE_ORDER.indexOf(field);
   if (currentIdx !== -1 && hand === CYCLE_ORDER[(currentIdx + 1) % 6]) return true;
+
+  // 特殊ショートカット
   if (field === 'ARCHIVE' && hand === 'ICEAGE') return true;
   if (field === 'ICEAGE' && (hand === 'BATTERY' || hand === 'FOUNTAIN')) return true;
+  if (field === 'BATTERY' && hand === 'GEAR') return true;
+
   return false;
 };
 
@@ -149,16 +165,10 @@ io.on('connection', (socket) => {
     if (player.hand.length === 0) {
       room.status = 'finished';
     } else {
-      // 特殊効果の処理 (S付きカードのみ)
       if (card.isSpecial) {
         switch (card.realm) {
-          case 'GEAR': 
-            room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2; 
-            break;
-          case 'MACHINE': 
-            room.isReversed = !room.isReversed; 
-            break;
-          // FOUNTAIN(S)はワイルドとしてクライアント側で処理済み
+          case 'GEAR': room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2; break;
+          case 'MACHINE': room.isReversed = !room.isReversed; break;
         }
       }
       const direction = room.isReversed ? -1 : 1;
@@ -179,5 +189,5 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => console.log(`Tactical Server Online`));
+const PORT = 3001;
+server.listen(PORT, () => console.log(`Server Ready`));
