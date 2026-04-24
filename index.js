@@ -46,7 +46,7 @@ io.on('connection', (socket) => {
   socket.on('join-room', ({ roomId, playerName }) => {
     socket.join(roomId);
     if (!rooms[roomId]) {
-      rooms[roomId] = { status: 'waiting', deck: [], fieldCard: null, players: [], turnIndex: 0, nextDrawAmount: 1, isReversed: false, needsInitialChoice: false, readyPlayers: new Set() };
+      rooms[roomId] = { status: 'waiting', deck: [], discardPile: [], fieldCard: null, players: [], turnIndex: 0, nextDrawAmount: 1, isReversed: false, needsInitialChoice: false, readyPlayers: new Set() };
     }
     const room = rooms[roomId];
     if (room.players.length < 4 && room.status === 'waiting') {
@@ -61,6 +61,7 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
     if (!room) return;
     room.deck = createDeck();
+    room.discardPile = [];
     room.fieldCard = room.deck.pop();
     room.status = 'playing';
     room.turnIndex = 0;
@@ -76,6 +77,17 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
     if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
     const player = room.players.find(p => p.id === socket.id);
+    
+    // 現在の場のカードを捨て札に移動（ワイルドカードは元の状態にリセット）
+    if (room.fieldCard) {
+      let discard = { ...room.fieldCard };
+      if (discard.wasPlanet) discard.realm = 'PLANET';
+      if (discard.wasRuins) discard.realm = 'RUINS';
+      delete discard.wasPlanet;
+      delete discard.wasRuins;
+      room.discardPile.push(discard);
+    }
+
     player.hand = player.hand.filter(c => c.id !== card.id);
     const newFieldCard = { ...card };
     if (chosenRealm) {
@@ -101,7 +113,25 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
     if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
     const player = room.players[room.turnIndex];
-    for (let i = 0; i < room.nextDrawAmount; i++) if (room.deck.length > 0) player.hand.push(room.deck.pop());
+
+    for (let i = 0; i < room.nextDrawAmount; i++) {
+      // 山札が空なら捨て札を補充
+      if (room.deck.length === 0) {
+        if (room.discardPile.length > 0) {
+          room.deck = room.discardPile.sort(() => Math.random() - 0.5);
+          room.discardPile = [];
+        } else {
+          break; // 全カードが手元にある場合は終了
+        }
+      }
+      // 15枚制限チェック
+      if (player.hand.length < 15) {
+        player.hand.push(room.deck.pop());
+      } else {
+        break;
+      }
+    }
+
     room.nextDrawAmount = 1;
     const direction = room.isReversed ? -1 : 1;
     room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
@@ -113,8 +143,8 @@ io.on('connection', (socket) => {
     if (!room) return;
     room.readyPlayers.add(socket.id);
     if (room.readyPlayers.size === room.players.length) {
-        // 再戦開始
         room.deck = createDeck();
+        room.discardPile = [];
         room.fieldCard = room.deck.pop();
         room.status = 'playing';
         room.turnIndex = 0;
