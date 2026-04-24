@@ -42,7 +42,6 @@
             border-right: 2px solid var(--steam-gold);
         }
 
-        /* 背景レイヤー */
         .bg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
         .bg-watermark {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -66,7 +65,6 @@
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
 
-        /* 相手エリア */
         .opponents-area {
             display: flex; flex-direction: column; gap: 12px; padding: 30px 15px 15px 15px;
             background: linear-gradient(to bottom, rgba(5,5,10,0.98), transparent);
@@ -87,7 +85,6 @@
             box-shadow: -4px 0 12px rgba(0,0,0,0.9);
         }
 
-        /* 属性サイクルバー */
         .cycle-bar {
             display: flex; justify-content: space-between; align-items: center;
             padding: 12px 10px 30px 10px; background: rgba(0,0,0,0.85);
@@ -107,11 +104,10 @@
             position: absolute; top: 18px; left: 50%; transform: translateX(-50%); 
             font-size: 11px; font-weight: 900; color: #fff; opacity: 0.35;
             letter-spacing: 0.5px; transition: 0.3s;
-            white-space: nowrap; /* 改行を禁止 */
+            white-space: nowrap; 
         }
-        .cycle-dot.active .cycle-label { opacity: 1; color: var(--dot-color); font-size: 13px; text-shadow: 0 0 10px #000; }
+        .cycle-dot.active .cycle-label { opacity: 1; color: var(--dot-color); font-size: 12px; text-shadow: 0 0 10px #000; }
 
-        /* フィールド */
         .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; gap: 30px; }
         .field-main-area { display: flex; align-items: center; gap: 30px; width: 100%; justify-content: center; z-index: 10; }
 
@@ -137,13 +133,12 @@
 
         .turn-watermark {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-family: 'Cinzel', serif; font-size: 140px; font-weight: 900; opacity: 0.05;
+            font-family: 'Cinzel', serif; font-size: 130px; font-weight: 900; opacity: 0.05;
             color: var(--accent); white-space: nowrap; pointer-events: none;
             animation: pulse-aura 5s infinite ease-in-out;
         }
-        @keyframes pulse-aura { 0%, 100% { scale: 1; opacity: 0.04; } 50% { scale: 1.2; opacity: 0.09; } }
+        @keyframes pulse-aura { 0%, 100% { scale: 1; opacity: 0.05; } 50% { scale: 1.2; opacity: 0.15; } }
 
-        /* カード */
         .card {
             width: var(--card-w); height: var(--card-h);
             border-radius: 8px; border: 3.5px solid var(--steam-gold);
@@ -157,26 +152,24 @@
             border-top: 3.5px solid var(--r-color); color: var(--steam-gold); font-family: 'Cinzel', serif;
         }
 
-        /* 手札ホバー */
         .my-card { margin-left: -55px; transform-origin: bottom center; cursor: pointer; transition: 0.4s cubic-bezier(0.2, 1, 0.3, 1); }
         .my-card.playable:hover {
             transform: translateY(-80px) scale(1.5) !important;
             z-index: 1000 !important;
             border-color: #fff;
-            box-shadow: 0 45px 90px rgba(0,0,0,1), 0 0 50px var(--accent);
+            box-shadow: 0 45px 90px rgba(0,0,0,1), 0 0 55px var(--accent);
         }
-        .my-card.not-playable { opacity: 0.2; filter: grayscale(1) brightness(0.3); cursor: not-allowed; }
+        .my-card.not-playable { opacity: 0.15; filter: grayscale(1) brightness(0.3); cursor: not-allowed; }
 
-        /* アクションボタン */
         .action-area { padding: 25px; display: flex; justify-content: center; z-index: 100; }
         .btn-main {
             background: linear-gradient(135deg, var(--steam-gold), #B8860B);
             color: #000; border: 4px solid #000;
             padding: 24px 0; border-radius: 10px; font-weight: 900; font-size: 22px;
             box-shadow: 0 0 40px rgba(212,175,55,0.5); cursor: pointer;
-            width: 90%; transition: all 0.3s; letter-spacing: 8px; font-family: 'Cinzel', serif;
+            width: 90%; transition: 0.3s; letter-spacing: 8px; font-family: 'Cinzel', serif;
         }
-        .btn-main:hover:not(:disabled) { filter: brightness(1.3); transform: scale(1.04); box-shadow: 0 0 70px var(--accent); }
+        .btn-main:hover:not(:disabled) { filter: brightness(1.3); transform: scale(1.04); box-shadow: 0 0 60px var(--accent); }
         .btn-main:disabled { background: #222; color: #555; border-color: #333; cursor: not-allowed; }
 
         .hand-area {
@@ -185,7 +178,6 @@
         }
         .hand-flex { display: flex; justify-content: center; padding: 35px 65px; min-height: 230px; align-items: flex-end; }
 
-        /* モーダル */
         .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.97); z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
         .panel { 
             background: #08080c; border: 4px solid var(--steam-gold); padding: 70px 45px; border-radius: 15px;
@@ -198,24 +190,10 @@
         }
 
         .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
-        .realm-btn { 
-            padding: 22px; border: 3px solid var(--steam-gold); 
-            background: rgba(255,255,255,0.04); color: #fff; font-weight: 900; 
-            font-size: 17px; font-family: 'Cinzel', serif; cursor: pointer; 
-            transition: 0.3s;
-        }
-        .realm-btn:hover { background: var(--steam-gold); color: #000; transform: scale(1.05); }
+        .realm-btn { padding: 22px; border: 3px solid var(--steam-gold); background: rgba(255,255,255,0.04); color: #fff; font-weight: 900; font-size: 17px; font-family: 'Cinzel', serif; cursor: pointer; }
 
-        .status-badge { 
-            background: #000; color: var(--danger); border: 3px solid var(--danger);
-            padding: 16px 40px; font-weight: 900; font-size: 20px; margin-bottom: 45px; 
-            animation: glitch-fx 0.3s infinite; text-transform: uppercase; letter-spacing: 6px;
-        }
-        @keyframes glitch-fx {
-            0% { transform: translate(0); text-shadow: 4px 0 var(--accent); }
-            50% { transform: translate(-5px, 2.5px); text-shadow: -4px 0 var(--cyber-pink); }
-            100% { transform: translate(0); }
-        }
+        .status-badge { background: #000; color: var(--danger); border: 4.5px solid var(--danger); padding: 18px 45px; font-weight: 900; font-size: 20px; margin-bottom: 45px; animation: glitch 0.3s infinite; text-transform: uppercase; letter-spacing: 6px; }
+        @keyframes glitch { 0% { transform: translate(0); text-shadow: 4px 0 var(--accent); } 50% { transform: translate(-5px, 2px); text-shadow: -4px 0 var(--cyber-pink); } 100% { transform: translate(0); } }
     </style>
 </head>
 <body>
@@ -270,8 +248,6 @@
             
             const canPlay = (card) => {
                 if (!isMyTurn) return false;
-                
-                // ドロー2蓄積中のルール：特殊(S)歯車のみが対抗可能
                 if (gs.nextDrawAmount > 1) {
                     return (card.realm === 'GEAR' && card.isSpecial);
                 }
@@ -279,23 +255,19 @@
                 const h = card.realm;
                 const field = currentRealm;
 
-                // 純粋ワイルド
                 if (h === 'PLANET' || h === 'RUINS') return true;
-
-                // 限定ワイルド：噴水(S) - 場が氷河期か噴水の時のみ
                 if (h === 'FOUNTAIN' && card.isSpecial) {
                     return (field === 'ICEAGE' || field === 'FOUNTAIN');
                 }
 
-                // 通常プレイ（同じレルムならOK）
                 if (field === h) return true;
                 
-                // サイクル判定
                 const idx = CYCLE_ORDER.indexOf(field);
-                const next = idx === -1 ? 'GEAR' : CYCLE_ORDER[(idx + 1) % 6];
-                if (h === next) return true;
+                if (idx !== -1) {
+                    const next = CYCLE_ORDER[(idx + 1) % 6];
+                    if (h === next) return true;
+                }
                 
-                // 特殊コンボ
                 if (field === 'ARCHIVE' && h === 'ICEAGE') return true;
                 if (field === 'ICEAGE' && (h === 'BATTERY' || h === 'FOUNTAIN')) return true;
                 if (field === 'BATTERY' && h === 'GEAR') return true;
@@ -403,7 +375,7 @@
                                     </div>
                                     <div className="next-hint">
                                         {gs.nextDrawAmount > 1 
-                                            ? <span style={{color: 'var(--danger)'}}>対抗: 歯車(S) のみ</span>
+                                            ? <span style={{color: 'var(--danger)', fontWeight:900}}>対抗: 歯車(S) のみ</span>
                                             : <span>NEXT: {REALMS[CYCLE_ORDER[(CYCLE_ORDER.indexOf(currentRealm) + 1) % 6]]?.n} / 同属性</span>
                                         }
                                     </div>
@@ -413,7 +385,7 @@
 
                         <div className="action-area">
                             <button className="btn-main" disabled={!isMyTurn} onClick={() => socket.emit('draw-card',{roomId:room})}>
-                                {gs.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引いて回避` : 'カードを引く / パス'}
+                                {gs.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引いて回避` : (isMyTurn ? '手札を選択してください' : '対戦相手のターンです')}
                             </button>
                         </div>
 
