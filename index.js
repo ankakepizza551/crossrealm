@@ -11,6 +11,9 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 const HAND_LIMIT = 12;
 
+// 戦術サイクル順
+const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
+
 const createDeck = () => {
   const realmConfig = {
     GEAR: { total: 10, special: 3 },
@@ -59,6 +62,38 @@ const emitUpdate = (roomId) => {
   io.to(roomId).emit('update-game', data);
 };
 
+// 出せるかどうかのバリデーションロジック (Server Side)
+const canPlayCard = (room, card) => {
+  // 1. ドロー蓄積中のチェック
+  if (room.nextDrawAmount > 1) {
+    return (card.realm === 'GEAR' && card.isSpecial);
+  }
+
+  const field = room.fieldCard.realm;
+  const hand = card.realm;
+
+  // 2. WILDカード (PLANET/RUINS) または FOUNTAIN(Special)
+  if (hand === 'PLANET' || hand === 'RUINS') return true;
+  if (hand === 'FOUNTAIN' && card.isSpecial) return true;
+
+  // 3. 同じレルムならOK
+  if (field === hand) return true;
+
+  // 4. 戦術サイクルチェック
+  const currentIdx = CYCLE_ORDER.indexOf(field);
+  if (currentIdx !== -1) {
+    const nextRealm = CYCLE_ORDER[(currentIdx + 1) % 6];
+    if (hand === nextRealm) return true;
+  }
+
+  // 5. 特殊コンボ (Tactical Edition 仕様)
+  if (field === 'ARCHIVE' && hand === 'ICEAGE') return true; // 古文書を凍らせる
+  if (field === 'ICEAGE' && hand === 'BATTERY') return true; // 氷河期を充電
+  if (field === 'ICEAGE' && hand === 'FOUNTAIN') return true; // 氷を溶かす
+
+  return false;
+};
+
 io.on('connection', (socket) => {
   socket.on('join-room', ({ roomId, playerName }) => {
     if (!rooms[roomId]) {
@@ -69,14 +104,8 @@ io.on('connection', (socket) => {
       };
     }
     const room = rooms[roomId];
-    const existingPlayerIndex = room.players.findIndex(p => p.id === socket.id);
-    if (existingPlayerIndex === -1) {
-      if (room.players.length < 4) {
-        room.players.push({ id: socket.id, name: playerName, hand: [] });
-        socket.join(roomId);
-      }
-    } else {
-      room.players[existingPlayerIndex].name = playerName;
+    if (room.players.findIndex(p => p.id === socket.id) === -1 && room.players.length < 4) {
+      room.players.push({ id: socket.id, name: playerName, hand: [] });
       socket.join(roomId);
     }
     emitUpdate(roomId);
@@ -122,40 +151,24 @@ io.on('connection', (socket) => {
 
   socket.on('play-card', ({ roomId, card, chosenRealm }) => {
     const room = rooms[roomId];
-    if (!room || room.status !== 'playing') return;
+    if (!room || room.status !== 'playing' || room.needsInitialChoice) return;
     const player = room.players[room.turnIndex];
     if (player.id !== socket.id) return;
 
-    // --- カード出しのバリデーション ---
-    
-    // 1. ドロー蓄積中のチェック
-    if (room.nextDrawAmount > 1) {
-      // GEARの特殊カードのみ上乗せ可能
-      if (!(card.realm === 'GEAR' && card.isSpecial)) {
-        // 条件を満たさない場合は何もしない（クライアント側にも通知するのが理想だが、ここでは無視）
-        return; 
-      }
-    } else {
-      // 2. 通常時のチェック（レルム一致か、ワイルドカードか）
-      const isValidRealm = (card.realm === room.fieldCard.realm);
-      const isWild = (card.realm === 'PLANET' || card.realm === 'RUINS');
-      
-      if (!isValidRealm && !isWild) {
-        return;
-      }
+    // サーバーサイドでのルールバリデーション
+    if (!canPlayCard(room, card)) {
+      console.log(`Invalid move rejected: ${player.name} tried to play ${card.realm} on ${room.fieldCard.realm}`);
+      return; 
     }
 
-    // --- バリデーション通過後の処理 ---
+    // 手札から削除
     player.hand = player.hand.filter(c => c.id !== card.id);
     
     const newFieldCard = { ...card };
     
-    // WILDカードが移動先の特殊能力を継承しないようにする
+    // WILD/特殊効果によるレルム変更
     if (chosenRealm) {
       newFieldCard.realm = chosenRealm;
-      if (card.realm === 'RUINS') newFieldCard.wasRuins = true;
-      if (card.realm === 'PLANET') newFieldCard.wasPlanet = true;
-      if (card.realm === 'FOUNTAIN') newFieldCard.wasFountain = true;
       newFieldCard.isSpecial = false; 
     }
     
@@ -164,10 +177,10 @@ io.on('connection', (socket) => {
     if (player.hand.length === 0) {
       room.status = 'finished';
     } else {
+      // 特殊効果の発動
       if (card.isSpecial) {
         switch (card.realm) {
           case 'GEAR':
-            // ドロー上乗せ（初期値1なら2に、それ以上なら+2）
             room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
             break;
           case 'MACHINE':
@@ -212,4 +225,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Tactical Server running on port ${PORT}`));
