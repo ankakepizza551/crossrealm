@@ -52,7 +52,8 @@
 
         .hand-container { position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%); }
         
-        .hand-flex { display: flex; padding: 180px 0 25px 0; min-height: 350px; align-items: flex-end; overflow-x: auto; overflow-y: visible; margin-top: -180px; box-sizing: border-box; }
+        /* FlexboxではなくBlockに変更し、中のコンテナの margin: 0 auto を確実に効かせる */
+        .hand-flex { display: block; padding: 180px 20px 25px 20px; min-height: 350px; overflow-x: auto; overflow-y: visible; margin-top: -180px; box-sizing: border-box; }
         
         .hand-flex::-webkit-scrollbar { height: 4px; }
         .hand-flex::-webkit-scrollbar-thumb { background: var(--steam-gold); border-radius: 2px; }
@@ -569,8 +570,14 @@
 
                             <div className="hand-container">
                                 <div className="hand-flex">
-                                    {/* width: max-content を追加して、重なりを考慮した正しい幅で中央揃えさせる */}
-                                    <div style={{ display: 'flex', alignItems: 'flex-end', margin: '0 auto', width: 'max-content', padding: '0 20px' }}>
+                                    {/* 手札の枚数から「実際の全体の幅」をピクセルで計算して指定し、完全な中央揃えを実現 */}
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'flex-end', 
+                                        width: sortedHand.length > 0 ? `${108 + (sortedHand.length - 1) * 64}px` : 'auto',
+                                        margin: '0 auto',
+                                        position: 'relative'
+                                    }}>
                                         {sortedHand.map((card) => (
                                             <CardView key={card.id} card={card} playable={canPlay(card)} onClick={() => handlePlay(card)} />
                                         ))}
