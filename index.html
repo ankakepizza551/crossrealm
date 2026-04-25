@@ -106,7 +106,7 @@
             letter-spacing: 0.5px; transition: 0.3s;
             white-space: nowrap; 
         }
-        .cycle-dot.active .cycle-label { opacity: 1; color: var(--dot-color); font-size: 12px; text-shadow: 0 0 10px #000; }
+        .cycle-dot.active .cycle-label { opacity: 1; color: var(--dot-color); font-size: 13px; text-shadow: 0 0 10px #000; }
 
         .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; gap: 30px; }
         .field-main-area { display: flex; align-items: center; gap: 30px; width: 100%; justify-content: center; z-index: 10; }
@@ -133,7 +133,7 @@
 
         .turn-watermark {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-family: 'Cinzel', serif; font-size: 130px; font-weight: 900; opacity: 0.05;
+            font-family: 'Cinzel', serif; font-size: 140px; font-weight: 900; opacity: 0.05;
             color: var(--accent); white-space: nowrap; pointer-events: none;
             animation: pulse-aura 5s infinite ease-in-out;
         }
@@ -190,7 +190,8 @@
         }
 
         .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
-        .realm-btn { padding: 22px; border: 3px solid var(--steam-gold); background: rgba(255,255,255,0.04); color: #fff; font-weight: 900; font-size: 17px; font-family: 'Cinzel', serif; cursor: pointer; }
+        .realm-btn { padding: 22px; border: 3px solid var(--steam-gold); background: rgba(255,255,255,0.04); color: #fff; font-weight: 900; font-size: 17px; font-family: 'Cinzel', serif; cursor: pointer; transition: 0.2s; }
+        .realm-btn:hover { background: var(--steam-gold); color: #000; transform: scale(1.05); }
 
         .status-badge { background: #000; color: var(--danger); border: 4.5px solid var(--danger); padding: 18px 45px; font-weight: 900; font-size: 20px; margin-bottom: 45px; animation: glitch 0.3s infinite; text-transform: uppercase; letter-spacing: 6px; }
         @keyframes glitch { 0% { transform: translate(0); text-shadow: 4px 0 var(--accent); } 50% { transform: translate(-5px, 2px); text-shadow: -4px 0 var(--cyber-pink); } 100% { transform: translate(0); } }
@@ -251,7 +252,6 @@
                 if (gs.nextDrawAmount > 1) {
                     return (card.realm === 'GEAR' && card.isSpecial);
                 }
-                
                 const h = card.realm;
                 const field = currentRealm;
 
@@ -260,19 +260,16 @@
                     return (field === 'ICEAGE' || field === 'FOUNTAIN');
                 }
 
-                if (field === h) return true;
-                
-                const idx = CYCLE_ORDER.indexOf(field);
-                if (idx !== -1) {
-                    const next = CYCLE_ORDER[(idx + 1) % 6];
-                    if (h === next) return true;
+                // ペアサイクル判定
+                switch (field) {
+                    case 'GEAR':     case '歯車':   return (h === 'GEAR' || h === 'ICEAGE');
+                    case 'ICEAGE':   case '氷河期': return (h === 'FOUNTAIN' || h === 'BATTERY');
+                    case 'FOUNTAIN': case '噴水':   return (h === 'FOUNTAIN' || h === 'BATTERY');
+                    case 'BATTERY':  case '電池':   return (h === 'MACHINE' || h === 'ARCHIVE');
+                    case 'MACHINE':  case '機械':   return (h === 'MACHINE' || h === 'ARCHIVE');
+                    case 'ARCHIVE':  case '古文書': return (h === 'GEAR' || h === 'ICEAGE');
+                    default: return false;
                 }
-                
-                if (field === 'ARCHIVE' && h === 'ICEAGE') return true;
-                if (field === 'ICEAGE' && (h === 'BATTERY' || h === 'FOUNTAIN')) return true;
-                if (field === 'BATTERY' && h === 'GEAR') return true;
-                
-                return false;
             };
 
             const CardView = ({ card, playable, onClick, isField }) => {
@@ -287,10 +284,10 @@
 
                 return (
                     <div className={`card ${isField ? '' : (playable ? 'playable my-card' : 'not-playable my-card')}`} 
-                         style={{'--r-color': REALMS[card.realm].color}} onClick={onClick}>
+                         style={{'--r-color': (REALMS[card.realm] || {color:'#333'}).color}} onClick={onClick}>
                         <img src={src} onError={(e) => { e.target.src = 'https://via.placeholder.com/130x185/000/D4AF37?text=' + card.realm; }} />
                         <div className="card-footer">
-                            {REALMS[card.realm].n} {card.isSpecial ? '(S)' : ''}
+                            {(REALMS[card.realm] || {n:card.realm}).n} {card.isSpecial ? '(S)' : ''}
                         </div>
                     </div>
                 );
@@ -309,6 +306,19 @@
                     </div>
                 </div>
             );
+
+            const getHint = (f) => {
+                if (gs.nextDrawAmount > 1) return "対抗: 歯車(S) のみ";
+                switch (f) {
+                    case 'GEAR': case '歯車': return "次は「歯車」または「氷河期」";
+                    case 'ICEAGE': case '氷河期': return "次は「噴水」または「電池」";
+                    case 'FOUNTAIN': case '噴水': return "次は「噴水」または「電池」";
+                    case 'BATTERY': case '電池': return "次は「機械」または「古文書」";
+                    case 'MACHINE': case '機械': return "次は「機械」または「古文書」";
+                    case 'ARCHIVE': case '古文書': return "次は「歯車」または「氷河期」";
+                    default: return "属性サイクルに従ってください";
+                }
+            };
 
             if (!gs || gs.status === 'waiting') return (
                 <div className="screen-wrapper">
@@ -333,7 +343,7 @@
             return (
                 <div className="screen-wrapper">
                     <div className="bg-layer bg-watermark"></div>
-                    <div className="bg-layer bg-magic-aura" style={{ '--realm-color': REALMS[currentRealm].color }}></div>
+                    <div className="bg-layer bg-magic-aura" style={{ '--realm-color': (REALMS[currentRealm] || {color:'#111'}).color }}></div>
                     <div className="bg-layer bg-scanline"></div>
 
                     <div className="game-container">
@@ -353,7 +363,7 @@
 
                         <div className="cycle-bar">
                             {CYCLE_ORDER.map(r => (
-                                <div key={r} className={`cycle-dot ${currentRealm === r ? 'active' : ''}`} style={{'--dot-color': REALMS[r].color}}>
+                                <div key={r} className={`cycle-dot ${currentRealm === r || (REALMS[r] && REALMS[r].n === currentRealm) ? 'active' : ''}`} style={{'--dot-color': REALMS[r].color}}>
                                     <div className="cycle-label">{REALMS[r].n}</div>
                                 </div>
                             ))}
@@ -366,18 +376,17 @@
                             <div className="field-main-area">
                                 <CardView card={gs.fieldCard} isField={true} />
                                 <div className="info-panel">
-                                    <div className="realm-title" style={{'--realm-color': REALMS[currentRealm].color}}>{REALMS[currentRealm].n}</div>
+                                    <div className="realm-title" style={{'--realm-color': (REALMS[currentRealm] || {color:'#fff'}).color}}>
+                                        {(REALMS[currentRealm] || {n:currentRealm}).n}
+                                    </div>
                                     <div className="realm-desc">
-                                        {REALMS[currentRealm].desc}
-                                        {gs.fieldCard?.isSpecial && REALMS[currentRealm].effect && (
+                                        {(REALMS[currentRealm] || {desc:''}).desc}
+                                        {gs.fieldCard?.isSpecial && REALMS[currentRealm]?.effect && (
                                             <div className="effect-badge">{REALMS[currentRealm].effect}</div>
                                         )}
                                     </div>
                                     <div className="next-hint">
-                                        {gs.nextDrawAmount > 1 
-                                            ? <span style={{color: 'var(--danger)', fontWeight:900}}>対抗: 歯車(S) のみ</span>
-                                            : <span>NEXT: {REALMS[CYCLE_ORDER[(CYCLE_ORDER.indexOf(currentRealm) + 1) % 6]]?.n} / 同属性</span>
-                                        }
+                                        {getHint(currentRealm)}
                                     </div>
                                 </div>
                             </div>
@@ -385,7 +394,7 @@
 
                         <div className="action-area">
                             <button className="btn-main" disabled={!isMyTurn} onClick={() => socket.emit('draw-card',{roomId:room})}>
-                                {gs.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引いて回避` : (isMyTurn ? '手札を選択してください' : '対戦相手のターンです')}
+                                {gs.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引いて回避` : (isMyTurn ? '手札を選択' : '待機中...')}
                             </button>
                         </div>
 
