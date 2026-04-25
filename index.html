@@ -21,71 +21,54 @@
         @keyframes rotate-eternal { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
         .bg-magic-aura { position: absolute; inset: 0; background-color: var(--realm-color); -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 85%); mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 85%); opacity: 0.7; transition: background-color 3s ease-in-out; }
         .bg-scanline { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.15) 50%); background-size: 100% 4px; z-index: 5; }
-
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
-        .turn-direction { text-align: center; font-size: 14px; font-weight: 900; color: var(--accent); letter-spacing: 2px; background: rgba(0,0,0,0.6); padding: 10px; border-bottom: 1px solid rgba(64,224,208,0.3); display: flex; justify-content: center; align-items: center; gap: 8px; }
-
-        /* 他プレイヤーの表示エリア & ターン中の発光 */
+        .turn-direction { text-align: center; font-size: 14px; font-weight: 900; color: var(--accent); letter-spacing: 2px; background: rgba(0,0,0,0.6); padding: 10px; border-bottom: 1px solid rgba(64,224,208,0.3); }
         .opponents-area { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-bottom: 2px solid var(--border); background: rgba(0,0,0,0.6); }
-        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 6px; background: rgba(255,255,255,0.04); border-left: 4px solid var(--border); transition: all 0.4s ease; }
+        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 6px; background: rgba(255,255,255,0.04); border-left: 4px solid var(--border); transition: 0.4s; }
         .opp-row.active { border-left-color: var(--accent); background: rgba(64, 224, 208, 0.15); box-shadow: 0 0 20px rgba(64, 224, 208, 0.3), inset 0 0 15px rgba(64, 224, 208, 0.2); animation: activeGlow 2s infinite ease-in-out; }
-        @keyframes activeGlow { 0%, 100% { box-shadow: 0 0 10px rgba(64, 224, 208, 0.2); } 50% { box-shadow: 0 0 25px rgba(64, 224, 208, 0.5); } }
-        
+        @keyframes activeGlow { 0%, 100% { box-shadow: 0 0 5px rgba(64,224,208,0.2); } 50% { box-shadow: 0 0 25px rgba(64,224,208,0.5); } }
         .opp-name { font-weight: 900; font-size: 15px; color: #fff; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .opp-hand-visual { display: flex; align-items: center; position: relative; width: 100px; height: var(--opp-card-h); }
         .mini-card-back { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #333, #000); border: 1px solid var(--steam-gold); border-radius: 3px; position: absolute; }
-
         .cycle-bar { display: flex; justify-content: space-between; padding: 10px 4px; background: rgba(0,0,0,0.9); border-bottom: 2px solid var(--border); gap: 2px; }
         .cycle-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
-        .cycle-dot { width: 100%; height: 5px; background: #1a1a1a; border-radius: 2px; transition: 0.3s; }
+        .cycle-dot { width: 100%; height: 5px; background: #1a1a1a; border-radius: 2px; }
         .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 12px var(--dot-color); }
         .cycle-label { font-size: 10px; font-weight: 900; opacity: 0.3; font-family: 'Exo 2', sans-serif; white-space: nowrap; width: 100%; text-align: center; }
         .cycle-item.active .cycle-label { opacity: 1; color: var(--dot-color); text-shadow: 0 0 5px var(--dot-color); }
-
+        .battle-log { position: absolute; top: -45px; left: 15px; z-index: 1000; pointer-events: none; display: flex; flex-direction: column; gap: 6px; max-width: 65%; }
+        .log-entry { font-size: 14px; font-weight: 700; color: #fff; background: rgba(0,0,0,0.7); border-left: 3px solid var(--accent); padding: 8px 12px; border-radius: 0 4px 4px 0; animation: logAnim 5s forwards; }
+        @keyframes logAnim { 0% { transform: translateX(-10px); opacity: 0; } 5% { transform: translateX(0); opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
         .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; position: relative; }
         .info-panel { background: rgba(10,10,15,0.95); border: 1px solid var(--steam-gold); padding: 12px; border-radius: 8px; width: 160px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
         .realm-title { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 900; color: var(--realm-color); text-shadow: 0 0 10px var(--realm-color); }
-
         .hand-container { position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%); }
         .hand-flex { display: block; padding: 180px 0 25px 0; min-height: 350px; overflow: visible; margin-top: -180px; box-sizing: border-box; }
         .action-row { background: #000; border-top: 1px solid rgba(212,175,55,0.3); padding: 15px 0 35px 0; display: flex; justify-content: center; position: relative; z-index: 10; }
-
-        .card { width: var(--card-w); height: var(--card-h); border-radius: 8px; border: 2.5px solid var(--r-color); background: #000; overflow: hidden; position: relative; flex-shrink: 0; transition: transform 0.2s cubic-bezier(0.2, 1, 0.3, 1), margin 0.2s; }
+        .card { width: var(--card-w); height: var(--card-h); border-radius: 8px; border: 2.5px solid var(--r-color); background: #000; overflow: hidden; position: relative; flex-shrink: 0; transition: transform 0.2s, margin 0.2s; }
         .theme-steampunk { border-color: #B87333; background: radial-gradient(circle at center, #2a1a0a 0%, #000 100%); box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 30px rgba(184,115,51,0.6); }
         .theme-fantasy { border-color: #87CEEB; background: radial-gradient(circle at top, #0f1a24 0%, #000 100%); box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 30px rgba(135,206,235,0.5); }
         .theme-cyber { border-color: #0FF; background: linear-gradient(135deg, #001a1a 0%, #000 100%); box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 30px rgba(0,255,255,0.5); }
-
         .card.is-special { border-width: 4px; }
         .card-icon { position: absolute; top: 48%; left: 50%; transform: translate(-50%, -50%); width: 54px; height: 54px; color: var(--r-color); filter: drop-shadow(0 0 10px var(--r-color)); z-index: 2; }
-        .card-effect-text { position: absolute; bottom: 34px; width: 100%; text-align: center; font-size: 11px; font-weight: 900; color: #fff; text-shadow: 0 0 5px var(--r-color), 0 0 10px #000; letter-spacing: 1.5px; font-family: 'Exo 2', sans-serif; z-index: 3; }
-        .card-realm-mini { position: absolute; top: 6px; left: 8px; font-size: 11px; font-weight: 900; color: #fff; text-shadow: 0 0 5px #000; z-index: 3; opacity: 0.8; }
-        .card-badge { position: absolute; top: 22px; left: 8px; background: var(--r-color); color: #000; font-size: 10px; font-weight: 900; padding: 2px 5px; border-radius: 3px; z-index: 3; box-shadow: 0 0 8px var(--r-color); }
         .card-footer { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); font-size: 13px; font-weight: 900; padding: 6px 0; text-align: center; border-top: 2px solid var(--r-color); color: #fff; font-family: 'Cinzel', serif; z-index: 3; }
-
-        /* ログイン・待機画面のパネル装飾 */
         .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); background: rgba(0,0,0,0.5); padding: 20px; }
         .panel { position: relative; background: linear-gradient(135deg, rgba(15,15,20,0.98), rgba(5,5,10,1)); border: 1px solid var(--steam-gold); padding: 40px 20px; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 25px; box-shadow: 0 0 60px rgba(0,0,0,1), inset 0 0 30px rgba(212,175,55,0.05); border-radius: 4px; box-sizing: border-box; }
         .panel-corner1, .panel-corner2 { position: absolute; width: 25px; height: 25px; border-color: var(--steam-gold); border-style: solid; opacity: 0.8; }
         .panel-corner1 { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
         .panel-corner2 { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
-
-        .logo-main { font-family: 'Cinzel', serif; font-size: clamp(22px, 7vw, 34px); font-weight: 900; letter-spacing: 2px; background: linear-gradient(to bottom, #FFE4B5 20%, #D4AF37 50%, #8B6B23 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); white-space: nowrap; }
-        .logo-main span.cross { font-size: 0.8em; color: var(--steam-gold); -webkit-text-fill-color: var(--steam-gold); opacity: 0.8; }
-        .logo-sub { font-size: clamp(10px, 3.2vw, 14px); letter-spacing: clamp(4px, 1.2vw, 7px); color: var(--accent); text-align: center; font-weight: 900; margin-top: 10px; font-family: 'Exo 2', sans-serif; opacity: 0.8; text-transform: uppercase; white-space: nowrap; width: 100%; text-shadow: 0 0 10px rgba(64,224,208,0.4); }
-
+        .logo-main { font-family: 'Cinzel', serif; font-size: clamp(22px, 7vw, 34px); font-weight: 900; letter-spacing: 2px; background: linear-gradient(to bottom, #FFE4B5 20%, #D4AF37 50%, #8B6B23 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 8px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); white-space: nowrap; }
+        .logo-sub { font-size: clamp(10px, 3.2vw, 15px); letter-spacing: clamp(4px, 1.2vw, 8px); color: var(--accent); text-align: center; font-weight: 900; margin-top: 10px; font-family: 'Exo 2', sans-serif; opacity: 0.8; text-transform: uppercase; white-space: nowrap; width: 100%; text-shadow: 0 0 10px rgba(64,224,208,0.4); }
         .panel input { width: 100%; padding: 18px; background: rgba(0,0,0,0.7); border: 1px solid rgba(212,175,55,0.15); border-bottom: 2px solid var(--steam-gold); color: #fff; text-align: center; font-size: 16px; border-radius: 4px; outline: none; box-sizing: border-box; transition: all 0.3s; font-family: 'Exo 2', sans-serif; }
         .btn-main { background: linear-gradient(90deg, #B8860B, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1px solid #FFE4B5; padding: 18px 0; border-radius: 4px; font-weight: 900; font-size: 18px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 4px; transition: 0.4s; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .btn-main:hover { background-position: right center; box-shadow: 0 0 35px rgba(212,175,55,0.4); color: #fff; text-shadow: 0 0 5px #000; }
         .btn-main:disabled { background: #222; color: #444; border-color: #333; cursor: not-allowed; box-shadow: none; }
         .btn-sub { background: rgba(255,255,255,0.03); border: 1px solid #444; color: #888; padding: 16px 0; width: 100%; cursor: pointer; border-radius: 4px; font-weight: 900; font-size: 16px; transition: 0.3s; letter-spacing: 2px; }
-
         .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 12px; }
         .waiting-player { background: linear-gradient(90deg, rgba(64,224,208,0.1), transparent); border: 1px solid rgba(64,224,208,0.2); border-left: 4px solid var(--accent); padding: 16px 20px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
         .waiting-player.empty { background: rgba(255,255,255,0.02); border: 1px dashed rgba(212,175,55,0.3); opacity: 0.4; }
         .sync-dot { width: 10px; height: 10px; background: var(--accent); box-shadow: 0 0 10px var(--accent); transform: rotate(45deg); animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-
-        .mute-btn { position: absolute; top: 20px; right: 20px; z-index: 60000; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--steam-gold); color: var(--steam-gold); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .mute-btn { position: absolute; top: 20px; right: 20px; z-index: 60000; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--steam-gold); color: var(--steam-gold); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .my-card { margin-left: var(--card-margin, -44px); transform-origin: bottom center; cursor: pointer; position: relative; }
         .my-card:first-child { margin-left: 0 !important; }
         .my-card.playable:hover { transform: translateY(-25px) scale(1.45) !important; z-index: 10000 !important; border-color: #fff; }
