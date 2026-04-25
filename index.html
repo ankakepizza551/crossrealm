@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm - Eternal Punk Edition - v16.2</title>
+    <title>Cross Realm - Eternal Punk Edition - v16.3</title>
 
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -37,7 +37,6 @@
             box-shadow: 0 0 50px rgba(138, 43, 226, 0.2); 
         }
         
-        /* --- 背景・レイアウト (オリジナル維持) --- */
         .bg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
         .bg-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200%; height: 200%; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"><circle cx="150" cy="150" r="140" fill="none" stroke="rgba(212,175,55,0.05)" stroke-width="0.5"/><circle cx="150" cy="150" r="110" fill="none" stroke="rgba(64,224,208,0.05)" stroke-width="0.5"/><path d="M150 10 L150 290 M10 150 L290 150" stroke="rgba(138,43,226,0.05)" stroke-width="0.5"/><circle cx="150" cy="150" r="80" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.3" stroke-dasharray="4 4"/></svg>'); animation: rotate-eternal 240s linear infinite; }
         @keyframes rotate-eternal { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
@@ -239,7 +238,7 @@
             MACHINE_S: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="4" width="16" height="16" rx="2" ry="2" opacity="0.5"></rect><path d="M12 8v4l3 3" strokeWidth="2"/><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" strokeWidth="2"/><polyline points="16 8 21 8 21 3" strokeWidth="2"/></svg>,
             ARCHIVE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>,
             PLANET: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>,
-            RUINS: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 20h20"></path><path d="M5 20v-8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8"></path><path d="M9 20v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"></path><path d="M5 10V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"></path></svg>
+            RUINS: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 20h20"></path><path d="M5 20v-8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8"></path><path d="M9 20v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"></path></svg>
         };
 
         const App = () => {
@@ -256,7 +255,9 @@
             const logTerminalRef = useRef(null);
 
             useEffect(() => {
-                const s = io('https://crossrealm-server.onrender.com'); setSocket(s);
+                // 注意: ここを自身のサーバーURLに書き換えてください（例: http://localhost:3000）
+                const s = io('https://crossrealm-server.onrender.com'); 
+                setSocket(s);
                 s.on('update-game', (data) => { setGs(data); setError(''); });
                 s.on('join-error', (msg) => { setError(msg); setJoined(false); });
                 const handleResize = () => setWindowWidth(window.innerWidth);
