@@ -138,17 +138,22 @@
         /* 属性選択ボタン: 16px -> 18px */
         .realm-btn { padding: 20px; border: 1px solid var(--steam-gold); background: rgba(255,255,255,0.05); color: #fff; font-weight: 900; font-family: 'Cinzel', serif; cursor: pointer; border-radius: 4px; font-size: 18px; transition: 0.3s; }
         .realm-btn:hover { background: rgba(212,175,55,0.2); box-shadow: 0 0 15px rgba(212,175,55,0.4); }
+
+        /* ミュートボタンのスタイル */
+        .mute-btn { position: absolute; top: 20px; right: 20px; z-index: 60000; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--steam-gold); color: var(--steam-gold); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .mute-btn:hover { background: rgba(212, 175, 55, 0.2); box-shadow: 0 0 15px rgba(212, 175, 55, 0.5); transform: scale(1.1); }
     </style>
 </head>
 <body>
     <script>
-        const sfx = {
+        // Reactからアクセスしやすいように window.sfx に変更
+        window.sfx = {
             turn: new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'),
             play: new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3'),
             draw: new Audio('https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3'),
             alert: new Audio('https://assets.mixkit.co/active_storage/sfx/2862/2862-preview.mp3')
         };
-        Object.values(sfx).forEach(a => a.volume = 0.3);
+        Object.values(window.sfx).forEach(a => a.volume = 0.3);
     </script>
 
     <div id="root"></div>
@@ -176,6 +181,7 @@
             const [selectorCard, setSelectorCard] = useState(null);
             const [error, setError] = useState('');
             const [bgRealm, setBgRealm] = useState('GEAR');
+            const [isMuted, setIsMuted] = useState(false); // ミュート状態
             
             const prevTurnRef = useRef(null);
 
@@ -192,9 +198,9 @@
                     const isMyTurnNow = gs.currentTurnPlayerId === socket?.id;
                     if (isMyTurnNow && prevTurnRef.current !== socket?.id) {
                         if (gs.nextDrawAmount > 1) {
-                            sfx.alert.currentTime = 0; sfx.alert.play().catch(()=>{});
+                            window.sfx.alert.currentTime = 0; window.sfx.alert.play().catch(()=>{});
                         } else {
-                            sfx.turn.currentTime = 0; sfx.turn.play().catch(()=>{});
+                            window.sfx.turn.currentTime = 0; window.sfx.turn.play().catch(()=>{});
                         }
                     }
                     prevTurnRef.current = gs.currentTurnPlayerId;
@@ -215,6 +221,12 @@
                     if (interval) clearInterval(interval);
                 };
             }, [gs]);
+
+            const toggleMute = () => {
+                const nextMuted = !isMuted;
+                setIsMuted(nextMuted);
+                Object.values(window.sfx).forEach(a => a.volume = nextMuted ? 0 : 0.3);
+            };
 
             const isMyTurn = gs?.currentTurnPlayerId === socket?.id && gs?.status === 'playing';
             const currentRealm = (gs && gs.status === 'playing') ? (gs?.fieldCard?.realm || 'GEAR') : bgRealm;
@@ -247,11 +259,10 @@
             const handlePlay = (card) => {
                 if (!canPlay(card)) return;
                 
-                // アラートSEが鳴っていた場合は即座に停止してリセットする
-                sfx.alert.pause();
-                sfx.alert.currentTime = 0;
+                window.sfx.alert.pause();
+                window.sfx.alert.currentTime = 0;
                 
-                sfx.play.currentTime = 0; sfx.play.play().catch(()=>{});
+                window.sfx.play.currentTime = 0; window.sfx.play.play().catch(()=>{});
 
                 const isWild = (card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial));
                 if (isWild && sortedHand.length > 1) {
@@ -262,11 +273,10 @@
             };
 
             const handleDraw = () => {
-                // アラートSEが鳴っていた場合は即座に停止してリセットする
-                sfx.alert.pause();
-                sfx.alert.currentTime = 0;
+                window.sfx.alert.pause();
+                window.sfx.alert.currentTime = 0;
                 
-                sfx.draw.currentTime = 0; sfx.draw.play().catch(()=>{});
+                window.sfx.draw.currentTime = 0; window.sfx.draw.play().catch(()=>{});
                 socket.emit('draw-card',{roomId:room});
             };
 
@@ -294,6 +304,11 @@
                     <div className="bg-layer bg-magic-aura" style={{ backgroundColor: REALMS[currentRealm].color }}></div>
                     <div className="bg-layer bg-scanline"></div>
 
+                    {/* ミュートボタン */}
+                    <button onClick={toggleMute} className="mute-btn" title={isMuted ? "音声をオン" : "音声をオフ"}>
+                        {isMuted ? '🔇' : '🔊'}
+                    </button>
+
                     {/* === トップ画面（ログイン） === */}
                     {!joined && (
                         <div className="overlay">
@@ -309,17 +324,11 @@
                                 {error && <div className="error-msg">⚠️ {error}</div>}
                                 
                                 <div style={{width:'100%', display:'flex', flexDirection:'column', gap:20}}>
-                                    <div className="input-group">
-                                        <label>プレイヤー名</label>
-                                        <input type="text" value={name} onChange={e=>setName(e.target.value)} maxLength={10} />
-                                    </div>
-                                    <div className="input-group">
-                                        <label>ルームID</label>
-                                        <input type="text" value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} />
-                                    </div>
+                                    <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="プレイヤー名" maxLength={10} />
+                                    <input type="text" value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} placeholder="ルームID" />
                                 </div>
                                 <button onClick={()=>{
-                                    sfx.turn.load(); sfx.play.load(); sfx.draw.load(); sfx.alert.load();
+                                    window.sfx.turn.load(); window.sfx.play.load(); window.sfx.draw.load(); window.sfx.alert.load();
                                     setJoined(true); 
                                     socket.emit('join-room',{roomId:room, playerName:name});
                                 }} className="btn-main">接続開始</button>
@@ -354,7 +363,7 @@
                                 </div>
                                 
                                 {gs?.players?.[0]?.id === socket?.id ? (
-                                    <button onClick={()=>socket.emit('start-game',{roomId:room})} className="btn-main" disabled={gs?.players?.length < 2}>システム起動</button>
+                                    <button onClick={()=>socket.emit('start-game',{roomId:room})} className="btn-main" disabled={gs?.players?.length < 2}>ゲーム開始</button>
                                 ) : (
                                     <div style={{fontSize: 14, color: 'var(--steam-gold)', fontWeight: 900, letterSpacing: 2}}>ホストの起動待機中...</div>
                                 )}
@@ -483,11 +492,14 @@
                         let resultTitle = "MISSION END";
                         let resultSub = "";
                         let titleColor = "var(--steam-gold)";
+                        let titleFont = "Cinzel";
 
                         if (winner) {
-                            resultTitle = "MISSION CLEAR";
-                            resultSub = `WINNER: ${winner.name}`;
+                            // 勝利時はプレイヤー名を大きく表示
+                            resultTitle = `${winner.name} WIN!`;
+                            resultSub = "";
                             titleColor = "var(--accent)";
+                            titleFont = "'Exo 2', sans-serif"; // 日本語もかっこよく表示されるフォントに
                         } else if (bursted) {
                             resultTitle = "SYSTEM OVERLOAD";
                             resultSub = `BURST: ${bursted.name}`;
@@ -500,8 +512,9 @@
                                     <div className="panel-corner1"></div>
                                     <div className="panel-corner2"></div>
                                     
-                                    <div style={{marginBottom: '10px'}}>
-                                        <h2 style={{color: titleColor, fontSize:40, fontWeight:900, fontFamily:'Cinzel', textShadow: `0 0 20px ${titleColor}`, margin: 0, letterSpacing: 2}}>
+                                    <div style={{marginBottom: '10px', width: '100%'}}>
+                                        {/* 長い名前でも折り返されるように wordBreak を追加し、サイズを動的に調整 */}
+                                        <h2 style={{color: titleColor, fontSize: winner ? 34 : 40, fontWeight:900, fontFamily: titleFont, textShadow: `0 0 20px ${titleColor}`, margin: 0, letterSpacing: 2, wordBreak: 'break-all'}}>
                                             {resultTitle}
                                         </h2>
                                         {resultSub && <div style={{fontSize: 24, color: '#fff', fontWeight: 900, marginTop: 10, letterSpacing: 2}}>{resultSub}</div>}
