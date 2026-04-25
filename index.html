@@ -60,34 +60,23 @@
         .realm-title { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 900; color: var(--realm-color); margin-bottom: 4px; letter-spacing: 2px; text-shadow: 0 0 12px var(--realm-color); }
         .realm-desc { font-family: 'Exo 2', sans-serif; font-size: 11px; opacity: 0.8; line-height: 1.3; }
 
-        /* 重ね順修正: z-indexを下げ、手札が上に重なるようにする */
-        .action-row {
-            background: rgba(0,0,0,0.6);
-            border-top: 1px solid rgba(212, 175, 55, 0.2);
-            padding: 15px 0;
-            display: flex;
-            justify-content: center;
-            z-index: 10; /* 極力低く */
-            position: relative;
-        }
-        .action-row .btn-main { width: 85%; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-
-        /* 重ね順修正: z-indexを上げ、overflowを解除してカードがボタンを覆えるようにする */
+        /* 手札エリア: ボタンよりも上に配置 */
         .hand-container {
-            background: #000;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
             position: relative;
-            z-index: 1000; /* ボタン(10)より圧倒的に高い */
+            z-index: 500; 
             width: 100%;
-            overflow: visible; /* 重要 */
+            overflow: visible; 
+            padding-top: 20px;
         }
         .hand-flex { 
             display: flex; 
             justify-content: flex-start; 
-            padding: 15px 80px 25px 80px; 
+            padding: 10px 80px 25px 80px; 
             min-height: 150px; 
             align-items: flex-end; 
             overflow-x: auto; 
-            overflow-y: visible; /* 上への飛び出しを許可 */
+            overflow-y: visible; 
             width: 100%; 
             box-sizing: border-box; 
             -webkit-overflow-scrolling: touch;
@@ -95,6 +84,18 @@
         .hand-flex::-webkit-scrollbar { height: 4px; }
         .hand-flex::-webkit-scrollbar-track { background: transparent; }
         .hand-flex::-webkit-scrollbar-thumb { background: var(--steam-gold); border-radius: 2px; }
+
+        /* ボタンエリア: y軸を+方向（最下部）へ移動 */
+        .action-row {
+            background: #000;
+            border-top: 1px solid rgba(212, 175, 55, 0.4);
+            padding: 20px 0 30px 0;
+            display: flex;
+            justify-content: center;
+            z-index: 1000; 
+            position: relative;
+        }
+        .action-row .btn-main { width: 85%; max-width: 400px; box-shadow: 0 0 30px rgba(212, 175, 55, 0.2); }
 
         /* カード */
         .card { width: var(--card-w); height: var(--card-h); border-radius: 6px; border: 2.5px solid var(--steam-gold); background: #000; overflow: hidden; position: relative; box-shadow: 0 8px 25px rgba(0,0,0,1); flex-shrink: 0; transition: 0.25s cubic-bezier(0.2, 1, 0.3, 1); }
@@ -104,12 +105,12 @@
         .my-card { margin-left: -45px; transform-origin: bottom center; cursor: pointer; position: relative; }
         .my-card:first-child { margin-left: 0; }
 
-        /* ホバー時：z軸最前面に飛び出す。ボタンエリアを侵食して上に重なる */
+        /* ホバー時: ボタンから離れる方向（上）にポップアップするので被らない */
         .my-card.playable:hover { 
-            transform: translateY(-50px) scale(1.4) !important; /* ボタンにしっかり被るように跳ね上げ */
-            z-index: 2500 !important; /* 全要素中、最前面 */
+            transform: translateY(-65px) scale(1.45) !important; 
+            z-index: 3000 !important; 
             border-color: #fff; 
-            box-shadow: 0 30px 60px rgba(0,0,0,1), 0 0 50px var(--accent); 
+            box-shadow: 0 40px 80px rgba(0,0,0,1), 0 0 50px var(--accent); 
         }
 
         .my-card.not-playable { 
@@ -118,23 +119,16 @@
             cursor: not-allowed; 
         }
 
-        /* パネル類 */
+        /* オーバーレイ */
         .overlay { position: absolute; inset: 0; z-index: 4000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); background: rgba(0,0,0,0.5); padding: 40px; }
         .panel { background: rgba(10, 10, 15, 0.9); border: 2px solid var(--border); padding: 40px 30px; border-radius: 28px; text-align: center; width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; gap: 20px; box-shadow: 0 30px 100px rgba(0,0,0,1); }
-        .btn-main { background: linear-gradient(135deg, var(--steam-gold), #B8860B); color: #000; border: none; padding: 18px 0; border-radius: 12px; font-weight: 900; font-size: 17px; cursor: pointer; width: 100%; transition: 0.3s; letter-spacing: 5px; font-family: 'Cinzel', serif; display: flex; align-items: center; justify-content: center; }
+        .btn-main { background: linear-gradient(135deg, var(--steam-gold), #B8860B); color: #000; border: none; padding: 18px 0; border-radius: 12px; font-weight: 900; font-size: 18px; cursor: pointer; width: 100%; transition: 0.3s; letter-spacing: 5px; font-family: 'Cinzel', serif; display: flex; align-items: center; justify-content: center; }
         
         .logo-main { font-family: 'Cinzel', serif; font-size: 32px; font-weight: 900; letter-spacing: 10px; color: var(--steam-gold); text-shadow: 0 0 15px rgba(212,175,55,0.4); margin-bottom: 5px; }
         .panel input { width: 100%; padding: 15px; background: rgba(0,0,0,0.5); border: 2px solid rgba(212,175,55,0.2); color: var(--accent); text-align: center; font-size: 17px; border-radius: 12px; outline: none; font-weight: 700; box-sizing: border-box; font-family: 'Exo 2', sans-serif; }
 
         .sync-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } }
-        
-        .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 10px; }
-        .waiting-player { background: rgba(255,255,255,0.04); border: 1px solid rgba(212,175,55,0.15); padding: 15px 20px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; font-size: 17px; font-weight: 900; font-family: 'Exo 2', sans-serif; }
-        .error-msg { color: var(--danger); font-weight: 900; font-size: 14px; border: 1.5px solid var(--danger); padding: 10px; border-radius: 10px; background: rgba(255, 69, 0, 0.1); width: 100%; font-family: 'Exo 2', sans-serif; }
-
-        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
-        .realm-btn { padding: 16px; border: 2.5px solid var(--steam-gold); background: rgba(255,255,255,0.04); color: #fff; font-weight: 900; font-size: 15px; font-family: 'Cinzel', serif; cursor: pointer; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -198,11 +192,9 @@
                 if (gs.nextDrawAmount > 1) return (card.realm === 'GEAR' && card.isSpecial);
                 const h = card.realm;
                 const field = currentRealm;
-                
                 if (h === 'PLANET' || h === 'RUINS') return true;
                 if (field === 'PLANET' || field === 'RUINS') return true; 
                 if (h === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
-                
                 switch (field) {
                     case 'GEAR':     return (h === 'GEAR' || h === 'ICEAGE');
                     case 'ICEAGE':   return (h === 'FOUNTAIN' || h === 'BATTERY');
@@ -218,11 +210,11 @@
                 if (!canPlay(card)) return;
                 const isWild = (card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial));
                 
-                // 修正：手札が1枚（上がり）の時は、ワイルドでも選択メニューを出さない
+                // 上がりの時は選択肢を出さずにそのまま送信
                 if (isWild && sortedHand.length > 1) {
                     setSelectorCard(card);
                 } else {
-                    socket.emit('play-card', { roomId: room.toUpperCase(), card });
+                    socket.emit('play-card', { roomId: room.toUpperCase(), card, chosenRealm: isWild ? 'GEAR' : undefined });
                 }
             };
 
@@ -323,7 +315,6 @@
                             <div className="field">
                                 <div className="turn-watermark" style={{fontFamily:'Cinzel', fontSize: 12, opacity: 0.6}}>{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
                                 {gs.nextDrawAmount > 1 && <div className="status-badge">WARNING: DRAW +{gs.nextDrawAmount}</div>}
-                                
                                 <div className="field-main-area">
                                     <CardView card={gs.fieldCard} isField={true} />
                                     <div className="info-panel">
@@ -333,14 +324,7 @@
                                 </div>
                             </div>
 
-                            {/* ボタンエリア：z-indexを下げた */}
-                            <div className="action-row">
-                                <button className="btn-main" disabled={!isMyTurn} onClick={() => socket.emit('draw-card',{roomId:room})}>
-                                    {gs.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引く` : (isMyTurn ? (selectorCard ? '選択中' : 'カードを引く') : '待機中...')}
-                                </button>
-                            </div>
-
-                            {/* 手札エリア：z-indexを上げ、ホバー時の飛び出しを許可 */}
+                            {/* 手札をボタンより上に配置 */}
                             <div className="hand-container">
                                 <div className="hand-flex">
                                     {sortedHand.map((card) => (
@@ -350,6 +334,13 @@
                                 <div style={{textAlign:'center', fontSize:13, fontWeight:900, paddingBottom: 10, opacity:0.8, color:'var(--steam-gold)', letterSpacing:5, fontFamily:'Exo 2'}}>
                                     CORE SYNC: {sortedHand.length} / {gs.handLimit}
                                 </div>
+                            </div>
+
+                            {/* ボタンを画面最下部（y軸+）へ配置 */}
+                            <div className="action-row">
+                                <button className="btn-main" disabled={!isMyTurn} onClick={() => socket.emit('draw-card',{roomId:room})}>
+                                    {gs.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引く` : (isMyTurn ? (selectorCard ? '選択中' : 'カードを引く') : '待機中...')}
+                                </button>
                             </div>
                         </div>
                     )}
