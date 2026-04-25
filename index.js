@@ -148,9 +148,9 @@ io.on('connection', (socket) => {
   socket.on('start-game', (data) => {
     const room = rooms[data.roomId.toUpperCase()];
     if (room && room.players.length >= 2) {
-      room.players = room.players.sort(() => Math.random() - 0.5);
+      // ホストバグ修正：プレイヤー順のシャッフルを廃止。ホスト位置を固定化。
       room.deck = createDeck();
-      room.turnIndex = 0;
+      room.turnIndex = Math.floor(Math.random() * room.players.length); // プレイ開始プレイヤーのみをランダムに決定
       room.isReversed = false;
       room.nextDrawAmount = 1;
       room.logs = [];
@@ -224,11 +224,6 @@ io.on('connection', (socket) => {
         room.status = 'waiting';
         room.deck = []; room.fieldCard = null; room.turnIndex = 0; room.nextDrawAmount = 1; room.isReversed = false; room.logs = []; room.playHistory = []; room.currentTurnPlayerId = null;
         room.players.forEach(p => { p.hand = []; p.handCount = 0; p.isActing = false; });
-        // CPUがホストになるのを防ぐため、人間プレイヤーを先頭にソートし直す
-        room.players.sort((a, b) => {
-            if (a.isBot === b.isBot) return 0;
-            return a.isBot ? 1 : -1;
-        });
         io.to(rid).emit('update-game', room);
     }
   });
