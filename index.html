@@ -33,6 +33,7 @@
             border-left: 2px solid var(--steam-gold); border-right: 2px solid var(--steam-gold);
         }
 
+        /* 演出レイヤー */
         .bg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
         .bg-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 180%; height: 180%; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.5"/><circle cx="100" cy="100" r="75" fill="none" stroke="rgba(64,224,208,0.05)" stroke-width="0.4"/></svg>'); animation: rotate-eternal 180s linear infinite; }
         @keyframes rotate-eternal { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
@@ -41,61 +42,56 @@
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
 
-        .opponents-area { display: flex; flex-direction: column; gap: 8px; padding: 15px 15px 5px 15px; border-bottom: 2px solid var(--border); z-index: 10; background: rgba(0,0,0,0.5); }
-        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; border-radius: 12px; background: rgba(255,255,255,0.03); border-left: 5px solid var(--border); transition: 0.3s; gap: 8px; }
-        .opp-row.active { border-left-color: var(--accent); background: rgba(64, 224, 208, 0.12); box-shadow: inset 0 0 15px rgba(64, 224, 208, 0.1); }
-        .opp-name { font-weight: 900; color: #fff; font-size: 14px; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+        .opponents-area { display: flex; flex-direction: column; gap: 8px; padding: 15px; border-bottom: 2px solid var(--border); background: rgba(0,0,0,0.5); }
+        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; border-radius: 12px; background: rgba(255,255,255,0.03); border-left: 5px solid var(--border); gap: 8px; }
+        .opp-row.active { border-left-color: var(--accent); background: rgba(64, 224, 208, 0.12); }
+        .opp-name { font-weight: 900; color: #fff; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
         .opp-hand-visual { display: flex; height: var(--opp-card-h); align-items: center; }
-        .mini-card-back { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #222, #000); border: 1px solid var(--steam-gold); border-radius: 3px; box-shadow: 2px 0 5px rgba(0,0,0,0.5); flex-shrink: 0; position: relative; }
+        .mini-card-back { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #222, #000); border: 1px solid var(--steam-gold); border-radius: 3px; flex-shrink: 0; }
 
-        .cycle-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px 25px 10px; background: rgba(0,0,0,0.85); border-bottom: 2px solid var(--border); gap: 4px; position: relative; z-index: 10; }
-        .cycle-dot { flex: 1; height: 5px; border-radius: 2px; background: #1a1a1a; position: relative; transition: 0.5s; }
+        .cycle-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 10px 30px 10px; background: rgba(0,0,0,0.85); border-bottom: 2px solid var(--border); gap: 4px; position: relative; }
+        .cycle-dot { flex: 1; height: 5px; border-radius: 2px; background: #1a1a1a; position: relative; }
         .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 12px var(--dot-color); }
-        .cycle-dot.active::after { content: ''; position: absolute; top: -5px; left: 50%; transform: translateX(-50%); width: 16px; height: 16px; border-radius: 50%; background: var(--dot-color); box-shadow: 0 0 15px var(--dot-color), inset 0 0 4px #fff; }
-        .cycle-label { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 900; color: #fff; opacity: 0.35; letter-spacing: 0.5px; transition: 0.3s; white-space: nowrap; font-family: 'Cinzel', serif; }
+        .cycle-dot.active::after { content: ''; position: absolute; top: -5px; left: 50%; transform: translateX(-50%); width: 16px; height: 16px; border-radius: 50%; background: var(--dot-color); }
+        .cycle-label { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 900; color: #fff; opacity: 0.5; white-space: nowrap; font-family: 'Cinzel', serif; }
 
         .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; gap: 15px; }
-        .field-main-area { display: flex; align-items: center; gap: 15px; width: 100%; justify-content: center; z-index: 10; }
-        .info-panel { flex: 1; background: rgba(10,10,15,0.95); border: 2px solid var(--steam-gold); padding: 15px; border-radius: 12px; backdrop-filter: blur(15px); box-shadow: 0 0 35px rgba(0,0,0,0.9); max-width: 180px; }
-        .realm-title { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 900; color: var(--realm-color); margin-bottom: 4px; letter-spacing: 2px; text-shadow: 0 0 12px var(--realm-color); }
-        .realm-desc { font-family: 'Exo 2', sans-serif; font-size: 11px; opacity: 0.8; line-height: 1.3; }
+        .info-panel { background: rgba(10,10,15,0.95); border: 2px solid var(--steam-gold); padding: 15px; border-radius: 12px; max-width: 180px; }
+        .realm-title { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 900; color: var(--realm-color); text-shadow: 0 0 10px var(--realm-color); }
 
-        /* 手札エリア: ボタンよりも上に配置 */
+        /* 重要：手札エリアを絶対的王者の z-index に設定 */
         .hand-container {
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
             position: relative;
-            z-index: 500; 
+            z-index: 9999; /* 全てのUI（オーバーレイ除く）よりも手前 */
             width: 100%;
             overflow: visible; 
-            padding-top: 20px;
+            padding-top: 30px;
         }
         .hand-flex { 
             display: flex; 
             justify-content: flex-start; 
             padding: 10px 80px 25px 80px; 
-            min-height: 150px; 
+            min-height: 160px; 
             align-items: flex-end; 
             overflow-x: auto; 
-            overflow-y: visible; 
+            overflow-y: visible; /* 上への飛び出しを許可 */
             width: 100%; 
             box-sizing: border-box; 
-            -webkit-overflow-scrolling: touch;
         }
         .hand-flex::-webkit-scrollbar { height: 4px; }
-        .hand-flex::-webkit-scrollbar-track { background: transparent; }
-        .hand-flex::-webkit-scrollbar-thumb { background: var(--steam-gold); border-radius: 2px; }
+        .hand-flex::-webkit-scrollbar-thumb { background: var(--steam-gold); }
 
-        /* ボタンエリア: y軸を+方向（最下部）へ移動 */
+        /* ボタンエリア：z-indexを下げて手札の裏へ */
         .action-row {
             background: #000;
             border-top: 1px solid rgba(212, 175, 55, 0.4);
-            padding: 20px 0 30px 0;
+            padding: 20px 0 40px 0;
             display: flex;
             justify-content: center;
-            z-index: 1000; 
+            z-index: 10; 
             position: relative;
         }
-        .action-row .btn-main { width: 85%; max-width: 400px; box-shadow: 0 0 30px rgba(212, 175, 55, 0.2); }
 
         /* カード */
         .card { width: var(--card-w); height: var(--card-h); border-radius: 6px; border: 2.5px solid var(--steam-gold); background: #000; overflow: hidden; position: relative; box-shadow: 0 8px 25px rgba(0,0,0,1); flex-shrink: 0; transition: 0.25s cubic-bezier(0.2, 1, 0.3, 1); }
@@ -105,30 +101,35 @@
         .my-card { margin-left: -45px; transform-origin: bottom center; cursor: pointer; position: relative; }
         .my-card:first-child { margin-left: 0; }
 
-        /* ホバー時: ボタンから離れる方向（上）にポップアップするので被らない */
+        /* ホバー時の挙動：z-index 10000 でボタンを完全に制圧 */
         .my-card.playable:hover { 
-            transform: translateY(-65px) scale(1.45) !important; 
-            z-index: 3000 !important; 
+            transform: translateY(-80px) scale(1.5) !important; 
+            z-index: 10000 !important; 
             border-color: #fff; 
-            box-shadow: 0 40px 80px rgba(0,0,0,1), 0 0 50px var(--accent); 
+            box-shadow: 0 50px 100px rgba(0,0,0,1), 0 0 50px var(--accent); 
         }
+        .my-card.not-playable { opacity: 0.45; filter: grayscale(1); cursor: not-allowed; }
 
-        .my-card.not-playable { 
-            opacity: 0.45; 
-            filter: grayscale(0.8) brightness(0.6); 
-            cursor: not-allowed; 
-        }
-
-        /* オーバーレイ */
-        .overlay { position: absolute; inset: 0; z-index: 4000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); background: rgba(0,0,0,0.5); padding: 40px; }
-        .panel { background: rgba(10, 10, 15, 0.9); border: 2px solid var(--border); padding: 40px 30px; border-radius: 28px; text-align: center; width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; gap: 20px; box-shadow: 0 30px 100px rgba(0,0,0,1); }
-        .btn-main { background: linear-gradient(135deg, var(--steam-gold), #B8860B); color: #000; border: none; padding: 18px 0; border-radius: 12px; font-weight: 900; font-size: 18px; cursor: pointer; width: 100%; transition: 0.3s; letter-spacing: 5px; font-family: 'Cinzel', serif; display: flex; align-items: center; justify-content: center; }
+        /* パネル */
+        .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); background: rgba(0,0,0,0.7); padding: 40px; }
+        .panel { background: rgba(10, 10, 15, 0.95); border: 2px solid var(--border); padding: 40px 30px; border-radius: 28px; text-align: center; width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; gap: 25px; box-shadow: 0 30px 100px rgba(0,0,0,1); }
         
-        .logo-main { font-family: 'Cinzel', serif; font-size: 32px; font-weight: 900; letter-spacing: 10px; color: var(--steam-gold); text-shadow: 0 0 15px rgba(212,175,55,0.4); margin-bottom: 5px; }
-        .panel input { width: 100%; padding: 15px; background: rgba(0,0,0,0.5); border: 2px solid rgba(212,175,55,0.2); color: var(--accent); text-align: center; font-size: 17px; border-radius: 12px; outline: none; font-weight: 700; box-sizing: border-box; font-family: 'Exo 2', sans-serif; }
+        /* 待機画面のリストを整理 */
+        .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 15px; margin: 10px 0; }
+        .waiting-player { 
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(212,175,55,0.2); 
+            padding: 18px 20px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .btn-main { background: linear-gradient(135deg, var(--steam-gold), #B8860B); color: #000; border: none; padding: 20px 0; border-radius: 12px; font-weight: 900; font-size: 18px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 5px; }
+        .logo-main { font-family: 'Cinzel', serif; font-size: 36px; font-weight: 900; letter-spacing: 10px; color: var(--steam-gold); margin-bottom: 5px; }
+        .panel input { width: 100%; padding: 18px; background: rgba(0,0,0,0.5); border: 2px solid rgba(212,175,55,0.2); color: var(--accent); text-align: center; font-size: 18px; border-radius: 12px; font-family: 'Exo 2', sans-serif; box-sizing: border-box; }
 
         .sync-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } }
+        @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+        .error-msg { color: var(--danger); font-weight: 900; border: 1px solid var(--danger); padding: 10px; border-radius: 10px; background: rgba(255, 69, 0, 0.1); width: 100%; }
+        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+        .realm-btn { padding: 16px; border: 2.5px solid var(--steam-gold); background: rgba(255,255,255,0.05); color: #fff; font-weight: 900; font-family: 'Cinzel', serif; cursor: pointer; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -210,7 +211,7 @@
                 if (!canPlay(card)) return;
                 const isWild = (card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial));
                 
-                // 上がりの時は選択肢を出さずにそのまま送信
+                // 上がりの時はメニューを出さず即プレイ
                 if (isWild && sortedHand.length > 1) {
                     setSelectorCard(card);
                 } else {
@@ -250,10 +251,8 @@
                             <div className="panel">
                                 <h1 className="logo-main">CROSS REALM</h1>
                                 {error && <div className="error-msg">⚠️ {error}</div>}
-                                <div style={{width:'100%', display:'flex', flexDirection:'column', gap:15}}>
-                                    <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="プレイヤー名" maxLength={10} />
-                                    <input type="text" value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} placeholder="ルームID" />
-                                </div>
+                                <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="プレイヤー名" maxLength={10} />
+                                <input type="text" value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} placeholder="ルームID" />
                                 <button onClick={()=>{setJoined(true); if(socket?.connected) socket.emit('join-room',{roomId:room, playerName:name});}} className="btn-main">接続開始</button>
                             </div>
                         </div>
@@ -263,24 +262,24 @@
                         <div className="overlay">
                             <div className="panel">
                                 <div>
-                                    <h2 style={{letterSpacing:6, opacity:0.8, fontSize:15, fontWeight:900, fontFamily:'Cinzel', color:'var(--steam-gold)', marginBottom:10}}>WAITING SYNC...</h2>
-                                    <div style={{fontSize:24, color:'var(--accent)', fontWeight:900, letterSpacing:4, fontFamily:'Exo 2'}}>SECTOR: {room}</div>
+                                    <h2 style={{letterSpacing:4, opacity:0.6, fontSize:12, fontWeight:900, fontFamily:'Cinzel', marginBottom:5}}>CONNECTION WAITING</h2>
+                                    <div style={{fontSize:22, color:'var(--accent)', fontWeight:900, letterSpacing:2, fontFamily:'Exo 2'}}>SECTOR: {room}</div>
                                 </div>
                                 <div className="waiting-list">
                                     {gs?.players?.map(p => (
                                         <div key={p.id} className="waiting-player">
-                                            <span>👤 {p.name}</span>
+                                            <span style={{fontWeight:900, fontSize:16}}>👤 {p.name}</span>
                                             <div className="sync-dot"></div>
                                         </div>
                                     ))}
                                     {[...Array(Math.max(0, 2 - (gs?.players?.length || 0)))].map((_, i) => (
                                         <div key={i} className="waiting-player" style={{opacity:0.2, borderStyle:'dashed'}}>
-                                            <span style={{fontSize:14, opacity:0.5}}>Awaiting Pilot...</span>
+                                            <span style={{fontSize:14}}>Awaiting Pilot...</span>
                                         </div>
                                     ))}
                                 </div>
                                 {gs?.players?.[0]?.id === socket?.id && (
-                                    <button onClick={()=>socket.emit('start-game',{roomId:room})} className="btn-main" disabled={gs?.players?.length < 2}>システム起動</button>
+                                    <button onClick={()=>socket.emit('start-game',{roomId:room})} className="btn-main" disabled={gs?.players?.length < 2}>ゲーム開始</button>
                                 )}
                             </div>
                         </div>
@@ -299,47 +298,45 @@
                                                 ))}
                                             </div>
                                         </div>
-                                        <div style={{fontWeight:900, color: 'var(--accent)', fontSize:22, minWidth: '95px', textAlign: 'right', fontFamily:'Exo 2'}}>{p.handCount} Units</div>
+                                        <div style={{fontWeight:900, color: 'var(--accent)', fontSize:20, minWidth: '80px', textAlign: 'right'}}>{p.handCount}枚</div>
                                     </div>
                                 ))}
                             </div>
 
                             <div className="cycle-bar">
                                 {CYCLE_ORDER.map(r => (
-                                    <div key={r} className={`cycle-dot ${currentRealm === r || (REALMS[r] && REALMS[r].n === currentRealm) ? 'active' : ''}`} style={{'--dot-color': REALMS[r].color}}>
+                                    <div key={r} className={`cycle-dot ${currentRealm === r ? 'active' : ''}`} style={{'--dot-color': REALMS[r].color}}>
                                         <div className="cycle-label">{REALMS[r].n}</div>
                                     </div>
                                 ))}
                             </div>
 
                             <div className="field">
-                                <div className="turn-watermark" style={{fontFamily:'Cinzel', fontSize: 12, opacity: 0.6}}>{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
-                                {gs.nextDrawAmount > 1 && <div className="status-badge">WARNING: DRAW +{gs.nextDrawAmount}</div>}
-                                <div className="field-main-area">
+                                <div style={{fontFamily:'Cinzel', fontSize: 10, opacity: 0.5}}>{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
+                                {gs.nextDrawAmount > 1 && <div style={{color: 'var(--danger)', fontWeight:900}}>DRAW +{gs.nextDrawAmount}</div>}
+                                <div style={{display:'flex', alignItems:'center', gap:15, justifyContent:'center'}}>
                                     <CardView card={gs.fieldCard} isField={true} />
                                     <div className="info-panel">
                                         <div className="realm-title">{(REALMS[currentRealm] || {n:currentRealm}).n}</div>
-                                        <div className="realm-desc">{(REALMS[currentRealm] || {desc:''}).desc}</div>
+                                        <div style={{fontSize:11, opacity:0.8}}>{(REALMS[currentRealm] || {desc:''}).desc}</div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* 手札をボタンより上に配置 */}
                             <div className="hand-container">
                                 <div className="hand-flex">
                                     {sortedHand.map((card) => (
                                         <CardView key={card.id} card={card} playable={canPlay(card)} onClick={() => handlePlay(card)} />
                                     ))}
                                 </div>
-                                <div style={{textAlign:'center', fontSize:13, fontWeight:900, paddingBottom: 10, opacity:0.8, color:'var(--steam-gold)', letterSpacing:5, fontFamily:'Exo 2'}}>
-                                    CORE SYNC: {sortedHand.length} / {gs.handLimit}
+                                <div style={{textAlign:'center', fontSize:12, fontWeight:900, paddingBottom: 5, color:'var(--steam-gold)', letterSpacing:3}}>
+                                    SYNIC: {sortedHand.length} / {gs.handLimit}
                                 </div>
                             </div>
 
-                            {/* ボタンを画面最下部（y軸+）へ配置 */}
                             <div className="action-row">
                                 <button className="btn-main" disabled={!isMyTurn} onClick={() => socket.emit('draw-card',{roomId:room})}>
-                                    {gs.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引く` : (isMyTurn ? (selectorCard ? '選択中' : 'カードを引く') : '待機中...')}
+                                    {gs.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引く` : (isMyTurn ? 'カードを引く' : '待機中...')}
                                 </button>
                             </div>
                         </div>
@@ -347,15 +344,15 @@
 
                     {selectorCard && (
                         <div className="overlay">
-                            <div className="panel" style={{maxWidth:'420px'}}>
-                                <h3 style={{fontSize:26, fontWeight:900, color:'var(--steam-gold)', fontFamily:'Cinzel'}}>属性変更</h3>
+                            <div className="panel">
+                                <h3 style={{fontSize:22, fontWeight:900, color:'var(--steam-gold)', fontFamily:'Cinzel'}}>属性を選択</h3>
                                 <div className="realm-grid">
                                     {CYCLE_ORDER.map(r => (
                                         <button key={r} className="realm-btn" style={{borderColor:REALMS[r].color, color:REALMS[r].color}} 
                                                 onClick={() => { socket.emit('play-card', {roomId: room, card:selectorCard, chosenRealm:r}); setSelectorCard(null); }}>{REALMS[r].n}</button>
                                     ))}
                                 </div>
-                                <button onClick={()=>setSelectorCard(null)} style={{opacity:0.8, color:'#fff', cursor:'pointer', border:'none', background:'none', fontWeight:900, fontSize:17, fontFamily:'Cinzel'}}>キャンセル</button>
+                                <button onClick={()=>setSelectorCard(null)} style={{color:'#fff', cursor:'pointer', border:'none', background:'none', fontWeight:900, fontSize:16}}>キャンセル</button>
                             </div>
                         </div>
                     )}
@@ -363,10 +360,10 @@
                     {gs?.status === 'finished' && (
                         <div className="overlay">
                             <div className="panel">
-                                <h2 style={{color:'var(--steam-gold)', fontSize:32, fontWeight:900, fontFamily:'Cinzel'}}>MISSION END</h2>
-                                <div style={{width:'100%', margin:'20px 0'}}>
+                                <h2 style={{color:'var(--steam-gold)', fontSize:28, fontFamily:'Cinzel'}}>MISSION END</h2>
+                                <div style={{width:'100%'}}>
                                     {gs.players.slice().sort((a,b) => a.handCount - b.handCount).map((p, i) => (
-                                        <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'15px 0', borderBottom:'1px solid rgba(212,175,55,0.2)', fontSize:18, fontFamily:'Exo 2'}}>
+                                        <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'10px 0', borderBottom:'1px solid rgba(212,175,55,0.2)'}}>
                                             <span style={{fontWeight:900}}>{i+1}. {p.name} {p.id === socket.id && "(YOU)"}</span>
                                             <span style={{color:'var(--steam-gold)', fontWeight:900}}>{p.handCount}枚</span>
                                         </div>
