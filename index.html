@@ -74,7 +74,7 @@
         .my-card.not-playable { opacity: 0.5; filter: grayscale(0.8) brightness(0.4); cursor: not-allowed; }
 
         /* === ログイン・オーバーレイ装飾 === */
-        .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); background: rgba(0,0,0,0.4); padding: 20px; }
+        .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); background: rgba(0,0,0,0.5); padding: 20px; }
         
         .panel { 
             position: relative; 
@@ -82,7 +82,7 @@
             border: 1px solid var(--steam-gold); 
             padding: 40px 20px; 
             width: 100%; 
-            max-width: 380px; 
+            max-width: 400px; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
@@ -90,6 +90,7 @@
             box-shadow: 0 0 60px rgba(0,0,0,1), inset 0 0 30px rgba(212,175,55,0.05); 
             border-radius: 4px;
             box-sizing: border-box;
+            overflow: visible;
         }
         .panel::before, .panel::after { content: ''; position: absolute; width: 25px; height: 25px; border-color: var(--steam-gold); border-style: solid; opacity: 0.8; }
         .panel::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
@@ -97,23 +98,22 @@
         .panel-corner1 { position: absolute; top: -1px; right: -1px; width: 25px; height: 25px; border-top: 2px solid var(--steam-gold); border-right: 2px solid var(--steam-gold); opacity: 0.8; }
         .panel-corner2 { position: absolute; bottom: -1px; left: -1px; width: 25px; height: 25px; border-bottom: 2px solid var(--steam-gold); border-left: 2px solid var(--steam-gold); opacity: 0.8; }
 
-        /* ロゴセクション */
-        .logo-container { width: 100%; text-align: center; margin-bottom: 5px; overflow: visible; }
+        /* ロゴセクション修正 */
+        .logo-container { width: 100%; text-align: center; margin-bottom: 5px; overflow: visible; display: flex; flex-direction: column; align-items: center; }
         .logo-main { 
             font-family: 'Cinzel', serif; 
-            font-size: clamp(24px, 8vw, 36px); 
+            font-size: clamp(22px, 7vw, 34px); 
             font-weight: 900; 
             letter-spacing: 2px; 
             background: linear-gradient(to bottom, #FFE4B5 20%, #D4AF37 50%, #8B6B23 100%); 
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent; 
-            margin: 0 auto; 
+            margin: 0; 
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
-            text-shadow: 0 0 15px rgba(212,175,55,0.2);
             white-space: nowrap;
         }
         .logo-main span.cross {
@@ -123,20 +123,19 @@
             opacity: 0.8;
         }
         
-        /* サブタイトル修正: 改行せず、限界まで大きく */
         .logo-sub {
-            font-size: clamp(10px, 3.5vw, 15px); 
-            letter-spacing: clamp(4px, 1.5vw, 8px); 
+            font-size: clamp(10px, 3.2vw, 14px); 
+            letter-spacing: clamp(4px, 1.2vw, 7px); 
             color: var(--accent); 
             text-align: center; 
             font-weight: 900; 
-            margin-top: 10px; 
+            margin-top: 12px; 
             font-family: 'Exo 2', sans-serif;
-            opacity: 0.7;
+            opacity: 0.8;
             text-transform: uppercase;
             white-space: nowrap;
             width: 100%;
-            text-shadow: 0 0 10px rgba(64,224,208,0.3);
+            text-shadow: 0 0 10px rgba(64,224,208,0.4);
         }
 
         .input-group { width: 100%; position: relative; }
@@ -144,7 +143,7 @@
             width: 100%; 
             padding: 18px; 
             background: rgba(0,0,0,0.7); 
-            border: 1px solid rgba(212,175,55,0.1); 
+            border: 1px solid rgba(212,175,55,0.15); 
             border-bottom: 2px solid var(--steam-gold);
             color: #fff; 
             text-align: center; 
@@ -186,6 +185,8 @@
 
         .mute-btn { position: absolute; top: 20px; right: 20px; z-index: 60000; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--steam-gold); color: var(--steam-gold); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
         .mute-btn:hover { transform: scale(1.1); background: rgba(212,175,55,0.2); }
+        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+        .realm-btn { padding: 18px; border: 1px solid var(--steam-gold); background: rgba(255,255,255,0.05); color: #fff; font-weight: 900; cursor: pointer; border-radius: 4px; font-size: 18px; font-family: 'Cinzel', serif; }
     </style>
 </head>
 <body>
@@ -316,8 +317,8 @@
                 else if (card.wasPlanet) displayRealm = 'PLANET';
                 else if (card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) displayRealm = 'FOUNTAIN';
                 const isSpecial = card.isSpecial || card.wasFountain;
-                const rColor = REALMS[displayRealm].color;
-                const themeClass = `theme-${THEMES[displayRealm]}`;
+                const rColor = REALMS[displayRealm] ? REALMS[displayRealm].color : '#fff';
+                const themeClass = `theme-${THEMES[displayRealm] || 'fantasy'}`;
                 const iconKey = isSpecial && ICONS[`${displayRealm}_S`] ? `${displayRealm}_S` : displayRealm;
                 let effectText = "";
                 if (displayRealm === 'PLANET' || displayRealm === 'RUINS' || (displayRealm === 'FOUNTAIN' && isSpecial)) effectText = "WILD";
@@ -330,18 +331,18 @@
                         {isSpecial && <div className="card-badge">S</div>}
                         <div className="card-icon">{ICONS[iconKey]}</div>
                         {effectText && <div className="card-effect-text">{effectText}</div>}
-                        <div className="card-footer">{REALMS[displayRealm].n}</div>
+                        <div className="card-footer">{REALMS[displayRealm] ? REALMS[displayRealm].n : '???'}</div>
                     </div>
                 );
             };
             return (
-                <div className="screen-wrapper" style={{ '--realm-color': REALMS[currentRealm].color }}>
+                <div className="screen-wrapper" style={{ '--realm-color': (REALMS[currentRealm] ? REALMS[currentRealm].color : '#000') }}>
                     <div className="bg-layer bg-watermark"></div>
-                    <div className="bg-layer bg-magic-aura" style={{ backgroundColor: REALMS[currentRealm].color }}></div>
+                    <div className="bg-layer bg-magic-aura" style={{ backgroundColor: (REALMS[currentRealm] ? REALMS[currentRealm].color : '#000') }}></div>
                     <div className="bg-layer bg-scanline"></div>
                     <button onClick={toggleMute} className="mute-btn">{isMuted ? '🔇' : '🔊'}</button>
 
-                    {/* === トップページデザイン (字幕サイズ強化) === */}
+                    {/* === ログイン画面 === */}
                     {!joined && (
                         <div className="overlay">
                             <div className="panel">
