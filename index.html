@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm - Eternal Punk Edition - v4.4.0</title>
+    <title>Cross Realm - Eternal Punk Edition - v4.4.1</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -16,92 +16,80 @@
             --magic-purple: #8A2BE2; /* Fantasy Purple */
             --danger: #FF4500; 
             --bg: #05050A; /* 深淵な夜空 */
-            --card-w: 100px; --card-h: 145px; --opp-card-w: 28px; --opp-card-h: 40px; 
+            /* モバイル向けにカードサイズを少しコンパクトに */
+            --card-w: 90px; --card-h: 130px; --opp-card-w: 24px; --opp-card-h: 34px; 
             --border: rgba(212, 175, 55, 0.45);
             --guide-gold: #FFD700;
         }
-        body { margin: 0; background: var(--bg); color: white; font-family: 'Exo 2', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        .screen-wrapper { width: 100vw; height: 100vh; max-width: calc(100vh * 9 / 16); background: var(--bg); position: relative; overflow: hidden; display: flex; flex-direction: column; border-left: 2px solid var(--steam-gold); border-right: 2px solid var(--steam-gold); box-shadow: 0 0 50px rgba(138, 43, 226, 0.2); }
+        /* 100dvhを使用してアドレスバーによる見切れを防止 */
+        body { margin: 0; background: var(--bg); color: white; font-family: 'Exo 2', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; overflow: hidden; }
+        .screen-wrapper { width: 100vw; height: 100vh; height: 100dvh; max-width: calc(100vh * 9 / 16); max-width: calc(100dvh * 9 / 16); background: var(--bg); position: relative; overflow: hidden; display: flex; flex-direction: column; border-left: 2px solid var(--steam-gold); border-right: 2px solid var(--steam-gold); box-shadow: 0 0 50px rgba(138, 43, 226, 0.2); }
         
-        /* 背景レイヤー：三位一体（スチーム・サイバー・ファンタジー）の融合 */
         .bg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
-        
-        /* 1. ファンタジー：魔法陣（巨大なアストロラーベ） */
         .bg-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200%; height: 200%; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"><circle cx="150" cy="150" r="140" fill="none" stroke="rgba(212,175,55,0.05)" stroke-width="0.5"/><circle cx="150" cy="150" r="110" fill="none" stroke="rgba(64,224,208,0.05)" stroke-width="0.5"/><path d="M150 10 L150 290 M10 150 L290 150" stroke="rgba(138,43,226,0.05)" stroke-width="0.5"/><circle cx="150" cy="150" r="80" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.3" stroke-dasharray="4 4"/></svg>'); animation: rotate-eternal 240s linear infinite; }
         @keyframes rotate-eternal { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
-        
-        /* 2. ファンタジー：マナ・オーロラ（神秘的な光の揺らぎ） */
         .bg-aurora { position: absolute; inset: 0; background: radial-gradient(circle at 20% 30%, rgba(138,43,226,0.15) 0%, transparent 60%), radial-gradient(circle at 80% 70%, rgba(0,191,255,0.1) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(212,175,55,0.05) 0%, transparent 70%); animation: auroraDrift 15s ease-in-out infinite alternate; z-index: 1; mix-blend-mode: screen; }
         @keyframes auroraDrift { 0% { transform: scale(1) translate(0, 0); opacity: 0.8; } 100% { transform: scale(1.2) translate(20px, -20px); opacity: 1; } }
-
-        /* 3. 属性オーラ：現在の領域の色 */
         .bg-magic-aura { position: absolute; inset: 0; background-color: var(--realm-color); -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%); opacity: 0.4; transition: background-color 3s ease-in-out; mix-blend-mode: overlay; z-index: 1; }
-        
-        /* 4. サイバーパンク：電子グリッド */
         .bg-cyber-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(64,224,208,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(64,224,208,0.1) 1px, transparent 1px); background-size: 30px 30px; z-index: 2; transform: perspective(600px) rotateX(60deg) translateY(100px) translateZ(-200px); animation: gridMove 15s linear infinite; opacity: 0.3; mask-image: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0)); -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0)); }
         @keyframes gridMove { from { background-position: 0 0; } to { background-position: 0 30px; } }
 
-        /* 追加: タイトル画面のド派手な演出 */
-        @keyframes titleGlow {
-            0%, 100% { text-shadow: 0 0 10px rgba(212,175,55,0.8), 0 0 20px rgba(138,43,226,0.6), 0 0 30px rgba(64,224,208,0.4); transform: scale(1); }
-            50% { text-shadow: 0 0 20px rgba(212,175,55,1), 0 0 40px rgba(138,43,226,0.8), 0 0 60px rgba(64,224,208,0.6); transform: scale(1.02); }
-        }
-        @keyframes panelPulse {
-            0%, 100% { box-shadow: 0 0 60px rgba(0,0,0,1), inset 0 0 30px rgba(212,175,55,0.1), 0 0 20px rgba(138,43,226,0.2); border-color: rgba(212,175,55,0.5); }
-            50% { box-shadow: 0 0 80px rgba(0,0,0,1), 0 0 40px rgba(138,43,226,0.4), inset 0 0 50px rgba(212,175,55,0.2); border-color: rgba(212,175,55,1); }
-        }
+        @keyframes titleGlow { 0%, 100% { text-shadow: 0 0 10px rgba(212,175,55,0.8), 0 0 20px rgba(138,43,226,0.6), 0 0 30px rgba(64,224,208,0.4); transform: scale(1); } 50% { text-shadow: 0 0 20px rgba(212,175,55,1), 0 0 40px rgba(138,43,226,0.8), 0 0 60px rgba(64,224,208,0.6); transform: scale(1.02); } }
+        @keyframes panelPulse { 0%, 100% { box-shadow: 0 0 60px rgba(0,0,0,1), inset 0 0 30px rgba(212,175,55,0.1), 0 0 20px rgba(138,43,226,0.2); border-color: rgba(212,175,55,0.5); } 50% { box-shadow: 0 0 80px rgba(0,0,0,1), 0 0 40px rgba(138,43,226,0.4), inset 0 0 50px rgba(212,175,55,0.2); border-color: rgba(212,175,55,1); } }
         @keyframes sweepBtn { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; height: 100%; overflow: hidden; }
         
-        .turn-direction { flex-shrink: 0; position: relative; text-align: center; font-size: 13px; font-weight: 900; color: var(--accent); letter-spacing: 2px; background: rgba(0,0,0,0.85); padding: 8px; border-bottom: 1px solid rgba(138,43,226,0.5); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(138,43,226,0.1); }
-        .mute-btn-game { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; background: rgba(0,0,0,0.8); border: 1px solid var(--steam-gold); border-radius: 50%; color: var(--steam-gold); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; }
+        /* モバイル用に余白を少し切り詰める */
+        .turn-direction { flex-shrink: 0; position: relative; text-align: center; font-size: 12px; font-weight: 900; color: var(--accent); letter-spacing: 2px; background: rgba(0,0,0,0.85); padding: 6px; border-bottom: 1px solid rgba(138,43,226,0.5); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(138,43,226,0.1); }
+        .mute-btn-game { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; background: rgba(0,0,0,0.8); border: 1px solid var(--steam-gold); border-radius: 50%; color: var(--steam-gold); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; }
 
-        .opponents-area { flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 10px; background: rgba(0,0,0,0.7); border-bottom: 1px solid var(--border); backdrop-filter: blur(5px); }
-        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 6px; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(138,43,226,0.05)); border-left: 3px solid var(--border); transition: 0.4s; position: relative; overflow: hidden; }
+        .opponents-area { flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 6px 10px; background: rgba(0,0,0,0.7); border-bottom: 1px solid var(--border); backdrop-filter: blur(5px); }
+        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; border-radius: 6px; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(138,43,226,0.05)); border-left: 3px solid var(--border); transition: 0.4s; position: relative; overflow: hidden; }
         .opp-row.active { border-left-color: var(--accent); background: linear-gradient(90deg, rgba(64,224,208,0.2), rgba(138,43,226,0.2)); box-shadow: 0 0 15px rgba(138,43,226,0.4); animation: activePulse 1.5s infinite; }
         @keyframes activePulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
-        .opp-name { font-weight: 900; font-size: 12px; color: #fff; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-        .opp-hand-visual { display: flex; align-items: center; position: relative; width: 60px; height: var(--opp-card-h); }
+        .opp-name { font-weight: 900; font-size: 11px; color: #fff; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+        .opp-hand-visual { display: flex; align-items: center; position: relative; width: 50px; height: var(--opp-card-h); }
         .mini-card-back { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #2a1a3a, #000); border: 1px solid var(--steam-gold); border-radius: 2px; position: absolute; box-shadow: -2px 0 5px rgba(0,0,0,0.8); }
 
-        .cycle-bar { flex-shrink: 0; display: flex; justify-content: space-between; padding: 10px 4px; background: rgba(5,5,15,0.95); border-bottom: 2px solid var(--border); box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 20; }
-        .cycle-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-        .cycle-dot { width: 100%; height: 5px; background: #1a1a2e; border-radius: 2px; transition: 0.3s; }
+        .cycle-bar { flex-shrink: 0; display: flex; justify-content: space-between; padding: 6px 4px; background: rgba(5,5,15,0.95); border-bottom: 2px solid var(--border); box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 20; }
+        .cycle-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .cycle-dot { width: 100%; height: 4px; background: #1a1a2e; border-radius: 2px; transition: 0.3s; }
         .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 12px var(--dot-color), 0 0 20px var(--dot-color); }
         .cycle-dot.next-playable { background: var(--guide-gold); box-shadow: 0 0 15px var(--guide-gold); animation: pulseGold 0.8s infinite alternate; }
         @keyframes pulseGold { from { opacity: 0.3; transform: scaleX(0.7); } to { opacity: 1; transform: scaleX(1); } }
-        .cycle-label { font-size: 9px; font-weight: 900; opacity: 0.4; font-family: 'Cinzel', serif; }
+        .cycle-label { font-size: 8px; font-weight: 900; opacity: 0.4; font-family: 'Cinzel', serif; }
         .cycle-item.active .cycle-label { opacity: 1; color: var(--dot-color); text-shadow: 0 0 5px var(--dot-color); }
         .cycle-item.next-playable .cycle-label { opacity: 1; color: var(--guide-gold); text-shadow: 0 0 5px var(--guide-gold); }
 
-        .field { flex: 1; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; position: relative; }
-        .info-panel { background: linear-gradient(180deg, rgba(10,10,20,0.95), rgba(0,0,0,0.95)); border: 1px solid var(--steam-gold); padding: 12px; border-radius: 8px; width: 150px; text-align: center; box-shadow: 0 0 30px rgba(138,43,226,0.3); backdrop-filter: blur(5px); }
-        .realm-title { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 900; color: var(--realm-color); text-shadow: 0 0 15px var(--realm-color); }
+        .field { flex: 1; min-height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; position: relative; }
+        .info-panel { background: linear-gradient(180deg, rgba(10,10,20,0.95), rgba(0,0,0,0.95)); border: 1px solid var(--steam-gold); padding: 8px 12px; border-radius: 8px; width: 140px; text-align: center; box-shadow: 0 0 30px rgba(138,43,226,0.3); backdrop-filter: blur(5px); }
+        .realm-title { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 900; color: var(--realm-color); text-shadow: 0 0 15px var(--realm-color); }
 
-        .log-terminal-container { flex-shrink: 0; width: 100%; padding: 0 15px; margin-bottom: 10px; z-index: 50; }
+        .log-terminal-container { flex-shrink: 0; width: 100%; padding: 0 10px; margin-bottom: 5px; z-index: 50; }
         .log-terminal { 
-            height: 60px; background: linear-gradient(90deg, rgba(5,5,15,0.9), rgba(20,10,30,0.9)); border: 1px solid rgba(138,43,226,0.4); border-radius: 6px;
-            padding: 6px 12px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; font-family: monospace; box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 0 0 10px rgba(138,43,226,0.2);
+            height: 50px; background: linear-gradient(90deg, rgba(5,5,15,0.9), rgba(20,10,30,0.9)); border: 1px solid rgba(138,43,226,0.4); border-radius: 6px;
+            padding: 4px 10px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; font-family: monospace; box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 0 0 10px rgba(138,43,226,0.2);
         }
-        .log-line { font-size: 10px; color: rgba(255,255,255,0.6); white-space: nowrap; text-shadow: 0 0 2px rgba(255,255,255,0.3); }
+        .log-line { font-size: 9px; color: rgba(255,255,255,0.6); white-space: nowrap; text-shadow: 0 0 2px rgba(255,255,255,0.3); }
         .log-line.play { color: var(--accent); font-weight: bold; text-shadow: 0 0 5px var(--accent); }
         .log-line.sys { color: var(--steam-gold); }
 
+        /* 手札エリアの高さ削減 */
         .hand-container { flex-shrink: 0; position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(5,0,15,1) 50%, rgba(0,0,0,0) 100%); }
-        .hand-flex { display: flex; justify-content: center; align-items: flex-end; height: 160px; padding-bottom: 15px; }
-        .action-row { flex-shrink: 0; background: #05000a; border-top: 1px solid rgba(138,43,226,0.4); padding: 12px 0 20px 0; display: flex; justify-content: center; z-index: 10; box-shadow: 0 -10px 30px rgba(138,43,226,0.2); }
+        .hand-flex { display: flex; justify-content: center; align-items: flex-end; height: 145px; padding-bottom: 5px; }
+        .action-row { flex-shrink: 0; background: #05000a; border-top: 1px solid rgba(138,43,226,0.4); padding: 10px 15px 15px 15px; display: flex; justify-content: center; z-index: 10; box-shadow: 0 -10px 30px rgba(138,43,226,0.2); }
 
-        /* 魔導機械風のカードデザイン */
-        .card { box-sizing: border-box; width: var(--card-w); height: var(--card-h); border-radius: 8px; border: 2.5px solid var(--r-color); background: #000; overflow: hidden; position: relative; flex-shrink: 0; transition: transform 0.2s; transform-origin: bottom center; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+        /* カードデザイン */
+        .card { box-sizing: border-box; width: var(--card-w); height: var(--card-h); border-radius: 6px; border: 2px solid var(--r-color); background: #000; overflow: hidden; position: relative; flex-shrink: 0; transition: transform 0.2s; transform-origin: bottom center; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .theme-steampunk { border-color: #B87333; background: radial-gradient(circle at center, #3a1a0a 0%, #000 100%); }
         .theme-fantasy { border-color: #87CEEB; background: radial-gradient(circle at top, #1a0f3a 0%, #000 100%); }
         .theme-cyber { border-color: #0FF; background: linear-gradient(135deg, #001a2a 0%, #000 100%); }
-        .card-icon { position: absolute; top: 48%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; color: var(--r-color); filter: drop-shadow(0 0 12px var(--r-color)); }
-        .card-footer { position: absolute; bottom: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0.7)); font-size: 12px; font-weight: 900; padding: 5px 0; text-align: center; border-top: 1px solid rgba(255,255,255,0.2); color: #fff; font-family: 'Cinzel', serif; letter-spacing: 1px; }
+        .card-icon { position: absolute; top: 48%; left: 50%; transform: translate(-50%, -50%); width: 44px; height: 44px; color: var(--r-color); filter: drop-shadow(0 0 12px var(--r-color)); }
+        .card-footer { position: absolute; bottom: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0.7)); font-size: 11px; font-weight: 900; padding: 4px 0; text-align: center; border-top: 1px solid rgba(255,255,255,0.2); color: #fff; font-family: 'Cinzel', serif; letter-spacing: 1px; }
 
         .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); background: rgba(5,0,15,0.7); padding: 25px; overflow: hidden; }
-        .panel { position: relative; background: linear-gradient(135deg, rgba(20,15,35,0.95), rgba(5,5,10,1)); border: 1px solid var(--steam-gold); padding: 45px 25px; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 30px; border-radius: 4px; box-sizing: border-box; animation: panelPulse 4s infinite; z-index: 10; }
+        .panel { position: relative; background: linear-gradient(135deg, rgba(20,15,35,0.95), rgba(5,5,10,1)); border: 1px solid var(--steam-gold); padding: 40px 20px; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 25px; border-radius: 4px; box-sizing: border-box; animation: panelPulse 4s infinite; z-index: 10; }
         .panel-corner1, .panel-corner2 { position: absolute; width: 30px; height: 30px; border-color: var(--steam-gold); border-style: solid; opacity: 0.9; filter: drop-shadow(0 0 5px var(--steam-gold)); }
         .panel-corner1 { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
         .panel-corner2 { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
@@ -109,23 +97,23 @@
         .logo-main { font-family: 'Cinzel', serif; font-size: clamp(24px, 8vw, 36px); font-weight: 900; letter-spacing: 4px; background: linear-gradient(to bottom, #FFF8DC 0%, #FFD700 30%, #D4AF37 70%, #8B6B23 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 10px; white-space: nowrap; animation: titleGlow 3s infinite alternate; }
         .logo-sub { font-size: clamp(10px, 3.5vw, 15px); letter-spacing: 8px; color: var(--accent); text-align: center; font-weight: 900; margin-top: 10px; font-family: 'Exo 2', sans-serif; opacity: 0.9; text-transform: uppercase; white-space: nowrap; width: 100%; text-shadow: 0 0 15px rgba(64,224,208,0.8); }
 
-        .panel input { width: 100%; padding: 22px; background: rgba(0,0,0,0.6); border: 1px solid rgba(138,43,226,0.3); border-bottom: 2px solid var(--steam-gold); color: #fff; text-align: center; font-size: 20px; border-radius: 4px; outline: none; box-sizing: border-box; transition: 0.3s; font-family: 'Exo 2', sans-serif; letter-spacing: 2px; }
+        .panel input { width: 100%; padding: 20px; background: rgba(0,0,0,0.6); border: 1px solid rgba(138,43,226,0.3); border-bottom: 2px solid var(--steam-gold); color: #fff; text-align: center; font-size: 18px; border-radius: 4px; outline: none; box-sizing: border-box; transition: 0.3s; font-family: 'Exo 2', sans-serif; letter-spacing: 2px; }
         .panel input:focus { border-color: var(--accent); box-shadow: 0 0 20px rgba(64,224,208,0.3), inset 0 0 10px rgba(138,43,226,0.2); }
 
-        .btn-main { display: flex; align-items: center; justify-content: center; min-height: 60px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1px solid #FFF8DC; padding: 0 20px; border-radius: 4px; font-weight: 900; font-size: 18px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 4px; transition: 0.4s; box-shadow: 0 4px 20px rgba(212,175,55,0.5); box-sizing: border-box; animation: sweepBtn 3s linear infinite; }
+        .btn-main { display: flex; align-items: center; justify-content: center; min-height: 55px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1px solid #FFF8DC; padding: 0 20px; border-radius: 6px; font-weight: 900; font-size: 16px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 4px; transition: 0.4s; box-shadow: 0 4px 20px rgba(212,175,55,0.5); box-sizing: border-box; animation: sweepBtn 3s linear infinite; }
         .btn-main:hover { box-shadow: 0 0 40px rgba(212,175,55,0.9); transform: scale(1.02); }
         .btn-main:disabled { background: #222; color: #444; border-color: #333; cursor: not-allowed; box-shadow: none; animation: none; transform: none; }
         
-        .btn-sub { display: flex; align-items: center; justify-content: center; min-height: 52px; background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.5); color: #d8b4fe; padding: 0 16px; width: 100%; cursor: pointer; border-radius: 4px; font-weight: 900; font-size: 16px; transition: 0.3s; letter-spacing: 2px; box-sizing: border-box; }
+        .btn-sub { display: flex; align-items: center; justify-content: center; min-height: 48px; background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.5); color: #d8b4fe; padding: 0 16px; width: 100%; cursor: pointer; border-radius: 4px; font-weight: 900; font-size: 15px; transition: 0.3s; letter-spacing: 2px; box-sizing: border-box; }
         .btn-sub:hover { background: rgba(138,43,226,0.3); color: #fff; border-color: #c084fc; box-shadow: 0 0 15px rgba(138,43,226,0.5); }
 
-        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
-        .realm-btn { padding: 28px 10px; border: 2px solid var(--steam-gold); background: linear-gradient(180deg, rgba(30,20,40,0.9), rgba(0,0,0,0.9)); color: #fff; font-weight: 900; cursor: pointer; border-radius: 12px; font-size: 24px; display: flex; flex-direction: column; align-items: center; gap: 15px; transition: 0.2s; box-shadow: 0 5px 25px rgba(0,0,0,0.8); }
+        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+        .realm-btn { padding: 24px 10px; border: 2px solid var(--steam-gold); background: linear-gradient(180deg, rgba(30,20,40,0.9), rgba(0,0,0,0.9)); color: #fff; font-weight: 900; cursor: pointer; border-radius: 10px; font-size: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; transition: 0.2s; box-shadow: 0 5px 25px rgba(0,0,0,0.8); }
         .realm-btn:hover { transform: scale(1.05); border-color: #fff; box-shadow: 0 0 35px var(--steam-gold), inset 0 0 20px rgba(255,255,255,0.2); }
-        .realm-btn svg { width: 48px; height: 48px; filter: drop-shadow(0 0 8px currentColor); }
+        .realm-btn svg { width: 40px; height: 40px; filter: drop-shadow(0 0 8px currentColor); }
 
         .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 10px; margin-bottom: 5px; padding-top: 15px; }
-        .waiting-player { background: linear-gradient(90deg, rgba(64,224,208,0.1), rgba(138,43,226,0.1)); border: 1px solid rgba(212,175,55,0.3); border-left: 4px solid var(--accent); padding: 18px 22px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; position: relative; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        .waiting-player { background: linear-gradient(90deg, rgba(64,224,208,0.1), rgba(138,43,226,0.1)); border: 1px solid rgba(212,175,55,0.3); border-left: 4px solid var(--accent); padding: 16px 22px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; position: relative; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
         .waiting-player.empty { background: rgba(255,255,255,0.02); border: 1px dashed rgba(138,43,226,0.3); opacity: 0.5; }
         .host-badge { position: absolute; top: -10px; right: 15px; background: var(--steam-gold); color: #000; font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 10px; box-shadow: 0 0 15px var(--steam-gold); }
         
@@ -135,7 +123,7 @@
         .mute-btn { position: absolute; top: 15px; right: 15px; z-index: 60000; background: rgba(20,10,30,0.8); border: 1px solid var(--steam-gold); color: var(--steam-gold); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(138,43,226,0.3); }
         .mute-btn:hover { background: rgba(212, 175, 55, 0.2); transform: scale(1.1); box-shadow: 0 0 20px var(--steam-gold); }
 
-        .my-card.playable:hover { transform: translateY(-35px) scale(1.45) !important; z-index: 10000 !important; border-color: #fff; box-shadow: 0 10px 40px rgba(138,43,226,0.6); }
+        .my-card.playable:hover { transform: translateY(-25px) scale(1.35) !important; z-index: 10000 !important; border-color: #fff; box-shadow: 0 10px 40px rgba(138,43,226,0.6); }
     </style>
 </head>
 <body>
@@ -409,8 +397,8 @@
                                     {(() => {
                                         const totalCards = sortedHand?.length || 0;
                                         const maxHandWidth = Math.min(windowWidth * 0.95, 550);
-                                        const cardW = 100;
-                                        let overlap = 60; 
+                                        const cardW = 90; // モバイル用カード幅
+                                        let overlap = 55; 
                                         if (totalCards > 1) { 
                                             const idealWidth = cardW + (totalCards - 1) * overlap; 
                                             if (idealWidth > maxHandWidth) { overlap = (maxHandWidth - cardW) / (totalCards - 1); } 
@@ -476,8 +464,8 @@
                                         </div>
                                     ))}</div>
                                     <div style={{display: 'flex', gap: 10, width: '100%'}}>
-                                        <button onClick={() => socket.emit('play-again', {roomId: room})} className="btn-main" style={{height: 60}}>再戦</button>
-                                        <button onClick={() => window.location.reload()} className="btn-sub" style={{height: 60}}>終了</button>
+                                        <button onClick={() => socket.emit('play-again', {roomId: room})} className="btn-main">再戦</button>
+                                        <button onClick={() => window.location.reload()} className="btn-sub">終了</button>
                                     </div>
                                 </div>
                             </div>
