@@ -49,10 +49,7 @@ function canPlay(room, card) {
     if (h === 'PLANET' || h === 'RUINS') return true;
     if (field === 'PLANET' || field === 'RUINS') return true;
     if (h === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
-    const cycle = { 
-        GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], 
-        BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] 
-    };
+    const cycle = { GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] };
     const isTransition = ['ICEAGE', 'BATTERY', 'ARCHIVE'].includes(field);
     if (field === h && isTransition) return false;
     return field === h || (cycle[field] && cycle[field].includes(h));
@@ -88,7 +85,6 @@ function processBotTurn(roomId) {
     bot.isActing = false;
     const currentRoom = rooms[roomId];
     if (!currentRoom || currentRoom.status !== 'playing' || currentRoom.players[currentRoom.turnIndex].id !== bot.id) return;
-
     const action = getBotAction(currentRoom, bot);
     if (action.type === 'draw') {
       const amount = currentRoom.nextDrawAmount;
@@ -120,7 +116,7 @@ function processBotTurn(roomId) {
 
 function addLog(room, text) {
   room.logs.push({ id: Math.random(), text });
-  if (room.logs.length > 25) room.logs.shift();
+  if (room.logs.length > 30) room.logs.shift();
 }
 
 io.on('connection', (socket) => {
@@ -147,7 +143,7 @@ io.on('connection', (socket) => {
   socket.on('start-game', (data) => {
     const room = rooms[data.roomId.toUpperCase()];
     if (room && room.players.length >= 2) {
-      room.players = room.players.sort(() => Math.random() - 0.5);
+      room.players = room.players.sort(() => Math.random() - 0.5); // プレイ順シャッフル
       room.status = 'playing';
       room.deck = createDeck();
       room.turnIndex = 0;
@@ -155,12 +151,7 @@ io.on('connection', (socket) => {
       room.nextDrawAmount = 1;
       room.logs = [];
       room.playHistory = [];
-      room.players.forEach(p => { 
-        p.hand = []; 
-        for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop()); 
-        p.handCount = p.hand.length; 
-        p.isActing = false;
-      });
+      room.players.forEach(p => { p.hand = []; for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop()); p.handCount = p.hand.length; p.isActing = false; });
       room.fieldCard = room.deck.pop();
       addLog(room, "[SYS] ミッション開始");
       room.currentTurnPlayerId = room.players[room.turnIndex].id;
@@ -209,12 +200,11 @@ io.on('connection', (socket) => {
 
   socket.on('play-again', (data) => {
     const rid = data.roomId.toUpperCase();
-    const room = rooms[rid];
-    if (room) {
-        room.status = 'waiting';
-        room.deck = []; room.fieldCard = null; room.turnIndex = 0; room.nextDrawAmount = 1; room.isReversed = false; room.logs = []; room.playHistory = []; room.currentTurnPlayerId = null;
-        room.players.forEach(p => { p.hand = []; p.handCount = 0; p.isActing = false; });
-        io.to(rid).emit('update-game', room);
+    if (rooms[rid]) {
+        rooms[rid].status = 'waiting';
+        rooms[rid].deck = []; rooms[rid].fieldCard = null; rooms[rid].turnIndex = 0; rooms[rid].nextDrawAmount = 1; rooms[rid].isReversed = false; rooms[rid].logs = []; rooms[rid].playHistory = []; rooms[rid].currentTurnPlayerId = null;
+        rooms[rid].players.forEach(p => { p.hand = []; p.handCount = 0; p.isActing = false; });
+        io.to(rid).emit('update-game', rooms[rid]);
     }
   });
 });
