@@ -49,10 +49,7 @@ function canPlay(room, card) {
     if (h === 'PLANET' || h === 'RUINS') return true;
     if (field === 'PLANET' || field === 'RUINS') return true;
     if (h === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
-    const cycle = { 
-        GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], 
-        BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] 
-    };
+    const cycle = { GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] };
     const isTransition = ['ICEAGE', 'BATTERY', 'ARCHIVE'].includes(field);
     if (field === h && isTransition) return false;
     return field === h || (cycle[field] && cycle[field].includes(h));
@@ -88,7 +85,6 @@ function processBotTurn(roomId) {
     bot.isActing = false;
     const currentRoom = rooms[roomId];
     if (!currentRoom || currentRoom.status !== 'playing' || currentRoom.players[currentRoom.turnIndex].id !== bot.id) return;
-
     const action = getBotAction(currentRoom, bot);
     if (action.type === 'draw') {
       const amount = currentRoom.nextDrawAmount;
@@ -120,7 +116,7 @@ function processBotTurn(roomId) {
 
 function addLog(room, text) {
   room.logs.push({ id: Math.random(), text });
-  if (room.logs.length > 20) room.logs.shift();
+  if (room.logs.length > 30) room.logs.shift();
 }
 
 io.on('connection', (socket) => {
@@ -128,7 +124,7 @@ io.on('connection', (socket) => {
     const rid = data.roomId.toUpperCase();
     if (!rooms[rid]) rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], playHistory: [], handLimit: HAND_LIMIT, currentTurnPlayerId: null };
     const room = rooms[rid];
-    if (room.status !== 'waiting' || room.players.length >= 4) return socket.emit('join-error', '満員です');
+    if (room.status !== 'waiting' || room.players.length >= 4) return socket.emit('join-error', '参加できません');
     room.players.push({ id: socket.id, name: (data.playerName || 'Pilot').substring(0,10), hand: [], handCount: 0, isBot: false, isActing: false });
     socket.join(rid);
     io.to(rid).emit('update-game', room);
@@ -147,23 +143,12 @@ io.on('connection', (socket) => {
   socket.on('start-game', (data) => {
     const room = rooms[data.roomId.toUpperCase()];
     if (room && room.players.length >= 2) {
-      // プレイヤー順のシャッフル
       room.players = room.players.sort(() => Math.random() - 0.5);
-      room.status = 'playing';
-      room.deck = createDeck();
-      room.turnIndex = 0;
-      room.isReversed = false;
-      room.nextDrawAmount = 1;
-      room.playHistory = [];
-      room.logs = [];
-      room.players.forEach(p => { 
-        p.hand = []; 
-        for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop()); 
-        p.handCount = p.hand.length; 
-        p.isActing = false;
-      });
+      room.status = 'playing'; room.deck = createDeck();
+      room.turnIndex = 0; room.isReversed = false; room.nextDrawAmount = 1;
+      room.players.forEach(p => { p.hand = []; for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop()); p.handCount = p.hand.length; p.isActing = false; });
       room.fieldCard = room.deck.pop();
-      addLog(room, "[SYS] ミッション開始");
+      room.logs = []; addLog(room, "[SYS] ミッション開始");
       room.currentTurnPlayerId = room.players[room.turnIndex].id;
       io.to(room.id).emit('update-game', room);
       if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
@@ -173,9 +158,8 @@ io.on('connection', (socket) => {
   socket.on('play-card', (data) => {
     const room = rooms[data.roomId.toUpperCase()];
     if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
-    const player = room.players.find(p => p.id === socket.id);
     if (!canPlay(room, data.card)) return;
-    
+    const player = room.players.find(p => p.id === socket.id);
     player.hand = player.hand.filter(c => c.id !== data.card.id);
     const card = data.card;
     if (data.chosenRealm) { card.wasPlanet = card.realm === 'PLANET'; card.wasRuins = card.realm === 'RUINS'; card.wasFountain = card.realm === 'FOUNTAIN'; card.realm = data.chosenRealm; }
@@ -183,7 +167,6 @@ io.on('connection', (socket) => {
     if (room.playHistory.length > 5) room.playHistory.shift();
     room.fieldCard = card;
     addLog(room, `[PLAY] ${player.name} : ${card.realm}${card.isSpecial ? '(S)' : ''}`);
-    
     let skip = false;
     if (card.isSpecial) {
       if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
@@ -203,8 +186,7 @@ io.on('connection', (socket) => {
     const amount = room.nextDrawAmount;
     for (let i = 0; i < amount; i++) { if (room.deck.length === 0) room.deck = createDeck(); player.hand.push(room.deck.pop()); }
     addLog(room, `[SYS] ${player.name} ドロー ${amount}`);
-    room.nextDrawAmount = 1;
-    player.handCount = player.hand.length;
+    room.nextDrawAmount = 1; player.handCount = player.hand.length;
     if (player.handCount > HAND_LIMIT) room.status = 'finished'; else nextTurn(room);
     room.currentTurnPlayerId = room.players[room.turnIndex].id;
     io.to(room.id).emit('update-game', room);
@@ -216,14 +198,7 @@ io.on('connection', (socket) => {
     const room = rooms[rid];
     if (room) {
         room.status = 'waiting';
-        room.deck = [];
-        room.fieldCard = null;
-        room.turnIndex = 0;
-        room.nextDrawAmount = 1;
-        room.isReversed = false;
-        room.logs = [];
-        room.playHistory = [];
-        room.currentTurnPlayerId = null;
+        room.deck = []; room.fieldCard = null; room.turnIndex = 0; room.nextDrawAmount = 1; room.isReversed = false; room.logs = []; room.playHistory = []; room.currentTurnPlayerId = null;
         room.players.forEach(p => { p.hand = []; p.handCount = 0; p.isActing = false; });
         io.to(rid).emit('update-game', room);
     }
