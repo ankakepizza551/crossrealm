@@ -54,9 +54,10 @@ const canPlayCard = (room, card) => {
   }
 };
 
+// ログに一意のIDを付与（クライアント側のアニメーション発火のため）
 const addLog = (room, msg) => {
-  room.logs.push(msg);
-  if (room.logs.length > 5) room.logs.shift(); // 最新5件を保持
+  room.logs.push({ id: Date.now() + Math.random(), text: msg });
+  if (room.logs.length > 4) room.logs.shift(); // 画面圧迫を防ぐため最大4件に
 };
 
 const emitUpdate = (roomId) => {
@@ -100,7 +101,7 @@ io.on('connection', (socket) => {
     room.players.forEach(p => p.hand = room.deck.splice(0, 5));
     room.fieldCard = room.deck.pop();
     room.playHistory = [room.fieldCard];
-    room.logs = ['[SYS] MISSION START.'];
+    room.logs = [{ id: Date.now(), text: '[SYS] MISSION START.' }];
     room.status = 'playing';
     room.turnIndex = Math.floor(Math.random() * room.players.length);
     room.nextDrawAmount = 1; room.isReversed = false;
@@ -145,7 +146,7 @@ io.on('connection', (socket) => {
       if (card.realm === 'PLANET') newFieldCard.wasPlanet = true;
       if (card.realm === 'FOUNTAIN') newFieldCard.wasFountain = true;
       newFieldCard.realm = chosenRealm; newFieldCard.isSpecial = false;
-      logMsg += ` → [${REALM_LABELS[chosenRealm]}]に変更`;
+      logMsg += ` → [${REALM_LABELS[chosenRealm]}]`;
     }
     room.fieldCard = newFieldCard;
     
@@ -161,7 +162,7 @@ io.on('connection', (socket) => {
       if (card.isSpecial) {
         if (card.realm === 'GEAR') {
           room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
-          addLog(room, `[WARNING] 次のパイロットに +${room.nextDrawAmount} ドロー蓄積`);
+          addLog(room, `[WARNING] 次のパイロットに +${room.nextDrawAmount} ドロー`);
         }
         if (card.realm === 'MACHINE') {
           room.isReversed = !room.isReversed;
@@ -188,4 +189,4 @@ io.on('connection', (socket) => {
 });
 
 const port = process.env.PORT || 3001;
-server.listen(port, () => console.log(`Cross Realm v3.2.0 Polished Ready`));
+server.listen(port, () => console.log(`Cross Realm v3.2.1 Ready`));
