@@ -453,7 +453,7 @@
                             </div>
                         </div>
                     )}
-
+                    {/* === 待機画面 === */}
                     {joined && (!gs || gs.status === 'waiting') && (
                         <div className="overlay">
                             <div className="panel">
@@ -472,7 +472,8 @@
                                             <div className="sync-dot"></div>
                                         </div>
                                     ))}
-                                    {[...Array(Math.max(0, 2 - (gs?.players?.length || 0)))].map((_, i) => (
+                                    {/* ここを2枠から4枠固定に変更 */}
+                                    {[...Array(Math.max(0, 4 - (gs?.players?.length || 0)))].map((_, i) => (
                                         <div key={i} className="waiting-player empty">
                                             <span style={{fontSize:16, letterSpacing:1}}>プレイヤーを待機中...</span>
                                         </div>
