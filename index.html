@@ -41,7 +41,7 @@
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
 
-        /* 相手エリア: Exo 2 で読みやすさを統一 */
+        /* 相手エリア: Exo 2 */
         .opponents-area { display: flex; flex-direction: column; gap: 8px; padding: 20px 15px 10px 15px; border-bottom: 2px solid var(--border); z-index: 10; background: rgba(0,0,0,0.5); }
         .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; border-radius: 10px; background: rgba(255,255,255,0.03); border-left: 5px solid var(--border); transition: 0.3s; gap: 8px; font-family: 'Exo 2', sans-serif; }
         .opp-row.active { border-left-color: var(--accent); background: rgba(64, 224, 208, 0.12); box-shadow: inset 0 0 15px rgba(64, 224, 208, 0.1); }
@@ -49,7 +49,7 @@
         .opp-hand-visual { display: flex; height: var(--opp-card-h); align-items: center; }
         .mini-card-back { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #222, #000); border: 1px solid var(--steam-gold); border-radius: 3px; box-shadow: 2px 0 5px rgba(0,0,0,0.5); flex-shrink: 0; position: relative; }
 
-        /* レルム名は Cinzel で重厚に */
+        /* 属性バー: Cinzel */
         .cycle-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px 25px 10px; background: rgba(0,0,0,0.85); border-bottom: 2px solid var(--border); gap: 4px; }
         .cycle-dot { flex: 1; height: 5px; border-radius: 2px; background: #1a1a1a; position: relative; transition: 0.5s; }
         .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 12px var(--dot-color); }
@@ -59,11 +59,12 @@
         .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; gap: 20px; }
         .field-main-area { display: flex; align-items: center; gap: 20px; width: 100%; justify-content: center; z-index: 10; }
 
+        /* 情報パネル: CinzelTitle / ExoDesc */
         .info-panel { flex: 1; background: rgba(10,10,15,0.95); border: 2px solid var(--steam-gold); padding: 18px; border-radius: 12px; backdrop-filter: blur(15px); box-shadow: 0 0 35px rgba(0,0,0,0.9); max-width: 200px; }
         .realm-title { font-family: 'Cinzel', serif; font-size: 24px; font-weight: 900; color: var(--realm-color); margin-bottom: 6px; letter-spacing: 2px; text-shadow: 0 0 12px var(--realm-color); }
         .realm-desc { font-family: 'Exo 2', sans-serif; font-size: 12px; opacity: 0.8; line-height: 1.4; }
 
-        /* レイアウト修正: z-index と 垂直距離を完全に分ける */
+        /* アクションボタン: Cinzel */
         .action-area { 
             position: relative;
             padding: 20px 0 60px 0; 
@@ -71,7 +72,7 @@
             z-index: 500; 
             width: 100%; box-sizing: border-box; 
         }
-        .action-area .btn-main { width: 85%; max-width: 380px; box-shadow: 0 20px 40px rgba(0,0,0,0.9); }
+        .action-area .btn-main { width: 85%; max-width: 380px; box-shadow: 0 20px 40px rgba(0,0,0,0.9); font-family: 'Cinzel', serif; }
 
         .hand-area { 
             position: relative;
@@ -90,7 +91,7 @@
         .hand-flex::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
         .hand-flex::-webkit-scrollbar-thumb { background: var(--steam-gold); border-radius: 2px; }
 
-        /* カードデザイン: 属性名は Cinzel */
+        /* カード: Cinzel */
         .card { width: var(--card-w); height: var(--card-h); border-radius: 6px; border: 2.5px solid var(--steam-gold); background: #000; overflow: hidden; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,1); flex-shrink: 0; }
         .card img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.9); }
         .card-footer { position: absolute; bottom: 0; width: 100%; background: rgba(5,5,10,0.98); font-size: 11px; font-weight: 900; padding: 5px 0; text-align: center; border-top: 2px solid var(--r-color); color: var(--steam-gold); font-family: 'Cinzel', serif; }
@@ -98,7 +99,7 @@
         .my-card { margin-left: -40px; transform-origin: bottom center; cursor: pointer; transition: 0.25s cubic-bezier(0.2, 1, 0.3, 1); position: relative; }
         .my-card:first-child { margin-left: 0; }
 
-        /* ホバー高さ: 25pxに抑えつつ、ボタンより前面(z-index 2000)に来るように */
+        /* ホバー: 被り回避 z-index */
         .my-card.playable:hover { 
             transform: translateY(-25px) scale(1.4) !important; 
             z-index: 2000 !important; border-color: #fff; 
@@ -106,7 +107,7 @@
         }
         .my-card.not-playable { opacity: 0.15; filter: grayscale(1) brightness(0.3); cursor: not-allowed; }
 
-        /* オーバーレイ等は Cinzel で荘厳に */
+        /* ログイン・オーバーレイ: Cinzelロゴ / ExoInput */
         .overlay { position: absolute; inset: 0; z-index: 3000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); background: rgba(0,0,0,0.4); padding: 40px; }
         .panel { background: rgba(10, 10, 15, 0.85); border: 2px solid var(--border); padding: 40px 30px; border-radius: 24px; text-align: center; width: 100%; max-width: 360px; display: flex; flex-direction: column; align-items: center; gap: 25px; box-shadow: 0 30px 80px rgba(0,0,0,0.8); backdrop-filter: blur(20px); }
         .btn-main { background: linear-gradient(135deg, var(--steam-gold), #B8860B); color: #000; border: none; padding: 18px 0; border-radius: 12px; font-weight: 900; font-size: 18px; cursor: pointer; width: 100%; transition: 0.3s; letter-spacing: 5px; font-family: 'Cinzel', serif; display: flex; align-items: center; justify-content: center; }
@@ -118,6 +119,11 @@
         @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
         .status-badge { background: #000; color: var(--danger); border: 3.5px solid var(--danger); padding: 15px 35px; font-weight: 900; font-size: 18px; margin-bottom: 30px; animation: glitch 0.3s infinite; text-transform: uppercase; letter-spacing: 5px; font-family: 'Cinzel', serif; }
         @keyframes glitch { 0% { transform: translate(0); text-shadow: 3px 0 var(--accent); } 50% { transform: translate(-3px, 1px); text-shadow: -3px 0 var(--cyber-pink); } 100% { transform: translate(0); } }
+        
+        /* エラー表示: Exo 2 */
+        .error-msg { color: var(--danger); font-weight: 900; font-size: 14px; margin-top: -10px; border: 1.5px solid var(--danger); padding: 10px; border-radius: 10px; background: rgba(255, 69, 0, 0.1); width: 100%; font-family: 'Exo 2', sans-serif; animation: shake 0.4s ease; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+
         .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
         .realm-btn { padding: 18px; border: 2px solid var(--steam-gold); background: rgba(255,255,255,0.04); color: #fff; font-weight: 900; font-size: 16px; font-family: 'Cinzel', serif; cursor: pointer; transition: 0.2s; border-radius: 10px; text-align: center; }
     </style>
@@ -148,11 +154,19 @@
             const [name, setName] = useState('');
             const [joined, setJoined] = useState(false);
             const [selectorCard, setSelectorCard] = useState(null);
+            const [error, setError] = useState('');
 
             useEffect(() => {
                 const s = io('https://crossrealm-server.onrender.com'); 
                 setSocket(s);
-                s.on('update-game', (data) => setGs(data));
+                s.on('update-game', (data) => {
+                    setGs(data);
+                    setError('');
+                });
+                s.on('join-error', (msg) => {
+                    setError(msg);
+                    setJoined(false);
+                });
                 return () => s.disconnect();
             }, []);
 
@@ -185,8 +199,7 @@
                 const field = currentRealm;
                 
                 if (h === 'PLANET' || h === 'RUINS') return true;
-                if (field === 'PLANET' || field === 'RUINS') return true; // セーフティ: 惑星直後は何でも出せる
-                
+                if (field === 'PLANET' || field === 'RUINS') return true; 
                 if (h === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
                 
                 switch (field) {
@@ -199,11 +212,6 @@
                     default: return true; 
                 }
             };
-
-            const hasPlayableCard = useMemo(() => {
-                if (!isMyTurn) return false;
-                return sortedHand.some(card => canPlay(card));
-            }, [sortedHand, isMyTurn, currentRealm, gs?.nextDrawAmount]);
 
             const CardView = ({ card, playable, onClick, isField }) => {
                 if (!card) return null;
@@ -238,6 +246,7 @@
                                 <div style={{width: '100%'}}>
                                     <h1 className="logo-main">CROSS REALM</h1>
                                 </div>
+                                {error && <div className="error-msg">⚠️ {error}</div>}
                                 <div style={{width:'100%', display:'flex', flexDirection:'column', gap:15}}>
                                     <input type="text" value={name} onChange={e=>setName(e.target.value.toUpperCase())} placeholder="プレイヤー名" maxLength={10} />
                                     <input type="text" value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} placeholder="ルームID" />
@@ -316,9 +325,6 @@
                                                 <div className="effect-badge" style={{color: 'var(--accent)', fontSize: '10px', marginTop: '5px', fontWeight: 'bold'}}>{REALMS[currentRealm].effect}</div>
                                             )}
                                         </div>
-                                        <div className="next-hint" style={{fontSize: '9px', marginTop: '10px', opacity: '0.6', fontFamily:'Exo 2'}}>
-                                            {gs.nextDrawAmount > 1 ? "対抗: 歯車(S) のみ" : "属性の繋がりに従ってください"}
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -327,9 +333,7 @@
                                 <button className="btn-main" disabled={!isMyTurn} onClick={() => socket.emit('draw-card',{roomId:room})}>
                                     {gs.nextDrawAmount > 1 
                                         ? `${gs.nextDrawAmount}枚引いて回避` 
-                                        : (isMyTurn 
-                                            ? (selectorCard ? '属性を選択中' : (hasPlayableCard ? '手札を選択' : 'カードを引く')) 
-                                            : '待機中...')}
+                                        : (isMyTurn ? (selectorCard ? '属性を選択中' : 'カードを引く') : '待機中...')}
                                 </button>
                             </div>
 
