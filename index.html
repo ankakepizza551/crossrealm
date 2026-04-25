@@ -12,113 +12,131 @@
     <style>
         :root { 
             --accent: #40E0D0; --steam-gold: #D4AF37; --danger: #FF4500; --bg: #050508; 
-            /* カードサイズを少しだけ大きくして文字スペースを確保 */
             --card-w: 96px; --card-h: 138px; --opp-card-w: 28px; --opp-card-h: 40px; --border: rgba(212, 175, 55, 0.45);
         }
         body { margin: 0; background: #000; color: white; font-family: 'Exo 2', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         .screen-wrapper { width: 100vw; height: 100vh; max-width: calc(100vh * 9 / 16); max-height: 100vh; background: var(--bg); position: relative; overflow: hidden; display: flex; flex-direction: column; border-left: 2px solid var(--steam-gold); border-right: 2px solid var(--steam-gold); }
         
+        /* 演出レイヤー */
         .bg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
         .bg-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 180%; height: 180%; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.5"/><circle cx="100" cy="100" r="75" fill="none" stroke="rgba(64,224,208,0.05)" stroke-width="0.4"/></svg>'); animation: rotate-eternal 180s linear infinite; }
         @keyframes rotate-eternal { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
-        .bg-magic-aura { position: absolute; inset: 0; background: radial-gradient(circle at center, var(--realm-color, rgba(64, 224, 208, 0.2)) 0%, transparent 85%); opacity: 0.5; transition: background 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .bg-scanline { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.15) 50%); background-size: 100% 4px; z-index: 5; }
+        .bg-magic-aura { position: absolute; inset: 0; background: radial-gradient(circle at center, var(--realm-color, rgba(64, 224, 208, 0.15)) 0%, transparent 80%); opacity: 0.6; transition: background 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .bg-scanline { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.2) 50%); background-size: 100% 4px; z-index: 5; }
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
 
         /* 進行方向UI */
         .turn-direction { text-align: center; font-size: 14px; font-weight: 900; color: var(--accent); letter-spacing: 2px; font-family: 'Exo 2', sans-serif; background: rgba(0,0,0,0.5); padding: 8px 12px; border-bottom: 1px solid rgba(64,224,208,0.3); display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.5s; }
 
+        /* 相手エリア */
         .opponents-area { display: flex; flex-direction: column; gap: 10px; padding: 15px; border-bottom: 2px solid var(--border); background: rgba(0,0,0,0.6); }
-        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 12px; background: rgba(255,255,255,0.04); border-left: 5px solid var(--border); }
+        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 8px; background: rgba(255,255,255,0.04); border-left: 4px solid var(--border); }
         .opp-row.active { border-left-color: var(--accent); background: rgba(64, 224, 208, 0.1); box-shadow: inset 0 0 15px rgba(64, 224, 208, 0.15); }
-        .opp-name { font-weight: 900; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; letter-spacing: 1px; color: #fff; }
+        .opp-name { font-weight: 900; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; letter-spacing: 1px; color: #fff; }
         
         .opp-hand-visual { display: flex; align-items: center; justify-content: flex-end; position: relative; width: 100px; height: var(--opp-card-h); }
         .mini-card-back { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #333, #000); border: 1px solid var(--steam-gold); border-radius: 3px; position: absolute; box-shadow: 2px 0 5px rgba(0,0,0,0.5); }
 
+        /* 属性サイクル */
         .cycle-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px 28px 10px; background: rgba(0,0,0,0.85); border-bottom: 2px solid var(--border); position: relative; gap: 4px; }
         .cycle-dot { flex: 1; height: 5px; background: #1a1a1a; position: relative; border-radius: 2px; }
         .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 12px var(--dot-color); }
-        .cycle-label { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); font-size: 13px; font-weight: 900; opacity: 0.7; font-family: 'Cinzel', serif; white-space: nowrap; }
+        .cycle-label { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 900; opacity: 0.7; font-family: 'Cinzel', serif; white-space: nowrap; }
 
-        /* フィールド: 相対配置にしてログの親要素にする */
+        /* フィールド */
         .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; position: relative; }
         
-        /* バトルログ (配置変更・フェードアウト追加) */
-        .battle-log { 
-            position: absolute; 
-            top: 10px; 
-            left: 15px; 
-            z-index: 1000; 
-            pointer-events: none; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 6px; 
-            max-width: 60%; 
-        }
-        .log-entry { 
-            font-size: 13px; 
-            font-weight: 700; 
-            color: rgba(255,255,255,0.9); 
-            background: rgba(0,0,0,0.6); 
-            border-left: 3px solid var(--accent); 
-            padding: 6px 12px; 
-            border-radius: 0 6px 6px 0; 
-            text-shadow: 0 0 3px #000; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3); 
-            backdrop-filter: blur(2px);
-            animation: logAnim 5s forwards; 
-        }
-        @keyframes logAnim { 
-            0% { transform: translateX(-15px); opacity: 0; } 
-            5% { transform: translateX(0); opacity: 1; } 
-            80% { opacity: 1; } 
-            100% { opacity: 0; pointer-events: none; } 
-        }
+        /* バトルログ */
+        .battle-log { position: absolute; top: 10px; left: 15px; z-index: 1000; pointer-events: none; display: flex; flex-direction: column; gap: 6px; max-width: 60%; }
+        .log-entry { font-size: 12px; font-weight: 900; color: rgba(255,255,255,0.9); background: linear-gradient(90deg, rgba(0,0,0,0.8), rgba(0,0,0,0)); border-left: 3px solid var(--accent); padding: 6px 12px; text-shadow: 0 0 3px #000; animation: logAnim 5s forwards; }
+        @keyframes logAnim { 0% { transform: translateX(-15px); opacity: 0; } 5% { transform: translateX(0); opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; pointer-events: none; } }
 
-        .info-panel { background: rgba(10,10,15,0.98); border: 2px solid var(--steam-gold); padding: 15px; border-radius: 12px; max-width: 190px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.9); }
+        .info-panel { background: rgba(10,10,15,0.98); border: 1px solid var(--steam-gold); padding: 15px; border-radius: 8px; max-width: 190px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.8), inset 0 0 10px rgba(212,175,55,0.1); }
         .realm-title { font-family: 'Cinzel', serif; font-size: 26px; font-weight: 900; color: var(--realm-color); margin-bottom: 4px; letter-spacing: 2px; text-shadow: 0 0 12px var(--realm-color); }
 
-        /* 手札コンテナ */
-        .hand-container { position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%); }
+        /* 手札コンテナ: 当たり判定問題を解決 */
+        .hand-container { position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%); }
         .hand-flex { display: flex; padding: 180px 80px 25px 80px; min-height: 350px; align-items: flex-end; overflow-x: auto; overflow-y: visible; margin-top: -180px; box-sizing: border-box; }
         .hand-flex::-webkit-scrollbar { height: 4px; }
         .hand-flex::-webkit-scrollbar-thumb { background: var(--steam-gold); border-radius: 2px; }
 
         .action-row { background: #000; border-top: 1px solid rgba(212,175,55,0.3); padding: 15px 0 35px 0; display: flex; justify-content: center; z-index: 10; position: relative; }
 
-        .card { width: var(--card-w); height: var(--card-h); border-radius: 8px; border: 2.5px solid var(--steam-gold); background: #000; overflow: hidden; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,1); flex-shrink: 0; transition: 0.25s cubic-bezier(0.2, 1, 0.3, 1); }
+        /* カードとホバー判定の調整 */
+        .card { width: var(--card-w); height: var(--card-h); border-radius: 8px; border: 2.5px solid var(--steam-gold); background: #000; overflow: hidden; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,1); flex-shrink: 0; transition: 0.2s cubic-bezier(0.2, 1, 0.3, 1); }
         .card img { width: 100%; height: 100%; object-fit: cover; }
-        .card-footer { position: absolute; bottom: 0; width: 100%; background: rgba(5,5,10,0.98); font-size: 13px; font-weight: 900; padding: 4px 0; text-align: center; border-top: 2px solid var(--r-color); color: var(--steam-gold); font-family: 'Cinzel', serif; }
+        .card-footer { position: absolute; bottom: 0; width: 100%; background: rgba(5,5,10,0.98); font-size: 12px; font-weight: 900; padding: 4px 0; text-align: center; border-top: 2px solid var(--r-color); color: var(--steam-gold); font-family: 'Cinzel', serif; }
 
-        .my-card { margin-left: -48px; transform-origin: bottom center; cursor: pointer; position: relative; }
+        /* マージンを広げ、ホバー時の上移動距離を抑えて「ガタつき」を解消 */
+        .my-card { margin-left: -38px; transform-origin: bottom center; cursor: pointer; position: relative; }
         .my-card:first-child { margin-left: 0; }
-        .my-card.playable:hover { transform: translateY(-70px) scale(1.4) !important; z-index: 10000 !important; border-color: #fff; box-shadow: 0 40px 100px rgba(0,0,0,1), 0 0 50px var(--accent); }
-        .my-card.not-playable { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
+        .my-card.playable:hover { 
+            transform: translateY(-20px) scale(1.45) !important; /* 移動を抑え、拡大率で魅せる */
+            z-index: 10000 !important; 
+            border-color: #fff; 
+            box-shadow: 0 40px 80px rgba(0,0,0,1), 0 0 40px var(--accent); 
+        }
+        .my-card.not-playable { opacity: 0.45; filter: grayscale(0.8) brightness(0.6); cursor: not-allowed; }
 
-        /* パネル類 */
-        .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); background: rgba(0,0,0,0.7); padding: 30px; }
-        .panel { background: rgba(10, 10, 15, 0.98); border: 2.5px solid var(--border); padding: 45px 30px; border-radius: 32px; text-align: center; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 30px; box-shadow: 0 40px 120px rgba(0,0,0,1); }
+        /* ====== デザイン一新: パネルと入力欄 ====== */
+        .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); background: rgba(0,0,0,0.7); padding: 30px; }
         
-        .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 15px; margin: 15px 0; }
-        .waiting-player { background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.25); padding: 18px 20px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; }
-
-        .btn-main { background: linear-gradient(135deg, var(--steam-gold), #B8860B); color: #000; border: none; padding: 24px 0; border-radius: 14px; font-weight: 900; font-size: 22px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 6px; box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2); transition: 0.3s; }
-        .btn-main:active { transform: scale(0.97); }
-
-        .logo-main { font-family: 'Cinzel', serif; font-size: 42px; font-weight: 900; letter-spacing: 12px; color: var(--steam-gold); margin-bottom: 5px; }
-        .panel input { width: 100%; padding: 22px; background: rgba(0,0,0,0.5); border: 2px solid rgba(212,175,55,0.2); color: var(--accent); text-align: center; font-size: 20px; border-radius: 12px; outline: none; font-family: 'Exo 2', sans-serif; box-sizing: border-box; }
+        .panel { 
+            position: relative;
+            background: linear-gradient(135deg, rgba(15,15,20,0.95), rgba(5,5,10,0.98)); 
+            border: 1px solid var(--steam-gold); 
+            padding: 45px 30px; 
+            border-radius: 4px; /* エッジの効いたSF感 */
+            text-align: center; 
+            width: 100%; 
+            max-width: 400px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 25px; 
+            box-shadow: 0 0 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(212,175,55,0.05); 
+        }
+        /* パネル四隅のサイバー装飾 */
+        .panel::before, .panel::after { content: ''; position: absolute; width: 20px; height: 20px; border-color: var(--steam-gold); border-style: solid; opacity: 0.8; }
+        .panel::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+        .panel::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+        .panel-corner1, .panel-corner2 { position: absolute; width: 20px; height: 20px; border-color: var(--steam-gold); border-style: solid; opacity: 0.8; }
+        .panel-corner1 { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+        .panel-corner2 { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
         
-        .sync-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.5s infinite; }
+        /* 入力欄のコンソール化 */
+        .input-group { width: 100%; position: relative; text-align: left; margin-top: 10px; }
+        .input-group label { position: absolute; top: -10px; left: 12px; background: #0b0b0e; padding: 0 6px; font-size: 11px; font-weight: 900; color: var(--steam-gold); letter-spacing: 2px; z-index: 1; }
+        .panel input { width: 100%; padding: 18px 15px; background: rgba(0,0,0,0.6); border: 1px solid rgba(64, 224, 208, 0.3); border-left: 4px solid var(--accent); color: var(--accent); font-size: 18px; border-radius: 4px; outline: none; font-family: 'Exo 2', sans-serif; box-sizing: border-box; transition: 0.3s; text-shadow: 0 0 5px rgba(64, 224, 208, 0.5); }
+        .panel input:focus { background: rgba(64, 224, 208, 0.05); border-color: var(--accent); box-shadow: 0 0 15px rgba(64, 224, 208, 0.2), inset 0 0 10px rgba(64, 224, 208, 0.1); }
+
+        /* 待機リストのサイバー化 */
+        .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 12px; margin: 10px 0; }
+        .waiting-player { background: linear-gradient(90deg, rgba(64,224,208,0.1), rgba(0,0,0,0)); border: 1px solid rgba(64,224,208,0.2); border-left: 4px solid var(--accent); padding: 15px 20px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
+        .waiting-player.empty { background: rgba(255,255,255,0.02); border: 1px dashed rgba(212,175,55,0.3); border-left: 1px dashed rgba(212,175,55,0.3); opacity: 0.5; }
+
+        /* 光るグラデーションボタン */
+        .btn-main { background: linear-gradient(90deg, #B8860B, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1px solid #FFE4B5; padding: 20px 0; border-radius: 4px; font-weight: 900; font-size: 20px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 6px; box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); transition: 0.4s; overflow: hidden; }
+        .btn-main:hover { background-position: right center; box-shadow: 0 0 30px rgba(212, 175, 55, 0.6); color: #fff; text-shadow: 0 0 5px #000; }
+        .btn-main:active { transform: scale(0.98); }
+        .btn-main:disabled { background: #333; color: #666; border-color: #444; box-shadow: none; cursor: not-allowed; }
+
+        .logo-main { font-family: 'Cinzel', serif; font-size: 44px; font-weight: 900; letter-spacing: 12px; background: linear-gradient(to bottom, #FFE4B5, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(212,175,55,0.4)); margin-bottom: 2px; }
+        
+        .sync-dot { width: 10px; height: 10px; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.5s infinite; transform: rotate(45deg); }
         @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-        .error-msg { color: var(--danger); font-weight: 900; font-size: 16px; border: 1.5px solid var(--danger); padding: 12px; border-radius: 12px; background: rgba(255, 69, 0, 0.1); width: 100%; }
+        
+        .blink-text { animation: textBlink 2s infinite; }
+        @keyframes textBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .error-msg { color: var(--danger); font-weight: 900; font-size: 14px; border: 1px solid var(--danger); padding: 10px; border-radius: 4px; background: rgba(255, 69, 0, 0.1); width: 100%; }
         .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
-        .realm-btn { padding: 20px; border: 2.5px solid var(--steam-gold); background: rgba(255,255,255,0.06); color: #fff; font-weight: 900; font-family: 'Cinzel', serif; cursor: pointer; border-radius: 12px; font-size: 18px; }
+        .realm-btn { padding: 18px; border: 1px solid var(--steam-gold); background: rgba(255,255,255,0.05); color: #fff; font-weight: 900; font-family: 'Cinzel', serif; cursor: pointer; border-radius: 4px; font-size: 16px; transition: 0.3s; }
+        .realm-btn:hover { background: rgba(212,175,55,0.2); box-shadow: 0 0 15px rgba(212,175,55,0.4); }
     </style>
 </head>
 <body>
-    <!-- 効果音用 -->
     <script>
         const sfx = {
             turn: new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'),
@@ -247,14 +265,29 @@
                     <div className="bg-layer bg-magic-aura"></div>
                     <div className="bg-layer bg-scanline"></div>
 
+                    {/* === トップ画面（ログイン） === */}
                     {!joined && (
                         <div className="overlay">
                             <div className="panel">
-                                <h1 className="logo-main">CROSS REALM</h1>
-                                {error && <div className="error-msg">{error}</div>}
-                                <div style={{width:'100%', display:'flex', flexDirection:'column', gap:15}}>
-                                    <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="名前を入力" maxLength={10} />
-                                    <input type="text" value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} placeholder="ルームID" />
+                                <div className="panel-corner1"></div>
+                                <div className="panel-corner2"></div>
+                                
+                                <div>
+                                    <h1 className="logo-main">CROSS REALM</h1>
+                                    <div style={{fontSize: 10, letterSpacing: 8, color: 'var(--accent)', marginTop: '-8px', fontFamily: 'Exo 2', fontWeight: 900}}>ETERNAL PUNK EDITION</div>
+                                </div>
+                                
+                                {error && <div className="error-msg">⚠️ {error}</div>}
+                                
+                                <div style={{width:'100%', display:'flex', flexDirection:'column', gap:20}}>
+                                    <div className="input-group">
+                                        <label>PILOT NAME</label>
+                                        <input type="text" value={name} onChange={e=>setName(e.target.value)} maxLength={10} />
+                                    </div>
+                                    <div className="input-group">
+                                        <label>SECTOR ID</label>
+                                        <input type="text" value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} />
+                                    </div>
                                 </div>
                                 <button onClick={()=>{
                                     sfx.turn.load(); sfx.play.load(); sfx.draw.load(); sfx.alert.load();
@@ -265,33 +298,42 @@
                         </div>
                     )}
 
+                    {/* === 待機画面 === */}
                     {joined && (!gs || gs.status === 'waiting') && (
                         <div className="overlay">
                             <div className="panel">
+                                <div className="panel-corner1"></div>
+                                <div className="panel-corner2"></div>
+
                                 <div>
-                                    <h2 style={{letterSpacing:4, opacity:0.6, fontSize:15, fontWeight:900, marginBottom:8, color:'var(--steam-gold)'}}>AWAITING LINKAGE</h2>
-                                    <div style={{fontSize:30, color:'var(--accent)', fontWeight:900, fontFamily:'Exo 2'}}>SECTOR: {room}</div>
+                                    <div className="blink-text" style={{letterSpacing:6, opacity:0.8, fontSize:12, fontWeight:900, marginBottom:8, color:'var(--accent)', fontFamily:'Exo 2'}}>AWAITING LINKAGE...</div>
+                                    <div style={{fontSize:32, color:'var(--steam-gold)', fontWeight:900, fontFamily:'Cinzel', letterSpacing: 4}}>SECTOR: {room}</div>
                                 </div>
+                                
                                 <div className="waiting-list">
                                     {gs?.players?.map(p => (
                                         <div key={p.id} className="waiting-player">
-                                            <span style={{fontWeight:900, fontSize:18}}>👤 {p.name}</span>
+                                            <span style={{fontWeight:900, fontSize:16, color:'#fff', textShadow:'0 0 5px rgba(255,255,255,0.3)'}}>👤 {p.name}</span>
                                             <div className="sync-dot"></div>
                                         </div>
                                     ))}
                                     {[...Array(Math.max(0, 2 - (gs?.players?.length || 0)))].map((_, i) => (
-                                        <div key={i} className="waiting-player" style={{opacity:0.25, borderStyle:'dashed'}}>
-                                            <span style={{fontSize:16}}>Awaiting Pilot...</span>
+                                        <div key={i} className="waiting-player empty">
+                                            <span style={{fontSize:14, letterSpacing:1}}>Awaiting Pilot...</span>
                                         </div>
                                     ))}
                                 </div>
-                                {gs?.players?.[0]?.id === socket?.id && (
+                                
+                                {gs?.players?.[0]?.id === socket?.id ? (
                                     <button onClick={()=>socket.emit('start-game',{roomId:room})} className="btn-main" disabled={gs?.players?.length < 2}>システム起動</button>
+                                ) : (
+                                    <div style={{fontSize: 12, color: 'var(--steam-gold)', fontWeight: 900, letterSpacing: 2}}>ホストの起動待機中...</div>
                                 )}
                             </div>
                         </div>
                     )}
 
+                    {/* === プレイ画面 === */}
                     {joined && gs?.status === 'playing' && (
                         <div className="game-container">
                             
@@ -379,7 +421,7 @@
                             </div>
 
                             <div className="action-row">
-                                <button className="btn-main" disabled={!isMyTurn} onClick={handleDraw}>
+                                <button className="btn-main" disabled={!isMyTurn} onClick={handleDraw} style={{padding: '15px 0'}}>
                                     {gs.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引く` : (isMyTurn ? 'カードを引く' : '待機中...')}
                                 </button>
                             </div>
@@ -389,6 +431,8 @@
                     {selectorCard && (
                         <div className="overlay">
                             <div className="panel">
+                                <div className="panel-corner1"></div>
+                                <div className="panel-corner2"></div>
                                 <h3 style={{fontSize:26, fontWeight:900, color:'var(--steam-gold)', fontFamily:'Cinzel'}}>属性を選択</h3>
                                 <div className="realm-grid">
                                     {CYCLE_ORDER.map(r => (
@@ -404,6 +448,8 @@
                     {gs?.status === 'finished' && (
                         <div className="overlay">
                             <div className="panel">
+                                <div className="panel-corner1"></div>
+                                <div className="panel-corner2"></div>
                                 <h2 style={{color:'var(--steam-gold)', fontSize:36, fontWeight:900, fontFamily:'Cinzel'}}>MISSION END</h2>
                                 <div style={{width:'100%', margin:'10px 0'}}>
                                     {gs.players.slice().sort((a,b) => a.handCount - b.handCount).map((p, i) => (
