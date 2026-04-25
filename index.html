@@ -12,7 +12,6 @@
     <style>
         :root { 
             --accent: #40E0D0; --steam-gold: #D4AF37; --danger: #FF4500; --bg: #050508; 
-            /* カードサイズを一回り大きくスケールアップ */
             --card-w: 108px; --card-h: 156px; --opp-card-w: 32px; --opp-card-h: 46px; --border: rgba(212, 175, 55, 0.45);
         }
         body { margin: 0; background: #000; color: white; font-family: 'Exo 2', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
@@ -22,42 +21,32 @@
         .bg-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 180%; height: 180%; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.5"/><circle cx="100" cy="100" r="75" fill="none" stroke="rgba(64,224,208,0.05)" stroke-width="0.4"/></svg>'); animation: rotate-eternal 180s linear infinite; }
         @keyframes rotate-eternal { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
         
-        /* 光の強さと広がりをアップし、色の変化がハッキリ分かるように修正 */
         .bg-magic-aura { position: absolute; inset: 0; background-color: var(--realm-color); -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 85%); mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 85%); opacity: 0.7; transition: background-color 3s ease-in-out; }
-        
         .bg-scanline { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.2) 50%); background-size: 100% 4px; z-index: 5; }
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
 
-        /* 進行方向UI: 14px -> 16px */
         .turn-direction { text-align: center; font-size: 16px; font-weight: 900; color: var(--accent); letter-spacing: 2px; font-family: 'Exo 2', sans-serif; background: rgba(0,0,0,0.5); padding: 8px 12px; border-bottom: 1px solid rgba(64,224,208,0.3); display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.5s; }
 
         .opponents-area { display: flex; flex-direction: column; gap: 10px; padding: 15px; border-bottom: 2px solid var(--border); background: rgba(0,0,0,0.6); }
         .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 8px; background: rgba(255,255,255,0.04); border-left: 4px solid var(--border); }
         .opp-row.active { border-left-color: var(--accent); background: rgba(64, 224, 208, 0.1); box-shadow: inset 0 0 15px rgba(64, 224, 208, 0.15); }
-        
-        /* 相手の名前: 15px -> 17px */
         .opp-name { font-weight: 900; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; letter-spacing: 1px; color: #fff; }
         
-        /* 相手のカード群: 幅を広げて重なりを調整 */
         .opp-hand-visual { display: flex; align-items: center; justify-content: flex-end; position: relative; width: 110px; height: var(--opp-card-h); }
         .mini-card-back { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #333, #000); border: 1px solid var(--steam-gold); border-radius: 3px; position: absolute; box-shadow: 2px 0 5px rgba(0,0,0,0.5); }
 
         .cycle-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px 28px 10px; background: rgba(0,0,0,0.85); border-bottom: 2px solid var(--border); position: relative; gap: 4px; }
         .cycle-dot { flex: 1; height: 5px; background: #1a1a1a; position: relative; border-radius: 2px; }
         .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 12px var(--dot-color); }
-        
-        /* サイクルラベル: 12px -> 14px */
         .cycle-label { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: 900; opacity: 0.7; font-family: 'Cinzel', serif; white-space: nowrap; }
 
         .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; position: relative; }
         
-        /* バトルログの位置をカードに被らないようさらに上に引き上げました */
         .battle-log { position: absolute; top: -45px; left: 15px; z-index: 1000; pointer-events: none; display: flex; flex-direction: column; gap: 6px; max-width: 60%; }
         .log-entry { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.9); background: rgba(0,0,0,0.6); border-left: 3px solid var(--accent); padding: 8px 14px; border-radius: 0 6px 6px 0; text-shadow: 0 0 3px #000; box-shadow: 0 2px 5px rgba(0,0,0,0.3); backdrop-filter: blur(2px); animation: logAnim 5s forwards; }
         @keyframes logAnim { 0% { transform: translateX(-15px); opacity: 0; } 5% { transform: translateX(0); opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; pointer-events: none; } }
 
-        /* インフォパネルと属性タイトル: 26px -> 30px */
         .info-panel { background: rgba(10,10,15,0.98); border: 1px solid var(--steam-gold); padding: 18px; border-radius: 8px; max-width: 210px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.8), inset 0 0 10px rgba(212,175,55,0.1); }
         .realm-title { font-family: 'Cinzel', serif; font-size: 30px; font-weight: 900; color: var(--realm-color); margin-bottom: 4px; letter-spacing: 2px; text-shadow: 0 0 12px var(--realm-color); }
 
@@ -68,58 +57,89 @@
 
         .action-row { background: #000; border-top: 1px solid rgba(212,175,55,0.3); padding: 15px 0 35px 0; display: flex; justify-content: center; z-index: 10; position: relative; }
 
-        /* ======== 新しいカードデザイン (CSS UI) ======== */
+        /* ======== 完全CSS＋SVGによる世界観カード ======== */
         .card { 
             width: var(--card-w); height: var(--card-h); 
-            border-radius: 8px; border: 2px solid var(--r-color); 
-            background: linear-gradient(145deg, #1a1a24, #000); 
+            border-radius: 8px; border: 2.5px solid var(--r-color); 
+            background: #000; 
             overflow: hidden; position: relative; 
-            box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 15px rgba(0,0,0,0.8); 
             flex-shrink: 0; transition: 0.2s cubic-bezier(0.2, 1, 0.3, 1); 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        /* カード背景の放射状オーラ */
-        .card::before {
-            content: ''; position: absolute; inset: 0;
-            background: radial-gradient(circle at top left, var(--r-color) 0%, transparent 70%);
-            opacity: 0.3; pointer-events: none;
-        }
-        /* 特殊カード(S)は枠が太く、背景に斜線が入る */
-        .card.is-special {
-            border-width: 3px;
-            box-shadow: 0 0 15px var(--r-color), inset 0 0 25px var(--r-color);
-        }
-        .card.is-special::after {
-            content: ''; position: absolute; inset: 0;
-            background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.04) 10px, rgba(255,255,255,0.04) 20px);
-            pointer-events: none;
         }
         
-        /* カード中央のネオンアイコン */
-        .card-icon { 
-            width: 50px; height: 50px; 
-            color: var(--r-color); 
-            filter: drop-shadow(0 0 10px var(--r-color)); 
-            margin-bottom: 15px; 
+        /* 1. スチームパンク (GEAR, ARCHIVE) */
+        .theme-steampunk { 
+            border-color: #B87333; 
+            background: radial-gradient(circle at center, #2a1a0a 0%, #050301 100%);
+            box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 30px rgba(184,115,51,0.6); 
         }
-        
-        /* カード左上の英略称と右上のSバッジ */
-        .card-realm-mini { position: absolute; top: 6px; left: 8px; font-size: 11px; font-weight: 900; color: var(--r-color); opacity: 0.8; letter-spacing: 1px; font-family: 'Exo 2', sans-serif; }
-        .card-badge { position: absolute; top: 6px; right: 6px; background: var(--r-color); color: #000; font-size: 11px; font-weight: 900; padding: 2px 6px; border-radius: 4px; letter-spacing: 1px; box-shadow: 0 0 8px var(--r-color); }
+        .theme-steampunk::before { 
+            /* 斜めの金属スリット模様 */
+            content: ''; position: absolute; inset: 0; 
+            background: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(184,115,51,0.15) 8px, rgba(184,115,51,0.15) 16px); 
+            pointer-events: none; z-index: 1; 
+        }
+        .theme-steampunk.playable:hover { border-color: #FFD700; box-shadow: 0 40px 100px rgba(0,0,0,1), 0 0 50px rgba(184,115,51,0.9); }
 
-        /* カード下部の属性名 */
-        .card-footer { 
-            position: absolute; bottom: 0; width: 100%; 
-            background: rgba(0,0,0,0.85); font-size: 15px; font-weight: 900; 
-            padding: 6px 0; text-align: center; border-top: 1px solid var(--r-color); 
-            color: #fff; font-family: 'Exo 2', sans-serif; letter-spacing: 2px; text-shadow: 0 0 5px var(--r-color);
+        /* 2. 幻想世界 (ICEAGE, FOUNTAIN, PLANET, RUINS) */
+        .theme-fantasy { 
+            border-color: #87CEEB; 
+            background: radial-gradient(circle at top, #0f1a24 0%, #000 100%);
+            box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 30px rgba(135,206,235,0.5); 
         }
+        .theme-fantasy::before { 
+            /* 魔法のオーラ */
+            content: ''; position: absolute; inset: 0; 
+            background: radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, transparent 60%); 
+            pointer-events: none; z-index: 1; 
+        }
+        .theme-fantasy::after {
+            /* 星屑（パーティクル） */
+            content: ''; position: absolute; inset: 0;
+            background-image: radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px);
+            background-size: 14px 14px; opacity: 0.4; z-index: 1;
+        }
+        .theme-fantasy.playable:hover { border-color: #FFF; box-shadow: 0 40px 100px rgba(0,0,0,1), 0 0 50px rgba(135,206,235,0.9); }
+
+        /* 3. サイバーパンク (BATTERY, MACHINE) */
+        .theme-cyber { 
+            border-color: #0FF; 
+            background: linear-gradient(135deg, #001a1a 0%, #000 100%);
+            box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 30px rgba(0,255,255,0.5); 
+        }
+        .theme-cyber::before { 
+            /* スキャンライン */
+            content: ''; position: absolute; inset: 0; 
+            background: linear-gradient(transparent 50%, rgba(0,255,255,0.15) 50%); 
+            background-size: 100% 4px; pointer-events: none; z-index: 1; 
+        }
+        .theme-cyber::after {
+            /* デジタルグリッド */
+            content: ''; position: absolute; inset: 0;
+            background-image: linear-gradient(rgba(0,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,255,0.15) 1px, transparent 1px);
+            background-size: 20px 20px; opacity: 0.6; z-index: 1;
+        }
+        .theme-cyber.playable:hover { border-color: #FFF; box-shadow: 0 40px 100px rgba(0,0,0,1), 0 0 50px rgba(0,255,255,0.9); }
+
+        /* 特殊カード(S)の共通バッジ装飾 */
+        .card.is-special { border-width: 4px; }
+
+        /* カードのホログラムアイコン */
+        .card-icon {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 54px; height: 54px; color: var(--r-color);
+            filter: drop-shadow(0 0 10px var(--r-color)); z-index: 2;
+        }
+
+        /* カード情報（テキスト・バッジ） */
+        .card-realm-mini { position: absolute; top: 6px; left: 8px; font-size: 12px; font-weight: 900; color: #fff; text-shadow: 0 0 5px var(--r-color), 0 0 10px #000; letter-spacing: 1px; font-family: 'Exo 2', sans-serif; z-index: 3; }
+        .card-badge { position: absolute; top: 6px; right: 6px; background: var(--r-color); color: #000; font-size: 12px; font-weight: 900; padding: 2px 6px; border-radius: 4px; letter-spacing: 1px; box-shadow: 0 0 8px var(--r-color); z-index: 3; }
+        .card-footer { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); font-size: 14px; font-weight: 900; padding: 5px 0; text-align: center; border-top: 2px solid var(--r-color); color: #fff; font-family: 'Cinzel', serif; z-index: 3; text-shadow: 0 0 5px var(--r-color); }
 
         /* 手札の重なり調整 */
         .my-card { margin-left: -44px; transform-origin: bottom center; cursor: pointer; position: relative; }
         .my-card:first-child { margin-left: 0; }
-        .my-card.playable:hover { transform: translateY(-20px) scale(1.45) !important; z-index: 10000 !important; border-color: #fff; box-shadow: 0 40px 80px rgba(0,0,0,1), 0 0 40px var(--accent); }
-        .my-card.not-playable { opacity: 0.45; filter: grayscale(0.8) brightness(0.6); cursor: not-allowed; }
+        .my-card.playable:hover { transform: translateY(-20px) scale(1.45) !important; z-index: 10000 !important; }
+        .my-card.not-playable { opacity: 0.5; filter: grayscale(0.6) brightness(0.5); cursor: not-allowed; }
 
         .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); background: rgba(0,0,0,0.2); padding: 30px; }
         
@@ -145,7 +165,6 @@
         .panel-corner1 { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
         .panel-corner2 { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
         
-        /* ラベル・入力フォーム: ラベル13px, フォーム20pxに拡大 */
         .input-group { width: 100%; position: relative; text-align: left; margin-top: 10px; }
         .input-group label { position: absolute; top: -12px; left: 12px; background: #0b0b0e; padding: 0 8px; font-size: 13px; font-weight: 900; color: var(--steam-gold); letter-spacing: 2px; z-index: 1; }
         .panel input { width: 100%; padding: 20px 15px; background: rgba(0,0,0,0.6); border: 1px solid rgba(64, 224, 208, 0.3); border-left: 4px solid var(--accent); color: var(--accent); text-align: center; font-size: 20px; border-radius: 4px; outline: none; font-family: 'Exo 2', sans-serif; box-sizing: border-box; transition: 0.3s; text-shadow: 0 0 5px rgba(64, 224, 208, 0.5); }
@@ -160,12 +179,10 @@
         .btn-main:active { transform: scale(0.98); }
         .btn-main:disabled { background: #333; color: #666; border-color: #444; box-shadow: none; cursor: not-allowed; }
 
-        /* 終了（退出）用のサブボタン */
         .btn-sub { background: linear-gradient(90deg, #2a2a30, #3f3f46, #2a2a30); background-size: 200% auto; color: #a1a1aa; border: 1px solid #52525b; padding: 20px 0; border-radius: 4px; font-weight: 900; font-size: 20px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 6px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4); transition: 0.4s; overflow: hidden; }
         .btn-sub:hover { background-position: right center; box-shadow: 0 0 20px rgba(255, 255, 255, 0.1); color: #fff; border-color: #a1a1aa; }
         .btn-sub:active { transform: scale(0.98); }
 
-        /* ロゴ: 44px -> 48px */
         .logo-main { font-family: 'Cinzel', serif; font-size: 48px; font-weight: 900; letter-spacing: 12px; background: linear-gradient(to bottom, #FFE4B5, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(212,175,55,0.4)); margin-bottom: 2px; }
         
         .sync-dot { width: 10px; height: 10px; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.5s infinite; transform: rotate(45deg); }
@@ -175,19 +192,15 @@
 
         .error-msg { color: var(--danger); font-weight: 900; font-size: 14px; border: 1px solid var(--danger); padding: 10px; border-radius: 4px; background: rgba(255, 69, 0, 0.1); width: 100%; }
         .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
-        
-        /* 属性選択ボタン: 16px -> 18px */
         .realm-btn { padding: 20px; border: 1px solid var(--steam-gold); background: rgba(255,255,255,0.05); color: #fff; font-weight: 900; font-family: 'Cinzel', serif; cursor: pointer; border-radius: 4px; font-size: 18px; transition: 0.3s; }
         .realm-btn:hover { background: rgba(212,175,55,0.2); box-shadow: 0 0 15px rgba(212,175,55,0.4); }
 
-        /* ミュートボタンのスタイル */
         .mute-btn { position: absolute; top: 20px; right: 20px; z-index: 60000; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--steam-gold); color: var(--steam-gold); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
         .mute-btn:hover { background: rgba(212, 175, 55, 0.2); box-shadow: 0 0 15px rgba(212, 175, 55, 0.5); transform: scale(1.1); }
     </style>
 </head>
 <body>
     <script>
-        // Reactからアクセスしやすいように window.sfx に変更
         window.sfx = {
             turn: new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'),
             play: new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3'),
@@ -211,7 +224,27 @@
             PLANET: { n: '惑星', color: '#9400D3', desc: '星々の加護。', effect: 'ワイルド' },
             RUINS: { n: '廃墟', color: '#696969', desc: '遺跡の記憶。', effect: 'ワイルド' }
         };
+        
+        // 3つの世界観へのマッピング
+        const THEMES = {
+            GEAR: 'steampunk', ARCHIVE: 'steampunk',
+            ICEAGE: 'fantasy', FOUNTAIN: 'fantasy', PLANET: 'fantasy', RUINS: 'fantasy',
+            BATTERY: 'cyber', MACHINE: 'cyber'
+        };
+        
         const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
+
+        // サイバーパンク風 SVGアイコン集
+        const ICONS = {
+            GEAR: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg>,
+            ICEAGE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m10 20-2.5-2.5L5 20"/><path d="M12 22V2"/><path d="m14 20 2.5-2.5L19 20"/><path d="m10 4-2.5 2.5L5 4"/><path d="m14 4 2.5 2.5L19 4"/><path d="m20 10-2.5 2.5L20 15"/><path d="M22 12H2"/><path d="m4 10 2.5 2.5L4 15"/></svg>,
+            FOUNTAIN: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4A9.7 9.7 0 0 1 12 22z"></path></svg>,
+            BATTERY: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect><line x1="22" x2="22" y1="11" y2="13"></line><line x1="6" x2="6" y1="11" y2="13"></line><line x1="10" x2="10" y1="11" y2="13"></line><line x1="14" x2="14" y1="11" y2="13"></line></svg>,
+            MACHINE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>,
+            ARCHIVE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg>,
+            PLANET: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>,
+            RUINS: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h20"></path><path d="M5 20v-8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8"></path><path d="M9 20v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"></path><path d="M5 10V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"></path></svg>
+        };
 
         const App = () => {
             const [socket, setSocket] = useState(null);
@@ -222,7 +255,7 @@
             const [selectorCard, setSelectorCard] = useState(null);
             const [error, setError] = useState('');
             const [bgRealm, setBgRealm] = useState('GEAR');
-            const [isMuted, setIsMuted] = useState(false); // ミュート状態
+            const [isMuted, setIsMuted] = useState(false); 
             
             const prevTurnRef = useRef(null);
 
@@ -321,46 +354,31 @@
                 socket.emit('draw-card',{roomId:room});
             };
 
-            // ======== サイバーパンク風 SVGアイコン集 ========
-            const ICONS = {
-                GEAR: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg>,
-                ICEAGE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m10 20-2.5-2.5L5 20"/><path d="M12 22V2"/><path d="m14 20 2.5-2.5L19 20"/><path d="m10 4-2.5 2.5L5 4"/><path d="m14 4 2.5 2.5L19 4"/><path d="m20 10-2.5 2.5L20 15"/><path d="M22 12H2"/><path d="m4 10 2.5 2.5L4 15"/></svg>,
-                FOUNTAIN: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4A9.7 9.7 0 0 1 12 22z"></path></svg>,
-                BATTERY: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect><line x1="22" x2="22" y1="11" y2="13"></line><line x1="6" x2="6" y1="11" y2="13"></line><line x1="10" x2="10" y1="11" y2="13"></line><line x1="14" x2="14" y1="11" y2="13"></line></svg>,
-                MACHINE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>,
-                ARCHIVE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg>,
-                PLANET: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>,
-                RUINS: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h20"></path><path d="M5 20v-8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8"></path><path d="M9 20v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"></path><path d="M5 10V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"></path></svg>
-            };
-
             const CardView = ({ card, playable, onClick, isField }) => {
                 if (!card) return null;
                 
-                // ワイルド等で属性が変わった時の表示用レルム
+                // 属性の決定
                 let displayRealm = card.realm;
                 if (card.wasRuins) displayRealm = 'RUINS';
                 else if (card.wasPlanet) displayRealm = 'PLANET';
-                else if (card.wasFountain) displayRealm = 'FOUNTAIN';
+                else if (card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) displayRealm = 'FOUNTAIN';
                 
                 const isSpecial = card.isSpecial || card.wasFountain;
                 const rColor = REALMS[displayRealm].color;
+                const themeClass = `theme-${THEMES[displayRealm]}`;
 
                 return (
-                    <div className={`card ${isField ? '' : (playable ? 'playable my-card' : 'not-playable my-card')} ${isSpecial ? 'is-special' : ''}`} 
+                    <div className={`card ${isField ? '' : (playable ? 'playable my-card' : 'not-playable my-card')} ${isSpecial ? 'is-special' : ''} ${themeClass}`} 
                          style={{'--r-color': rColor}} onClick={onClick}>
                         
-                        {/* 左上の英略称 */}
                         <div className="card-realm-mini">{displayRealm.substring(0, 3)}</div>
-                        
-                        {/* S（特殊）バッジ */}
                         {isSpecial && <div className="card-badge">S</div>}
                         
-                        {/* 中央の光るネオンアイコン */}
+                        {/* 中央のホログラムSVGアイコン */}
                         <div className="card-icon">
                             {ICONS[displayRealm]}
                         </div>
                         
-                        {/* 属性名フッター */}
                         <div className="card-footer">
                             {REALMS[displayRealm].n}
                         </div>
@@ -374,12 +392,10 @@
                     <div className="bg-layer bg-magic-aura" style={{ backgroundColor: REALMS[currentRealm].color }}></div>
                     <div className="bg-layer bg-scanline"></div>
 
-                    {/* ミュートボタン */}
                     <button onClick={toggleMute} className="mute-btn" title={isMuted ? "音声をオン" : "音声をオフ"}>
                         {isMuted ? '🔇' : '🔊'}
                     </button>
 
-                    {/* === トップ画面（ログイン） === */}
                     {!joined && (
                         <div className="overlay">
                             <div className="panel">
@@ -394,8 +410,14 @@
                                 {error && <div className="error-msg">⚠️ {error}</div>}
                                 
                                 <div style={{width:'100%', display:'flex', flexDirection:'column', gap:20}}>
-                                    <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="プレイヤー名" maxLength={10} />
-                                    <input type="text" value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} placeholder="ルームID" />
+                                    <div className="input-group">
+                                        <label>プレイヤー名</label>
+                                        <input type="text" value={name} onChange={e=>setName(e.target.value)} maxLength={10} />
+                                    </div>
+                                    <div className="input-group">
+                                        <label>ルームID</label>
+                                        <input type="text" value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} />
+                                    </div>
                                 </div>
                                 <button onClick={()=>{
                                     window.sfx.turn.load(); window.sfx.play.load(); window.sfx.draw.load(); window.sfx.alert.load();
@@ -406,7 +428,6 @@
                         </div>
                     )}
 
-                    {/* === 待機画面 === */}
                     {joined && (!gs || gs.status === 'waiting') && (
                         <div className="overlay">
                             <div className="panel">
@@ -441,7 +462,6 @@
                         </div>
                     )}
 
-                    {/* === プレイ画面 === */}
                     {joined && gs?.status === 'playing' && (
                         <div className="game-container">
                             
@@ -476,7 +496,6 @@
                             </div>
 
                             <div className="field">
-                                {/* バトルログ */}
                                 {gs.logs && (
                                     <div className="battle-log">
                                         {gs.logs.map((log) => (
@@ -536,7 +555,6 @@
                         </div>
                     )}
 
-                    {/* === ワイルド選択画面 === */}
                     {selectorCard && (
                         <div className="overlay">
                             <div className="panel">
@@ -554,7 +572,6 @@
                         </div>
                     )}
 
-                    {/* === リザルト画面 === */}
                     {gs?.status === 'finished' && (() => {
                         const winner = gs.players.find(p => p.handCount === 0);
                         const bursted = gs.players.find(p => p.handCount > gs.handLimit);
@@ -565,11 +582,10 @@
                         let titleFont = "Cinzel";
 
                         if (winner) {
-                            // 勝利時はプレイヤー名を大きく表示
                             resultTitle = `${winner.name} WIN!`;
                             resultSub = "";
                             titleColor = "var(--accent)";
-                            titleFont = "'Exo 2', sans-serif"; // 日本語もかっこよく表示されるフォントに
+                            titleFont = "'Exo 2', sans-serif";
                         } else if (bursted) {
                             resultTitle = "SYSTEM OVERLOAD";
                             resultSub = `BURST: ${bursted.name}`;
@@ -583,7 +599,6 @@
                                     <div className="panel-corner2"></div>
                                     
                                     <div style={{marginBottom: '10px', width: '100%'}}>
-                                        {/* 長い名前でも折り返されるように wordBreak を追加し、サイズを動的に調整 */}
                                         <h2 style={{color: titleColor, fontSize: winner ? 34 : 40, fontWeight:900, fontFamily: titleFont, textShadow: `0 0 20px ${titleColor}`, margin: 0, letterSpacing: 2, wordBreak: 'break-all'}}>
                                             {resultTitle}
                                         </h2>
