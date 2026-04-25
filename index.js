@@ -13,6 +13,11 @@ const HAND_LIMIT = 12;
 
 const NG_WORDS = ['FUCK', 'SHIT', 'BITCH', 'ASSHOLE', 'DICK', 'PUSSY', 'RETARD', 'SHINE', 'KASU', 'GOMI', '死ね', 'バカ', 'アホ', 'カス', 'ゴミ'];
 
+const REALM_LABELS = {
+  GEAR: '歯車', ICEAGE: '氷河期', FOUNTAIN: '噴水', BATTERY: '電池',
+  MACHINE: '機械', ARCHIVE: '古文書', PLANET: '惑星', RUINS: '廃墟'
+};
+
 const createDeck = () => {
   const realmConfig = {
     GEAR: { total: 10, special: 3 }, MACHINE: { total: 10, special: 3 }, FOUNTAIN: { total: 10, special: 3 },
@@ -49,11 +54,17 @@ const canPlayCard = (room, card) => {
   }
 };
 
+const addLog = (room, msg) => {
+  room.logs.push(msg);
+  if (room.logs.length > 5) room.logs.shift(); // 最新5件を保持
+};
+
 const emitUpdate = (roomId) => {
   const room = rooms[roomId];
   if (!room) return;
   io.to(roomId).emit('update-game', {
-    roomId, status: room.status, fieldCard: room.fieldCard,
+    roomId, status: room.status, fieldCard: room.fieldCard, 
+    playHistory: room.playHistory, logs: room.logs,
     currentTurnPlayerId: room.players[room.turnIndex]?.id,
     nextDrawAmount: room.nextDrawAmount, isReversed: room.isReversed, handLimit: HAND_LIMIT,
     players: room.players.map(p => ({ id: p.id, name: p.name, handCount: p.hand.length, hand: p.hand }))
@@ -68,7 +79,9 @@ io.on('connection', (socket) => {
     if (NG_WORDS.some(word => cleanName.toUpperCase().includes(word) || cleanId.includes(word))) 
       return socket.emit('join-error', '不適切な言葉が含まれています。');
 
-    if (!rooms[cleanId]) rooms[cleanId] = { players: [], deck: [], fieldCard: null, status: 'waiting', turnIndex: 0, nextDrawAmount: 1, isReversed: false, readyPlayers: new Set() };
+    if (!rooms[cleanId]) {
+      rooms[cleanId] = { players: [], deck: [], fieldCard: null, playHistory: [], logs: [], status: 'waiting', turnIndex: 0, nextDrawAmount: 1, isReversed: false, readyPlayers: new Set() };
+    }
     const room = rooms[cleanId];
     if (room.status !== 'waiting') return socket.emit('join-error', '進行中のため参加できません。');
     if (room.players.length >= 4) return socket.emit('join-error', '満員です。');
@@ -86,6 +99,8 @@ io.on('connection', (socket) => {
     room.deck = createDeck();
     room.players.forEach(p => p.hand = room.deck.splice(0, 5));
     room.fieldCard = room.deck.pop();
+    room.playHistory = [room.fieldCard];
+    room.logs = ['[SYS] MISSION START.'];
     room.status = 'playing';
     room.turnIndex = Math.floor(Math.random() * room.players.length);
     room.nextDrawAmount = 1; room.isReversed = false;
@@ -97,11 +112,17 @@ io.on('connection', (socket) => {
     if (!room || room.status !== 'playing') return;
     const player = room.players[room.turnIndex];
     if (player.id !== socket.id) return;
+    
+    addLog(room, `[DRAW] ${player.name} が ${room.nextDrawAmount}枚 補給`);
+
     for (let i = 0; i < room.nextDrawAmount; i++) {
       if (room.deck.length === 0) room.deck = createDeck();
       player.hand.push(room.deck.pop());
     }
-    if (player.hand.length > HAND_LIMIT) { room.status = 'finished'; emitUpdate(roomId); return; }
+    if (player.hand.length > HAND_LIMIT) { 
+      addLog(room, `[BURST] ${player.name} が限界突破！`);
+      room.status = 'finished'; emitUpdate(roomId); return; 
+    }
     room.nextDrawAmount = 1;
     room.turnIndex = (room.turnIndex + (room.isReversed ? -1 : 1) + room.players.length) % room.players.length;
     emitUpdate(roomId);
@@ -116,20 +137,36 @@ io.on('connection', (socket) => {
 
     player.hand = player.hand.filter(c => c.id !== card.id);
     const newFieldCard = { ...card };
+    
+    let logMsg = `[PLAY] ${player.name} : ${REALM_LABELS[card.realm]}${card.isSpecial ? '(S)' : ''}`;
+
     if (chosenRealm) {
       if (card.realm === 'RUINS') newFieldCard.wasRuins = true;
       if (card.realm === 'PLANET') newFieldCard.wasPlanet = true;
       if (card.realm === 'FOUNTAIN') newFieldCard.wasFountain = true;
       newFieldCard.realm = chosenRealm; newFieldCard.isSpecial = false;
+      logMsg += ` → [${REALM_LABELS[chosenRealm]}]に変更`;
     }
     room.fieldCard = newFieldCard;
+    
+    room.playHistory.push(newFieldCard);
+    if (room.playHistory.length > 4) room.playHistory.shift();
+
+    addLog(room, logMsg);
 
     if (player.hand.length === 0) { 
+      addLog(room, `[WIN] ${player.name} MISSION COMPLETE!`);
       room.status = 'finished'; 
     } else {
       if (card.isSpecial) {
-        if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
-        if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
+        if (card.realm === 'GEAR') {
+          room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
+          addLog(room, `[WARNING] 次のパイロットに +${room.nextDrawAmount} ドロー蓄積`);
+        }
+        if (card.realm === 'MACHINE') {
+          room.isReversed = !room.isReversed;
+          addLog(room, `[SYS] 進行方向がリバース`);
+        }
       }
       room.turnIndex = (room.turnIndex + (room.isReversed ? -1 : 1) + room.players.length) % room.players.length;
     }
@@ -140,10 +177,15 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
     if (!room) return;
     room.readyPlayers.add(socket.id);
-    if (room.readyPlayers.size === room.players.length) { room.status = 'waiting'; room.readyPlayers.clear(); }
+    if (room.readyPlayers.size === room.players.length) { 
+      room.status = 'waiting'; 
+      room.readyPlayers.clear(); 
+      room.logs = [];
+      room.playHistory = [];
+    }
     emitUpdate(roomId);
   });
 });
 
-const serverPort = process.env.PORT || 3001;
-server.listen(serverPort, () => console.log(`Cross Realm v3.1.15 Ready`));
+const port = process.env.PORT || 3001;
+server.listen(port, () => console.log(`Cross Realm v3.2.0 Polished Ready`));
