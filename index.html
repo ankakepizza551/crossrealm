@@ -42,9 +42,17 @@
         .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; position: relative; }
         .info-panel { background: rgba(10,10,15,0.98); border: 2px solid var(--steam-gold); padding: 15px; border-radius: 12px; max-width: 180px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.9); }
 
-        /* 手札コンテナ */
-        .hand-container { position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%); }
-        .hand-flex { display: flex; padding: 120px 80px 25px 80px; min-height: 280px; align-items: flex-end; overflow-x: auto; overflow-y: visible; margin-top: -120px; box-sizing: border-box; }
+        /* 手札コンテナ: 飛び出し問題を物理的に解決 */
+        .hand-container { position: relative; z-index: 9999; width: 100%; background: linear-gradient(to top, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%); }
+        .hand-flex { 
+            display: flex; 
+            padding: 180px 80px 25px 80px; /* カードが巨大化しても収まるように天井を大幅拡張 */
+            min-height: 350px; 
+            align-items: flex-end; 
+            overflow-x: auto; 
+            margin-top: -180px; /* 拡張した分だけ上に引き戻す */
+            box-sizing: border-box; 
+        }
         .hand-flex::-webkit-scrollbar { height: 4px; }
         .hand-flex::-webkit-scrollbar-thumb { background: var(--steam-gold); border-radius: 2px; }
 
@@ -56,7 +64,9 @@
 
         .my-card { margin-left: -48px; transform-origin: bottom center; cursor: pointer; position: relative; }
         .my-card:first-child { margin-left: 0; }
-        .my-card.playable:hover { transform: translateY(-80px) scale(1.6) !important; z-index: 10000 !important; border-color: #fff; box-shadow: 0 40px 100px rgba(0,0,0,1), 0 0 50px var(--accent); }
+        
+        /* 跳ね上がりを少し整え、天井の範囲内に確実に収める */
+        .my-card.playable:hover { transform: translateY(-70px) scale(1.4) !important; z-index: 10000 !important; border-color: #fff; box-shadow: 0 40px 100px rgba(0,0,0,1), 0 0 50px var(--accent); }
         .my-card.not-playable { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
 
         /* パネル類 */
