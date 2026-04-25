@@ -38,21 +38,26 @@ const createDeck = () => {
   return deck.sort(() => Math.random() - 0.5);
 };
 
+// サーバー側バリデーションの強化
 const canPlayCard = (room, card) => {
   const field = room.fieldCard.realm;
   const hand = card.realm;
+  
   if (room.nextDrawAmount > 1) return (hand === 'GEAR' && card.isSpecial);
   if (hand === 'PLANET' || hand === 'RUINS') return true;
   if (hand === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
+
+  // 場が惑星/廃墟から変換されていない場合のセーフティ
+  if (field === 'PLANET' || field === 'RUINS') return true;
 
   switch (field) {
     case 'GEAR':     return (hand === 'GEAR' || hand === 'ICEAGE');
     case 'ICEAGE':   return (hand === 'FOUNTAIN' || hand === 'BATTERY');
     case 'FOUNTAIN': return (hand === 'FOUNTAIN' || hand === 'BATTERY');
-    case 'BATTERY':  return (hand === 'MACHINE' || hand === 'ARCHIVE');
+    case 'BATTERY':  return (hand === 'MACHINE' || hand === 'ARCHIVE' || hand === 'GEAR');
     case 'MACHINE':  return (hand === 'MACHINE' || hand === 'ARCHIVE');
     case 'ARCHIVE':  return (hand === 'GEAR' || hand === 'ICEAGE');
-    default: return false;
+    default: return true; 
   }
 };
 
@@ -69,7 +74,7 @@ const emitUpdate = (roomId) => {
     players: room.players.map(p => ({
       id: p.id,
       name: p.name,
-      handCount: Number(p.hand.length), // 数値の整合性を確保
+      handCount: Number(p.hand.length),
       hand: p.hand 
     }))
   };
@@ -136,11 +141,13 @@ io.on('connection', (socket) => {
 
     player.hand = player.hand.filter(c => c.id !== card.id);
     const newFieldCard = { ...card };
+    
+    // 属性変換の反映をより確実に
     if (chosenRealm) {
       if (card.realm === 'RUINS') newFieldCard.wasRuins = true;
       if (card.realm === 'PLANET') newFieldCard.wasPlanet = true;
       if (card.realm === 'FOUNTAIN') newFieldCard.wasFountain = true;
-      newFieldCard.realm = chosenRealm;
+      newFieldCard.realm = chosenRealm; 
       newFieldCard.isSpecial = false; 
     }
     room.fieldCard = newFieldCard;
@@ -171,4 +178,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = 3001;
-server.listen(PORT, () => console.log(`Cross Realm Server v3.0.7 Synchronized`));
+server.listen(PORT, () => console.log(`Cross Realm Server v3.0.8 Stable Synchronized`));
