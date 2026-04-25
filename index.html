@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm - Eternal Punk Edition - v3.9.5</title>
+    <title>Cross Realm - Eternal Punk Edition - v3.9.6</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -16,7 +16,6 @@
         }
         body { margin: 0; background: #000; color: white; font-family: 'Exo 2', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         .screen-wrapper { width: 100vw; height: 100vh; max-width: calc(100vh * 9 / 16); max-height: 100vh; background: var(--bg); position: relative; overflow: hidden; display: flex; flex-direction: column; border-left: 2px solid var(--steam-gold); border-right: 2px solid var(--steam-gold); }
-        
         .bg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
         .bg-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 180%; height: 180%; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.5"/><circle cx="100" cy="100" r="75" fill="none" stroke="rgba(64,224,208,0.05)" stroke-width="0.4"/></svg>'); animation: rotate-eternal 180s linear infinite; }
         @keyframes rotate-eternal { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
@@ -29,7 +28,6 @@
         .opponents-area { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-bottom: 2px solid var(--border); background: rgba(0,0,0,0.6); }
         .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.04); border-left: 4px solid var(--border); transition: 0.4s; position: relative; overflow: hidden; }
         
-        /* 手番のプレイヤー発光演出（さらにハッキリと） */
         .opp-row.active { border-left-color: var(--accent); background: rgba(64, 224, 208, 0.25); box-shadow: 0 0 15px rgba(64, 224, 208, 0.4), inset 0 0 15px rgba(64, 224, 208, 0.2); animation: activeGlow 1.2s infinite ease-in-out; }
         @keyframes activeGlow { 0%, 100% { background: rgba(64, 224, 208, 0.15); box-shadow: 0 0 10px rgba(64, 224, 208, 0.2); border-color: var(--accent); } 50% { background: rgba(64, 224, 208, 0.4); box-shadow: 0 0 25px rgba(64, 224, 208, 0.6); border-color: #fff; } }
 
@@ -44,17 +42,18 @@
         .cycle-label { font-size: 10px; font-weight: 900; opacity: 0.3; font-family: 'Exo 2', sans-serif; white-space: nowrap; width: 100%; text-align: center; }
         .cycle-item.active .cycle-label { opacity: 1; color: var(--dot-color); text-shadow: 0 0 5px var(--dot-color); }
 
-        /* バトルログ修正: 絶対配置にしてレイアウトを崩さないように */
+        /* ログ修正: 絶対配置で固定。手札エリアを侵食しない */
         .battle-log { 
             position: absolute; top: 180px; left: 15px; z-index: 2000; 
             pointer-events: none; display: flex; flex-direction: column; 
-            gap: 4px; max-width: 75%; overflow: hidden;
+            gap: 4px; max-width: 80%;
         }
         .log-entry { 
             font-size: 12px; font-weight: 700; color: #fff; 
             background: rgba(0,0,0,0.6); border-left: 3px solid var(--accent); 
             padding: 4px 10px; border-radius: 0 4px 4px 0; 
             animation: logAnim 6s forwards; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
         }
         @keyframes logAnim { 0% { transform: translateX(-10px); opacity: 0; } 5% { transform: translateX(0); opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; } }
 
@@ -75,8 +74,8 @@
         .card-icon { position: absolute; top: 48%; left: 50%; transform: translate(-50%, -50%); width: 54px; height: 54px; color: var(--r-color); filter: drop-shadow(0 0 10px var(--r-color)); z-index: 2; }
         .card-footer { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); font-size: 13px; font-weight: 900; padding: 6px 0; text-align: center; border-top: 2px solid var(--r-color); color: #fff; font-family: 'Cinzel', serif; z-index: 3; }
 
-        .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); background: rgba(0,0,0,0.5); padding: 20px; }
-        .panel { position: relative; background: linear-gradient(135deg, rgba(15,15,20,0.98), rgba(5,5,10,1)); border: 1px solid var(--steam-gold); padding: 35px 20px; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 25px; box-shadow: 0 0 60px rgba(0,0,0,1), inset 0 0 30px rgba(212,175,55,0.05); border-radius: 4px; box-sizing: border-box; overflow: visible; }
+        .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); background: rgba(0,0,0,0.6); padding: 20px; }
+        .panel { position: relative; background: linear-gradient(135deg, rgba(15,15,20,0.98), rgba(5,5,10,1)); border: 1px solid var(--steam-gold); padding: 40px 20px; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 25px; box-shadow: 0 0 60px rgba(0,0,0,1), inset 0 0 30px rgba(212,175,55,0.05); border-radius: 4px; box-sizing: border-box; overflow: visible; }
         .panel-corner1, .panel-corner2 { position: absolute; width: 25px; height: 25px; border-color: var(--steam-gold); border-style: solid; opacity: 0.8; }
         .panel-corner1 { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
         .panel-corner2 { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
@@ -90,7 +89,7 @@
         .btn-main:disabled { background: #222; color: #444; border-color: #333; cursor: not-allowed; box-shadow: none; }
         .btn-sub { background: rgba(255,255,255,0.03); border: 1px solid #444; color: #888; padding: 16px 0; width: 100%; cursor: pointer; border-radius: 4px; font-weight: 900; font-size: 16px; transition: 0.3s; letter-spacing: 2px; }
 
-        /* 属性選択ボタン（巨大化・強化） */
+        /* 属性選択ボタン強化 */
         .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
         .realm-btn { 
             padding: 24px 10px; border: 2.5px solid var(--steam-gold); 
@@ -213,6 +212,7 @@
                 if (!me?.hand) return [];
                 return [...me.hand].sort((a,b) => CYCLE_ORDER.indexOf(a.realm) - CYCLE_ORDER.indexOf(b.realm));
             }, [gs, socket]);
+
             const canPlay = (card) => {
                 if (!isMyTurn) return false;
                 if (gs.nextDrawAmount > 1) return (card.realm === 'GEAR' && card.isSpecial);
@@ -221,9 +221,19 @@
                 if (h === 'PLANET' || h === 'RUINS') return true;
                 if (field === 'PLANET' || field === 'RUINS') return true; 
                 if (h === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
-                const cycle = { GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] };
+                
+                const cycle = { 
+                    GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], 
+                    BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] 
+                };
+
+                // === 修正ポイント: 遷移カードのスタック禁止 ===
+                const isTransition = ['ICEAGE', 'BATTERY', 'ARCHIVE'].includes(field);
+                if (field === h && isTransition) return false; // 電池の上に電池などは不可
+
                 return field === h || (cycle[field] && cycle[field].includes(h));
             };
+
             const handlePlay = (card) => {
                 if (!canPlay(card)) return;
                 window.sfx.alert.pause(); window.sfx.alert.currentTime = 0;
@@ -345,7 +355,7 @@
                                 ))}
                             </div>
 
-                            {/* ログエリア: 手札を押し下げないように配置 */}
+                            {/* ログエリア: 絶対配置で手札を邪魔しない */}
                             {gs.logs && (
                                 <div className="battle-log">
                                     {gs.logs.slice(-5).map((log) => (
