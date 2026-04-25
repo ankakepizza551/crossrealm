@@ -11,9 +11,6 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 const HAND_LIMIT = 12;
 
-// 内部的なレルムキー（表示名ではなくロジック用）
-const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
-
 const createDeck = () => {
   const realmConfig = {
     GEAR: { total: 10, special: 3 },      
@@ -41,39 +38,36 @@ const createDeck = () => {
   return deck.sort(() => Math.random() - 0.5);
 };
 
-// サーバー側バリデーション：全特殊移動ルールを完全網羅
+/**
+ * タクティカル・ペアサイクル判定 (v3準拠)
+ */
 const canPlayCard = (room, card) => {
-  if (room.nextDrawAmount > 1) {
-    return (card.realm === 'GEAR' && card.isSpecial);
-  }
-
-  const field = room.fieldCard.realm; 
+  const field = room.fieldCard.realm;
   const hand = card.realm;
 
-  // 1. 純粋ワイルド
+  // 1. ドロー蓄積中
+  if (room.nextDrawAmount > 1) {
+    return (hand === 'GEAR' && card.isSpecial);
+  }
+
+  // 2. 純粋ワイルド
   if (hand === 'PLANET' || hand === 'RUINS') return true;
 
-  // 2. 限定ワイルド：噴水(S) - 氷河期か噴水の上のみ
+  // 3. 限定ワイルド：噴水(S)
   if (hand === 'FOUNTAIN' && card.isSpecial) {
     return (field === 'ICEAGE' || field === 'FOUNTAIN');
   }
 
-  // 3. 同属性
-  if (field === hand) return true;
-
-  // 4. 基本サイクル (ARCHIVE -> GEAR を含む環状判定)
-  const currentIdx = CYCLE_ORDER.indexOf(field);
-  if (currentIdx !== -1) {
-    const nextIdx = (currentIdx + 1) % 6;
-    if (hand === CYCLE_ORDER[nextIdx]) return true;
+  // 4. ペアサイクル・フロー
+  switch (field) {
+    case 'GEAR':     return (hand === 'GEAR' || hand === 'ICEAGE');
+    case 'ICEAGE':   return (hand === 'FOUNTAIN' || hand === 'BATTERY');
+    case 'FOUNTAIN': return (hand === 'FOUNTAIN' || hand === 'BATTERY');
+    case 'BATTERY':  return (hand === 'MACHINE' || hand === 'ARCHIVE');
+    case 'MACHINE':  return (hand === 'MACHINE' || hand === 'ARCHIVE');
+    case 'ARCHIVE':  return (hand === 'GEAR' || hand === 'ICEAGE');
+    default: return false;
   }
-
-  // 5. 特殊ショートカット
-  if (field === 'ARCHIVE' && hand === 'ICEAGE') return true; // 歴史の凍結
-  if (field === 'ICEAGE' && (hand === 'BATTERY' || hand === 'FOUNTAIN')) return true; // 融解
-  if (field === 'BATTERY' && hand === 'GEAR') return true; // オーバーロード
-
-  return false;
 };
 
 const emitUpdate = (roomId) => {
@@ -136,10 +130,7 @@ io.on('connection', (socket) => {
 
     const count = room.nextDrawAmount;
     for (let i = 0; i < count; i++) {
-      if (room.deck.length === 0) {
-        // 山札切れ：捨て山からシャッフル（簡易版：新しく生成）
-        room.deck = createDeck();
-      }
+      if (room.deck.length === 0) room.deck = createDeck();
       player.hand.push(room.deck.pop());
     }
 
@@ -203,5 +194,5 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => console.log(`Tactical Logic Online`));
+const PORT = 3001;
+server.listen(PORT, () => console.log(`Tactical Pair Server Ready`));
