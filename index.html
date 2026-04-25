@@ -19,7 +19,7 @@
             --magic-purple: #8A2BE2; /* Fantasy Purple */
             --danger: #FF4500; 
             --bg: #05050A; /* 深淵な夜空 */
-            --card-w: 92px; --card-h: 132px; --opp-card-w: 24px; --opp-card-h: 34px; 
+            --opp-card-w: 22px; --opp-card-h: 30px; 
             --border: rgba(212, 175, 55, 0.45);
             --guide-gold: #FFD700;
         }
@@ -50,48 +50,48 @@
         @keyframes panelPulse { 0%, 100% { box-shadow: 0 0 60px rgba(0,0,0,1), inset 0 0 30px rgba(212,175,55,0.1), 0 0 20px rgba(138,43,226,0.2); border-color: rgba(212,175,55,0.5); } 50% { box-shadow: 0 0 80px rgba(0,0,0,1), 0 0 40px rgba(138,43,226,0.4), inset 0 0 50px rgba(212,175,55,0.2); border-color: rgba(212,175,55,1); } }
         @keyframes sweepBtn { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
 
-        .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; height: 100%; overflow: hidden; }
+        .game-container { flex: 1; display: flex; flex-direction: column; justify-content: space-between; position: relative; z-index: 10; height: 100%; overflow: hidden; }
         
-        .turn-direction { flex-shrink: 0; position: relative; text-align: center; font-size: 14px; font-weight: 900; color: var(--accent); letter-spacing: 2px; background: rgba(0,0,0,0.85); padding: 6px; border-bottom: 1px solid rgba(138,43,226,0.5); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(138,43,226,0.1); }
-        .mute-btn-game { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; background: rgba(0,0,0,0.8); border: 1px solid var(--steam-gold); border-radius: 50%; color: var(--steam-gold); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; }
+        .turn-direction { flex-shrink: 0; position: relative; text-align: center; font-size: 12px; font-weight: 900; color: var(--accent); letter-spacing: 2px; background: rgba(0,0,0,0.85); padding: 4px; border-bottom: 1px solid rgba(138,43,226,0.5); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(138,43,226,0.1); }
+        .mute-btn-game { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; font-size: 12px; background: rgba(0,0,0,0.8); border: 1px solid var(--steam-gold); border-radius: 50%; color: var(--steam-gold); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; }
 
-        .opponents-area { flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 6px 10px; background: rgba(0,0,0,0.7); border-bottom: 1px solid var(--border); backdrop-filter: blur(5px); }
-        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; border-radius: 6px; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(138,43,226,0.05)); border-left: 3px solid var(--border); transition: 0.4s; position: relative; overflow: hidden; }
+        .opponents-area { flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px 8px; background: rgba(0,0,0,0.7); border-bottom: 1px solid var(--border); backdrop-filter: blur(5px); }
+        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; border-radius: 6px; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(138,43,226,0.05)); border-left: 3px solid var(--border); transition: 0.4s; position: relative; overflow: hidden; }
         .opp-row.active { border-left-color: var(--accent); background: linear-gradient(90deg, rgba(64,224,208,0.2), rgba(138,43,226,0.2)); box-shadow: 0 0 15px rgba(138,43,226,0.4); animation: activePulse 1.5s infinite; }
         @keyframes activePulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
         
-        .opp-name { font-weight: 900; font-size: 13px; color: #fff; max-width: 75px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-        .opp-hand-visual { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
-        .mini-cards-stack { position: relative; width: 45px; height: var(--opp-card-h); }
+        .opp-name { font-weight: 900; font-size: 12px; color: #fff; max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+        .opp-hand-visual { display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
+        .mini-cards-stack { position: relative; width: 40px; height: var(--opp-card-h); }
         .mini-card-back { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #2a1a3a, #000); border: 1px solid var(--steam-gold); border-radius: 2px; position: absolute; top: 0; box-shadow: -2px 0 5px rgba(0,0,0,0.8); }
 
-        .cycle-bar { flex-shrink: 0; display: flex; justify-content: space-between; padding: 6px 4px; background: rgba(5,5,15,0.95); border-bottom: 2px solid var(--border); box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 20; }
+        .cycle-bar { flex-shrink: 0; display: flex; justify-content: space-between; padding: 4px; background: rgba(5,5,15,0.95); border-bottom: 2px solid var(--border); box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 20; }
         .cycle-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .cycle-dot { width: 100%; height: 4px; background: #1a1a2e; border-radius: 2px; transition: 0.3s; }
-        .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 12px var(--dot-color), 0 0 20px var(--dot-color); }
-        .cycle-dot.next-playable { background: var(--guide-gold); box-shadow: 0 0 15px var(--guide-gold); animation: pulseGold 0.8s infinite alternate; }
+        .cycle-dot { width: 100%; height: 3px; background: #1a1a2e; border-radius: 2px; transition: 0.3s; }
+        .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 10px var(--dot-color), 0 0 15px var(--dot-color); }
+        .cycle-dot.next-playable { background: var(--guide-gold); box-shadow: 0 0 12px var(--guide-gold); animation: pulseGold 0.8s infinite alternate; }
         @keyframes pulseGold { from { opacity: 0.3; transform: scaleX(0.7); } to { opacity: 1; transform: scaleX(1); } }
-        .cycle-label { font-size: 10px; font-weight: 900; opacity: 0.4; font-family: 'Cinzel', serif; }
+        .cycle-label { font-size: 9px; font-weight: 900; opacity: 0.4; font-family: 'Cinzel', serif; }
         .cycle-item.active .cycle-label { opacity: 1; color: var(--dot-color); text-shadow: 0 0 5px var(--dot-color); }
         .cycle-item.next-playable .cycle-label { opacity: 1; color: var(--guide-gold); text-shadow: 0 0 5px var(--guide-gold); }
 
-        .field { flex: 1; min-height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; position: relative; }
-        .info-panel { background: linear-gradient(180deg, rgba(10,10,20,0.95), rgba(0,0,0,0.95)); border: 1px solid var(--steam-gold); padding: 10px 14px; border-radius: 8px; width: 160px; text-align: center; box-shadow: 0 0 30px rgba(138,43,226,0.3); backdrop-filter: blur(5px); }
-        .realm-title { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 900; color: var(--realm-color); text-shadow: 0 0 15px var(--realm-color); }
+        .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; position: relative; padding: 10px 0; }
+        .info-panel { background: linear-gradient(180deg, rgba(10,10,20,0.95), rgba(0,0,0,0.95)); border: 1px solid var(--steam-gold); padding: 8px 10px; border-radius: 8px; width: 130px; text-align: center; box-shadow: 0 0 30px rgba(138,43,226,0.3); backdrop-filter: blur(5px); }
+        .realm-title { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 900; color: var(--realm-color); text-shadow: 0 0 15px var(--realm-color); }
 
-        .log-terminal-container { flex-shrink: 0; width: 100%; padding: 0 10px; margin-bottom: 5px; z-index: 50; }
+        .log-terminal-container { flex-shrink: 0; width: 100%; padding: 0 10px; margin-bottom: 2px; z-index: 50; }
         .log-terminal { 
-            height: 50px; background: linear-gradient(90deg, rgba(5,5,15,0.9), rgba(20,10,30,0.9)); border: 1px solid rgba(138,43,226,0.4); border-radius: 6px;
+            height: 40px; background: linear-gradient(90deg, rgba(5,5,15,0.9), rgba(20,10,30,0.9)); border: 1px solid rgba(138,43,226,0.4); border-radius: 6px;
             padding: 4px 10px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; font-family: monospace; box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 0 0 10px rgba(138,43,226,0.2);
         }
-        .log-line { font-size: 11px; color: rgba(255,255,255,0.6); white-space: nowrap; text-shadow: 0 0 2px rgba(255,255,255,0.3); }
+        .log-line { font-size: 10px; color: rgba(255,255,255,0.6); white-space: nowrap; text-shadow: 0 0 2px rgba(255,255,255,0.3); }
         .log-line.play { color: var(--accent); font-weight: bold; text-shadow: 0 0 5px var(--accent); }
         .log-line.sys { color: var(--steam-gold); }
 
-        .hand-container { flex-shrink: 0; position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(5,0,15,1) 50%, rgba(0,0,0,0) 100%); }
-        .hand-flex { display: flex; justify-content: center; align-items: flex-end; height: 145px; padding-bottom: 0; }
+        .hand-container { flex-shrink: 0; position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(5,0,15,1) 10%, transparent 100%); }
+        .hand-flex { display: flex; justify-content: center; align-items: flex-end; height: 110px; padding-bottom: 0; }
         
-        .action-row { flex-shrink: 0; background: #05000a; border-top: 1px solid rgba(138,43,226,0.4); padding: 8px 15px 15px 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 10; box-shadow: 0 -10px 30px rgba(138,43,226,0.2); }
+        .action-row { flex-shrink: 0; background: #05000a; border-top: none; padding: 6px 15px 12px 15px; display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 10; box-shadow: 0 -10px 30px rgba(138,43,226,0.2); }
 
         .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); background: rgba(5,0,15,0.7); padding: 25px; overflow: hidden; }
         .panel { position: relative; background: linear-gradient(135deg, rgba(20,15,35,0.95), rgba(5,5,10,1)); border: 1px solid var(--steam-gold); padding: 40px 20px; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 25px; border-radius: 4px; box-sizing: border-box; animation: panelPulse 4s infinite; z-index: 10; }
@@ -107,11 +107,11 @@
         .panel input { width: 100%; padding: 20px; background: rgba(0,0,0,0.6); border: 1px solid rgba(138,43,226,0.3); border-bottom: 2px solid var(--steam-gold); color: #fff; text-align: center; font-size: 18px; border-radius: 4px; outline: none; box-sizing: border-box; transition: 0.3s; font-family: 'Exo 2', sans-serif; letter-spacing: 2px; }
         .panel input:focus { border-color: var(--accent); box-shadow: 0 0 20px rgba(64,224,208,0.3), inset 0 0 10px rgba(138,43,226,0.2); }
 
-        .btn-main { display: flex; align-items: center; justify-content: center; min-height: 55px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1px solid #FFF8DC; padding: 0 20px; border-radius: 6px; font-weight: 900; font-size: 18px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 4px; transition: 0.4s; box-shadow: 0 4px 20px rgba(212,175,55,0.5); box-sizing: border-box; animation: sweepBtn 3s linear infinite; line-height: 1; }
+        .btn-main { display: flex; align-items: center; justify-content: center; min-height: 44px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1px solid #FFF8DC; padding: 0 16px; border-radius: 6px; font-weight: 900; font-size: 16px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 4px; transition: 0.4s; box-shadow: 0 4px 20px rgba(212,175,55,0.5); box-sizing: border-box; animation: sweepBtn 3s linear infinite; line-height: 1; }
         .btn-main:hover { box-shadow: 0 0 40px rgba(212,175,55,0.9); transform: scale(1.02); }
         .btn-main:disabled { background: #222; color: #444; border-color: #333; cursor: not-allowed; box-shadow: none; animation: none; transform: none; }
         
-        .btn-sub { display: flex; align-items: center; justify-content: center; min-height: 48px; background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.5); color: #d8b4fe; padding: 0 16px; width: 100%; cursor: pointer; border-radius: 4px; font-weight: 900; font-size: 16px; transition: 0.3s; letter-spacing: 2px; box-sizing: border-box; line-height: 1; }
+        .btn-sub { display: flex; align-items: center; justify-content: center; min-height: 40px; background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.5); color: #d8b4fe; padding: 0 16px; width: 100%; cursor: pointer; border-radius: 4px; font-weight: 900; font-size: 14px; transition: 0.3s; letter-spacing: 2px; box-sizing: border-box; line-height: 1; }
         .btn-sub:hover { background: rgba(138,43,226,0.3); color: #fff; border-color: #c084fc; box-shadow: 0 0 15px rgba(138,43,226,0.5); }
 
         .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
@@ -207,9 +207,9 @@
         .theme-void .label-bg span { color: #000 !important; text-shadow: none !important; }
 
         .unit-reverse-text {
-            position: absolute; top: 60%; left: 50%; width: 150px;
+            position: absolute; top: 60%; left: 50%; width: 130px;
             background: var(--r-color); color: #000;
-            font-family: 'Orbitron'; font-weight: 900; font-size: 16px;
+            font-family: 'Orbitron'; font-weight: 900; font-size: 14px;
             padding: 5px 0; text-align: center;
             transform: translate(-50%, -50%) translateZ(145px);
             clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
@@ -221,21 +221,21 @@
         .effect-text-wild {
             position: absolute; bottom: 85px; left: 50%; width: 100%; text-align: center;
             transform: translateX(-50%) translateZ(170px);
-            font-size: 48px; font-weight: 900; font-style: italic;
+            font-size: 32px; font-weight: 900; font-style: italic;
             background: linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
             background-size: 200% 100%; -webkit-background-clip: text; color: transparent;
             animation: rainbow-glow 2s linear infinite; filter: drop-shadow(0 0 15px #fff);
         }
 
         .unit-draw2 {
-            position: absolute; top: 100px; left: -15px; width: 70px;
+            position: absolute; top: 100px; left: -15px; width: 60px;
             background: #6a1505; border: 3px solid #D4AF37; border-radius: 4px;
             transform: translateZ(160px) rotate(-10deg);
-            display: flex; flex-direction: column; align-items: center; padding: 12px 0;
+            display: flex; flex-direction: column; align-items: center; padding: 10px 0;
             box-shadow: 10px 5px 30px #000; animation: vibration 0.05s infinite;
         }
-        .unit-draw2 .num { font-size: 42px; font-weight: 900; font-family: 'Special Elite'; color: #fff; line-height: 1; text-shadow: 0 0 15px #f00; }
-        .unit-draw2 .txt { font-size: 14px; color: #D4AF37; font-weight: 900; margin-top: 4px; background: #000; width: 100%; text-align: center; }
+        .unit-draw2 .num { font-size: 36px; font-weight: 900; font-family: 'Special Elite'; color: #fff; line-height: 1; text-shadow: 0 0 15px #f00; }
+        .unit-draw2 .txt { font-size: 12px; color: #D4AF37; font-weight: 900; margin-top: 4px; background: #000; width: 100%; text-align: center; }
         @keyframes vibration { 0% { transform: translateZ(160px) rotate(-10.5deg); } 100% { transform: translateZ(160px) rotate(-9.5deg); } }
 
         .card-holo { position: absolute; inset: 0; z-index: 49; pointer-events: none; mix-blend-mode: color-dodge; opacity: 0.2; background: linear-gradient(115deg, transparent 20%, #fff 25%, #0ff 35%, #f0f 45%, #ff0 55%, transparent 60%); background-size: 300% 300%; transition: 0.3s; }
@@ -333,15 +333,18 @@
             }
 
             // 見かけのサイズを縮小スケールで実現する (ベース230x330)
-            const baseScale = isField ? 0.45 : 0.4;
-            const currentScale = (isHovered && !isField) ? 0.65 : baseScale;
-            const translateY = (isHovered && !isField) ? '-20px' : '0px';
+            const baseScale = isField ? 0.42 : 0.32;
+            const currentScale = (isHovered && !isField) ? 0.45 : baseScale;
+            const translateY = (isHovered && !isField) ? '-15px' : '0px';
+
+            const cardWidth = 230 * baseScale;
+            const cardHeight = 330 * baseScale;
 
             return (
                 <div 
                     className={`card-wrapper-3d ${isHovered ? 'hovered' : ''}`}
                     style={{ 
-                        width: '92px', height: '132px', 
+                        width: `${cardWidth}px`, height: `${cardHeight}px`, 
                         zIndex: isField ? 'auto' : (isHovered ? 1000 : 1),
                         cursor: playable && !isField ? 'pointer' : 'default',
                         ...style 
@@ -379,7 +382,7 @@
                             {isFountainWild && (
                                 <>
                                     <div className="unit-wild-core"></div>
-                                    <div className="effect-text-wild" style={{fontSize: '36px'}}>LIMIT WILD</div>
+                                    <div className="effect-text-wild" style={{fontSize: '32px'}}>LIMIT WILD</div>
                                 </>
                             )}
                             
@@ -620,8 +623,8 @@
                             <div className="field">
                                 <div style={{fontFamily:'Cinzel', fontSize: 13, opacity: 0.5}}>{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
                                 {gs?.nextDrawAmount > 1 && <div style={{color: 'var(--danger)', fontWeight:900, fontSize:24, textShadow:'0 0 10px #f00'}}>DRAW +{gs.nextDrawAmount}</div>}
-                                <div style={{display:'flex', alignItems:'center', gap:15}}>
-                                    <div style={{position: 'relative', width: '92px', height: '132px'}}>
+                                <div style={{display:'flex', alignItems:'center', gap:15, width: '100%', justifyContent: 'center'}}>
+                                    <div style={{position: 'relative', width: `${230 * 0.42}px`, height: `${330 * 0.42}px`}}>
                                         {gs?.playHistory?.map((card, i) => (
                                             <div key={`hist-${i}-${card?.id || i}`} style={{ position: 'absolute', top: 0, left: 0, transform: `rotate(${(i * 5) % 10 - 5}deg) translate(${i*-1}px, ${i*-1}px)`, zIndex: i + 1, opacity: 0.35 }}>
                                                 <CardView card={card} isField={true} />
@@ -631,9 +634,9 @@
                                             <CardView card={gs?.fieldCard} isField={true} />
                                         </div>
                                     </div>
-                                    <div className="info-panel">
-                                        <div className="realm-title">{REALMS[currentRealm] ? REALMS[currentRealm].n : '???'}</div>
-                                        <div style={{fontSize:11, opacity:0.8, marginTop:4, lineHeight:1.2}}>{REALMS[currentRealm] ? REALMS[currentRealm].desc : ''}</div>
+                                    <div className="info-panel" style={{ width: '130px', padding: '8px 10px' }}>
+                                        <div className="realm-title" style={{ fontSize: '18px' }}>{REALMS[currentRealm] ? REALMS[currentRealm].n : '???'}</div>
+                                        <div style={{fontSize:10, opacity:0.8, marginTop:4, lineHeight:1.2}}>{REALMS[currentRealm] ? REALMS[currentRealm].desc : ''}</div>
                                     </div>
                                 </div>
                             </div>
@@ -653,8 +656,8 @@
                                     {(() => {
                                         const totalCards = sortedHand?.length || 0;
                                         const maxHandWidth = Math.min(windowWidth * 0.95, 550);
-                                        const cardW = 92; 
-                                        let overlap = 55; 
+                                        const cardW = 230 * 0.32; 
+                                        let overlap = 45; 
                                         if (totalCards > 1) { 
                                             const idealWidth = cardW + (totalCards - 1) * overlap; 
                                             if (idealWidth > maxHandWidth) { overlap = (maxHandWidth - cardW) / (totalCards - 1); } 
