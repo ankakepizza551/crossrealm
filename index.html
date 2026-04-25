@@ -49,44 +49,44 @@
         .opp-hand-visual { display: flex; height: var(--opp-card-h); align-items: center; }
         .mini-card-back { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #222, #000); border: 1px solid var(--steam-gold); border-radius: 3px; box-shadow: 2px 0 5px rgba(0,0,0,0.5); flex-shrink: 0; position: relative; }
 
-        /* 属性サイクル表示 */
+        /* サイクル表示 */
         .cycle-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px 25px 10px; background: rgba(0,0,0,0.85); border-bottom: 2px solid var(--border); gap: 4px; position: relative; z-index: 10; }
         .cycle-dot { flex: 1; height: 5px; border-radius: 2px; background: #1a1a1a; position: relative; transition: 0.5s; }
         .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 12px var(--dot-color); }
         .cycle-dot.active::after { content: ''; position: absolute; top: -5px; left: 50%; transform: translateX(-50%); width: 16px; height: 16px; border-radius: 50%; background: var(--dot-color); box-shadow: 0 0 15px var(--dot-color), inset 0 0 4px #fff; }
         .cycle-label { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 900; color: #fff; opacity: 0.35; letter-spacing: 0.5px; transition: 0.3s; white-space: nowrap; font-family: 'Cinzel', serif; }
 
-        /* フィールド中央 */
+        /* フィールド */
         .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; gap: 15px; }
         .field-main-area { display: flex; align-items: center; gap: 15px; width: 100%; justify-content: center; z-index: 10; }
-
         .info-panel { flex: 1; background: rgba(10,10,15,0.95); border: 2px solid var(--steam-gold); padding: 15px; border-radius: 12px; backdrop-filter: blur(15px); box-shadow: 0 0 35px rgba(0,0,0,0.9); max-width: 180px; }
         .realm-title { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 900; color: var(--realm-color); margin-bottom: 4px; letter-spacing: 2px; text-shadow: 0 0 12px var(--realm-color); }
         .realm-desc { font-family: 'Exo 2', sans-serif; font-size: 11px; opacity: 0.8; line-height: 1.3; }
 
-        /* ボタンエリア（ここを独立させた） */
+        /* ボタンエリア：手札と重ならないようにマージンを確保 */
         .action-row {
             background: rgba(0,0,0,0.6);
             border-top: 1px solid rgba(212, 175, 55, 0.2);
             padding: 15px 0;
             display: flex;
             justify-content: center;
-            z-index: 2500;
+            z-index: 500; 
             position: relative;
+            margin-bottom: 40px; /* 手札の跳ね上がり分のスペースを空ける */
         }
         .action-row .btn-main { width: 85%; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
 
-        /* 手札エリア */
+        /* 手札エリア：ボタンに侵食しない独立構造 */
         .hand-container {
-            background: linear-gradient(to top, #000, #050508);
+            background: #000;
             position: relative;
-            z-index: 100;
+            z-index: 100; 
             width: 100%;
         }
         .hand-flex { 
             display: flex; 
             justify-content: flex-start; 
-            padding: 25px 80px 25px 80px; 
+            padding: 10px 80px 25px 80px; 
             min-height: 150px; 
             align-items: flex-end; 
             overflow-x: auto; 
@@ -106,11 +106,12 @@
         .my-card { margin-left: -45px; transform-origin: bottom center; cursor: pointer; position: relative; }
         .my-card:first-child { margin-left: 0; }
 
+        /* ホバー時の跳ね上がりを30pxに抑制し、ボタンとの衝突を防ぐ */
         .my-card.playable:hover { 
-            transform: translateY(-15px) scale(1.2) !important; 
+            transform: translateY(-30px) scale(1.25) !important; 
             z-index: 2000 !important; 
             border-color: #fff; 
-            box-shadow: 0 20px 40px rgba(0,0,0,1), 0 0 30px var(--accent); 
+            box-shadow: 0 20px 40px rgba(0,0,0,1), 0 0 35px var(--accent); 
         }
 
         .my-card.not-playable { 
@@ -119,7 +120,7 @@
             cursor: not-allowed; 
         }
 
-        /* パネル類 */
+        /* 各種オーバーレイ */
         .overlay { position: absolute; inset: 0; z-index: 3000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); background: rgba(0,0,0,0.5); padding: 40px; }
         .panel { background: rgba(10, 10, 15, 0.9); border: 2px solid var(--border); padding: 40px 30px; border-radius: 28px; text-align: center; width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; gap: 20px; box-shadow: 0 30px 100px rgba(0,0,0,1); }
         .btn-main { background: linear-gradient(135deg, var(--steam-gold), #B8860B); color: #000; border: none; padding: 18px 0; border-radius: 12px; font-weight: 900; font-size: 17px; cursor: pointer; width: 100%; transition: 0.3s; letter-spacing: 5px; font-family: 'Cinzel', serif; display: flex; align-items: center; justify-content: center; }
@@ -131,12 +132,7 @@
         @keyframes pulse { 0%, 100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } }
         
         .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 10px; }
-        .waiting-player { 
-            background: rgba(255,255,255,0.04); border: 1px solid rgba(212,175,55,0.15); 
-            padding: 15px 20px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; 
-            font-size: 17px; font-weight: 900; font-family: 'Exo 2', sans-serif; 
-        }
-        
+        .waiting-player { background: rgba(255,255,255,0.04); border: 1px solid rgba(212,175,55,0.15); padding: 15px 20px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; font-size: 17px; font-weight: 900; font-family: 'Exo 2', sans-serif; }
         .error-msg { color: var(--danger); font-weight: 900; font-size: 14px; border: 1.5px solid var(--danger); padding: 10px; border-radius: 10px; background: rgba(255, 69, 0, 0.1); width: 100%; font-family: 'Exo 2', sans-serif; }
 
         .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
@@ -224,7 +220,7 @@
                 if (!canPlay(card)) return;
                 const isWild = (card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial));
                 
-                // 修正：手札が1枚（上がり）の時は、ワイルドでも選択メニューを出さない
+                // 修正：手札が1枚（上がり）の時は、ワイルドでも属性変更メニューを出さない
                 if (isWild && sortedHand.length > 1) {
                     setSelectorCard(card);
                 } else {
@@ -289,7 +285,7 @@
                                     ))}
                                     {[...Array(Math.max(0, 2 - (gs?.players?.length || 0)))].map((_, i) => (
                                         <div key={i} className="waiting-player" style={{opacity:0.2, borderStyle:'dashed'}}>
-                                            <span style={{fontSize:14}}>Awaiting Pilot...</span>
+                                            <span style={{fontSize:14, opacity:0.5}}>Awaiting Pilot...</span>
                                         </div>
                                     ))}
                                 </div>
