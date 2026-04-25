@@ -60,25 +60,25 @@
         .realm-title { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 900; color: var(--realm-color); margin-bottom: 4px; letter-spacing: 2px; text-shadow: 0 0 12px var(--realm-color); }
         .realm-desc { font-family: 'Exo 2', sans-serif; font-size: 11px; opacity: 0.8; line-height: 1.3; }
 
-        /* ボタンエリア：z-indexを下げ、手札が上に重なるようにする */
+        /* 重ね順修正: z-indexを下げ、手札が上に重なるようにする */
         .action-row {
             background: rgba(0,0,0,0.6);
             border-top: 1px solid rgba(212, 175, 55, 0.2);
             padding: 15px 0;
             display: flex;
             justify-content: center;
-            z-index: 50; /* 手札(z-index 500)より低く設定 */
+            z-index: 10; /* 極力低く */
             position: relative;
         }
         .action-row .btn-main { width: 85%; max-width: 380px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
 
-        /* 手札エリア：z-indexを上げ、ホバー時の飛び出しを許可 */
+        /* 重ね順修正: z-indexを上げ、overflowを解除してカードがボタンを覆えるようにする */
         .hand-container {
             background: #000;
             position: relative;
-            z-index: 500; /* ボタンより高い優先順位 */
+            z-index: 1000; /* ボタン(10)より圧倒的に高い */
             width: 100%;
-            overflow: visible; /* 枠外への飛び出しを許可 */
+            overflow: visible; /* 重要 */
         }
         .hand-flex { 
             display: flex; 
@@ -87,7 +87,7 @@
             min-height: 150px; 
             align-items: flex-end; 
             overflow-x: auto; 
-            overflow-y: visible; /* 上方向への拡大を許可 */
+            overflow-y: visible; /* 上への飛び出しを許可 */
             width: 100%; 
             box-sizing: border-box; 
             -webkit-overflow-scrolling: touch;
@@ -104,10 +104,10 @@
         .my-card { margin-left: -45px; transform-origin: bottom center; cursor: pointer; position: relative; }
         .my-card:first-child { margin-left: 0; }
 
-        /* ホバー時：z軸最前面に飛び出す */
+        /* ホバー時：z軸最前面に飛び出す。ボタンエリアを侵食して上に重なる */
         .my-card.playable:hover { 
-            transform: translateY(-45px) scale(1.35) !important; /* ボタンを大きく覆うように拡大 */
-            z-index: 2500 !important; /* 圧倒的優先順位で最前面へ */
+            transform: translateY(-50px) scale(1.4) !important; /* ボタンにしっかり被るように跳ね上げ */
+            z-index: 2500 !important; /* 全要素中、最前面 */
             border-color: #fff; 
             box-shadow: 0 30px 60px rgba(0,0,0,1), 0 0 50px var(--accent); 
         }
@@ -118,7 +118,7 @@
             cursor: not-allowed; 
         }
 
-        /* 画面全体のオーバーレイ */
+        /* パネル類 */
         .overlay { position: absolute; inset: 0; z-index: 4000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); background: rgba(0,0,0,0.5); padding: 40px; }
         .panel { background: rgba(10, 10, 15, 0.9); border: 2px solid var(--border); padding: 40px 30px; border-radius: 28px; text-align: center; width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; gap: 20px; box-shadow: 0 30px 100px rgba(0,0,0,1); }
         .btn-main { background: linear-gradient(135deg, var(--steam-gold), #B8860B); color: #000; border: none; padding: 18px 0; border-radius: 12px; font-weight: 900; font-size: 17px; cursor: pointer; width: 100%; transition: 0.3s; letter-spacing: 5px; font-family: 'Cinzel', serif; display: flex; align-items: center; justify-content: center; }
@@ -218,7 +218,7 @@
                 if (!canPlay(card)) return;
                 const isWild = (card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial));
                 
-                // 上がりの時は、ワイルドでも選択メニューを出さずに送信
+                // 修正：手札が1枚（上がり）の時は、ワイルドでも選択メニューを出さない
                 if (isWild && sortedHand.length > 1) {
                     setSelectorCard(card);
                 } else {
