@@ -44,7 +44,6 @@ const createDeck = () => {
   return deck.sort(() => Math.random() - 0.5);
 };
 
-// バリデーション：電池から歯車へのパスを削除
 const canPlayCard = (room, card) => {
   if (!room.fieldCard) return true;
   const field = room.fieldCard.realm;
@@ -59,7 +58,7 @@ const canPlayCard = (room, card) => {
     case 'GEAR':     return (hand === 'GEAR' || hand === 'ICEAGE');
     case 'ICEAGE':   return (hand === 'FOUNTAIN' || hand === 'BATTERY');
     case 'FOUNTAIN': return (hand === 'FOUNTAIN' || hand === 'BATTERY');
-    case 'BATTERY':  return (hand === 'MACHINE' || hand === 'ARCHIVE'); // GEARへのパスを削除
+    case 'BATTERY':  return (hand === 'MACHINE' || hand === 'ARCHIVE');
     case 'MACHINE':  return (hand === 'MACHINE' || hand === 'ARCHIVE');
     case 'ARCHIVE':  return (hand === 'GEAR' || hand === 'ICEAGE');
     default: return true; 
@@ -94,9 +93,11 @@ io.on('connection', (socket) => {
 
     if (!cleanId || !cleanName) return socket.emit('join-error', 'IDと名前が必要です。');
     if (cleanName.length > 10) return socket.emit('join-error', '名前が長すぎます。');
-    if (NG_WORDS.some(word => cleanName.includes(word) || cleanId.includes(word))) {
-      return socket.emit('join-error', '不適切な言葉が含まれています。');
-    }
+    
+    const isNG = NG_WORDS.some(word => 
+      cleanName.includes(word.toUpperCase()) || cleanId.includes(word.toUpperCase())
+    );
+    if (isNG) return socket.emit('join-error', '不適切な言葉が含まれています。');
 
     if (!rooms[cleanId]) {
       rooms[cleanId] = {
@@ -159,6 +160,7 @@ io.on('connection', (socket) => {
 
     player.hand = player.hand.filter(c => c.id !== card.id);
     const newFieldCard = { ...card };
+    
     if (chosenRealm) {
       if (card.realm === 'RUINS') newFieldCard.wasRuins = true;
       if (card.realm === 'PLANET') newFieldCard.wasPlanet = true;
@@ -194,4 +196,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = 3001;
-server.listen(PORT, () => console.log(`Cross Realm Server v3.1.0 Ready`));
+server.listen(PORT, () => console.log(`Cross Realm Server v3.1.2 Ready`));
