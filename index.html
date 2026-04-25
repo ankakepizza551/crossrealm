@@ -12,9 +12,7 @@
     <style>
         :root { 
             --accent: #40E0D0; 
-            --cyber-pink: #FF00FF;
             --steam-gold: #D4AF37;
-            --magic-purple: #8A2BE2;
             --danger: #FF4500;
             --bg: #050508; 
             --card-w: 115px; 
@@ -24,121 +22,53 @@
             --border: rgba(212, 175, 55, 0.45);
         }
         
-        body { 
-            margin: 0; background: #000; color: white; 
-            font-family: 'Exo 2', sans-serif;
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow: hidden;
-        }
+        body { margin: 0; background: #000; color: white; font-family: 'Exo 2', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
 
         .screen-wrapper {
             width: 100vw; height: 100vh;
             max-width: calc(100vh * 9 / 16); max-height: 100vh;
             background: var(--bg);
             position: relative; overflow: hidden;
-            box-shadow: 0 0 150px rgba(0,0,0,1);
             display: flex; flex-direction: column;
-            border-left: 2px solid var(--steam-gold);
-            border-right: 2px solid var(--steam-gold);
+            border-left: 2px solid var(--steam-gold); border-right: 2px solid var(--steam-gold);
         }
 
-        /* 背景レイヤー */
         .bg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
-        .bg-watermark {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 180%; height: 180%;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.5"/><circle cx="100" cy="100" r="75" fill="none" stroke="rgba(64,224,208,0.05)" stroke-width="0.4"/></svg>');
-            animation: rotate-eternal 180s linear infinite;
-        }
+        .bg-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 180%; height: 180%; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.5"/><circle cx="100" cy="100" r="75" fill="none" stroke="rgba(64,224,208,0.05)" stroke-width="0.4"/></svg>'); animation: rotate-eternal 180s linear infinite; }
         @keyframes rotate-eternal { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
-
-        .bg-magic-aura {
-            position: absolute; inset: 0;
-            background: radial-gradient(circle at center, var(--realm-color, rgba(64, 224, 208, 0.2)) 0%, transparent 85%);
-            opacity: 0.5; transition: background 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .bg-scanline {
-            position: absolute; inset: 0;
-            background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.15) 50%);
-            background-size: 100% 4px; z-index: 5;
-        }
+        .bg-magic-aura { position: absolute; inset: 0; background: radial-gradient(circle at center, var(--realm-color, rgba(64, 224, 208, 0.2)) 0%, transparent 85%); opacity: 0.5; transition: background 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .bg-scanline { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.15) 50%); background-size: 100% 4px; z-index: 5; }
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
 
-        /* オーバーレイ演出 */
-        .overlay { 
-            position: absolute; inset: 0; 
-            z-index: 2000; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            backdrop-filter: blur(10px);
-            background: rgba(0,0,0,0.4);
-            padding: 40px;
-        }
-
-        .panel { 
-            background: rgba(10, 10, 15, 0.85); 
-            border: 2px solid var(--border); 
-            padding: 50px 30px; border-radius: 24px;
-            text-align: center; width: 100%; max-width: 380px;
-            display: flex; flex-direction: column; align-items: center; gap: 30px;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.8), inset 0 0 30px rgba(212,175,55,0.05);
-            backdrop-filter: blur(20px);
-            animation: panel-in 0.8s cubic-bezier(0.2, 1, 0.3, 1);
-        }
-        @keyframes panel-in { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-
-        .logo-main {
-            font-family: 'Cinzel', serif;
-            font-size: 38px; font-weight: 900; letter-spacing: 12px;
-            color: var(--steam-gold);
-            text-shadow: 0 0 20px rgba(212,175,55,0.4);
-            margin-bottom: 5px;
-            text-align: center; width: 100%; padding-left: 12px; box-sizing: border-box;
-        }
-        .logo-sub {
-            font-size: 11px; color: var(--accent); letter-spacing: 8px; opacity: 0.8;
-            text-transform: uppercase; margin-bottom: 20px; text-align: center; padding-left: 8px;
-        }
-
-        .panel input {
-            width: 100%; padding: 18px; background: rgba(0,0,0,0.5); border: 1.5px solid rgba(212,175,55,0.3); 
-            color: var(--accent); text-align: center; font-size: 18px; border-radius: 12px; outline: none; font-weight: 700;
-            transition: 0.3s; box-sizing: border-box;
-        }
-
-        .btn-main {
-            background: linear-gradient(135deg, var(--steam-gold), #B8860B);
-            color: #000; border: none;
-            padding: 20px 0; border-radius: 12px; font-weight: 900; font-size: 18px;
-            box-shadow: 0 10px 30px rgba(184, 134, 11, 0.3); cursor: pointer;
-            width: 100%; transition: 0.3s; letter-spacing: 6px; padding-left: 6px;
-            font-family: 'Cinzel', serif; position: relative; overflow: hidden;
-            text-align: center; display: flex; align-items: center; justify-content: center;
-        }
-        .btn-main:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 15px 40px rgba(64,224,208,0.4); filter: brightness(1.2); }
-        .btn-main::after {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
-            transform: rotate(45deg); transition: 0.5s; pointer-events: none;
-        }
-        .btn-main:hover::after { left: 150%; top: 150%; }
-        .btn-main:disabled { background: #222; color: #555; cursor: not-allowed; box-shadow: none; }
-
-        .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 10px; }
-        .waiting-player {
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(212,175,55,0.15);
-            padding: 16px 20px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between;
-            font-size: 16px; font-weight: 700; color: #eee;
-        }
-        .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-
-        /* ゲーム画面UI */
-        .opponents-area { display: flex; flex-direction: column; gap: 12px; padding: 30px 15px 15px 15px; border-bottom: 2px solid var(--border); z-index: 10; }
-        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-radius: 8px; background: rgba(255,255,255,0.03); border-left: 6px solid var(--border); transition: 0.3s; }
+        /* 相手エリアの修正 */
+        .opponents-area { display: flex; flex-direction: column; gap: 10px; padding: 25px 15px 15px 15px; border-bottom: 2px solid var(--border); z-index: 10; background: rgba(0,0,0,0.5); }
+        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; border-radius: 12px; background: rgba(255,255,255,0.03); border-left: 6px solid var(--border); transition: 0.3s; gap: 10px; }
         .opp-row.active { border-left-color: var(--accent); background: rgba(64, 224, 208, 0.12); box-shadow: inset 0 0 25px rgba(64, 224, 208, 0.2); }
-        .opp-name { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700; color: var(--steam-gold); letter-spacing: 2px; }
+        
+        .opp-info { display: flex; flex-direction: column; gap: 6px; flex: 1; overflow: hidden; }
+        /* 10文字に対応 */
+        .opp-name { 
+            font-family: 'Cinzel', serif; 
+            font-size: 13px; 
+            font-weight: 700; 
+            color: var(--steam-gold); 
+            letter-spacing: 1px; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            max-width: 100%;
+        }
+        
+        .opp-hand-visual { display: flex; height: var(--opp-card-h); align-items: center; overflow: hidden; max-width: 120px; }
+        .mini-card-back { 
+            width: var(--opp-card-w); height: var(--opp-card-h); 
+            background: linear-gradient(135deg, #222, #000); 
+            border: 1px solid var(--steam-gold); border-radius: 3px; 
+            margin-right: -24px; 
+            box-shadow: 2px 0 5px rgba(0,0,0,0.5); 
+            flex-shrink: 0; position: relative; z-index: 1;
+        }
 
         .cycle-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px 30px 10px; background: rgba(0,0,0,0.85); border-bottom: 2px solid var(--border); gap: 4px; }
         .cycle-dot { flex: 1; height: 6px; border-radius: 3px; background: #1a1a1a; position: relative; transition: 0.5s; }
@@ -152,10 +82,7 @@
         .info-panel { flex: 1; background: rgba(10,10,15,0.95); border: 2.5px solid var(--steam-gold); padding: 22px; border-radius: 12px; backdrop-filter: blur(15px); box-shadow: 0 0 45px rgba(0,0,0,0.9); max-width: 240px; }
         .realm-title { font-family: 'Cinzel', serif; font-size: 30px; font-weight: 900; color: var(--realm-color); margin-bottom: 10px; letter-spacing: 3px; text-shadow: 0 0 15px var(--realm-color); }
 
-        /* 中央寄せのアクションボタン */
-        .action-area { 
-            padding: 15px 0; display: flex; justify-content: center; align-items: center; z-index: 110; width: 100%; box-sizing: border-box; 
-        }
+        .action-area { padding: 15px 0; display: flex; justify-content: center; align-items: center; z-index: 110; width: 100%; box-sizing: border-box; }
         .action-area .btn-main { width: 85%; max-width: 400px; }
 
         .hand-area { background: linear-gradient(to top, rgba(5,5,10,1) 0%, rgba(5,5,10,0.96) 85%, transparent 100%); padding-bottom: 15px; display: flex; flex-direction: column; align-items: center; width: 100%; z-index: 100; }
@@ -173,11 +100,19 @@
         .my-card.playable:hover { transform: translateY(-80px) scale(1.5) !important; z-index: 1000 !important; border-color: #fff; box-shadow: 0 45px 90px rgba(0,0,0,1), 0 0 55px var(--accent); }
         .my-card.not-playable { opacity: 0.15; filter: grayscale(1) brightness(0.3); cursor: not-allowed; }
 
-        .status-badge { background: #000; color: var(--danger); border: 4.5px solid var(--danger); padding: 18px 45px; font-weight: 900; font-size: 20px; margin-bottom: 45px; animation: glitch 0.3s infinite; text-transform: uppercase; letter-spacing: 6px; }
-        @keyframes glitch { 0% { transform: translate(0); text-shadow: 4px 0 var(--accent); } 50% { transform: translate(-5px, 2px); text-shadow: -4px 0 var(--cyber-pink); } 100% { transform: translate(0); } }
+        .overlay { position: absolute; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); background: rgba(0,0,0,0.4); padding: 40px; }
+        .panel { background: rgba(10, 10, 15, 0.85); border: 2px solid var(--border); padding: 50px 30px; border-radius: 24px; text-align: center; width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; gap: 30px; box-shadow: 0 40px 100px rgba(0,0,0,0.8); backdrop-filter: blur(20px); }
+        .btn-main { background: linear-gradient(135deg, var(--steam-gold), #B8860B); color: #000; border: none; padding: 20px 0; border-radius: 12px; font-weight: 900; font-size: 18px; box-shadow: 0 10px 30px rgba(184, 134, 11, 0.3); cursor: pointer; width: 100%; transition: 0.3s; letter-spacing: 6px; font-family: 'Cinzel', serif; display: flex; align-items: center; justify-content: center; }
+        .btn-main:hover:not(:disabled) { transform: scale(1.02); filter: brightness(1.2); }
 
-        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
-        .realm-btn { padding: 22px; border: 2px solid var(--steam-gold); background: rgba(255,255,255,0.04); color: #fff; font-weight: 900; font-size: 17px; font-family: 'Cinzel', serif; cursor: pointer; transition: 0.2s; border-radius: 12px; text-align: center; }
+        .logo-main { font-family: 'Cinzel', serif; font-size: 38px; font-weight: 900; letter-spacing: 12px; color: var(--steam-gold); text-shadow: 0 0 20px rgba(212,175,55,0.4); text-align: center; width: 100%; padding-left: 12px; box-sizing: border-box; }
+        .logo-sub { font-size: 11px; color: var(--accent); letter-spacing: 8px; opacity: 0.8; text-transform: uppercase; margin-bottom: 20px; text-align: center; padding-left: 8px; }
+        .panel input { width: 100%; padding: 18px; background: rgba(0,0,0,0.5); border: 1.5px solid rgba(212,175,55,0.3); color: var(--accent); text-align: center; font-size: 18px; border-radius: 12px; outline: none; font-weight: 700; box-sizing: border-box; }
+
+        .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+        .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+        .waiting-player { background: rgba(255,255,255,0.03); border: 1px solid rgba(212,175,55,0.15); padding: 16px 20px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 16px; font-weight: 700; color: #eee; }
     </style>
 </head>
 <body>
@@ -193,8 +128,8 @@
             BATTERY: { n: '電池', color: '#32CD32', desc: 'セットB→C：遷移。', effect: '' },
             MACHINE: { n: '機械', color: '#2F4F4F', desc: 'セットC：維持。', effect: '特殊(S): 順番反転' },
             ARCHIVE: { n: '古文書', color: '#8B4513', desc: 'セットC→A：遷移。', effect: '' },
-            PLANET: { n: '惑星', color: '#9400D3', desc: '星々の加護。属性を上書き。', effect: '常にワイルド' },
-            RUINS: { n: '廃墟', color: '#696969', desc: '遺跡の記憶。属性を上書き。', effect: '常にワイルド' }
+            PLANET: { n: '惑星', color: '#9400D3', desc: '星々の加護。', effect: 'ワイルド' },
+            RUINS: { n: '廃墟', color: '#696969', desc: '遺跡の記憶。', effect: 'ワイルド' }
         };
 
         const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
@@ -292,7 +227,6 @@
                                     <input type="text" value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} placeholder="ルームID" />
                                 </div>
                                 <button onClick={()=>{setJoined(true); if(socket?.connected) socket.emit('join-room',{roomId:room, playerName:name});}} className="btn-main">接続</button>
-                                <p style={{fontSize:9, color:'rgba(255,255,255,0.3)', letterSpacing:2}}>PROTOCOL v3.0.5 - TACTICAL FLOW</p>
                             </div>
                         </div>
                     )}
@@ -313,7 +247,7 @@
                                     ))}
                                     {[...Array(Math.max(0, 2 - (gs?.players?.length || 0)))].map((_, i) => (
                                         <div key={i} className="waiting-player" style={{opacity:0.2, borderStyle:'dashed'}}>
-                                            <span style={{fontSize:12}}>プレイヤーを待っています...</span>
+                                            <span style={{fontSize:12}}>プレイヤー待機...</span>
                                         </div>
                                     ))}
                                 </div>
@@ -332,10 +266,12 @@
                                         <div className="opp-info">
                                             <div className="opp-name">{p.name}</div>
                                             <div className="opp-hand-visual">
-                                                {[...Array(p.handCount)].map((_, i) => <div key={i} className="mini-card-back" />)}
+                                                {[...Array(Number(p.handCount))].map((_, i) => (
+                                                    <div key={i} className="mini-card-back" />
+                                                ))}
                                             </div>
                                         </div>
-                                        <div style={{fontWeight:900, color: 'var(--accent)', fontSize:28}}>{p.handCount} Units</div>
+                                        <div style={{fontWeight:900, color: 'var(--accent)', fontSize:24, minWidth: '85px', textAlign: 'right'}}>{p.handCount} Units</div>
                                     </div>
                                 ))}
                             </div>
@@ -417,7 +353,7 @@
                     {gs?.status === 'finished' && (
                         <div className="overlay">
                             <div className="panel">
-                                <h2 style={{color:'var(--steam-gold)', fontSize:36, fontWeight:900, fontFamily:'Cinzel'}}>リザルト</h2>
+                                <h2 style={{color:'var(--steam-gold)', fontSize:36, fontWeight:900, fontFamily:'Cinzel'}}>結果</h2>
                                 <div style={{width:'100%', margin:'30px 0'}}>
                                     {gs.players.slice().sort((a,b) => a.handCount - b.handCount).map((p, i) => (
                                         <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'18px 0', borderBottom:'1px solid rgba(212,175,55,0.2)', fontSize:20}}>
