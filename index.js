@@ -164,12 +164,12 @@ io.on('connection', (socket) => {
         p.handCount = p.hand.length; 
         p.isActing = false;
       });
-      room.fieldCard = room.deck.pop() || { id: 'fallback', realm: 'GEAR', isSpecial: false }; // 欠損防止
+      room.fieldCard = room.deck.pop() || { id: 'fallback', realm: 'GEAR', isSpecial: false };
       addLog(room, "[SYS] ミッション開始");
       if (room.players[room.turnIndex]) {
           room.currentTurnPlayerId = room.players[room.turnIndex].id;
       }
-      room.status = 'playing'; // 全ての準備が整ってからステータス変更
+      room.status = 'playing';
       io.to(room.id).emit('update-game', room);
       if (room.players[room.turnIndex] && room.players[room.turnIndex].isBot) processBotTurn(room.id);
     }
@@ -224,6 +224,11 @@ io.on('connection', (socket) => {
         room.status = 'waiting';
         room.deck = []; room.fieldCard = null; room.turnIndex = 0; room.nextDrawAmount = 1; room.isReversed = false; room.logs = []; room.playHistory = []; room.currentTurnPlayerId = null;
         room.players.forEach(p => { p.hand = []; p.handCount = 0; p.isActing = false; });
+        // CPUがホストになるのを防ぐため、人間プレイヤーを先頭にソートし直す
+        room.players.sort((a, b) => {
+            if (a.isBot === b.isBot) return 0;
+            return a.isBot ? 1 : -1;
+        });
         io.to(rid).emit('update-game', room);
     }
   });
