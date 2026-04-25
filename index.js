@@ -151,7 +151,12 @@ io.on('connection', (socket) => {
       room.nextDrawAmount = 1;
       room.logs = [];
       room.playHistory = [];
-      room.players.forEach(p => { p.hand = []; for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop()); p.handCount = p.hand.length; p.isActing = false; });
+      room.players.forEach(p => { 
+        p.hand = []; 
+        for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop()); 
+        p.handCount = p.hand.length; 
+        p.isActing = false;
+      });
       room.fieldCard = room.deck.pop();
       addLog(room, "[SYS] ミッション開始");
       room.currentTurnPlayerId = room.players[room.turnIndex].id;
@@ -200,11 +205,12 @@ io.on('connection', (socket) => {
 
   socket.on('play-again', (data) => {
     const rid = data.roomId.toUpperCase();
-    if (rooms[rid]) {
-        rooms[rid].status = 'waiting';
-        rooms[rid].deck = []; rooms[rid].fieldCard = null; rooms[rid].turnIndex = 0; rooms[rid].nextDrawAmount = 1; rooms[rid].isReversed = false; rooms[rid].logs = []; rooms[rid].playHistory = []; rooms[rid].currentTurnPlayerId = null;
-        rooms[rid].players.forEach(p => { p.hand = []; p.handCount = 0; p.isActing = false; });
-        io.to(rid).emit('update-game', rooms[rid]);
+    const room = rooms[rid];
+    if (room) {
+        room.status = 'waiting';
+        room.deck = []; room.fieldCard = null; room.turnIndex = 0; room.nextDrawAmount = 1; room.isReversed = false; room.logs = []; room.playHistory = []; room.currentTurnPlayerId = null;
+        room.players.forEach(p => { p.hand = []; p.handCount = 0; p.isActing = false; });
+        io.to(rid).emit('update-game', room);
     }
   });
 });
