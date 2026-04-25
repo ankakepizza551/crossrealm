@@ -12,7 +12,6 @@ const rooms = {};
 const HAND_LIMIT = 10;
 const INITIAL_HAND = 5;
 
-// CPUの性格定義
 const PERSONALITIES = [
   { name: 'Astra', type: 'Aggressive' },
   { name: 'Bern', type: 'Defensive' },
@@ -38,7 +37,6 @@ function createDeck() {
   return deck.sort(() => Math.random() - 0.5);
 }
 
-// AIのアクション決定
 function getBotAction(room, bot) {
   const playable = bot.hand.filter(card => {
     if (room.nextDrawAmount > 1) return (card.realm === 'GEAR' && card.isSpecial);
@@ -79,7 +77,6 @@ function getBotAction(room, bot) {
   return { type: 'play', card: targetCard, chosenRealm };
 }
 
-// ボットのターン処理
 function processBotTurn(roomId) {
   const room = rooms[roomId];
   if (!room || room.status !== 'playing') return;
@@ -87,7 +84,6 @@ function processBotTurn(roomId) {
   if (!currentPlayer || !currentPlayer.isBot) return;
 
   setTimeout(() => {
-    // 思考中にもう一度チェック（ラグ対策）
     if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== currentPlayer.id) return;
 
     const action = getBotAction(room, currentPlayer);
@@ -104,10 +100,8 @@ function processBotTurn(roomId) {
       const { card, chosenRealm } = action;
       currentPlayer.hand = currentPlayer.hand.filter(c => c.id !== card.id);
       if (chosenRealm) {
-        card.wasPlanet = card.realm === 'PLANET';
-        card.wasRuins = card.realm === 'RUINS';
-        card.wasFountain = card.realm === 'FOUNTAIN';
-        card.realm = chosenRealm;
+        card.wasPlanet = card.realm === 'PLANET'; card.wasRuins = card.realm === 'RUINS';
+        card.wasFountain = card.realm === 'FOUNTAIN'; card.realm = chosenRealm;
       }
       room.playHistory.push(room.fieldCard);
       if (room.playHistory.length > 5) room.playHistory.shift();
@@ -116,10 +110,7 @@ function processBotTurn(roomId) {
       
       if (card.isSpecial) {
         if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
-        if (card.realm === 'MACHINE') {
-          room.isReversed = !room.isReversed;
-          if (room.players.length !== 2) room.turnIndex = (room.turnIndex + (room.isReversed ? -1 : 1) + room.players.length) % room.players.length;
-        }
+        if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
       }
 
       if (currentPlayer.hand.length === 0) {
@@ -129,8 +120,6 @@ function processBotTurn(roomId) {
       }
     }
     currentPlayer.handCount = currentPlayer.hand.length;
-    
-    // 全員のバーストチェック
     room.players.forEach(p => { if (p.hand.length > HAND_LIMIT) room.status = 'finished'; });
 
     io.to(roomId).emit('update-game', room);
@@ -162,11 +151,9 @@ io.on('connection', (socket) => {
   socket.on('start-game', (data) => {
     const room = rooms[data.roomId.toUpperCase()];
     if (room && room.players.length >= 2) {
-      room.status = 'playing';
-      room.deck = createDeck();
+      room.status = 'playing'; room.deck = createDeck();
       room.players.forEach(p => {
-        p.hand = [];
-        for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop());
+        p.hand = []; for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop());
         p.handCount = p.hand.length;
       });
       room.fieldCard = room.deck.pop();
@@ -183,8 +170,8 @@ io.on('connection', (socket) => {
     const card = data.card;
     player.hand = player.hand.filter(c => c.id !== card.id);
     if (data.chosenRealm) {
-      card.wasPlanet = card.realm === 'PLANET'; card.wasRuins = card.realm === 'RUINS';
-      card.wasFountain = card.realm === 'FOUNTAIN'; card.realm = data.chosenRealm;
+        card.wasPlanet = card.realm === 'PLANET'; card.wasRuins = card.realm === 'RUINS';
+        card.wasFountain = card.realm === 'FOUNTAIN'; card.realm = data.chosenRealm;
     }
     room.playHistory.push(room.fieldCard);
     if (room.playHistory.length > 5) room.playHistory.shift();
@@ -192,10 +179,7 @@ io.on('connection', (socket) => {
     room.logs.push({ id: Math.random(), text: `[PLAY] ${player.name} : ${card.realm}${card.isSpecial ? '(S)' : ''}` });
     if (card.isSpecial) {
       if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
-      if (card.realm === 'MACHINE') {
-        room.isReversed = !room.isReversed;
-        if (room.players.length !== 2) room.turnIndex = (room.turnIndex + (room.isReversed ? -1 : 1) + room.players.length) % room.players.length;
-      }
+      if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
     }
     if (player.hand.length === 0) room.status = 'finished';
     else room.turnIndex = (room.turnIndex + (room.isReversed ? -1 : 1) + room.players.length) % room.players.length;
@@ -224,7 +208,11 @@ io.on('connection', (socket) => {
 
   socket.on('play-again', (data) => {
     const rid = data.roomId.toUpperCase();
-    if (rooms[rid]) rooms[rid].status = 'waiting';
+    if (rooms[rid]) {
+        rooms[rid].status = 'waiting';
+        rooms[rid].playHistory = [];
+        rooms[rid].logs = [];
+    }
     io.to(rid).emit('update-game', rooms[rid]);
   });
 });
