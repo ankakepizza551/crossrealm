@@ -54,10 +54,9 @@ const canPlayCard = (room, card) => {
   }
 };
 
-// ログに一意のIDを付与（クライアント側のアニメーション発火のため）
 const addLog = (room, msg) => {
   room.logs.push({ id: Date.now() + Math.random(), text: msg });
-  if (room.logs.length > 4) room.logs.shift(); // 画面圧迫を防ぐため最大4件に
+  if (room.logs.length > 4) room.logs.shift(); 
 };
 
 const emitUpdate = (roomId) => {
@@ -186,7 +185,36 @@ io.on('connection', (socket) => {
     }
     emitUpdate(roomId);
   });
+
+  // プレイヤーの切断（退出）処理を追加
+  socket.on('disconnect', () => {
+    for (const roomId in rooms) {
+      const room = rooms[roomId];
+      const pIdx = room.players.findIndex(p => p.id === socket.id);
+      
+      if (pIdx !== -1) {
+        const playerName = room.players[pIdx].name;
+        room.players.splice(pIdx, 1);
+        room.readyPlayers.delete(socket.id);
+        
+        if (room.players.length === 0) {
+          delete rooms[roomId]; // 誰もいなくなったらルームごと削除
+        } else {
+          if (room.status === 'playing') {
+            addLog(room, `[SYS] ${playerName} が通信を切断`);
+            // プレイ中に人数が1人になったら強制終了
+            if (room.players.length < 2) {
+                room.status = 'finished';
+                addLog(room, `[SYS] プレイヤー不足によりミッション強制終了`);
+            }
+          }
+          emitUpdate(roomId);
+        }
+        break;
+      }
+    }
+  });
 });
 
 const port = process.env.PORT || 3001;
-server.listen(port, () => console.log(`Cross Realm v3.2.1 Ready`));
+server.listen(port, () => console.log(`Cross Realm v3.3.0 Ready`));
