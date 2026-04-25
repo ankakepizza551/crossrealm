@@ -89,13 +89,13 @@ const emitUpdate = (roomId) => {
 io.on('connection', (socket) => {
   socket.on('join-room', ({ roomId, playerName }) => {
     const cleanId = roomId?.toUpperCase().trim();
-    const cleanName = playerName?.toUpperCase().trim();
+    const cleanName = playerName?.trim(); // 大文字強制を解除
 
     if (!cleanId || !cleanName) return socket.emit('join-error', 'IDと名前が必要です。');
     if (cleanName.length > 10) return socket.emit('join-error', '名前が長すぎます。');
     
     const isNG = NG_WORDS.some(word => 
-      cleanName.includes(word.toUpperCase()) || cleanId.includes(word.toUpperCase())
+      cleanName.toUpperCase().includes(word.toUpperCase()) || cleanId.includes(word.toUpperCase())
     );
     if (isNG) return socket.emit('join-error', '不適切な言葉が含まれています。');
 
@@ -196,4 +196,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = 3001;
-server.listen(PORT, () => console.log(`Cross Realm Server v3.1.2 Ready`));
+server.listen(PORT, () => console.log(`Cross Realm Server v3.1.3 Ready`));
