@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm - Eternal Punk Edition - v4.4.2</title>
+    <title>Cross Realm - Eternal Punk Edition - v4.5.0</title>
 
     <!-- OGP Tags for Discord/Twitter -->
     <meta property="og:title" content="Cross Realm - Eternal Punk Edition -">
     <meta property="og:description" content="スチームパンク×幻想世界×サイバーパンク。タクティカル・ペア・システムで手札を削り切れ！ブラウザですぐに遊べるオンラインカードゲーム。">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ankakepizza551.github.io/crossrealm/">
-    <!-- Discord等で表示されるサムネイル画像。ダミー画像を入れていますが、好みの画像のURLに変更してください -->
     <meta property="og:image" content="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80">
     <meta property="og:site_name" content="Cross Realm">
     <meta name="theme-color" content="#40E0D0">
@@ -27,14 +26,24 @@
             --magic-purple: #8A2BE2; /* Fantasy Purple */
             --danger: #FF4500; 
             --bg: #05050A; /* 深淵な夜空 */
-            /* モバイル向けにカードサイズを少しコンパクトに */
             --card-w: 90px; --card-h: 130px; --opp-card-w: 24px; --opp-card-h: 34px; 
             --border: rgba(212, 175, 55, 0.45);
             --guide-gold: #FFD700;
         }
-        /* 100dvhを使用してアドレスバーによる見切れを防止 */
-        body { margin: 0; background: var(--bg); color: white; font-family: 'Exo 2', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; overflow: hidden; }
-        .screen-wrapper { width: 100vw; height: 100vh; height: 100dvh; max-width: calc(100vh * 9 / 16); max-width: calc(100dvh * 9 / 16); background: var(--bg); position: relative; overflow: hidden; display: flex; flex-direction: column; border-left: 2px solid var(--steam-gold); border-right: 2px solid var(--steam-gold); box-shadow: 0 0 50px rgba(138, 43, 226, 0.2); }
+        /* MacOS / Safari 特有の画面崩れ防止のためのフォールバック追加 */
+        body { 
+            margin: 0; background: var(--bg); color: white; font-family: 'Exo 2', sans-serif; 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; height: 100dvh; min-height: -webkit-fill-available; overflow: hidden; 
+        }
+        .screen-wrapper { 
+            width: 100vw; height: 100vh; height: 100dvh; min-height: -webkit-fill-available;
+            max-width: calc(100vh * 9 / 16); max-width: calc(100dvh * 9 / 16); 
+            background: var(--bg); position: relative; overflow: hidden; 
+            display: flex; flex-direction: column; 
+            border-left: 2px solid var(--steam-gold); border-right: 2px solid var(--steam-gold); 
+            box-shadow: 0 0 50px rgba(138, 43, 226, 0.2); 
+        }
         
         .bg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
         .bg-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200%; height: 200%; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"><circle cx="150" cy="150" r="140" fill="none" stroke="rgba(212,175,55,0.05)" stroke-width="0.5"/><circle cx="150" cy="150" r="110" fill="none" stroke="rgba(64,224,208,0.05)" stroke-width="0.5"/><path d="M150 10 L150 290 M10 150 L290 150" stroke="rgba(138,43,226,0.05)" stroke-width="0.5"/><circle cx="150" cy="150" r="80" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.3" stroke-dasharray="4 4"/></svg>'); animation: rotate-eternal 240s linear infinite; }
@@ -51,7 +60,6 @@
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; height: 100%; overflow: hidden; }
         
-        /* モバイル用に余白を少し切り詰める */
         .turn-direction { flex-shrink: 0; position: relative; text-align: center; font-size: 12px; font-weight: 900; color: var(--accent); letter-spacing: 2px; background: rgba(0,0,0,0.85); padding: 6px; border-bottom: 1px solid rgba(138,43,226,0.5); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(138,43,226,0.1); }
         .mute-btn-game { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; background: rgba(0,0,0,0.8); border: 1px solid var(--steam-gold); border-radius: 50%; color: var(--steam-gold); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; }
 
@@ -86,12 +94,10 @@
         .log-line.play { color: var(--accent); font-weight: bold; text-shadow: 0 0 5px var(--accent); }
         .log-line.sys { color: var(--steam-gold); }
 
-        /* 手札エリアの高さ削減 */
         .hand-container { flex-shrink: 0; position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(5,0,15,1) 50%, rgba(0,0,0,0) 100%); }
         .hand-flex { display: flex; justify-content: center; align-items: flex-end; height: 145px; padding-bottom: 5px; }
         .action-row { flex-shrink: 0; background: #05000a; border-top: 1px solid rgba(138,43,226,0.4); padding: 10px 15px 15px 15px; display: flex; justify-content: center; z-index: 10; box-shadow: 0 -10px 30px rgba(138,43,226,0.2); }
 
-        /* カードデザイン */
         .card { box-sizing: border-box; width: var(--card-w); height: var(--card-h); border-radius: 6px; border: 2px solid var(--r-color); background: #000; overflow: hidden; position: relative; flex-shrink: 0; transition: transform 0.2s; transform-origin: bottom center; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
         .theme-steampunk { border-color: #B87333; background: radial-gradient(circle at center, #3a1a0a 0%, #000 100%); }
         .theme-fantasy { border-color: #87CEEB; background: radial-gradient(circle at top, #1a0f3a 0%, #000 100%); }
@@ -105,7 +111,10 @@
         .panel-corner1 { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
         .panel-corner2 { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
 
-        .logo-main { font-family: 'Cinzel', serif; font-size: clamp(24px, 8vw, 36px); font-weight: 900; letter-spacing: 4px; background: linear-gradient(to bottom, #FFF8DC 0%, #FFD700 30%, #D4AF37 70%, #8B6B23 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 10px; white-space: nowrap; animation: titleGlow 3s infinite alternate; }
+        /* Safariバグ対策: ロゴをinline-blockでラッパー中央揃えに変更 */
+        .logo-container { text-align: center; width: 100%; }
+        .logo-main { display: inline-block; font-family: 'Cinzel', serif; font-size: clamp(24px, 8vw, 36px); font-weight: 900; letter-spacing: 4px; background: linear-gradient(to bottom, #FFF8DC 0%, #FFD700 30%, #D4AF37 70%, #8B6B23 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin: 0 auto; filter: drop-shadow(0 2px 10px rgba(0,0,0,0.8)); white-space: nowrap; animation: titleGlow 3s infinite alternate; }
+        .logo-main span.cross { font-size: 0.8em; color: var(--steam-gold); -webkit-text-fill-color: var(--steam-gold); opacity: 0.9; margin: 0 8px; }
         .logo-sub { font-size: clamp(10px, 3.5vw, 15px); letter-spacing: 8px; color: var(--accent); text-align: center; font-weight: 900; margin-top: 10px; font-family: 'Exo 2', sans-serif; opacity: 0.9; text-transform: uppercase; white-space: nowrap; width: 100%; text-shadow: 0 0 15px rgba(64,224,208,0.8); }
 
         .panel input { width: 100%; padding: 20px; background: rgba(0,0,0,0.6); border: 1px solid rgba(138,43,226,0.3); border-bottom: 2px solid var(--steam-gold); color: #fff; text-align: center; font-size: 18px; border-radius: 4px; outline: none; box-sizing: border-box; transition: 0.3s; font-family: 'Exo 2', sans-serif; letter-spacing: 2px; }
@@ -250,14 +259,26 @@
                 let displayRealm = card.realm;
                 if (card.wasRuins) displayRealm = 'RUINS'; else if (card.wasPlanet) displayRealm = 'PLANET'; else if (card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) displayRealm = 'FOUNTAIN';
                 const isSpecial = card.isSpecial || card.wasFountain;
+                
+                // 追加: WILDカードの判定
+                const isWild = displayRealm === 'PLANET' || displayRealm === 'RUINS' || (displayRealm === 'FOUNTAIN' && isSpecial);
+
                 const rColor = REALMS[displayRealm] ? REALMS[displayRealm].color : '#fff';
                 const themeClass = `theme-${THEMES[displayRealm] || 'fantasy'}`;
                 const iconKey = isSpecial && displayRealm === 'GEAR' ? 'GEAR_S' : displayRealm;
+                
                 return (
                     <div className={`card ${isField ? '' : (playable ? 'playable my-card' : 'not-playable my-card')} ${isSpecial ? 'is-special' : ''} ${themeClass}`} 
                          style={{'--r-color': rColor, ...style}} onClick={onClick}>
                         <div className="card-realm-mini">{displayRealm.substring(0, 3)}</div>
-                        {isSpecial && <div className="card-badge" style={{position:'absolute', top:4, left:4, background:rColor, color:'#000', fontSize:9, fontWeight:900, padding:'1px 4px', borderRadius:2}}>S</div>}
+                        
+                        {/* 修正: バッジの出し分け（WILDなら目立つ黄金バッジに） */}
+                        {isWild ? (
+                            <div className="card-badge" style={{position:'absolute', top:4, left:4, background:'linear-gradient(135deg, #FFD700, #FF8C00)', color:'#000', fontSize:9, fontWeight:900, padding:'2px 4px', borderRadius:2, boxShadow:'0 0 5px rgba(255,215,0,0.8)'}}>WILD</div>
+                        ) : isSpecial ? (
+                            <div className="card-badge" style={{position:'absolute', top:4, left:4, background:rColor, color:'#000', fontSize:9, fontWeight:900, padding:'1px 4px', borderRadius:2}}>S</div>
+                        ) : null}
+
                         <div className="card-icon">{ICONS[iconKey] || ICONS[displayRealm]}</div>
                         <div className="card-footer">{REALMS[displayRealm] ? REALMS[displayRealm].n : '???'}</div>
                     </div>
@@ -295,7 +316,7 @@
                             <div className="panel">
                                 <div className="panel-corner1"></div><div className="panel-corner2"></div>
                                 <div className="logo-container">
-                                    <h1 className="logo-main">CROSS <span className="cross">⨯</span> REALM</h1>
+                                    <h1 className="logo-main">CROSS<span className="cross">⨯</span>REALM</h1>
                                     <div className="logo-sub">Eternal Punk Edition</div>
                                 </div>
                                 {error && <div style={{color:'var(--danger)', fontSize:12, fontWeight:900}}>⚠️ {error}</div>}
