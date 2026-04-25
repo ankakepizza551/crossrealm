@@ -50,10 +50,7 @@ function getBotAction(room, bot) {
     if (h === 'PLANET' || h === 'RUINS') return true;
     if (field === 'PLANET' || field === 'RUINS') return true;
     if (h === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
-    const cycle = { 
-      GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], 
-      BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] 
-    };
+    const cycle = { GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] };
     return field === h || (cycle[field] && cycle[field].includes(h));
   });
 
@@ -87,23 +84,20 @@ function processBotTurn(roomId) {
   const bot = room.players[room.turnIndex];
   if (!bot || !bot.isBot) return;
 
-  console.log(`[BOT] ${bot.name} is thinking...`);
-
   setTimeout(() => {
-    // 状態の再チェック
-    const currentRoom = rooms[roomId];
-    if (!currentRoom || currentRoom.status !== 'playing' || currentRoom.players[currentRoom.turnIndex].id !== bot.id) return;
+    // 状態の再確認（遅延中の切断対策）
+    if (!rooms[roomId] || rooms[roomId].status !== 'playing' || rooms[roomId].players[rooms[roomId].turnIndex].id !== bot.id) return;
 
-    const action = getBotAction(currentRoom, bot);
+    const action = getBotAction(room, bot);
     if (action.type === 'draw') {
-      const amount = currentRoom.nextDrawAmount;
+      const amount = room.nextDrawAmount;
       for (let i = 0; i < amount; i++) {
-        if (currentRoom.deck.length === 0) currentRoom.deck = createDeck();
-        bot.hand.push(currentRoom.deck.pop());
+        if (room.deck.length === 0) room.deck = createDeck();
+        bot.hand.push(room.deck.pop());
       }
-      currentRoom.logs.push({ id: Math.random(), text: `[SYS] ${bot.name} ドロー ${amount}` });
-      currentRoom.nextDrawAmount = 1;
-      nextTurn(currentRoom);
+      room.logs.push({ id: Math.random(), text: `[SYS] ${bot.name} ドロー ${amount}` });
+      room.nextDrawAmount = 1;
+      nextTurn(room);
     } else {
       const { card, chosenRealm } = action;
       bot.hand = bot.hand.filter(c => c.id !== card.id);
@@ -111,28 +105,28 @@ function processBotTurn(roomId) {
         card.wasPlanet = card.realm === 'PLANET'; card.wasRuins = card.realm === 'RUINS';
         card.wasFountain = card.realm === 'FOUNTAIN'; card.realm = chosenRealm;
       }
-      currentRoom.playHistory.push(currentRoom.fieldCard);
-      if (currentRoom.playHistory.length > 5) currentRoom.playHistory.shift();
-      currentRoom.fieldCard = card;
-      currentRoom.logs.push({ id: Math.random(), text: `[PLAY] ${bot.name} : ${card.realm}${card.isSpecial ? '(S)' : ''}` });
+      room.playHistory.push(room.fieldCard);
+      if (room.playHistory.length > 5) room.playHistory.shift();
+      room.fieldCard = card;
+      room.logs.push({ id: Math.random(), text: `[PLAY] ${bot.name} : ${card.realm}${card.isSpecial ? '(S)' : ''}` });
       
       let skip = false;
       if (card.isSpecial) {
-        if (card.realm === 'GEAR') currentRoom.nextDrawAmount = (currentRoom.nextDrawAmount === 1) ? 2 : currentRoom.nextDrawAmount + 2;
+        if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
         if (card.realm === 'MACHINE') {
-          currentRoom.isReversed = !currentRoom.isReversed;
-          if (currentRoom.players.length === 2) skip = true;
+          room.isReversed = !room.isReversed;
+          if (room.players.length === 2) skip = true;
         }
       }
-      if (bot.hand.length === 0) currentRoom.status = 'finished';
-      else nextTurn(currentRoom, skip);
+      if (bot.hand.length === 0) room.status = 'finished';
+      else nextTurn(room, skip);
     }
     bot.handCount = bot.hand.length;
-    currentRoom.players.forEach(p => { if (p.handCount > HAND_LIMIT) currentRoom.status = 'finished'; });
+    room.players.forEach(p => { if (p.handCount > HAND_LIMIT) room.status = 'finished'; });
     
-    io.to(roomId).emit('update-game', currentRoom);
-    if (currentRoom.status === 'playing') processBotTurn(roomId);
-  }, 1500);
+    io.to(roomId).emit('update-game', room);
+    if (room.status === 'playing') processBotTurn(roomId);
+  }, 1200);
 }
 
 io.on('connection', (socket) => {
@@ -185,7 +179,6 @@ io.on('connection', (socket) => {
     if (room.playHistory.length > 5) room.playHistory.shift();
     room.fieldCard = card;
     room.logs.push({ id: Math.random(), text: `[PLAY] ${player.name} : ${card.realm}${card.isSpecial ? '(S)' : ''}` });
-    
     let skip = false;
     if (card.isSpecial) {
       if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
