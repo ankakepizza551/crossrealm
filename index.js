@@ -148,9 +148,8 @@ io.on('connection', (socket) => {
   socket.on('start-game', (data) => {
     const room = rooms[data.roomId.toUpperCase()];
     if (room && room.players.length >= 2) {
-      // ホストバグ修正：プレイヤー順のシャッフルを廃止。ホスト位置を固定化。
       room.deck = createDeck();
-      room.turnIndex = Math.floor(Math.random() * room.players.length); // プレイ開始プレイヤーのみをランダムに決定
+      room.turnIndex = Math.floor(Math.random() * room.players.length);
       room.isReversed = false;
       room.nextDrawAmount = 1;
       room.logs = [];
@@ -227,6 +226,50 @@ io.on('connection', (socket) => {
         io.to(rid).emit('update-game', room);
     }
   });
+
+  // --- 切断時のセッション処理 ---
+  socket.on('disconnect', () => {
+    for (const rid in rooms) {
+      const room = rooms[rid];
+      const pIndex = room.players.findIndex(p => p.id === socket.id);
+      
+      if (pIndex !== -1) {
+        const player = room.players[pIndex];
+        addLog(room, `[SYS] ${player.name} が通信切断・退出しました`);
+        
+        room.players.splice(pIndex, 1);
+        
+        const humans = room.players.filter(p => !p.isBot);
+        if (humans.length === 0) {
+          delete rooms[rid];
+          continue; 
+        }
+
+        if (room.status === 'playing') {
+          if (room.players.length < 2) {
+            room.status = 'finished';
+            addLog(room, `[SYS] プレイヤー不足により対戦を強制終了します`);
+          } else {
+            if (pIndex < room.turnIndex) {
+              room.turnIndex--;
+            } else if (pIndex === room.turnIndex) {
+              room.turnIndex = room.turnIndex % room.players.length;
+            }
+            if (room.players[room.turnIndex]) {
+              room.currentTurnPlayerId = room.players[room.turnIndex].id;
+            }
+          }
+        }
+
+        io.to(rid).emit('update-game', room);
+        
+        if (room.status === 'playing' && room.players[room.turnIndex] && room.players[room.turnIndex].isBot) {
+          processBotTurn(rid);
+        }
+      }
+    }
+  });
+
 });
 
 server.listen(3000, () => console.log('Server running on port 3000'));
