@@ -24,14 +24,14 @@ function createDeck() {
   const subs = ['ICEAGE', 'BATTERY', 'ARCHIVE'];
   const wilds = ['PLANET', 'RUINS'];
   mains.forEach(r => {
-    for (let i = 0; i < 7; i++) deck.push({ id: Math.random(), realm: r, isSpecial: false });
-    for (let i = 0; i < 3; i++) deck.push({ id: Math.random(), realm: r, isSpecial: true });
+    for (let i = 0; i < 7; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: false });
+    for (let i = 0; i < 3; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: true });
   });
   subs.forEach(r => {
-    for (let i = 0; i < 5; i++) deck.push({ id: Math.random(), realm: r, isSpecial: false });
+    for (let i = 0; i < 5; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: false });
   });
   wilds.forEach(r => {
-    for (let i = 0; i < 3; i++) deck.push({ id: Math.random(), realm: r, isSpecial: false });
+    for (let i = 0; i < 3; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: false });
   });
   return deck.sort(() => Math.random() - 0.5);
 }
@@ -50,7 +50,8 @@ function getBotAction(room, bot) {
     if (h === 'PLANET' || h === 'RUINS') return true;
     if (field === 'PLANET' || field === 'RUINS') return true;
     if (h === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
-    const cycle = { GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] };
+    const cycle = { GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], 
+                    BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] };
     return field === h || (cycle[field] && cycle[field].includes(h));
   });
 
@@ -61,7 +62,7 @@ function getBotAction(room, bot) {
     targetCard = playable.find(c => c.isSpecial) || playable[0];
   } else if (bot.personality === 'Defensive') {
     targetCard = (bot.hand.length < 7) ? (playable.find(c => !c.isSpecial && !['PLANET','RUINS'].includes(c.realm)) || playable[0]) : (playable.find(c => c.isSpecial) || playable[0]);
-  } else if (bot.personality === 'Tactical') {
+  } else {
     const counts = {};
     bot.hand.forEach(c => counts[c.realm] = (counts[c.realm] || 0) + 1);
     const fav = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, 'GEAR');
@@ -71,9 +72,7 @@ function getBotAction(room, bot) {
   let chosenRealm = undefined;
   if (['PLANET', 'RUINS', 'FOUNTAIN'].includes(targetCard.realm) && (targetCard.realm !== 'FOUNTAIN' || targetCard.isSpecial)) {
     const mains = ['GEAR', 'FOUNTAIN', 'MACHINE'];
-    const counts = { GEAR:0, FOUNTAIN:0, MACHINE:0 };
-    bot.hand.forEach(c => { if(mains.includes(c.realm)) counts[c.realm]++; });
-    chosenRealm = mains.reduce((a, b) => counts[a] >= counts[b] ? a : b);
+    chosenRealm = mains[Math.floor(Math.random() * mains.length)];
   }
   return { type: 'play', card: targetCard, chosenRealm };
 }
@@ -81,11 +80,12 @@ function getBotAction(room, bot) {
 function processBotTurn(roomId) {
   const room = rooms[roomId];
   if (!room || room.status !== 'playing') return;
+  
   const bot = room.players[room.turnIndex];
   if (!bot || !bot.isBot) return;
 
   setTimeout(() => {
-    // 状態の再確認（遅延中の切断対策）
+    // 思考待ち中に状態が変わっていないか再確認
     if (!rooms[roomId] || rooms[roomId].status !== 'playing' || rooms[roomId].players[rooms[roomId].turnIndex].id !== bot.id) return;
 
     const action = getBotAction(room, bot);
@@ -95,7 +95,7 @@ function processBotTurn(roomId) {
         if (room.deck.length === 0) room.deck = createDeck();
         bot.hand.push(room.deck.pop());
       }
-      room.logs.push({ id: Math.random(), text: `[SYS] ${bot.name} ドロー ${amount}` });
+      room.logs.push({ id: Math.random(), text: `[SYS] ${bot.name} が ${amount}枚 ドロー` });
       room.nextDrawAmount = 1;
       nextTurn(room);
     } else {
@@ -105,7 +105,7 @@ function processBotTurn(roomId) {
         card.wasPlanet = card.realm === 'PLANET'; card.wasRuins = card.realm === 'RUINS';
         card.wasFountain = card.realm === 'FOUNTAIN'; card.realm = chosenRealm;
       }
-      room.playHistory.push(room.fieldCard);
+      room.playHistory.push(JSON.parse(JSON.stringify(room.fieldCard)));
       if (room.playHistory.length > 5) room.playHistory.shift();
       room.fieldCard = card;
       room.logs.push({ id: Math.random(), text: `[PLAY] ${bot.name} : ${card.realm}${card.isSpecial ? '(S)' : ''}` });
@@ -125,8 +125,13 @@ function processBotTurn(roomId) {
     room.players.forEach(p => { if (p.handCount > HAND_LIMIT) room.status = 'finished'; });
     
     io.to(roomId).emit('update-game', room);
-    if (room.status === 'playing') processBotTurn(roomId);
-  }, 1200);
+    
+    // 次のターンもボットなら継続
+    if (room.status === 'playing') {
+      const nextPlayer = room.players[room.turnIndex];
+      if (nextPlayer && nextPlayer.isBot) processBotTurn(roomId);
+    }
+  }, 1500);
 }
 
 io.on('connection', (socket) => {
@@ -134,8 +139,8 @@ io.on('connection', (socket) => {
     const rid = data.roomId.toUpperCase();
     if (!rooms[rid]) rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], playHistory: [], handLimit: HAND_LIMIT };
     const room = rooms[rid];
-    if (room.status !== 'waiting' || room.players.length >= 4) return socket.emit('join-error', '参加不可');
-    room.players.push({ id: socket.id, name: data.playerName || 'Pilot', hand: [], handCount: 0, isBot: false });
+    if (room.status !== 'waiting' || room.players.length >= 4) return socket.emit('join-error', '参加できません');
+    room.players.push({ id: socket.id, name: (data.playerName || 'Pilot').substring(0,10), hand: [], handCount: 0, isBot: false });
     socket.join(rid);
     io.to(rid).emit('update-game', room);
   });
@@ -161,7 +166,9 @@ io.on('connection', (socket) => {
       room.fieldCard = room.deck.pop();
       room.logs = [{ id: 1, text: "[SYS] ミッション開始" }];
       io.to(room.id).emit('update-game', room);
-      processBotTurn(room.id);
+      // 最初のプレイヤーがボットなら思考開始
+      const first = room.players[room.turnIndex];
+      if (first && first.isBot) processBotTurn(room.id);
     }
   });
 
@@ -175,7 +182,7 @@ io.on('connection', (socket) => {
         card.wasPlanet = card.realm === 'PLANET'; card.wasRuins = card.realm === 'RUINS';
         card.wasFountain = card.realm === 'FOUNTAIN'; card.realm = data.chosenRealm;
     }
-    room.playHistory.push(room.fieldCard);
+    room.playHistory.push(JSON.parse(JSON.stringify(room.fieldCard)));
     if (room.playHistory.length > 5) room.playHistory.shift();
     room.fieldCard = card;
     room.logs.push({ id: Math.random(), text: `[PLAY] ${player.name} : ${card.realm}${card.isSpecial ? '(S)' : ''}` });
@@ -203,7 +210,7 @@ io.on('connection', (socket) => {
       if (room.deck.length === 0) room.deck = createDeck();
       player.hand.push(room.deck.pop());
     }
-    room.logs.push({ id: Math.random(), text: `[SYS] ${player.name} ドロー ${amount}` });
+    room.logs.push({ id: Math.random(), text: `[SYS] ${player.name} が ${amount}枚 ドロー` });
     room.nextDrawAmount = 1;
     player.handCount = player.hand.length;
     if (player.handCount > HAND_LIMIT) room.status = 'finished';
