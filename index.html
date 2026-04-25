@@ -130,6 +130,14 @@
             filter: drop-shadow(0 0 10px var(--r-color)); z-index: 2;
         }
 
+        /* 特殊効果のテキスト（NEW） */
+        .card-effect-text { 
+            position: absolute; bottom: 32px; width: 100%; 
+            text-align: center; font-size: 13px; font-weight: 900; 
+            color: #fff; text-shadow: 0 0 5px var(--r-color), 0 0 10px #000; 
+            letter-spacing: 2px; font-family: 'Exo 2', sans-serif; z-index: 3; 
+        }
+
         /* カード情報（テキスト・バッジ） */
         .card-realm-mini { position: absolute; top: 6px; left: 8px; font-size: 12px; font-weight: 900; color: #fff; text-shadow: 0 0 5px var(--r-color), 0 0 10px #000; letter-spacing: 1px; font-family: 'Exo 2', sans-serif; z-index: 3; }
         
@@ -376,6 +384,12 @@
                 // S（特殊）専用のアイコンキーを取得
                 const iconKey = isSpecial && ICONS[`${displayRealm}_S`] ? `${displayRealm}_S` : displayRealm;
 
+                // 特殊効果のテキストを決定
+                let effectText = "";
+                if (displayRealm === 'PLANET' || displayRealm === 'RUINS' || (displayRealm === 'FOUNTAIN' && isSpecial)) effectText = "WILD";
+                else if (displayRealm === 'GEAR' && isSpecial) effectText = "+2 DRAW";
+                else if (displayRealm === 'MACHINE' && isSpecial) effectText = "REVERSE";
+
                 return (
                     <div className={`card ${isField ? '' : (playable ? 'playable my-card' : 'not-playable my-card')} ${isSpecial ? 'is-special' : ''} ${themeClass}`} 
                          style={{'--r-color': rColor}} onClick={onClick}>
@@ -387,6 +401,9 @@
                         <div className="card-icon">
                             {ICONS[iconKey]}
                         </div>
+                        
+                        {/* 特殊効果テキストの表示 */}
+                        {effectText && <div className="card-effect-text">{effectText}</div>}
                         
                         <div className="card-footer">
                             {REALMS[displayRealm].n}
