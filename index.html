@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm - Eternal Punk Edition - v3.9.7</title>
+    <title>Cross Realm - Eternal Punk Edition - v3.9.8</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -38,29 +38,29 @@
 
         .cycle-bar { display: flex; justify-content: space-between; padding: 10px 4px; background: rgba(0,0,0,0.9); border-bottom: 2px solid var(--border); gap: 2px; }
         .cycle-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
-        .cycle-dot { width: 100%; height: 5px; background: #1a1a1a; border-radius: 2px; }
+        .cycle-dot { width: 100%; height: 5px; background: #1a1a1a; border-radius: 2px; transition: 0.3s; }
         
-        /* 凡例の仕様変更: 現在は常時点灯、次は点滅 */
+        /* 凡例の仕様: 現在はシアン常灯、次はグリーン点滅 */
         .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 12px var(--dot-color); }
         .cycle-dot.next-playable { background: #10b981; box-shadow: 0 0 10px #10b981; animation: nextPulse 1s infinite alternate; }
-        @keyframes nextPulse { from { opacity: 0.3; transform: scaleX(0.8); } to { opacity: 1; transform: scaleX(1); } }
+        @keyframes nextPulse { from { opacity: 0.2; transform: scaleX(0.7); } to { opacity: 1; transform: scaleX(1); } }
         
         .cycle-label { font-size: 10px; font-weight: 900; opacity: 0.3; font-family: 'Exo 2', sans-serif; white-space: nowrap; width: 100%; text-align: center; }
         .cycle-item.active .cycle-label { opacity: 1; color: var(--dot-color); text-shadow: 0 0 5px var(--dot-color); }
         .cycle-item.next-playable .cycle-label { opacity: 0.8; color: #10b981; }
 
-        /* ログ位置の修正: フィールド上部の空きスペースへ配置 */
+        /* ログ配置の修正: フィールド上部に重ねて、他のUIと被らないように */
         .battle-log { 
-            position: absolute; top: 185px; left: 15px; z-index: 2000; 
+            position: absolute; top: 195px; left: 10px; z-index: 2000; 
             pointer-events: none; display: flex; flex-direction: column; 
-            gap: 4px; max-width: 80%;
+            gap: 4px; max-width: 85%;
         }
         .log-entry { 
             font-size: 11px; font-weight: 700; color: #fff; 
-            background: rgba(0,0,0,0.6); border-left: 3px solid var(--accent); 
+            background: rgba(0,0,0,0.65); border-left: 3px solid var(--accent); 
             padding: 4px 10px; border-radius: 0 4px 4px 0; 
             animation: logAnim 6s forwards; white-space: nowrap;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
         @keyframes logAnim { 0% { transform: translateX(-10px); opacity: 0; } 5% { transform: translateX(0); opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; } }
 
@@ -110,7 +110,7 @@
         .realm-btn svg { width: 38px; height: 38px; filter: drop-shadow(0 0 5px currentColor); }
 
         .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 12px; }
-        .waiting-player { background: linear-gradient(90deg, rgba(64,224,208,0.1), transparent); border: 1px solid rgba(64,224,208,0.2); border-left: 4px solid var(--accent); padding: 16px 20px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
+        .waiting-player { background: linear-gradient(90deg, rgba(64,224,208,0.1), transparent); border: 1px solid rgba(64,224,208,0.2); border-left: 4px solid var(--border); padding: 16px 20px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
         .waiting-player.empty { background: rgba(255,255,255,0.02); border: 1px dashed rgba(212,175,55,0.3); opacity: 0.4; }
         .sync-dot { width: 10px; height: 10px; background: var(--accent); box-shadow: 0 0 10px var(--accent); transform: rotate(45deg); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
@@ -227,15 +227,12 @@
                 if (h === 'PLANET' || h === 'RUINS') return true;
                 if (field === 'PLANET' || field === 'RUINS') return true; 
                 if (h === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
-                
                 const cycle = { 
                     GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], 
                     BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] 
                 };
-
                 const isTransition = ['ICEAGE', 'BATTERY', 'ARCHIVE'].includes(field);
                 if (field === h && isTransition) return false;
-
                 return field === h || (cycle[field] && cycle[field].includes(h));
             };
 
@@ -278,14 +275,12 @@
                 );
             };
 
-            // === 次に出せる属性の判定ロジック ===
             const getNextPlayableRealms = () => {
                 const cycleMap = { 
                     GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], 
                     BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] 
                 };
                 const targets = cycleMap[currentRealm] || [];
-                // 遷移カード（ICEAGE, BATTERY, ARCHIVE）は自分自身を重ねられないので除外
                 const isTransition = ['ICEAGE', 'BATTERY', 'ARCHIVE'].includes(currentRealm);
                 return targets.filter(r => !(isTransition && r === currentRealm));
             };
@@ -327,7 +322,7 @@
                                     <div className="blink-text" style={{fontSize:14, color:'var(--accent)', fontWeight:900, marginBottom:8, letterSpacing:4}}>AWAITING LINKAGE...</div>
                                     <div style={{fontSize:36, color:'var(--steam-gold)', fontWeight:900, fontFamily:'Cinzel', letterSpacing: 4}}>ルームID: {room}</div>
                                 </div>
-                                <div className="waiting-list">
+                                <div className="waiting-list" style={{width:'100%', maxHeight:'300px', overflowY:'auto'}}>
                                     {gs?.players?.map(p => (
                                         <div key={p.id} className="waiting-player">
                                             <span style={{fontWeight:900, fontSize:18, color: p.isBot ? 'var(--steam-gold)' : '#fff', textShadow:'0 0 5px rgba(255,255,255,0.2)'}}>
@@ -365,7 +360,6 @@
                                 ))}
                             </div>
                             
-                            {/* 凡例の点滅ロジック修正 */}
                             <div className="cycle-bar">
                                 {CYCLE_ORDER.map(r => {
                                     const nextPlayable = getNextPlayableRealms();
@@ -380,7 +374,6 @@
                             </div>
 
                             <div className="field">
-                                {/* ログ位置の修正: フィールドエリア内へ配置 */}
                                 {gs.logs && (
                                     <div className="battle-log">
                                         {gs.logs.slice(-5).map((log) => (
