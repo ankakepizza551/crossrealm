@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm - Eternal Punk Edition - v4.0.0</title>
+    <title>Cross Realm - Eternal Punk Edition - v4.1.0</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -13,7 +13,7 @@
         :root { 
             --accent: #40E0D0; --steam-gold: #D4AF37; --danger: #FF4500; --bg: #050508; 
             --card-w: 108px; --card-h: 156px; --opp-card-w: 32px; --opp-card-h: 46px; --border: rgba(212, 175, 55, 0.45);
-            --guide-gold: #FFC400;
+            --guide-gold: #FFD700;
         }
         body { margin: 0; background: #000; color: white; font-family: 'Exo 2', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         .screen-wrapper { width: 100vw; height: 100vh; max-width: calc(100vh * 9 / 16); max-height: 100vh; background: var(--bg); position: relative; overflow: hidden; display: flex; flex-direction: column; border-left: 2px solid var(--steam-gold); border-right: 2px solid var(--steam-gold); }
@@ -40,27 +40,26 @@
         .cycle-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .cycle-dot { width: 100%; height: 5px; background: #1a1a1a; border-radius: 2px; transition: 0.3s; }
         
-        /* 凡例ガイド: 常灯シアン / 点滅ゴールド */
+        /* ガイド演出: 現在(シアン) / 次(ゴールド点滅) */
         .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 12px var(--dot-color); }
         .cycle-dot.next-playable { background: var(--guide-gold); box-shadow: 0 0 15px var(--guide-gold); animation: pulseGold 0.8s infinite alternate; }
-        @keyframes pulseGold { from { opacity: 0.2; transform: scaleX(0.8); } to { opacity: 1; transform: scaleX(1); } }
+        @keyframes pulseGold { from { opacity: 0.2; transform: scaleX(0.7); } to { opacity: 1; transform: scaleX(1); } }
         
         .cycle-label { font-size: 9px; font-weight: 900; opacity: 0.3; font-family: 'Exo 2', sans-serif; white-space: nowrap; }
         .cycle-item.active .cycle-label { opacity: 1; color: var(--dot-color); text-shadow: 0 0 5px var(--dot-color); }
         .cycle-item.next-playable .cycle-label { opacity: 0.9; color: var(--guide-gold); }
 
-        /* ログ配置の改善: カード背後を避け、リストのすぐ下にフローティング */
+        /* ログ配置の最終修正: 手札エリアの上部、リストの下。重なりを絶対回避。 */
         .battle-log { 
-            position: absolute; top: 185px; left: 10px; z-index: 50; 
+            position: absolute; bottom: 380px; left: 15px; z-index: 50; 
             pointer-events: none; display: flex; flex-direction: column; 
             gap: 3px; max-width: 85%;
         }
         .log-entry { 
             font-size: 10px; font-weight: 700; color: #fff; 
-            background: rgba(10,10,15,0.75); border-left: 3px solid var(--accent); 
+            background: rgba(10,10,15,0.7); border-left: 3px solid var(--accent); 
             padding: 4px 10px; border-radius: 0 4px 4px 0; 
             animation: logAnim 6s forwards; white-space: nowrap;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.6);
         }
         @keyframes logAnim { 0% { transform: translateX(-10px); opacity: 0; } 5% { transform: translateX(0); opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; } }
 
@@ -72,7 +71,7 @@
         .hand-flex { display: block; padding: 180px 0 20px 0; min-height: 340px; overflow: visible; margin-top: -180px; box-sizing: border-box; }
         .action-row { background: #000; border-top: 1px solid rgba(212,175,55,0.3); padding: 15px 0 30px 0; display: flex; justify-content: center; position: relative; z-index: 10; }
 
-        .card { width: var(--card-w); height: var(--card-h); border-radius: 8px; border: 2.5px solid var(--r-color); background: #000; overflow: hidden; position: relative; flex-shrink: 0; transition: 0.2s; }
+        .card { width: var(--card-w); height: var(--card-h); border-radius: 8px; border: 2.5px solid var(--r-color); background: #000; overflow: hidden; position: relative; flex-shrink: 0; transition: transform 0.2s, margin 0.2s; }
         .theme-steampunk { border-color: #B87333; background: radial-gradient(circle at center, #2a1a0a 0%, #000 100%); box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 30px rgba(184,115,51,0.6); }
         .theme-fantasy { border-color: #87CEEB; background: radial-gradient(circle at top, #0f1a24 0%, #000 100%); box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 30px rgba(135,206,235,0.5); }
         .theme-cyber { border-color: #0FF; background: linear-gradient(135deg, #001a1a 0%, #000 100%); box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 30px rgba(0,255,255,0.5); }
@@ -96,7 +95,6 @@
         .btn-main:disabled { background: #222; color: #444; border-color: #333; cursor: not-allowed; box-shadow: none; }
         .btn-sub { background: rgba(255,255,255,0.03); border: 1px solid #444; color: #888; padding: 16px 0; width: 100%; cursor: pointer; border-radius: 4px; font-weight: 900; font-size: 16px; transition: 0.3s; letter-spacing: 2px; }
 
-        /* 属性選択ボタン強化 */
         .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
         .realm-btn { 
             padding: 24px 10px; border: 2.5px solid var(--steam-gold); 
