@@ -89,7 +89,7 @@
         .log-line.sys { color: var(--steam-gold); }
 
         .hand-container { flex-shrink: 0; position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(5,0,15,1) 10%, transparent 100%); }
-        .hand-flex { display: flex; justify-content: center; align-items: flex-end; height: 110px; padding-bottom: 0; }
+        .hand-flex { display: flex; justify-content: center; align-items: flex-end; height: 105px; padding-bottom: 0; }
         
         .action-row { flex-shrink: 0; background: #05000a; border-top: none; padding: 6px 15px 12px 15px; display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 10; box-shadow: 0 -10px 30px rgba(138,43,226,0.2); }
 
@@ -333,8 +333,8 @@
             }
 
             // 見かけのサイズを縮小スケールで実現する (ベース230x330)
-            const baseScale = isField ? 0.42 : 0.32;
-            const currentScale = (isHovered && !isField) ? 0.45 : baseScale;
+            const baseScale = isField ? 0.35 : 0.30;
+            const currentScale = (isHovered && !isField) ? 0.42 : baseScale;
             const translateY = (isHovered && !isField) ? '-15px' : '0px';
 
             const cardWidth = 230 * baseScale;
@@ -624,7 +624,7 @@
                                 <div style={{fontFamily:'Cinzel', fontSize: 13, opacity: 0.5}}>{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
                                 {gs?.nextDrawAmount > 1 && <div style={{color: 'var(--danger)', fontWeight:900, fontSize:24, textShadow:'0 0 10px #f00'}}>DRAW +{gs.nextDrawAmount}</div>}
                                 <div style={{display:'flex', alignItems:'center', gap:15, width: '100%', justifyContent: 'center'}}>
-                                    <div style={{position: 'relative', width: `${230 * 0.42}px`, height: `${330 * 0.42}px`}}>
+                                    <div style={{position: 'relative', width: `${230 * 0.35}px`, height: `${330 * 0.35}px`}}>
                                         {gs?.playHistory?.map((card, i) => (
                                             <div key={`hist-${i}-${card?.id || i}`} style={{ position: 'absolute', top: 0, left: 0, transform: `rotate(${(i * 5) % 10 - 5}deg) translate(${i*-1}px, ${i*-1}px)`, zIndex: i + 1, opacity: 0.35 }}>
                                                 <CardView card={card} isField={true} />
@@ -656,8 +656,8 @@
                                     {(() => {
                                         const totalCards = sortedHand?.length || 0;
                                         const maxHandWidth = Math.min(windowWidth * 0.95, 550);
-                                        const cardW = 230 * 0.32; 
-                                        let overlap = 45; 
+                                        const cardW = 230 * 0.30; 
+                                        let overlap = 40; 
                                         if (totalCards > 1) { 
                                             const idealWidth = cardW + (totalCards - 1) * overlap; 
                                             if (idealWidth > maxHandWidth) { overlap = (maxHandWidth - cardW) / (totalCards - 1); } 
