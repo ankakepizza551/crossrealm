@@ -49,7 +49,10 @@ function canPlay(room, card) {
     if (h === 'PLANET' || h === 'RUINS') return true;
     if (field === 'PLANET' || field === 'RUINS') return true;
     if (h === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
-    const cycle = { GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] };
+    const cycle = { 
+        GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], 
+        BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] 
+    };
     const isTransition = ['ICEAGE', 'BATTERY', 'ARCHIVE'].includes(field);
     if (field === h && isTransition) return false;
     return field === h || (cycle[field] && cycle[field].includes(h));
@@ -85,6 +88,7 @@ function processBotTurn(roomId) {
     bot.isActing = false;
     const currentRoom = rooms[roomId];
     if (!currentRoom || currentRoom.status !== 'playing' || currentRoom.players[currentRoom.turnIndex].id !== bot.id) return;
+
     const action = getBotAction(currentRoom, bot);
     if (action.type === 'draw') {
       const amount = currentRoom.nextDrawAmount;
@@ -116,7 +120,7 @@ function processBotTurn(roomId) {
 
 function addLog(room, text) {
   room.logs.push({ id: Math.random(), text });
-  if (room.logs.length > 30) room.logs.shift();
+  if (room.logs.length > 25) room.logs.shift();
 }
 
 io.on('connection', (socket) => {
@@ -124,7 +128,7 @@ io.on('connection', (socket) => {
     const rid = data.roomId.toUpperCase();
     if (!rooms[rid]) rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], playHistory: [], handLimit: HAND_LIMIT, currentTurnPlayerId: null };
     const room = rooms[rid];
-    if (room.status !== 'waiting' || room.players.length >= 4) return socket.emit('join-error', '参加できません');
+    if (room.status !== 'waiting' || room.players.length >= 4) return socket.emit('join-error', '満員です');
     room.players.push({ id: socket.id, name: (data.playerName || 'Pilot').substring(0,10), hand: [], handCount: 0, isBot: false, isActing: false });
     socket.join(rid);
     io.to(rid).emit('update-game', room);
@@ -144,11 +148,21 @@ io.on('connection', (socket) => {
     const room = rooms[data.roomId.toUpperCase()];
     if (room && room.players.length >= 2) {
       room.players = room.players.sort(() => Math.random() - 0.5);
-      room.status = 'playing'; room.deck = createDeck();
-      room.turnIndex = 0; room.isReversed = false; room.nextDrawAmount = 1;
-      room.players.forEach(p => { p.hand = []; for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop()); p.handCount = p.hand.length; p.isActing = false; });
+      room.status = 'playing';
+      room.deck = createDeck();
+      room.turnIndex = 0;
+      room.isReversed = false;
+      room.nextDrawAmount = 1;
+      room.logs = [];
+      room.playHistory = [];
+      room.players.forEach(p => { 
+        p.hand = []; 
+        for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop()); 
+        p.handCount = p.hand.length; 
+        p.isActing = false;
+      });
       room.fieldCard = room.deck.pop();
-      room.logs = []; addLog(room, "[SYS] ミッション開始");
+      addLog(room, "[SYS] ミッション開始");
       room.currentTurnPlayerId = room.players[room.turnIndex].id;
       io.to(room.id).emit('update-game', room);
       if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
