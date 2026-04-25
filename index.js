@@ -11,8 +11,6 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 const HAND_LIMIT = 12;
 
-const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
-
 const createDeck = () => {
   const realmConfig = {
     GEAR: { total: 10, special: 3 },      
@@ -71,7 +69,7 @@ const emitUpdate = (roomId) => {
     players: room.players.map(p => ({
       id: p.id,
       name: p.name,
-      handCount: Number(p.hand.length), // 確実に数値化
+      handCount: p.hand.length,
       hand: p.hand 
     }))
   };
@@ -173,4 +171,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = 3001;
-server.listen(PORT, () => console.log(`Tactical Flow Server Sync v3.0.6`));
+server.listen(PORT, () => console.log(`Cross Realm Server v3.0.7 Ready`));
