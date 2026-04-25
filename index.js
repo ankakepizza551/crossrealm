@@ -11,7 +11,6 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 const HAND_LIMIT = 12;
 
-// 属性サイクルの定義（内部ロジック用）
 const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
 
 const createDeck = () => {
@@ -41,29 +40,13 @@ const createDeck = () => {
   return deck.sort(() => Math.random() - 0.5);
 };
 
-/**
- * タクティカル・ペア・システム バリデーション (v3.0.5)
- */
 const canPlayCard = (room, card) => {
   const field = room.fieldCard.realm;
   const hand = card.realm;
-
-  // 1. ドロー蓄積中：特殊歯車(S)でのみスタック可能
-  if (room.nextDrawAmount > 1) {
-    return (hand === 'GEAR' && card.isSpecial);
-  }
-
-  // 2. 純粋ワイルド
+  if (room.nextDrawAmount > 1) return (hand === 'GEAR' && card.isSpecial);
   if (hand === 'PLANET' || hand === 'RUINS') return true;
+  if (hand === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
 
-  // 3. 限定ワイルド：噴水(S) - 氷河期か噴水の上のみ
-  if (hand === 'FOUNTAIN' && card.isSpecial) {
-    return (field === 'ICEAGE' || field === 'FOUNTAIN');
-  }
-
-  // 4. ペアサイクル判定
-  // 維持属性：GEAR, FOUNTAIN, MACHINE
-  // 遷移属性（ゲートキーパー）：ICEAGE, BATTERY, ARCHIVE
   switch (field) {
     case 'GEAR':     return (hand === 'GEAR' || hand === 'ICEAGE');
     case 'ICEAGE':   return (hand === 'FOUNTAIN' || hand === 'BATTERY');
@@ -84,12 +67,11 @@ const emitUpdate = (roomId) => {
     currentTurnPlayerId: room.players[room.turnIndex]?.id,
     nextDrawAmount: room.nextDrawAmount,
     isReversed: room.isReversed,
-    needsInitialChoice: room.needsInitialChoice,
     handLimit: HAND_LIMIT,
     players: room.players.map(p => ({
       id: p.id,
       name: p.name,
-      handCount: p.hand.length,
+      handCount: Number(p.hand.length), // 確実に数値化
       hand: p.hand 
     }))
   };
@@ -102,7 +84,7 @@ io.on('connection', (socket) => {
       rooms[roomId] = {
         players: [], deck: [], fieldCard: null,
         status: 'waiting', turnIndex: 0, nextDrawAmount: 1, isReversed: false,
-        readyPlayers: new Set(), needsInitialChoice: false
+        readyPlayers: new Set()
       };
     }
     const room = rooms[roomId];
@@ -123,7 +105,6 @@ io.on('connection', (socket) => {
     room.turnIndex = Math.floor(Math.random() * room.players.length);
     room.nextDrawAmount = 1;
     room.isReversed = false;
-    room.needsInitialChoice = (room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS' || (room.fieldCard.realm === 'FOUNTAIN' && room.fieldCard.isSpecial));
     emitUpdate(roomId);
   });
 
@@ -132,19 +113,16 @@ io.on('connection', (socket) => {
     if (!room || room.status !== 'playing') return;
     const player = room.players[room.turnIndex];
     if (player.id !== socket.id) return;
-
     const count = room.nextDrawAmount;
     for (let i = 0; i < count; i++) {
       if (room.deck.length === 0) room.deck = createDeck();
       player.hand.push(room.deck.pop());
     }
-
     if (player.hand.length > HAND_LIMIT) {
       room.status = 'finished';
       emitUpdate(roomId);
       return;
     }
-
     room.nextDrawAmount = 1;
     const direction = room.isReversed ? -1 : 1;
     room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
@@ -156,12 +134,10 @@ io.on('connection', (socket) => {
     if (!room || room.status !== 'playing') return;
     const player = room.players[room.turnIndex];
     if (player.id !== socket.id) return;
-
     if (!canPlayCard(room, card)) return;
 
     player.hand = player.hand.filter(c => c.id !== card.id);
     const newFieldCard = { ...card };
-    
     if (chosenRealm) {
       if (card.realm === 'RUINS') newFieldCard.wasRuins = true;
       if (card.realm === 'PLANET') newFieldCard.wasPlanet = true;
@@ -169,17 +145,14 @@ io.on('connection', (socket) => {
       newFieldCard.realm = chosenRealm;
       newFieldCard.isSpecial = false; 
     }
-    
     room.fieldCard = newFieldCard;
 
     if (player.hand.length === 0) {
       room.status = 'finished';
     } else {
       if (card.isSpecial) {
-        switch (card.realm) {
-          case 'GEAR': room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2; break;
-          case 'MACHINE': room.isReversed = !room.isReversed; break;
-        }
+        if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
+        if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
       }
       const direction = room.isReversed ? -1 : 1;
       room.turnIndex = (room.turnIndex + direction + room.players.length) % room.players.length;
@@ -200,4 +173,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = 3001;
-server.listen(PORT, () => console.log(`Tactical System Online`));
+server.listen(PORT, () => console.log(`Tactical Flow Server Sync v3.0.6`));
