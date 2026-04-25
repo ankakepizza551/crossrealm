@@ -12,7 +12,8 @@
     <style>
         :root { 
             --accent: #40E0D0; --steam-gold: #D4AF37; --danger: #FF4500; --bg: #050508; 
-            --card-w: 96px; --card-h: 138px; --opp-card-w: 28px; --opp-card-h: 40px; --border: rgba(212, 175, 55, 0.45);
+            /* カードサイズを一回り大きくスケールアップ */
+            --card-w: 108px; --card-h: 156px; --opp-card-w: 32px; --opp-card-h: 46px; --border: rgba(212, 175, 55, 0.45);
         }
         body { margin: 0; background: #000; color: white; font-family: 'Exo 2', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         .screen-wrapper { width: 100vw; height: 100vh; max-width: calc(100vh * 9 / 16); max-height: 100vh; background: var(--bg); position: relative; overflow: hidden; display: flex; flex-direction: column; border-left: 2px solid var(--steam-gold); border-right: 2px solid var(--steam-gold); }
@@ -28,29 +29,37 @@
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
 
-        .turn-direction { text-align: center; font-size: 14px; font-weight: 900; color: var(--accent); letter-spacing: 2px; font-family: 'Exo 2', sans-serif; background: rgba(0,0,0,0.5); padding: 8px 12px; border-bottom: 1px solid rgba(64,224,208,0.3); display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.5s; }
+        /* 進行方向UI: 14px -> 16px */
+        .turn-direction { text-align: center; font-size: 16px; font-weight: 900; color: var(--accent); letter-spacing: 2px; font-family: 'Exo 2', sans-serif; background: rgba(0,0,0,0.5); padding: 8px 12px; border-bottom: 1px solid rgba(64,224,208,0.3); display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.5s; }
 
         .opponents-area { display: flex; flex-direction: column; gap: 10px; padding: 15px; border-bottom: 2px solid var(--border); background: rgba(0,0,0,0.6); }
         .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 8px; background: rgba(255,255,255,0.04); border-left: 4px solid var(--border); }
         .opp-row.active { border-left-color: var(--accent); background: rgba(64, 224, 208, 0.1); box-shadow: inset 0 0 15px rgba(64, 224, 208, 0.15); }
-        .opp-name { font-weight: 900; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; letter-spacing: 1px; color: #fff; }
         
-        .opp-hand-visual { display: flex; align-items: center; justify-content: flex-end; position: relative; width: 100px; height: var(--opp-card-h); }
+        /* 相手の名前: 15px -> 17px */
+        .opp-name { font-weight: 900; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; letter-spacing: 1px; color: #fff; }
+        
+        /* 相手のカード群: 幅を広げて重なりを調整 */
+        .opp-hand-visual { display: flex; align-items: center; justify-content: flex-end; position: relative; width: 110px; height: var(--opp-card-h); }
         .mini-card-back { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #333, #000); border: 1px solid var(--steam-gold); border-radius: 3px; position: absolute; box-shadow: 2px 0 5px rgba(0,0,0,0.5); }
 
         .cycle-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px 28px 10px; background: rgba(0,0,0,0.85); border-bottom: 2px solid var(--border); position: relative; gap: 4px; }
         .cycle-dot { flex: 1; height: 5px; background: #1a1a1a; position: relative; border-radius: 2px; }
         .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 12px var(--dot-color); }
-        .cycle-label { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 900; opacity: 0.7; font-family: 'Cinzel', serif; white-space: nowrap; }
+        
+        /* サイクルラベル: 12px -> 14px */
+        .cycle-label { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: 900; opacity: 0.7; font-family: 'Cinzel', serif; white-space: nowrap; }
 
         .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; position: relative; }
         
+        /* バトルログ: 13px -> 15px */
         .battle-log { position: absolute; top: 10px; left: 15px; z-index: 1000; pointer-events: none; display: flex; flex-direction: column; gap: 6px; max-width: 60%; }
-        .log-entry { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.9); background: rgba(0,0,0,0.6); border-left: 3px solid var(--accent); padding: 6px 12px; border-radius: 0 6px 6px 0; text-shadow: 0 0 3px #000; box-shadow: 0 2px 5px rgba(0,0,0,0.3); backdrop-filter: blur(2px); animation: logAnim 5s forwards; }
+        .log-entry { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.9); background: rgba(0,0,0,0.6); border-left: 3px solid var(--accent); padding: 8px 14px; border-radius: 0 6px 6px 0; text-shadow: 0 0 3px #000; box-shadow: 0 2px 5px rgba(0,0,0,0.3); backdrop-filter: blur(2px); animation: logAnim 5s forwards; }
         @keyframes logAnim { 0% { transform: translateX(-15px); opacity: 0; } 5% { transform: translateX(0); opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; pointer-events: none; } }
 
-        .info-panel { background: rgba(10,10,15,0.98); border: 1px solid var(--steam-gold); padding: 15px; border-radius: 8px; max-width: 190px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.8), inset 0 0 10px rgba(212,175,55,0.1); }
-        .realm-title { font-family: 'Cinzel', serif; font-size: 26px; font-weight: 900; color: var(--realm-color); margin-bottom: 4px; letter-spacing: 2px; text-shadow: 0 0 12px var(--realm-color); }
+        /* インフォパネルと属性タイトル: 26px -> 30px */
+        .info-panel { background: rgba(10,10,15,0.98); border: 1px solid var(--steam-gold); padding: 18px; border-radius: 8px; max-width: 210px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.8), inset 0 0 10px rgba(212,175,55,0.1); }
+        .realm-title { font-family: 'Cinzel', serif; font-size: 30px; font-weight: 900; color: var(--realm-color); margin-bottom: 4px; letter-spacing: 2px; text-shadow: 0 0 12px var(--realm-color); }
 
         .hand-container { position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%); }
         .hand-flex { display: flex; padding: 180px 80px 25px 80px; min-height: 350px; align-items: flex-end; overflow-x: auto; overflow-y: visible; margin-top: -180px; box-sizing: border-box; }
@@ -61,14 +70,16 @@
 
         .card { width: var(--card-w); height: var(--card-h); border-radius: 8px; border: 2.5px solid var(--steam-gold); background: #000; overflow: hidden; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,1); flex-shrink: 0; transition: 0.2s cubic-bezier(0.2, 1, 0.3, 1); }
         .card img { width: 100%; height: 100%; object-fit: cover; }
-        .card-footer { position: absolute; bottom: 0; width: 100%; background: rgba(5,5,10,0.98); font-size: 12px; font-weight: 900; padding: 4px 0; text-align: center; border-top: 2px solid var(--r-color); color: var(--steam-gold); font-family: 'Cinzel', serif; }
+        
+        /* カードフッター文字: 12px -> 14px */
+        .card-footer { position: absolute; bottom: 0; width: 100%; background: rgba(5,5,10,0.98); font-size: 14px; font-weight: 900; padding: 5px 0; text-align: center; border-top: 2px solid var(--r-color); color: var(--steam-gold); font-family: 'Cinzel', serif; }
 
-        .my-card { margin-left: -38px; transform-origin: bottom center; cursor: pointer; position: relative; }
+        /* 手札の重なり調整（カードが大きくなったためマージン変更） */
+        .my-card { margin-left: -44px; transform-origin: bottom center; cursor: pointer; position: relative; }
         .my-card:first-child { margin-left: 0; }
         .my-card.playable:hover { transform: translateY(-20px) scale(1.45) !important; z-index: 10000 !important; border-color: #fff; box-shadow: 0 40px 80px rgba(0,0,0,1), 0 0 40px var(--accent); }
         .my-card.not-playable { opacity: 0.45; filter: grayscale(0.8) brightness(0.6); cursor: not-allowed; }
 
-        /* 背景の光が透けるように背景の黒をさらに薄く(0.5 -> 0.2)しました */
         .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); background: rgba(0,0,0,0.2); padding: 30px; }
         
         .panel { 
@@ -93,10 +104,10 @@
         .panel-corner1 { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
         .panel-corner2 { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
         
-        /* ラベル（めり込みスタイル）を復活 */
+        /* ラベル・入力フォーム: ラベル13px, フォーム20pxに拡大 */
         .input-group { width: 100%; position: relative; text-align: left; margin-top: 10px; }
-        .input-group label { position: absolute; top: -10px; left: 12px; background: #0b0b0e; padding: 0 6px; font-size: 11px; font-weight: 900; color: var(--steam-gold); letter-spacing: 2px; z-index: 1; }
-        .panel input { width: 100%; padding: 18px 15px; background: rgba(0,0,0,0.6); border: 1px solid rgba(64, 224, 208, 0.3); border-left: 4px solid var(--accent); color: var(--accent); text-align: center; font-size: 18px; border-radius: 4px; outline: none; font-family: 'Exo 2', sans-serif; box-sizing: border-box; transition: 0.3s; text-shadow: 0 0 5px rgba(64, 224, 208, 0.5); }
+        .input-group label { position: absolute; top: -12px; left: 12px; background: #0b0b0e; padding: 0 8px; font-size: 13px; font-weight: 900; color: var(--steam-gold); letter-spacing: 2px; z-index: 1; }
+        .panel input { width: 100%; padding: 20px 15px; background: rgba(0,0,0,0.6); border: 1px solid rgba(64, 224, 208, 0.3); border-left: 4px solid var(--accent); color: var(--accent); text-align: center; font-size: 20px; border-radius: 4px; outline: none; font-family: 'Exo 2', sans-serif; box-sizing: border-box; transition: 0.3s; text-shadow: 0 0 5px rgba(64, 224, 208, 0.5); }
         .panel input:focus { background: rgba(64, 224, 208, 0.05); border-color: var(--accent); box-shadow: 0 0 15px rgba(64, 224, 208, 0.2), inset 0 0 10px rgba(64, 224, 208, 0.1); }
 
         .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 12px; margin: 10px 0; }
@@ -113,7 +124,8 @@
         .btn-sub:hover { background-position: right center; box-shadow: 0 0 20px rgba(255, 255, 255, 0.1); color: #fff; border-color: #a1a1aa; }
         .btn-sub:active { transform: scale(0.98); }
 
-        .logo-main { font-family: 'Cinzel', serif; font-size: 44px; font-weight: 900; letter-spacing: 12px; background: linear-gradient(to bottom, #FFE4B5, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(212,175,55,0.4)); margin-bottom: 2px; }
+        /* ロゴ: 44px -> 48px */
+        .logo-main { font-family: 'Cinzel', serif; font-size: 48px; font-weight: 900; letter-spacing: 12px; background: linear-gradient(to bottom, #FFE4B5, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(212,175,55,0.4)); margin-bottom: 2px; }
         
         .sync-dot { width: 10px; height: 10px; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.5s infinite; transform: rotate(45deg); }
         @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
@@ -122,7 +134,9 @@
 
         .error-msg { color: var(--danger); font-weight: 900; font-size: 14px; border: 1px solid var(--danger); padding: 10px; border-radius: 4px; background: rgba(255, 69, 0, 0.1); width: 100%; }
         .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
-        .realm-btn { padding: 18px; border: 1px solid var(--steam-gold); background: rgba(255,255,255,0.05); color: #fff; font-weight: 900; font-family: 'Cinzel', serif; cursor: pointer; border-radius: 4px; font-size: 16px; transition: 0.3s; }
+        
+        /* 属性選択ボタン: 16px -> 18px */
+        .realm-btn { padding: 20px; border: 1px solid var(--steam-gold); background: rgba(255,255,255,0.05); color: #fff; font-weight: 900; font-family: 'Cinzel', serif; cursor: pointer; border-radius: 4px; font-size: 18px; transition: 0.3s; }
         .realm-btn:hover { background: rgba(212,175,55,0.2); box-shadow: 0 0 15px rgba(212,175,55,0.4); }
     </style>
 </head>
@@ -280,12 +294,11 @@
                                 
                                 <div>
                                     <h1 className="logo-main">CROSS REALM</h1>
-                                    <div style={{fontSize: 10, letterSpacing: 8, color: 'var(--accent)', marginTop: '-8px', fontFamily: 'Exo 2', fontWeight: 900}}>ETERNAL PUNK EDITION</div>
+                                    <div style={{fontSize: 12, letterSpacing: 8, color: 'var(--accent)', marginTop: '-8px', fontFamily: 'Exo 2', fontWeight: 900}}>ETERNAL PUNK EDITION</div>
                                 </div>
                                 
                                 {error && <div className="error-msg">⚠️ {error}</div>}
                                 
-                                {/* ラベルを復活 */}
                                 <div style={{width:'100%', display:'flex', flexDirection:'column', gap:20}}>
                                     <div className="input-group">
                                         <label>プレイヤー名</label>
@@ -313,28 +326,28 @@
                                 <div className="panel-corner2"></div>
 
                                 <div>
-                                    <div className="blink-text" style={{letterSpacing:6, opacity:0.8, fontSize:12, fontWeight:900, marginBottom:8, color:'var(--accent)', fontFamily:'Exo 2'}}>接続待機中...</div>
-                                    <div style={{fontSize:32, color:'var(--steam-gold)', fontWeight:900, fontFamily:'Cinzel', letterSpacing: 4}}>ルームID: {room}</div>
+                                    <div className="blink-text" style={{letterSpacing:6, opacity:0.8, fontSize:14, fontWeight:900, marginBottom:8, color:'var(--accent)', fontFamily:'Exo 2'}}>接続待機中...</div>
+                                    <div style={{fontSize:36, color:'var(--steam-gold)', fontWeight:900, fontFamily:'Cinzel', letterSpacing: 4}}>ルームID: {room}</div>
                                 </div>
                                 
                                 <div className="waiting-list">
                                     {gs?.players?.map(p => (
                                         <div key={p.id} className="waiting-player">
-                                            <span style={{fontWeight:900, fontSize:16, color:'#fff', textShadow:'0 0 5px rgba(255,255,255,0.3)'}}>👤 {p.name}</span>
+                                            <span style={{fontWeight:900, fontSize:18, color:'#fff', textShadow:'0 0 5px rgba(255,255,255,0.3)'}}>👤 {p.name}</span>
                                             <div className="sync-dot"></div>
                                         </div>
                                     ))}
                                     {[...Array(Math.max(0, 2 - (gs?.players?.length || 0)))].map((_, i) => (
                                         <div key={i} className="waiting-player empty">
-                                            <span style={{fontSize:14, letterSpacing:1}}>プレイヤーを待機中...</span>
+                                            <span style={{fontSize:16, letterSpacing:1}}>プレイヤーを待機中...</span>
                                         </div>
                                     ))}
                                 </div>
                                 
                                 {gs?.players?.[0]?.id === socket?.id ? (
-                                    <button onClick={()=>socket.emit('start-game',{roomId:room})} className="btn-main" disabled={gs?.players?.length < 2}>ゲーム開始</button>
+                                    <button onClick={()=>socket.emit('start-game',{roomId:room})} className="btn-main" disabled={gs?.players?.length < 2}>システム起動</button>
                                 ) : (
-                                    <div style={{fontSize: 12, color: 'var(--steam-gold)', fontWeight: 900, letterSpacing: 2}}>ホストの起動待機中...</div>
+                                    <div style={{fontSize: 14, color: 'var(--steam-gold)', fontWeight: 900, letterSpacing: 2}}>ホストの起動待機中...</div>
                                 )}
                             </div>
                         </div>
@@ -358,9 +371,9 @@
                                         <div className="opp-name">{p.name}</div>
                                         <div className="opp-hand-visual">
                                             {[...Array(Math.min(p.handCount, 5))].map((_, i) => (
-                                                <div key={i} className="mini-card-back" style={{right: `${i * 12}px`, zIndex: i}} />
+                                                <div key={i} className="mini-card-back" style={{right: `${i * 14}px`, zIndex: i}} />
                                             ))}
-                                            <div style={{fontWeight:900, color: 'var(--accent)', fontSize:20, position:'absolute', left:-55}}>{p.handCount}</div>
+                                            <div style={{fontWeight:900, color: 'var(--accent)', fontSize:24, position:'absolute', left:-60}}>{p.handCount}</div>
                                         </div>
                                     </div>
                                 ))}
@@ -375,6 +388,7 @@
                             </div>
 
                             <div className="field">
+                                {/* バトルログ */}
                                 {gs.logs && (
                                     <div className="battle-log">
                                         {gs.logs.map((log) => (
@@ -385,8 +399,8 @@
                                     </div>
                                 )}
 
-                                <div style={{fontFamily:'Cinzel', fontSize: 16, opacity: 0.6, letterSpacing:2}}>{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
-                                {gs.nextDrawAmount > 1 && <div style={{color: 'var(--danger)', fontWeight:900, fontSize:28, textShadow:'0 0 10px rgba(255,0,0,0.5)'}}>DRAW +{gs.nextDrawAmount}</div>}
+                                <div style={{fontFamily:'Cinzel', fontSize: 18, opacity: 0.6, letterSpacing:2}}>{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
+                                {gs.nextDrawAmount > 1 && <div style={{color: 'var(--danger)', fontWeight:900, fontSize:32, textShadow:'0 0 10px rgba(255,0,0,0.5)'}}>DRAW +{gs.nextDrawAmount}</div>}
                                 <div style={{display:'flex', alignItems:'center', gap:20}}>
                                     
                                     <div style={{position: 'relative', width: 'var(--card-w)', height: 'var(--card-h)'}}>
@@ -412,7 +426,7 @@
 
                                     <div className="info-panel">
                                         <div className="realm-title">{REALMS[currentRealm].n}</div>
-                                        <div style={{fontSize:14, opacity:0.8, marginTop:5, lineHeight:1.4}}>{REALMS[currentRealm].desc}</div>
+                                        <div style={{fontSize:16, opacity:0.8, marginTop:5, lineHeight:1.4}}>{REALMS[currentRealm].desc}</div>
                                     </div>
                                 </div>
                             </div>
@@ -423,11 +437,11 @@
                                         <CardView key={card.id} card={card} playable={canPlay(card)} onClick={() => handlePlay(card)} />
                                     ))}
                                 </div>
-                                <div style={{textAlign:'center', fontSize:16, fontWeight:900, paddingBottom: 8, color:'var(--steam-gold)', letterSpacing:4}}>SYNC: {sortedHand.length} / {gs.handLimit}</div>
+                                <div style={{textAlign:'center', fontSize:18, fontWeight:900, paddingBottom: 8, color:'var(--steam-gold)', letterSpacing:4}}>SYNC: {sortedHand.length} / {gs.handLimit}</div>
                             </div>
 
                             <div className="action-row">
-                                <button className="btn-main" disabled={!isMyTurn} onClick={handleDraw} style={{padding: '15px 0', fontSize: '18px'}}>
+                                <button className="btn-main" disabled={!isMyTurn} onClick={handleDraw} style={{padding: '15px 0', fontSize: '20px'}}>
                                     {gs.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引く` : (isMyTurn ? 'カードを引く' : '待機中...')}
                                 </button>
                             </div>
@@ -440,7 +454,7 @@
                             <div className="panel">
                                 <div className="panel-corner1"></div>
                                 <div className="panel-corner2"></div>
-                                <h3 style={{fontSize:26, fontWeight:900, color:'var(--steam-gold)', fontFamily:'Cinzel'}}>属性を選択</h3>
+                                <h3 style={{fontSize:28, fontWeight:900, color:'var(--steam-gold)', fontFamily:'Cinzel'}}>属性を選択</h3>
                                 <div className="realm-grid">
                                     {CYCLE_ORDER.map(r => (
                                         <button key={r} className="realm-btn" style={{borderColor:REALMS[r].color, color:REALMS[r].color}} 
@@ -478,27 +492,27 @@
                                     <div className="panel-corner2"></div>
                                     
                                     <div style={{marginBottom: '10px'}}>
-                                        <h2 style={{color: titleColor, fontSize:36, fontWeight:900, fontFamily:'Cinzel', textShadow: `0 0 20px ${titleColor}`, margin: 0, letterSpacing: 2}}>
+                                        <h2 style={{color: titleColor, fontSize:40, fontWeight:900, fontFamily:'Cinzel', textShadow: `0 0 20px ${titleColor}`, margin: 0, letterSpacing: 2}}>
                                             {resultTitle}
                                         </h2>
-                                        {resultSub && <div style={{fontSize: 20, color: '#fff', fontWeight: 900, marginTop: 10, letterSpacing: 2}}>{resultSub}</div>}
+                                        {resultSub && <div style={{fontSize: 24, color: '#fff', fontWeight: 900, marginTop: 10, letterSpacing: 2}}>{resultSub}</div>}
                                     </div>
 
                                     <div style={{width:'100%', margin:'10px 0'}}>
                                         {gs.players.slice().sort((a,b) => a.handCount - b.handCount).map((p, i) => (
                                             <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'15px 0', borderBottom:'1px solid rgba(212,175,55,0.2)', alignItems: 'center'}}>
-                                                <span style={{fontWeight:900, fontSize:20, display:'flex', alignItems:'center', gap: 8}}>
+                                                <span style={{fontWeight:900, fontSize:22, display:'flex', alignItems:'center', gap: 8}}>
                                                     {i+1}. {p.name}
-                                                    {p.id === socket.id && <span style={{fontSize: 10, color: 'var(--steam-gold)', border: '1px solid var(--steam-gold)', padding: '2px 4px', borderRadius: 4}}>YOU</span>}
+                                                    {p.id === socket.id && <span style={{fontSize: 12, color: 'var(--steam-gold)', border: '1px solid var(--steam-gold)', padding: '2px 6px', borderRadius: 4}}>YOU</span>}
                                                 </span>
-                                                <span style={{color:'var(--steam-gold)', fontWeight:900, fontSize:22}}>{p.handCount}枚</span>
+                                                <span style={{color:'var(--steam-gold)', fontWeight:900, fontSize:24}}>{p.handCount}枚</span>
                                             </div>
                                         ))}
                                     </div>
                                     
                                     <div style={{display: 'flex', gap: 15, width: '100%', marginTop: 10}}>
-                                        <button onClick={() => socket.emit('play-again', {roomId: room})} className="btn-main" style={{padding: '18px 0', fontSize: 18}}>再戦</button>
-                                        <button onClick={() => window.location.reload()} className="btn-sub" style={{padding: '18px 0', fontSize: 18}}>終了</button>
+                                        <button onClick={() => socket.emit('play-again', {roomId: room})} className="btn-main" style={{padding: '18px 0', fontSize: 20}}>再戦</button>
+                                        <button onClick={() => window.location.reload()} className="btn-sub" style={{padding: '18px 0', fontSize: 20}}>終了</button>
                                     </div>
                                 </div>
                             </div>
