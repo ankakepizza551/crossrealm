@@ -3,7 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm - Eternal Punk Edition - v4.4.1</title>
+    <title>Cross Realm - Eternal Punk Edition - v4.4.2</title>
+
+    <!-- OGP Tags for Discord/Twitter -->
+    <meta property="og:title" content="Cross Realm - Eternal Punk Edition -">
+    <meta property="og:description" content="スチームパンク×幻想世界×サイバーパンク。タクティカル・ペア・システムで手札を削り切れ！ブラウザですぐに遊べるオンラインカードゲーム。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://(ここに公開したゲームのURLを入れてください)">
+    <!-- Discord等で表示されるサムネイル画像。ダミー画像を入れていますが、好みの画像のURLに変更してください -->
+    <meta property="og:image" content="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80">
+    <meta property="og:site_name" content="Cross Realm">
+    <meta name="theme-color" content="#40E0D0">
+
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -321,7 +332,7 @@
                                 </div>
                                 {gs?.players?.[0]?.id === socket?.id && (
                                     <div style={{display:'flex', gap:15, width:'100%', marginTop: 10}}>
-                                        <button onClick={()=>socket.emit('add-cpu',{roomId:room})} className="btn-sub">CPU追加</button>
+                                        <button onClick={()=>socket.emit('add-cpu',{roomId:room})} className="btn-sub" style={{height: 60}}>CPU追加</button>
                                         <button onClick={()=>socket.emit('start-game',{roomId:room})} className="btn-main" disabled={gs?.players?.length < 2}>ゲーム開始</button>
                                     </div>
                                 )}
@@ -397,7 +408,7 @@
                                     {(() => {
                                         const totalCards = sortedHand?.length || 0;
                                         const maxHandWidth = Math.min(windowWidth * 0.95, 550);
-                                        const cardW = 90; // モバイル用カード幅
+                                        const cardW = 90; 
                                         let overlap = 55; 
                                         if (totalCards > 1) { 
                                             const idealWidth = cardW + (totalCards - 1) * overlap; 
@@ -459,13 +470,13 @@
                                     <h2 style={{color: winner ? "var(--accent)" : "var(--danger)", fontSize: 32, fontWeight:900, textShadow: `0 0 20px rgba(64,224,208,0.5)`}}>{resTitle}</h2>
                                     <div style={{width:'100%'}}>{gs?.players?.slice().sort((a,b) => (a?.handCount || 0) - (b?.handCount || 0)).map((p, i) => (
                                         <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'10px 0', borderBottom:'1px solid rgba(212,175,55,0.1)'}}>
-                                            <span style={{fontWeight:900}}>{i+1}. {p.name} {p.id === socket?.id && "(YOU)"}</span>
+                                            <span style={{fontWeight:900}}>{i+1}. {p.name} {p.id === socket.id && "(YOU)"}</span>
                                             <span style={{color:'var(--steam-gold)', fontWeight:900}}>{p.handCount}枚</span>
                                         </div>
                                     ))}</div>
                                     <div style={{display: 'flex', gap: 10, width: '100%'}}>
-                                        <button onClick={() => socket.emit('play-again', {roomId: room})} className="btn-main">再戦</button>
-                                        <button onClick={() => window.location.reload()} className="btn-sub">終了</button>
+                                        <button onClick={() => socket.emit('play-again', {roomId: room})} className="btn-main" style={{height: 60}}>再戦</button>
+                                        <button onClick={() => window.location.reload()} className="btn-sub" style={{height: 60}}>終了</button>
                                     </div>
                                 </div>
                             </div>
