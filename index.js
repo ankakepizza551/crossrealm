@@ -124,7 +124,9 @@ io.on('connection', (socket) => {
     }
     room.fieldCard = newFieldCard;
 
-    if (player.hand.length === 0) { room.status = 'finished'; } else {
+    if (player.hand.length === 0) { 
+      room.status = 'finished'; 
+    } else {
       if (card.isSpecial) {
         if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
         if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
@@ -143,5 +145,5 @@ io.on('connection', (socket) => {
   });
 });
 
-const port = process.env.PORT || 3001;
-server.listen(port, () => console.log(`Server v3.1.12 Ready`));
+const serverPort = process.env.PORT || 3001;
+server.listen(serverPort, () => console.log(`Cross Realm v3.1.15 Ready`));
