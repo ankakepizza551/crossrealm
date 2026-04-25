@@ -52,11 +52,8 @@
 
         .hand-container { position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%); }
         
-        /* FlexboxではなくBlockに変更し、中のコンテナの margin: 0 auto を確実に効かせる */
-        .hand-flex { display: block; padding: 180px 20px 25px 20px; min-height: 350px; overflow-x: auto; overflow-y: visible; margin-top: -180px; box-sizing: border-box; }
-        
-        .hand-flex::-webkit-scrollbar { height: 4px; }
-        .hand-flex::-webkit-scrollbar-thumb { background: var(--steam-gold); border-radius: 2px; }
+        /* スクロールを廃止し、はみ出ない設定に変更 */
+        .hand-flex { display: block; padding: 180px 0 25px 0; min-height: 350px; overflow: visible; margin-top: -180px; box-sizing: border-box; }
 
         .action-row { background: #000; border-top: 1px solid rgba(212,175,55,0.3); padding: 15px 0 35px 0; display: flex; justify-content: center; z-index: 10; position: relative; }
 
@@ -149,9 +146,9 @@
         
         .card-footer { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); font-size: 14px; font-weight: 900; padding: 5px 0; text-align: center; border-top: 2px solid var(--r-color); color: #fff; font-family: 'Cinzel', serif; z-index: 3; text-shadow: 0 0 5px var(--r-color); }
 
-        /* 手札の重なり調整 */
-        .my-card { margin-left: -44px; transform-origin: bottom center; cursor: pointer; position: relative; }
-        .my-card:first-child { margin-left: 0; }
+        /* 手札の重なり調整 (margin-leftを変数で動的に受け取る) */
+        .my-card { margin-left: var(--card-margin, -44px); transform-origin: bottom center; cursor: pointer; position: relative; transition: transform 0.2s, margin 0.2s; }
+        .my-card:first-child { margin-left: 0 !important; }
         .my-card.playable:hover { transform: translateY(-20px) scale(1.45) !important; z-index: 10000 !important; }
         .my-card.not-playable { opacity: 0.5; filter: grayscale(0.6) brightness(0.5); cursor: not-allowed; }
 
@@ -274,6 +271,9 @@
             const [bgRealm, setBgRealm] = useState('GEAR');
             const [isMuted, setIsMuted] = useState(false); 
             
+            // ウィンドウサイズを監視するためのState
+            const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
             const prevTurnRef = useRef(null);
 
             useEffect(() => {
@@ -282,6 +282,13 @@
                 s.on('update-game', (data) => { setGs(data); setError(''); });
                 s.on('join-error', (msg) => { setError(msg); setJoined(false); });
                 return () => s.disconnect();
+            }, []);
+
+            // 画面サイズのリサイズイベントを監視
+            useEffect(() => {
+                const handleResize = () => setWindowWidth(window.innerWidth);
+                window.addEventListener('resize', handleResize);
+                return () => window.removeEventListener('resize', handleResize);
             }, []);
 
             useEffect(() => {
@@ -570,18 +577,39 @@
 
                             <div className="hand-container">
                                 <div className="hand-flex">
-                                    {/* 手札の枚数から「実際の全体の幅」をピクセルで計算して指定し、完全な中央揃えを実現 */}
-                                    <div style={{ 
-                                        display: 'flex', 
-                                        alignItems: 'flex-end', 
-                                        width: sortedHand.length > 0 ? `${108 + (sortedHand.length - 1) * 64}px` : 'auto',
-                                        margin: '0 auto',
-                                        position: 'relative'
-                                    }}>
-                                        {sortedHand.map((card) => (
-                                            <CardView key={card.id} card={card} playable={canPlay(card)} onClick={() => handlePlay(card)} />
-                                        ))}
-                                    </div>
+                                    {(() => {
+                                        // 手札の枚数と画面幅から、はみ出さない最適な重なり具合を計算する魔法のロジック
+                                        const totalCards = sortedHand.length;
+                                        const maxHandWidth = Math.min(windowWidth * 0.95, 600); // 画面の95% か 最大600px に収める
+                                        const cardWidth = 108;
+                                        let overlap = 64; // デフォルトのカードの増える幅 (108px - 44px重なり = 64px)
+
+                                        if (totalCards > 1) {
+                                            const idealWidth = cardWidth + (totalCards - 1) * overlap;
+                                            if (idealWidth > maxHandWidth) {
+                                                // はみ出る場合は、幅にピッタリ収まるように重なり間隔を圧縮する
+                                                overlap = (maxHandWidth - cardWidth) / (totalCards - 1);
+                                            }
+                                        }
+
+                                        const containerWidth = totalCards > 0 ? cardWidth + (totalCards - 1) * overlap : 0;
+                                        const marginLeftVal = overlap - cardWidth; // CSSに渡す実際の margin-left 値 (-44px など)
+
+                                        return (
+                                            <div style={{ 
+                                                display: 'flex', 
+                                                alignItems: 'flex-end', 
+                                                width: `${containerWidth}px`,
+                                                margin: '0 auto',
+                                                position: 'relative',
+                                                '--card-margin': `${marginLeftVal}px`
+                                            }}>
+                                                {sortedHand.map((card) => (
+                                                    <CardView key={card.id} card={card} playable={canPlay(card)} onClick={() => handlePlay(card)} />
+                                                ))}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                                 <div style={{textAlign:'center', fontSize:18, fontWeight:900, paddingBottom: 8, color:'var(--steam-gold)', letterSpacing:4}}>SYNC: {sortedHand.length} / {gs.handLimit}</div>
                             </div>
