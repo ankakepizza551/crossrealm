@@ -158,6 +158,7 @@ io.on('connection', (socket) => {
       addLog(room, `[WIN] ${player.name} MISSION COMPLETE!`);
       room.status = 'finished'; 
     } else {
+      let step = 1;
       if (card.isSpecial) {
         if (card.realm === 'GEAR') {
           room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
@@ -166,9 +167,18 @@ io.on('connection', (socket) => {
         if (card.realm === 'MACHINE') {
           room.isReversed = !room.isReversed;
           addLog(room, `[SYS] 進行方向がリバース`);
+          if (room.players.length === 2) {
+             step = 0; // 2人の場合はターン移動なし
+             addLog(room, `[SYS] 2人対戦のため連続行動`);
+          }
         }
       }
-      room.turnIndex = (room.turnIndex + (room.isReversed ? -1 : 1) + room.players.length) % room.players.length;
+      
+      // 2人プレイのリバース時(step=0)以外は、進行方向に従ってターンを進める
+      if (step !== 0) {
+        step = room.isReversed ? -1 : 1;
+      }
+      room.turnIndex = (room.turnIndex + step + room.players.length) % room.players.length;
     }
     emitUpdate(roomId);
   });
