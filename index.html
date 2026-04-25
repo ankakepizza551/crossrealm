@@ -21,7 +21,7 @@
         .bg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
         .bg-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 180%; height: 180%; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.5"/><circle cx="100" cy="100" r="75" fill="none" stroke="rgba(64,224,208,0.05)" stroke-width="0.4"/></svg>'); animation: rotate-eternal 180s linear infinite; }
         @keyframes rotate-eternal { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
-        .bg-magic-aura { position: absolute; inset: 0; background: radial-gradient(circle at center, var(--realm-color, rgba(64, 224, 208, 0.15)) 0%, transparent 80%); opacity: 0.6; transition: background 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .bg-magic-aura { position: absolute; inset: 0; background: radial-gradient(circle at center, var(--realm-color, rgba(64, 224, 208, 0.15)) 0%, transparent 80%); opacity: 0.6; transition: background 3s ease-in-out; }
         .bg-scanline { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.2) 50%); background-size: 100% 4px; z-index: 5; }
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
@@ -171,6 +171,7 @@
             const [joined, setJoined] = useState(false);
             const [selectorCard, setSelectorCard] = useState(null);
             const [error, setError] = useState('');
+            const [bgRealm, setBgRealm] = useState('GEAR');
             
             const prevTurnRef = useRef(null);
 
@@ -182,6 +183,7 @@
                 return () => s.disconnect();
             }, []);
 
+            // ターン通知サウンドの制御
             useEffect(() => {
                 if (gs && gs.status === 'playing') {
                     const isMyTurnNow = gs.currentTurnPlayerId === socket?.id;
@@ -196,8 +198,26 @@
                 }
             }, [gs, socket]);
 
+            // トップ画面・待機画面の背景グラデーションを自動で切り替える
+            useEffect(() => {
+                let interval;
+                if (!gs || gs.status !== 'playing') {
+                    interval = setInterval(() => {
+                        setBgRealm(prev => {
+                            const idx = CYCLE_ORDER.indexOf(prev);
+                            return CYCLE_ORDER[(idx + 1) % CYCLE_ORDER.length];
+                        });
+                    }, 4000); // 4秒ごとに色が切り替わる
+                }
+                return () => {
+                    if (interval) clearInterval(interval);
+                };
+            }, [gs]);
+
             const isMyTurn = gs?.currentTurnPlayerId === socket?.id && gs?.status === 'playing';
-            const currentRealm = gs?.fieldCard?.realm || 'GEAR';
+            
+            // プレイ中は場札の属性、待機中は自動で移り変わる属性を背景色にする
+            const currentRealm = (gs && gs.status === 'playing') ? (gs?.fieldCard?.realm || 'GEAR') : bgRealm;
 
             const sortedHand = useMemo(() => {
                 const me = gs?.players?.find(p => p.id === socket?.id);
@@ -325,7 +345,7 @@
                                 </div>
                                 
                                 {gs?.players?.[0]?.id === socket?.id ? (
-                                    <button onClick={()=>socket.emit('start-game',{roomId:room})} className="btn-main" disabled={gs?.players?.length < 2}>システム起動</button>
+                                    <button onClick={()=>socket.emit('start-game',{roomId:room})} className="btn-main" disabled={gs?.players?.length < 2}>ゲーム開始</button>
                                 ) : (
                                     <div style={{fontSize: 12, color: 'var(--steam-gold)', fontWeight: 900, letterSpacing: 2}}>ホストの起動待機中...</div>
                                 )}
