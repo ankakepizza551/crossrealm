@@ -52,8 +52,8 @@
 
         .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; position: relative; }
         
-        /* バトルログ: 13px -> 15px */
-        .battle-log { position: absolute; top: 10px; left: 15px; z-index: 1000; pointer-events: none; display: flex; flex-direction: column; gap: 6px; max-width: 60%; }
+        /* バトルログの位置をカードに被らないようさらに上に引き上げました */
+        .battle-log { position: absolute; top: -45px; left: 15px; z-index: 1000; pointer-events: none; display: flex; flex-direction: column; gap: 6px; max-width: 60%; }
         .log-entry { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.9); background: rgba(0,0,0,0.6); border-left: 3px solid var(--accent); padding: 8px 14px; border-radius: 0 6px 6px 0; text-shadow: 0 0 3px #000; box-shadow: 0 2px 5px rgba(0,0,0,0.3); backdrop-filter: blur(2px); animation: logAnim 5s forwards; }
         @keyframes logAnim { 0% { transform: translateX(-15px); opacity: 0; } 5% { transform: translateX(0); opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; pointer-events: none; } }
 
@@ -246,6 +246,11 @@
 
             const handlePlay = (card) => {
                 if (!canPlay(card)) return;
+                
+                // アラートSEが鳴っていた場合は即座に停止してリセットする
+                sfx.alert.pause();
+                sfx.alert.currentTime = 0;
+                
                 sfx.play.currentTime = 0; sfx.play.play().catch(()=>{});
 
                 const isWild = (card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial));
@@ -257,6 +262,10 @@
             };
 
             const handleDraw = () => {
+                // アラートSEが鳴っていた場合は即座に停止してリセットする
+                sfx.alert.pause();
+                sfx.alert.currentTime = 0;
+                
                 sfx.draw.currentTime = 0; sfx.draw.play().catch(()=>{});
                 socket.emit('draw-card',{roomId:room});
             };
