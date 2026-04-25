@@ -11,6 +11,17 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 const HAND_LIMIT = 12;
 
+/**
+ * --- NGワード初期リスト ---
+ * 一般的な不適切語句、およびオンラインでの攻撃的な言葉をセットしました。
+ * 運用に合わせて自由に追加・削除してください。
+ */
+const NG_WORDS = [
+  'FUCK', 'SHIT', 'BITCH', 'ASSHOLE', 'DICK', 'PUSSY', 'RETARD', 
+  'SHINE', 'KASU', 'GOMI', '死ね', 'バカ', 'アホ', 'カス', 'ゴミ', 
+  'マンコ', 'チンコ', 'ウンコ', 'SEX', 'HENTAI'
+]; 
+
 const createDeck = () => {
   const realmConfig = {
     GEAR: { total: 10, special: 3 },      
@@ -38,17 +49,15 @@ const createDeck = () => {
   return deck.sort(() => Math.random() - 0.5);
 };
 
-// サーバー側バリデーションの強化
 const canPlayCard = (room, card) => {
+  if (!room.fieldCard) return true;
   const field = room.fieldCard.realm;
   const hand = card.realm;
   
   if (room.nextDrawAmount > 1) return (hand === 'GEAR' && card.isSpecial);
   if (hand === 'PLANET' || hand === 'RUINS') return true;
   if (hand === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
-
-  // 場が惑星/廃墟から変換されていない場合のセーフティ
-  if (field === 'PLANET' || field === 'RUINS') return true;
+  if (field === 'PLANET' || field === 'RUINS') return true; 
 
   switch (field) {
     case 'GEAR':     return (hand === 'GEAR' || hand === 'ICEAGE');
@@ -65,6 +74,7 @@ const emitUpdate = (roomId) => {
   const room = rooms[roomId];
   if (!room) return;
   const data = {
+    roomId: roomId,
     status: room.status,
     fieldCard: room.fieldCard,
     currentTurnPlayerId: room.players[room.turnIndex]?.id,
@@ -83,19 +93,45 @@ const emitUpdate = (roomId) => {
 
 io.on('connection', (socket) => {
   socket.on('join-room', ({ roomId, playerName }) => {
-    if (!rooms[roomId]) {
-      rooms[roomId] = {
+    const cleanId = roomId?.toUpperCase().trim();
+    const cleanName = playerName?.toUpperCase().trim();
+
+    if (!cleanId || !cleanName) {
+      return socket.emit('join-error', 'IDと名前を入力してください。');
+    }
+    if (cleanName.length > 10) {
+      return socket.emit('join-error', '名前は10文字以内です。');
+    }
+
+    // NGワードフィルタリング
+    const isNG = NG_WORDS.some(word => 
+      cleanName.includes(word.toUpperCase()) || cleanId.includes(word.toUpperCase())
+    );
+    if (isNG) {
+      return socket.emit('join-error', '不適切な言葉が含まれています。');
+    }
+
+    if (!rooms[cleanId]) {
+      rooms[cleanId] = {
         players: [], deck: [], fieldCard: null,
         status: 'waiting', turnIndex: 0, nextDrawAmount: 1, isReversed: false,
         readyPlayers: new Set()
       };
     }
-    const room = rooms[roomId];
-    if (room.players.findIndex(p => p.id === socket.id) === -1 && room.players.length < 4) {
-      room.players.push({ id: socket.id, name: playerName || "PILOT", hand: [] });
-      socket.join(roomId);
+    
+    const room = rooms[cleanId];
+    if (room.status !== 'waiting') {
+      return socket.emit('join-error', '進行中のゲームには参加できません。');
     }
-    emitUpdate(roomId);
+    if (room.players.length >= 4) {
+      return socket.emit('join-error', 'このルームは満員です。');
+    }
+
+    if (room.players.findIndex(p => p.id === socket.id) === -1) {
+      room.players.push({ id: socket.id, name: cleanName, hand: [] });
+      socket.join(cleanId);
+    }
+    emitUpdate(cleanId);
   });
 
   socket.on('start-game', ({ roomId }) => {
@@ -141,8 +177,6 @@ io.on('connection', (socket) => {
 
     player.hand = player.hand.filter(c => c.id !== card.id);
     const newFieldCard = { ...card };
-    
-    // 属性変換の反映をより確実に
     if (chosenRealm) {
       if (card.realm === 'RUINS') newFieldCard.wasRuins = true;
       if (card.realm === 'PLANET') newFieldCard.wasPlanet = true;
@@ -178,4 +212,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = 3001;
-server.listen(PORT, () => console.log(`Cross Realm Server v3.0.8 Stable Synchronized`));
+server.listen(PORT, () => console.log(`Cross Realm Server v3.0.9 Safe Filter Active`));
