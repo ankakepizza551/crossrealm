@@ -20,7 +20,10 @@
         .bg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
         .bg-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 180%; height: 180%; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.5"/><circle cx="100" cy="100" r="75" fill="none" stroke="rgba(64,224,208,0.05)" stroke-width="0.4"/></svg>'); animation: rotate-eternal 180s linear infinite; }
         @keyframes rotate-eternal { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
-        .bg-magic-aura { position: absolute; inset: 0; background: radial-gradient(circle at center, var(--realm-color, rgba(64, 224, 208, 0.15)) 0%, transparent 80%); opacity: 0.6; transition: background 3s ease-in-out; }
+        
+        /* 光の強さと広がりをアップし、色の変化がハッキリ分かるように修正 */
+        .bg-magic-aura { position: absolute; inset: 0; background-color: var(--realm-color); -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 85%); mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 85%); opacity: 0.7; transition: background-color 3s ease-in-out; }
+        
         .bg-scanline { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.2) 50%); background-size: 100% 4px; z-index: 5; }
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
@@ -65,7 +68,8 @@
         .my-card.playable:hover { transform: translateY(-20px) scale(1.45) !important; z-index: 10000 !important; border-color: #fff; box-shadow: 0 40px 80px rgba(0,0,0,1), 0 0 40px var(--accent); }
         .my-card.not-playable { opacity: 0.45; filter: grayscale(0.8) brightness(0.6); cursor: not-allowed; }
 
-        .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); background: rgba(0,0,0,0.7); padding: 30px; }
+        /* 背景の光が透けるように背景の黒をさらに薄く(0.5 -> 0.2)しました */
+        .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); background: rgba(0,0,0,0.2); padding: 30px; }
         
         .panel { 
             position: relative;
@@ -89,9 +93,10 @@
         .panel-corner1 { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
         .panel-corner2 { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
         
+        /* ラベル（めり込みスタイル）を復活 */
         .input-group { width: 100%; position: relative; text-align: left; margin-top: 10px; }
         .input-group label { position: absolute; top: -10px; left: 12px; background: #0b0b0e; padding: 0 6px; font-size: 11px; font-weight: 900; color: var(--steam-gold); letter-spacing: 2px; z-index: 1; }
-        .panel input { width: 100%; padding: 18px 15px; background: rgba(0,0,0,0.6); border: 1px solid rgba(64, 224, 208, 0.3); border-left: 4px solid var(--accent); color: var(--accent); font-size: 18px; border-radius: 4px; outline: none; font-family: 'Exo 2', sans-serif; box-sizing: border-box; transition: 0.3s; text-shadow: 0 0 5px rgba(64, 224, 208, 0.5); }
+        .panel input { width: 100%; padding: 18px 15px; background: rgba(0,0,0,0.6); border: 1px solid rgba(64, 224, 208, 0.3); border-left: 4px solid var(--accent); color: var(--accent); text-align: center; font-size: 18px; border-radius: 4px; outline: none; font-family: 'Exo 2', sans-serif; box-sizing: border-box; transition: 0.3s; text-shadow: 0 0 5px rgba(64, 224, 208, 0.5); }
         .panel input:focus { background: rgba(64, 224, 208, 0.05); border-color: var(--accent); box-shadow: 0 0 15px rgba(64, 224, 208, 0.2), inset 0 0 10px rgba(64, 224, 208, 0.1); }
 
         .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 12px; margin: 10px 0; }
@@ -263,7 +268,7 @@
             return (
                 <div className="screen-wrapper" style={{ '--realm-color': REALMS[currentRealm].color }}>
                     <div className="bg-layer bg-watermark"></div>
-                    <div className="bg-layer bg-magic-aura"></div>
+                    <div className="bg-layer bg-magic-aura" style={{ backgroundColor: REALMS[currentRealm].color }}></div>
                     <div className="bg-layer bg-scanline"></div>
 
                     {/* === トップ画面（ログイン） === */}
@@ -280,6 +285,7 @@
                                 
                                 {error && <div className="error-msg">⚠️ {error}</div>}
                                 
+                                {/* ラベルを復活 */}
                                 <div style={{width:'100%', display:'flex', flexDirection:'column', gap:20}}>
                                     <div className="input-group">
                                         <label>プレイヤー名</label>
