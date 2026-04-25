@@ -25,7 +25,14 @@
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
 
-        /* 相手エリア */
+        /* バトルログ */
+        .battle-log { position: absolute; top: 15px; left: 15px; z-index: 1000; pointer-events: none; display: flex; flex-direction: column; gap: 6px; width: 60%; }
+        .log-entry { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.9); background: rgba(0,0,0,0.65); border-left: 2px solid var(--accent); padding: 5px 10px; border-radius: 0 4px 4px 0; text-shadow: 0 0 5px #000; animation: slideIn 0.3s ease-out; box-shadow: 0 2px 10px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
+        @keyframes slideIn { from { transform: translateX(-15px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* 進行方向UI */
+        .turn-direction { text-align: center; font-size: 11px; font-weight: 900; color: var(--accent); letter-spacing: 2px; font-family: 'Exo 2', sans-serif; background: rgba(0,0,0,0.5); padding: 6px 12px; border-bottom: 1px solid rgba(64,224,208,0.3); display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.5s; }
+
         .opponents-area { display: flex; flex-direction: column; gap: 10px; padding: 15px; border-bottom: 2px solid var(--border); background: rgba(0,0,0,0.6); }
         .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 12px; background: rgba(255,255,255,0.04); border-left: 5px solid var(--border); }
         .opp-row.active { border-left-color: var(--accent); background: rgba(64, 224, 208, 0.1); box-shadow: inset 0 0 15px rgba(64, 224, 208, 0.15); }
@@ -42,17 +49,9 @@
         .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; position: relative; }
         .info-panel { background: rgba(10,10,15,0.98); border: 2px solid var(--steam-gold); padding: 15px; border-radius: 12px; max-width: 180px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.9); }
 
-        /* 手札コンテナ: 飛び出し問題を物理的に解決 */
-        .hand-container { position: relative; z-index: 9999; width: 100%; background: linear-gradient(to top, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%); }
-        .hand-flex { 
-            display: flex; 
-            padding: 180px 80px 25px 80px; /* カードが巨大化しても収まるように天井を大幅拡張 */
-            min-height: 350px; 
-            align-items: flex-end; 
-            overflow-x: auto; 
-            margin-top: -180px; /* 拡張した分だけ上に引き戻す */
-            box-sizing: border-box; 
-        }
+        /* 手札コンテナ */
+        .hand-container { position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%); }
+        .hand-flex { display: flex; padding: 180px 80px 25px 80px; min-height: 350px; align-items: flex-end; overflow-x: auto; overflow-y: visible; margin-top: -180px; box-sizing: border-box; }
         .hand-flex::-webkit-scrollbar { height: 4px; }
         .hand-flex::-webkit-scrollbar-thumb { background: var(--steam-gold); border-radius: 2px; }
 
@@ -64,8 +63,6 @@
 
         .my-card { margin-left: -48px; transform-origin: bottom center; cursor: pointer; position: relative; }
         .my-card:first-child { margin-left: 0; }
-        
-        /* 跳ね上がりを少し整え、天井の範囲内に確実に収める */
         .my-card.playable:hover { transform: translateY(-70px) scale(1.4) !important; z-index: 10000 !important; border-color: #fff; box-shadow: 0 40px 100px rgba(0,0,0,1), 0 0 50px var(--accent); }
         .my-card.not-playable { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
 
@@ -90,10 +87,21 @@
     </style>
 </head>
 <body>
+    <!-- 効果音用 (Mixkit Free Sounds) -->
+    <script>
+        const sfx = {
+            turn: new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'),
+            play: new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3'),
+            draw: new Audio('https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3'),
+            alert: new Audio('https://assets.mixkit.co/active_storage/sfx/2862/2862-preview.mp3')
+        };
+        Object.values(sfx).forEach(a => a.volume = 0.3); // ボリューム調整
+    </script>
+
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useMemo, useRef } = React;
         const REALMS = {
             GEAR: { n: '歯車', color: '#FF8C00', desc: 'セットA：維持。', effect: '特殊(S): +2ドロー' },
             ICEAGE: { n: '氷河期', color: '#00BFFF', desc: 'セットA→B：遷移。', effect: '' },
@@ -114,6 +122,8 @@
             const [joined, setJoined] = useState(false);
             const [selectorCard, setSelectorCard] = useState(null);
             const [error, setError] = useState('');
+            
+            const prevTurnRef = useRef(null);
 
             useEffect(() => {
                 const s = io('https://crossrealm-server.onrender.com'); 
@@ -122,6 +132,21 @@
                 s.on('join-error', (msg) => { setError(msg); setJoined(false); });
                 return () => s.disconnect();
             }, []);
+
+            // ターン通知サウンドの制御
+            useEffect(() => {
+                if (gs && gs.status === 'playing') {
+                    const isMyTurnNow = gs.currentTurnPlayerId === socket?.id;
+                    if (isMyTurnNow && prevTurnRef.current !== socket?.id) {
+                        if (gs.nextDrawAmount > 1) {
+                            sfx.alert.currentTime = 0; sfx.alert.play().catch(()=>{});
+                        } else {
+                            sfx.turn.currentTime = 0; sfx.turn.play().catch(()=>{});
+                        }
+                    }
+                    prevTurnRef.current = gs.currentTurnPlayerId;
+                }
+            }, [gs, socket]);
 
             const isMyTurn = gs?.currentTurnPlayerId === socket?.id && gs?.status === 'playing';
             const currentRealm = gs?.fieldCard?.realm || 'GEAR';
@@ -153,12 +178,19 @@
 
             const handlePlay = (card) => {
                 if (!canPlay(card)) return;
+                sfx.play.currentTime = 0; sfx.play.play().catch(()=>{}); // SE再生
+
                 const isWild = (card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial));
                 if (isWild && sortedHand.length > 1) {
                     setSelectorCard(card);
                 } else {
                     socket.emit('play-card', { roomId: room.toUpperCase(), card, chosenRealm: isWild ? 'GEAR' : undefined });
                 }
+            };
+
+            const handleDraw = () => {
+                sfx.draw.currentTime = 0; sfx.draw.play().catch(()=>{}); // SE再生
+                socket.emit('draw-card',{roomId:room});
             };
 
             const CardView = ({ card, playable, onClick, isField }) => {
@@ -194,7 +226,12 @@
                                     <input type="text" value={name} onChange={e=>setName(e.target.value)} placeholder="名前を入力" maxLength={10} />
                                     <input type="text" value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} placeholder="ルームID" />
                                 </div>
-                                <button onClick={()=>{setJoined(true); socket.emit('join-room',{roomId:room, playerName:name});}} className="btn-main">接続開始</button>
+                                <button onClick={()=>{
+                                    // ユーザーアクションによりオーディオの制限を解除
+                                    sfx.turn.load(); sfx.play.load(); sfx.draw.load(); sfx.alert.load();
+                                    setJoined(true); 
+                                    socket.emit('join-room',{roomId:room, playerName:name});
+                                }} className="btn-main">接続開始</button>
                             </div>
                         </div>
                     )}
@@ -228,6 +265,27 @@
 
                     {joined && gs?.status === 'playing' && (
                         <div className="game-container">
+                            
+                            {/* バトルログ (NEW) */}
+                            {gs.logs && (
+                                <div className="battle-log">
+                                    {gs.logs.map((log, i) => (
+                                        <div key={i} className="log-entry">
+                                            {log}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* 進行方向UI (NEW) */}
+                            <div className="turn-direction">
+                                TURN DIRECTION: 
+                                <span style={{transform: gs.isReversed ? 'rotate(180deg)' : 'rotate(0deg)', transition:'0.5s', display:'inline-block'}}>
+                                    {gs.isReversed ? '⟲' : '⟳'}
+                                </span>
+                                {gs.isReversed ? ' REVERSE' : ' NORMAL'}
+                            </div>
+
                             <div className="opponents-area">
                                 {gs.players.filter(p => p.id !== socket?.id).map(p => (
                                     <div key={p.id} className={`opp-row ${gs.currentTurnPlayerId === p.id ? 'active' : ''}`}>
@@ -254,7 +312,30 @@
                                 <div style={{fontFamily:'Cinzel', fontSize: 11, opacity: 0.6, letterSpacing:2}}>{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
                                 {gs.nextDrawAmount > 1 && <div style={{color: 'var(--danger)', fontWeight:900, fontSize:22, textShadow:'0 0 10px rgba(255,0,0,0.5)'}}>DRAW +{gs.nextDrawAmount}</div>}
                                 <div style={{display:'flex', alignItems:'center', gap:20}}>
-                                    <CardView card={gs.fieldCard} isField={true} />
+                                    
+                                    {/* 場のカードの蓄積表現 (NEW) */}
+                                    <div style={{position: 'relative', width: 'var(--card-w)', height: 'var(--card-h)'}}>
+                                        {gs.playHistory?.map((card, i) => {
+                                            const isLast = i === gs.playHistory.length - 1;
+                                            const rotate = (i * 7) % 15 - 7; 
+                                            const offsetX = (gs.playHistory.length - 1 - i) * -2;
+                                            const offsetY = (gs.playHistory.length - 1 - i) * -2;
+                                            return (
+                                                <div key={i} style={{
+                                                    position: 'absolute', top: 0, left: 0, 
+                                                    transform: `rotate(${rotate}deg) translate(${offsetX}px, ${offsetY}px)`,
+                                                    zIndex: i,
+                                                    opacity: isLast ? 1 : 0.4,
+                                                    pointerEvents: isLast ? 'auto' : 'none'
+                                                }}>
+                                                    <CardView card={card} isField={true} />
+                                                </div>
+                                            );
+                                        })}
+                                        {/* 初期状態フォールバック */}
+                                        {!gs.playHistory && <CardView card={gs.fieldCard} isField={true} />}
+                                    </div>
+
                                     <div className="info-panel">
                                         <div className="realm-title">{REALMS[currentRealm].n}</div>
                                         <div style={{fontSize:11, opacity:0.8, marginTop:5, lineHeight:1.4}}>{REALMS[currentRealm].desc}</div>
@@ -272,7 +353,7 @@
                             </div>
 
                             <div className="action-row">
-                                <button className="btn-main" disabled={!isMyTurn} onClick={() => socket.emit('draw-card',{roomId:room})}>
+                                <button className="btn-main" disabled={!isMyTurn} onClick={handleDraw}>
                                     {gs.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引く` : (isMyTurn ? 'カードを引く' : '待機中...')}
                                 </button>
                             </div>
