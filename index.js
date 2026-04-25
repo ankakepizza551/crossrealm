@@ -82,11 +82,13 @@ function processBotTurn(roomId) {
   if (!room || room.status !== 'playing') return;
   const bot = room.players[room.turnIndex];
   if (!bot || !bot.isBot || bot.isActing) return;
+
   bot.isActing = true;
   setTimeout(() => {
     bot.isActing = false;
     const currentRoom = rooms[roomId];
     if (!currentRoom || currentRoom.status !== 'playing' || currentRoom.players[currentRoom.turnIndex].id !== bot.id) return;
+
     const action = getBotAction(currentRoom, bot);
     if (action.type === 'draw') {
       const amount = currentRoom.nextDrawAmount;
@@ -126,7 +128,7 @@ io.on('connection', (socket) => {
     const rid = data.roomId.toUpperCase();
     if (!rooms[rid]) rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], playHistory: [], handLimit: HAND_LIMIT, currentTurnPlayerId: null };
     const room = rooms[rid];
-    if (room.status !== 'waiting' || room.players.length >= 4) return socket.emit('join-error', '参加できません');
+    if (room.status !== 'waiting' || room.players.length >= 4) return socket.emit('join-error', '満員です');
     room.players.push({ id: socket.id, name: (data.playerName || 'Pilot').substring(0,10), hand: [], handCount: 0, isBot: false, isActing: false });
     socket.join(rid);
     io.to(rid).emit('update-game', room);
@@ -145,15 +147,23 @@ io.on('connection', (socket) => {
   socket.on('start-game', (data) => {
     const room = rooms[data.roomId.toUpperCase()];
     if (room && room.players.length >= 2) {
-      // プレイ順シャッフル
+      // プレイヤー順のシャッフル
       room.players = room.players.sort(() => Math.random() - 0.5);
-      room.status = 'playing'; room.deck = createDeck();
-      room.turnIndex = 0; // 必ず0番目から開始
-      room.isReversed = false; // 逆転解除
-      room.nextDrawAmount = 1; // 蓄積解除
-      room.players.forEach(p => { p.hand = []; for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop()); p.handCount = p.hand.length; });
+      room.status = 'playing';
+      room.deck = createDeck();
+      room.turnIndex = 0;
+      room.isReversed = false;
+      room.nextDrawAmount = 1;
+      room.playHistory = [];
+      room.logs = [];
+      room.players.forEach(p => { 
+        p.hand = []; 
+        for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop()); 
+        p.handCount = p.hand.length; 
+        p.isActing = false;
+      });
       room.fieldCard = room.deck.pop();
-      room.logs = []; addLog(room, "[SYS] ミッション開始");
+      addLog(room, "[SYS] ミッション開始");
       room.currentTurnPlayerId = room.players[room.turnIndex].id;
       io.to(room.id).emit('update-game', room);
       if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
@@ -164,14 +174,16 @@ io.on('connection', (socket) => {
     const room = rooms[data.roomId.toUpperCase()];
     if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
     const player = room.players.find(p => p.id === socket.id);
+    if (!canPlay(room, data.card)) return;
+    
+    player.hand = player.hand.filter(c => c.id !== data.card.id);
     const card = data.card;
-    if (!canPlay(room, card)) return;
-    player.hand = player.hand.filter(c => c.id !== card.id);
     if (data.chosenRealm) { card.wasPlanet = card.realm === 'PLANET'; card.wasRuins = card.realm === 'RUINS'; card.wasFountain = card.realm === 'FOUNTAIN'; card.realm = data.chosenRealm; }
     room.playHistory.push(JSON.parse(JSON.stringify(room.fieldCard)));
     if (room.playHistory.length > 5) room.playHistory.shift();
     room.fieldCard = card;
     addLog(room, `[PLAY] ${player.name} : ${card.realm}${card.isSpecial ? '(S)' : ''}`);
+    
     let skip = false;
     if (card.isSpecial) {
       if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
@@ -181,7 +193,7 @@ io.on('connection', (socket) => {
     player.handCount = player.hand.length;
     room.currentTurnPlayerId = room.players[room.turnIndex].id;
     io.to(room.id).emit('update-game', room);
-    if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
+    if (room.status === 'playing' && room.players[room.turnIndex].isBot) processBotTurn(room.id);
   });
 
   socket.on('draw-card', (data) => {
@@ -196,7 +208,7 @@ io.on('connection', (socket) => {
     if (player.handCount > HAND_LIMIT) room.status = 'finished'; else nextTurn(room);
     room.currentTurnPlayerId = room.players[room.turnIndex].id;
     io.to(room.id).emit('update-game', room);
-    if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
+    if (room.status === 'playing' && room.players[room.turnIndex].isBot) processBotTurn(room.id);
   });
 
   socket.on('play-again', (data) => {
@@ -204,12 +216,15 @@ io.on('connection', (socket) => {
     const room = rooms[rid];
     if (room) {
         room.status = 'waiting';
-        room.players.forEach(p => { p.hand = []; p.handCount = 0; p.isActing = false; });
-        room.playHistory = [];
-        room.logs = [];
-        room.isReversed = false;
-        room.nextDrawAmount = 1;
+        room.deck = [];
         room.fieldCard = null;
+        room.turnIndex = 0;
+        room.nextDrawAmount = 1;
+        room.isReversed = false;
+        room.logs = [];
+        room.playHistory = [];
+        room.currentTurnPlayerId = null;
+        room.players.forEach(p => { p.hand = []; p.handCount = 0; p.isActing = false; });
         io.to(rid).emit('update-game', room);
     }
   });
