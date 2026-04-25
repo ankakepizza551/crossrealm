@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm - Eternal Punk Edition - v16.0 3D</title>
+    <title>Cross Realm - Eternal Punk Edition - v16.0</title>
 
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -19,7 +19,7 @@
             --magic-purple: #8A2BE2; /* Fantasy Purple */
             --danger: #FF4500; 
             --bg: #05050A; /* 深淵な夜空 */
-            --opp-card-w: 22px; --opp-card-h: 30px; 
+            --card-w: 90px; --card-h: 130px; --opp-card-w: 24px; --opp-card-h: 34px; 
             --border: rgba(212, 175, 55, 0.45);
             --guide-gold: #FFD700;
         }
@@ -37,6 +37,7 @@
             box-shadow: 0 0 50px rgba(138, 43, 226, 0.2); 
         }
         
+        /* --- 背景・レイアウト (オリジナル維持) --- */
         .bg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
         .bg-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200%; height: 200%; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"><circle cx="150" cy="150" r="140" fill="none" stroke="rgba(212,175,55,0.05)" stroke-width="0.5"/><circle cx="150" cy="150" r="110" fill="none" stroke="rgba(64,224,208,0.05)" stroke-width="0.5"/><path d="M150 10 L150 290 M10 150 L290 150" stroke="rgba(138,43,226,0.05)" stroke-width="0.5"/><circle cx="150" cy="150" r="80" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.3" stroke-dasharray="4 4"/></svg>'); animation: rotate-eternal 240s linear infinite; }
         @keyframes rotate-eternal { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
@@ -50,48 +51,42 @@
         @keyframes panelPulse { 0%, 100% { box-shadow: 0 0 60px rgba(0,0,0,1), inset 0 0 30px rgba(212,175,55,0.1), 0 0 20px rgba(138,43,226,0.2); border-color: rgba(212,175,55,0.5); } 50% { box-shadow: 0 0 80px rgba(0,0,0,1), 0 0 40px rgba(138,43,226,0.4), inset 0 0 50px rgba(212,175,55,0.2); border-color: rgba(212,175,55,1); } }
         @keyframes sweepBtn { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
 
-        .game-container { flex: 1; display: flex; flex-direction: column; justify-content: space-between; position: relative; z-index: 10; height: 100%; overflow: hidden; }
-        
-        .turn-direction { flex-shrink: 0; position: relative; text-align: center; font-size: 12px; font-weight: 900; color: var(--accent); letter-spacing: 2px; background: rgba(0,0,0,0.85); padding: 4px; border-bottom: 1px solid rgba(138,43,226,0.5); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(138,43,226,0.1); }
-        .mute-btn-game { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; font-size: 12px; background: rgba(0,0,0,0.8); border: 1px solid var(--steam-gold); border-radius: 50%; color: var(--steam-gold); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; }
+        .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; height: 100%; overflow: hidden; }
+        .turn-direction { flex-shrink: 0; position: relative; text-align: center; font-size: 14px; font-weight: 900; color: var(--accent); letter-spacing: 2px; background: rgba(0,0,0,0.85); padding: 6px; border-bottom: 1px solid rgba(138,43,226,0.5); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(138,43,226,0.1); }
+        .mute-btn-game { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; background: rgba(0,0,0,0.8); border: 1px solid var(--steam-gold); border-radius: 50%; color: var(--steam-gold); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; }
 
-        .opponents-area { flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px 8px; background: rgba(0,0,0,0.7); border-bottom: 1px solid var(--border); backdrop-filter: blur(5px); }
-        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; border-radius: 6px; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(138,43,226,0.05)); border-left: 3px solid var(--border); transition: 0.4s; position: relative; overflow: hidden; }
+        .opponents-area { flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 6px 10px; background: rgba(0,0,0,0.7); border-bottom: 1px solid var(--border); backdrop-filter: blur(5px); }
+        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; border-radius: 6px; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(138,43,226,0.05)); border-left: 3px solid var(--border); transition: 0.4s; position: relative; overflow: hidden; }
         .opp-row.active { border-left-color: var(--accent); background: linear-gradient(90deg, rgba(64,224,208,0.2), rgba(138,43,226,0.2)); box-shadow: 0 0 15px rgba(138,43,226,0.4); animation: activePulse 1.5s infinite; }
         @keyframes activePulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
-        
-        .opp-name { font-weight: 900; font-size: 12px; color: #fff; max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-        .opp-hand-visual { display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
-        .mini-cards-stack { position: relative; width: 40px; height: var(--opp-card-h); }
+        .opp-name { font-weight: 900; font-size: 13px; color: #fff; max-width: 75px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+        .opp-hand-visual { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+        .mini-cards-stack { position: relative; width: 45px; height: var(--opp-card-h); }
         .mini-card-back { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #2a1a3a, #000); border: 1px solid var(--steam-gold); border-radius: 2px; position: absolute; top: 0; box-shadow: -2px 0 5px rgba(0,0,0,0.8); }
 
-        .cycle-bar { flex-shrink: 0; display: flex; justify-content: space-between; padding: 4px; background: rgba(5,5,15,0.95); border-bottom: 2px solid var(--border); box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 20; }
+        .cycle-bar { flex-shrink: 0; display: flex; justify-content: space-between; padding: 6px 4px; background: rgba(5,5,15,0.95); border-bottom: 2px solid var(--border); box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 20; }
         .cycle-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .cycle-dot { width: 100%; height: 3px; background: #1a1a2e; border-radius: 2px; transition: 0.3s; }
-        .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 10px var(--dot-color), 0 0 15px var(--dot-color); }
-        .cycle-dot.next-playable { background: var(--guide-gold); box-shadow: 0 0 12px var(--guide-gold); animation: pulseGold 0.8s infinite alternate; }
+        .cycle-dot { width: 100%; height: 4px; background: #1a1a2e; border-radius: 2px; transition: 0.3s; }
+        .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 12px var(--dot-color), 0 0 20px var(--dot-color); }
+        .cycle-dot.next-playable { background: var(--guide-gold); box-shadow: 0 0 15px var(--guide-gold); animation: pulseGold 0.8s infinite alternate; }
         @keyframes pulseGold { from { opacity: 0.3; transform: scaleX(0.7); } to { opacity: 1; transform: scaleX(1); } }
-        .cycle-label { font-size: 9px; font-weight: 900; opacity: 0.4; font-family: 'Cinzel', serif; }
+        .cycle-label { font-size: 10px; font-weight: 900; opacity: 0.4; font-family: 'Cinzel', serif; }
         .cycle-item.active .cycle-label { opacity: 1; color: var(--dot-color); text-shadow: 0 0 5px var(--dot-color); }
         .cycle-item.next-playable .cycle-label { opacity: 1; color: var(--guide-gold); text-shadow: 0 0 5px var(--guide-gold); }
 
-        .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; position: relative; padding: 10px 0; }
-        .info-panel { background: linear-gradient(180deg, rgba(10,10,20,0.95), rgba(0,0,0,0.95)); border: 1px solid var(--steam-gold); padding: 8px 10px; border-radius: 8px; width: 130px; text-align: center; box-shadow: 0 0 30px rgba(138,43,226,0.3); backdrop-filter: blur(5px); }
-        .realm-title { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 900; color: var(--realm-color); text-shadow: 0 0 15px var(--realm-color); }
+        .field { flex: 1; min-height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; position: relative; }
+        .info-panel { background: linear-gradient(180deg, rgba(10,10,20,0.95), rgba(0,0,0,0.95)); border: 1px solid var(--steam-gold); padding: 10px 14px; border-radius: 8px; width: 160px; text-align: center; box-shadow: 0 0 30px rgba(138,43,226,0.3); backdrop-filter: blur(5px); }
+        .realm-title { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 900; color: var(--realm-color); text-shadow: 0 0 15px var(--realm-color); }
 
-        .log-terminal-container { flex-shrink: 0; width: 100%; padding: 0 10px; margin-bottom: 2px; z-index: 50; }
-        .log-terminal { 
-            height: 40px; background: linear-gradient(90deg, rgba(5,5,15,0.9), rgba(20,10,30,0.9)); border: 1px solid rgba(138,43,226,0.4); border-radius: 6px;
-            padding: 4px 10px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; font-family: monospace; box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 0 0 10px rgba(138,43,226,0.2);
-        }
-        .log-line { font-size: 10px; color: rgba(255,255,255,0.6); white-space: nowrap; text-shadow: 0 0 2px rgba(255,255,255,0.3); }
+        .log-terminal-container { flex-shrink: 0; width: 100%; padding: 0 10px; margin-bottom: 5px; z-index: 50; }
+        .log-terminal { height: 50px; background: linear-gradient(90deg, rgba(5,5,15,0.9), rgba(20,10,30,0.9)); border: 1px solid rgba(138,43,226,0.4); border-radius: 6px; padding: 4px 10px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; font-family: monospace; box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 0 0 10px rgba(138,43,226,0.2); }
+        .log-line { font-size: 11px; color: rgba(255,255,255,0.6); white-space: nowrap; text-shadow: 0 0 2px rgba(255,255,255,0.3); }
         .log-line.play { color: var(--accent); font-weight: bold; text-shadow: 0 0 5px var(--accent); }
         .log-line.sys { color: var(--steam-gold); }
 
-        .hand-container { flex-shrink: 0; position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(5,0,15,1) 10%, transparent 100%); }
-        .hand-flex { display: flex; justify-content: center; align-items: flex-end; height: 105px; padding-bottom: 0; }
-        
-        .action-row { flex-shrink: 0; background: #05000a; border-top: none; padding: 6px 15px 12px 15px; display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 10; box-shadow: 0 -10px 30px rgba(138,43,226,0.2); }
+        .hand-container { flex-shrink: 0; position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(5,0,15,1) 50%, rgba(0,0,0,0) 100%); }
+        .hand-flex { display: flex; justify-content: center; align-items: flex-end; height: 145px; padding-bottom: 0; }
+        .action-row { flex-shrink: 0; background: #05000a; border-top: 1px solid rgba(138,43,226,0.4); padding: 8px 15px 15px 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 10; box-shadow: 0 -10px 30px rgba(138,43,226,0.2); }
 
         .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); background: rgba(5,0,15,0.7); padding: 25px; overflow: hidden; }
         .panel { position: relative; background: linear-gradient(135deg, rgba(20,15,35,0.95), rgba(5,5,10,1)); border: 1px solid var(--steam-gold); padding: 40px 20px; width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 25px; border-radius: 4px; box-sizing: border-box; animation: panelPulse 4s infinite; z-index: 10; }
@@ -107,11 +102,11 @@
         .panel input { width: 100%; padding: 20px; background: rgba(0,0,0,0.6); border: 1px solid rgba(138,43,226,0.3); border-bottom: 2px solid var(--steam-gold); color: #fff; text-align: center; font-size: 18px; border-radius: 4px; outline: none; box-sizing: border-box; transition: 0.3s; font-family: 'Exo 2', sans-serif; letter-spacing: 2px; }
         .panel input:focus { border-color: var(--accent); box-shadow: 0 0 20px rgba(64,224,208,0.3), inset 0 0 10px rgba(138,43,226,0.2); }
 
-        .btn-main { display: flex; align-items: center; justify-content: center; min-height: 44px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1px solid #FFF8DC; padding: 0 16px; border-radius: 6px; font-weight: 900; font-size: 16px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 4px; transition: 0.4s; box-shadow: 0 4px 20px rgba(212,175,55,0.5); box-sizing: border-box; animation: sweepBtn 3s linear infinite; line-height: 1; }
+        .btn-main { display: flex; align-items: center; justify-content: center; min-height: 55px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1px solid #FFF8DC; padding: 0 20px; border-radius: 6px; font-weight: 900; font-size: 18px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 4px; transition: 0.4s; box-shadow: 0 4px 20px rgba(212,175,55,0.5); box-sizing: border-box; animation: sweepBtn 3s linear infinite; line-height: 1; }
         .btn-main:hover { box-shadow: 0 0 40px rgba(212,175,55,0.9); transform: scale(1.02); }
         .btn-main:disabled { background: #222; color: #444; border-color: #333; cursor: not-allowed; box-shadow: none; animation: none; transform: none; }
         
-        .btn-sub { display: flex; align-items: center; justify-content: center; min-height: 40px; background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.5); color: #d8b4fe; padding: 0 16px; width: 100%; cursor: pointer; border-radius: 4px; font-weight: 900; font-size: 14px; transition: 0.3s; letter-spacing: 2px; box-sizing: border-box; line-height: 1; }
+        .btn-sub { display: flex; align-items: center; justify-content: center; min-height: 48px; background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.5); color: #d8b4fe; padding: 0 16px; width: 100%; cursor: pointer; border-radius: 4px; font-weight: 900; font-size: 16px; transition: 0.3s; letter-spacing: 2px; box-sizing: border-box; line-height: 1; }
         .btn-sub:hover { background: rgba(138,43,226,0.3); color: #fff; border-color: #c084fc; box-shadow: 0 0 15px rgba(138,43,226,0.5); }
 
         .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
@@ -131,19 +126,17 @@
         .mute-btn:hover { background: rgba(212, 175, 55, 0.2); transform: scale(1.1); box-shadow: 0 0 20px var(--steam-gold); }
 
         /* =========================================
-           3Dカード専用スタイル (Showcase統合)
+           3Dカード専用スタイル (Showcase版)
            ========================================= */
         .font-steampunk { font-family: 'Special Elite', cursive; }
         .font-fantasy { font-family: 'Cinzel Decorative', serif; }
         .font-cyber { font-family: 'Orbitron', sans-serif; }
         .font-void { font-family: 'Audiowide', cursive; }
 
-        .card-wrapper-3d { perspective: 2000px; transform-style: preserve-3d; position: relative; flex-shrink: 0; }
+        .card-wrapper-3d { position: relative; perspective: 1000px; flex-shrink: 0; }
         
         .card-3d { 
-            box-sizing: border-box; width: 230px; height: 330px; 
-            position: absolute; bottom: 0; left: 50%;
-            transform-origin: bottom center;
+            box-sizing: border-box; 
             transform-style: preserve-3d; 
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease;
             box-shadow: 0 15px 35px rgba(0,0,0,0.8);
@@ -174,68 +167,24 @@
             text-shadow: 0 0 15px var(--r-color); letter-spacing: 6px;
         }
 
-        .theme-steampunk { 
-            border: 8px solid #3d2416; border-radius: 6px;
-            background: linear-gradient(135deg, #4a2511 0%, #1a0802 100%);
-            box-shadow: 0 20px 50px #000, inset 0 0 100px #000;
-        }
-        .theme-steampunk::before {
-            content: ''; position: absolute; inset: 0;
-            background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.3) 0, rgba(0,0,0,0.3) 3px, transparent 3px, transparent 6px);
-            opacity: 0.7; z-index: 1;
-        }
-
-        .theme-fantasy { 
-            border-radius: 60px 15px; border: 4px solid rgba(255,255,255,0.8);
-            background: radial-gradient(circle at 50% 50%, #2a1b7e 0%, #05021a 100%);
-            box-shadow: 0 0 50px var(--r-shadow-color), inset 0 0 100px var(--r-shadow-color);
-        }
-
-        .theme-cyber { 
-            border: none; border-radius: 0px; background: #000; 
-            clip-path: polygon(0 15%, 15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%);
-            box-shadow: inset 0 0 60px var(--r-shadow-color);
-        }
+        .theme-steampunk { border: 8px solid #3d2416; border-radius: 6px; background: linear-gradient(135deg, #4a2511 0%, #1a0802 100%); box-shadow: 0 20px 50px #000, inset 0 0 100px #000; }
+        .theme-steampunk::before { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.3) 0, rgba(0,0,0,0.3) 3px, transparent 3px, transparent 6px); opacity: 0.7; z-index: 1; }
+        .theme-fantasy { border-radius: 60px 15px; border: 4px solid rgba(255,255,255,0.8); background: radial-gradient(circle at 50% 50%, #2a1b7e 0%, #05021a 100%); box-shadow: 0 0 50px var(--r-shadow-color), inset 0 0 100px var(--r-shadow-color); }
+        .theme-cyber { border: none; border-radius: 0px; background: #000; clip-path: polygon(0 15%, 15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%); box-shadow: inset 0 0 60px var(--r-shadow-color); }
         .theme-cyber .cyber-border { position: absolute; inset: 0; border: 4px solid rgba(255,255,255,0.15); border-left: 15px solid var(--r-color); z-index: 10; }
-
-        .theme-void { 
-            border: none; background: #000; box-shadow: 0 0 60px var(--r-shadow-color), inset 0 0 150px var(--r-shadow-color);
-            animation: liquid-shape 10s infinite alternate ease-in-out;
-        }
+        .theme-void { border: none; background: #000; box-shadow: 0 0 60px var(--r-shadow-color), inset 0 0 150px var(--r-shadow-color); animation: liquid-shape 10s infinite alternate ease-in-out; }
+        
         @keyframes liquid-shape { 0% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; } 100% { border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%; } }
         .theme-void .label-bg { background: #fff !important; border-left: 10px solid var(--r-color) !important; box-shadow: 0 0 40px #fff; }
         .theme-void .label-bg span { color: #000 !important; text-shadow: none !important; }
 
-        .unit-reverse-text {
-            position: absolute; top: 60%; left: 50%; width: 130px;
-            background: var(--r-color); color: #000;
-            font-family: 'Orbitron'; font-weight: 900; font-size: 14px;
-            padding: 5px 0; text-align: center;
-            transform: translate(-50%, -50%) translateZ(145px);
-            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
-            box-shadow: 0 0 30px var(--r-color);
-            animation: glitch-flicker 0.2s infinite alternate;
-        }
+        .unit-reverse-text { position: absolute; top: 60%; left: 50%; width: 150px; background: var(--r-color); color: #000; font-family: 'Orbitron'; font-weight: 900; font-size: 16px; padding: 5px 0; text-align: center; transform: translate(-50%, -50%) translateZ(145px); clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); box-shadow: 0 0 30px var(--r-color); animation: glitch-flicker 0.2s infinite alternate; }
         @keyframes glitch-flicker { from { opacity: 1; transform: translate(-50%, -50%) translateZ(145px); } to { opacity: 0.8; transform: translate(-51%, -49%) translateZ(145px); } }
 
-        .effect-text-wild {
-            position: absolute; bottom: 85px; left: 50%; width: 100%; text-align: center;
-            transform: translateX(-50%) translateZ(170px);
-            font-size: 32px; font-weight: 900; font-style: italic;
-            background: linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
-            background-size: 200% 100%; -webkit-background-clip: text; color: transparent;
-            animation: rainbow-glow 2s linear infinite; filter: drop-shadow(0 0 15px #fff);
-        }
-
-        .unit-draw2 {
-            position: absolute; top: 100px; left: -15px; width: 60px;
-            background: #6a1505; border: 3px solid #D4AF37; border-radius: 4px;
-            transform: translateZ(160px) rotate(-10deg);
-            display: flex; flex-direction: column; align-items: center; padding: 10px 0;
-            box-shadow: 10px 5px 30px #000; animation: vibration 0.05s infinite;
-        }
-        .unit-draw2 .num { font-size: 36px; font-weight: 900; font-family: 'Special Elite'; color: #fff; line-height: 1; text-shadow: 0 0 15px #f00; }
-        .unit-draw2 .txt { font-size: 12px; color: #D4AF37; font-weight: 900; margin-top: 4px; background: #000; width: 100%; text-align: center; }
+        .effect-text-wild { position: absolute; bottom: 85px; left: 50%; width: 100%; text-align: center; transform: translateX(-50%) translateZ(170px); font-size: 48px; font-weight: 900; font-style: italic; background: linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); background-size: 200% 100%; -webkit-background-clip: text; color: transparent; animation: rainbow-glow 2s linear infinite; filter: drop-shadow(0 0 15px #fff); }
+        .unit-draw2 { position: absolute; top: 100px; left: -15px; width: 70px; background: #6a1505; border: 3px solid #D4AF37; border-radius: 4px; transform: translateZ(160px) rotate(-10deg); display: flex; flex-direction: column; align-items: center; padding: 12px 0; box-shadow: 10px 5px 30px #000; animation: vibration 0.05s infinite; }
+        .unit-draw2 .num { font-size: 42px; font-weight: 900; font-family: 'Special Elite'; color: #fff; line-height: 1; text-shadow: 0 0 15px #f00; }
+        .unit-draw2 .txt { font-size: 14px; color: #D4AF37; font-weight: 900; margin-top: 4px; background: #000; width: 100%; text-align: center; }
         @keyframes vibration { 0% { transform: translateZ(160px) rotate(-10.5deg); } 100% { transform: translateZ(160px) rotate(-9.5deg); } }
 
         .card-holo { position: absolute; inset: 0; z-index: 49; pointer-events: none; mix-blend-mode: color-dodge; opacity: 0.2; background: linear-gradient(115deg, transparent 20%, #fff 25%, #0ff 35%, #f0f 45%, #ff0 55%, transparent 60%); background-size: 300% 300%; transition: 0.3s; }
@@ -243,7 +192,9 @@
         .card-wrapper-3d.hovered .card-holo { opacity: 1; }
         .card-wrapper-3d.hovered .card-3d { box-shadow: 0 25px 60px rgba(138,43,226,0.6); }
 
-        .not-playable-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; backdrop-filter: grayscale(100%); border-radius: inherit; pointer-events: none; }
+        /* プレイ不可時のフィルター効果を3D用に */
+        .not-playable { opacity: 0.6 !important; filter: grayscale(100%) !important; }
+
     </style>
 </head>
 <body>
@@ -254,14 +205,13 @@
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
-        
         const REALMS = {
             GEAR: { n: '歯車', color: '#FF8C00', shadow: 'rgba(255, 140, 0, 0.7)', desc: 'セットA：維持。' },
             ICEAGE: { n: '氷河期', color: '#00BFFF', shadow: 'rgba(0, 191, 255, 0.9)', desc: 'セットA→B：遷移。' },
             FOUNTAIN: { n: '噴水', color: '#4169E1', shadow: 'rgba(65, 105, 225, 0.9)', desc: 'セットB：維持。' },
             BATTERY: { n: '電池', color: '#32CD32', shadow: 'rgba(50, 205, 50, 0.9)', desc: 'セットB→C：遷移。' },
             MACHINE: { n: '機械', color: '#94A3B8', shadow: 'rgba(148, 163, 184, 0.7)', desc: 'セットC：維持。' },
-            ARCHIVE: { n: '古文書', color: '#FF3131', shadow: 'rgba(255, 49, 49, 0.9)', desc: 'セットC→A：遷移。' }, 
+            ARCHIVE: { n: '古文書', color: '#FF3131', shadow: 'rgba(255, 49, 49, 0.9)', desc: 'セットC→A：遷移。' },
             PLANET: { n: '惑星', color: '#9400D3', shadow: 'rgba(148, 0, 211, 1)', desc: '星々の加護。' },
             RUINS: { n: '廃墟', color: '#FFFFFF', shadow: 'rgba(255, 255, 255, 0.8)', desc: '遺跡の記憶。' }
         };
@@ -270,159 +220,14 @@
         
         const ICONS = {
             GEAR: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg>,
-            ICEAGE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m10 20-2.5-2.5L5 20"/><path d="M12 22V2"/><path d="m14 20 2.5-2.5L19 20"/><path d="m10 4-2.5 2.5L5 4"/><path d="m14 4 2.5 2.5L19 4"/><path d="m20 10-2.5 2.5L20 15"/><path d="M22 12H2"/><path d="m4 10 2.5 2.5L4 15"/></svg>,
+            ICEAGE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m10 20-2.5-2.5L5 20"/><path d="M12 22V2"/><path d="m14 20 2.5-2.5L19 20"/><path d="m10 4-2.5 2.5L5 4"/><path d="m14 4 2.5-2.5L19 4"/><path d="m20 10-2.5 2.5L20 15"/><path d="M22 12H2"/><path d="m4 10 2.5 2.5L4 15"/></svg>,
             FOUNTAIN: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4A9.7 9.7 0 0 1 12 22z"></path></svg>,
             BATTERY: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect><line x1="22" x2="22" y1="11" y2="13"></line><line x1="6" x2="6" y1="11" y2="13"></line><line x1="10" x2="10" y1="11" y2="13"></line><line x1="14" x2="14" y1="11" y2="13"></line></svg>,
             MACHINE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>,
-            MACHINE_S: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2" opacity="0.3"></rect><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><polyline points="16 8 21 8 21 3"></polyline><path d="M12 7v5l4 2" strokeLinecap="round" opacity="0.9"></path></svg>,
+            MACHINE_S: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="4" width="16" height="16" rx="2" ry="2" opacity="0.5"></rect><path d="M12 8v4l3 3" strokeWidth="2"/><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" strokeWidth="2"/><polyline points="16 8 21 8 21 3" strokeWidth="2"/></svg>,
             ARCHIVE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>,
-            PLANET: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10z"></path></svg>,
-            RUINS: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 20h20"></path><path d="M5 20v-8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8"></path><path d="M9 20v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"></path></svg>
-        };
-
-        // --- 3D CardView Component ---
-        const CardView = ({ card, playable, onClick, isField, style }) => {
-            if (!card || !card.realm) return null;
-
-            let displayRealm = card.realm;
-            // プレイ済みのワイルドカードが元の色で表示されないように、履歴情報を使用
-            if (card.wasRuins) displayRealm = 'RUINS'; 
-            else if (card.wasPlanet) displayRealm = 'PLANET'; 
-            else if (card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) displayRealm = 'FOUNTAIN';
-            
-            const isSpecial = card.isSpecial || card.wasFountain;
-            const theme = THEMES[displayRealm] || 'fantasy';
-            
-            // 現在の属性での表示（フィールドに置かれた後は適用後の色になる）
-            const currentRealmColor = REALMS[card.realm] ? REALMS[card.realm].color : '#fff';
-            const shadowColor = REALMS[card.realm] ? REALMS[card.realm].shadow : 'rgba(255,255,255,0.4)';
-
-            const cardRef = useRef(null);
-            const [tiltStyle, setTiltStyle] = useState({ transform: 'rotateX(0deg) rotateY(0deg)', '--mx': '50%', '--my': '50%' });
-            const [isHovered, setIsHovered] = useState(false);
-
-            const handleMouseMove = (e) => {
-                if (!playable && !isField) return; 
-                if (isField) return; 
-                if (!cardRef.current) return;
-                const rect = cardRef.current.getBoundingClientRect();
-                const rotateX = ((e.clientY - rect.top - rect.height / 2) / (rect.height / 2)) * -25; 
-                const rotateY = ((e.clientX - rect.left - rect.width / 2) / (rect.width / 2)) * 25;
-                setTiltStyle({ 
-                    transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`, 
-                    '--mx': `${((e.clientX - rect.left) / rect.width) * 100}%`, 
-                    '--my': `${((e.clientY - rect.top) / rect.height) * 100}%`, 
-                    transition: 'none' 
-                });
-            };
-
-            const handleMouseLeave = () => {
-                setIsHovered(false);
-                setTiltStyle({ transform: 'rotateX(0deg) rotateY(0deg)', '--mx': '50%', '--my': '50%', transition: 'all 0.6s ease-out' });
-            };
-
-            const handleMouseEnter = () => { if (playable && !isField) setIsHovered(true); };
-
-            let fontClass = `font-${theme}`;
-            const isWildType = displayRealm === 'PLANET' || displayRealm === 'RUINS';
-            const isFountainWild = displayRealm === 'FOUNTAIN' && isSpecial;
-            
-            let iconStyle = { color: currentRealmColor };
-            if (isWildType || isFountainWild) {
-                iconStyle = { filter: 'drop-shadow(0 0 10px #fff)', stroke: 'url(#rainbow-gradient)' };
-            }
-
-            // 見かけのサイズを縮小スケールで実現する (ベース230x330)
-            const baseScale = isField ? 0.35 : 0.30;
-            const currentScale = (isHovered && !isField) ? 0.42 : baseScale;
-            const translateY = (isHovered && !isField) ? '-15px' : '0px';
-
-            const cardWidth = 230 * baseScale;
-            const cardHeight = 330 * baseScale;
-
-            return (
-                <div 
-                    className={`card-wrapper-3d ${isHovered ? 'hovered' : ''}`}
-                    style={{ 
-                        width: `${cardWidth}px`, height: `${cardHeight}px`, 
-                        zIndex: isField ? 'auto' : (isHovered ? 1000 : 1),
-                        cursor: playable && !isField ? 'pointer' : 'default',
-                        ...style 
-                    }}
-                    onMouseMove={handleMouseMove}
-                    onMouseLeave={handleMouseLeave}
-                    onMouseEnter={handleMouseEnter}
-                    onClick={() => { if(playable && !isField) onClick(); }}
-                    ref={cardRef}
-                >
-                    <div 
-                        className={`card-3d theme-${theme}`} 
-                        style={{
-                            '--r-color': currentRealmColor, 
-                            '--r-shadow-color': shadowColor, 
-                            transform: `translateX(-50%) translateY(${translateY}) scale(${currentScale}) ${tiltStyle.transform}`,
-                            ...tiltStyle
-                        }}
-                    >
-                        {theme === 'cyber' && <div className="cyber-border"></div>}
-                        <div className="card-content">
-                            <div className="bg-fx"></div>
-                            
-                            <div className="identity-label label-bg">
-                                <span className={fontClass}>{card.realm}</span>
-                            </div>
-                            
-                            {displayRealm === 'MACHINE' && isSpecial && (
-                                <>
-                                    <div className="unit-reverse-gear"></div>
-                                    <div className="unit-reverse-text">REVERSE</div>
-                                </>
-                            )}
-                            
-                            {isFountainWild && (
-                                <>
-                                    <div className="unit-wild-core"></div>
-                                    <div className="effect-text-wild" style={{fontSize: '32px'}}>LIMIT WILD</div>
-                                </>
-                            )}
-                            
-                            {displayRealm === 'GEAR' && isSpecial && (
-                                <div className="unit-draw2"><div className="num">2</div><div className="txt">DRAW</div></div>
-                            )}
-
-                            {isWildType && (
-                                <>
-                                    <div className="unit-wild-core"></div>
-                                    <div className="effect-text-wild">PURE WILD</div>
-                                </>
-                            )}
-
-                            <div className="card-icon-3d" style={iconStyle}>
-                                <svg width="0" height="0" style={{position:'absolute'}}>
-                                    <defs>
-                                        <linearGradient id="rainbow-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" style={{stopColor:'#f00'}} />
-                                            <stop offset="20%" style={{stopColor:'#ff0'}} />
-                                            <stop offset="40%" style={{stopColor:'#0f0'}} />
-                                            <stop offset="60%" style={{stopColor:'#0ff'}} />
-                                            <stop offset="80%" style={{stopColor:'#00f'}} />
-                                            <stop offset="100%" style={{stopColor:'#f0f'}} />
-                                        </linearGradient>
-                                    </defs>
-                                </svg>
-                                {isSpecial && displayRealm === 'MACHINE' ? ICONS.MACHINE_S : ICONS[displayRealm]}
-                            </div>
-
-                            <div className={`card-footer-3d ${fontClass}`}>{REALMS[card.realm] ? REALMS[card.realm].n : '???'}</div>
-                        </div>
-                        
-                        <div className="card-holo" style={{ backgroundPosition: `var(--mx) var(--my)`, opacity: isSpecial || isWildType ? 0.5 : 0.1 }}></div>
-                        <div className="card-glare" style={{ left: `var(--mx)`, top: `var(--my)` }}></div>
-                        
-                        {!isField && !playable && <div className="not-playable-overlay"></div>}
-                    </div>
-                </div>
-            );
+            PLANET: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>,
+            RUINS: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 20h20"></path><path d="M5 20v-8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8"></path><path d="M9 20v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"></path><path d="M5 10V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"></path></svg>
         };
 
         const App = () => {
@@ -448,7 +253,7 @@
             }, []);
 
             useEffect(() => { if (logTerminalRef.current) logTerminalRef.current.scrollTop = logTerminalRef.current.scrollHeight; }, [gs?.logs]);
-            
+
             const prevTurnRef = useRef(null);
             useEffect(() => {
                 if (gs && gs.status === 'playing') {
@@ -503,11 +308,129 @@
                 if (isWild && sortedHand.length > 1) { setSelectorCard(card); }
                 else { socket.emit('play-card', { roomId: room.toUpperCase(), card, chosenRealm: isWild ? 'GEAR' : undefined }); }
             };
-
             const handleDraw = () => { 
                 window.sfx.alert.pause(); window.sfx.alert.currentTime = 0; 
                 window.sfx.draw.currentTime = 0; window.sfx.draw.play().catch(()=>{}); 
                 socket.emit('draw-card',{roomId:room}); 
+            };
+
+            /* === 3Dカード表示を 90x130 サイズに完璧に埋め込む魔法のラッパー === */
+            const CardView = ({ card, playable, onClick, isField, style }) => {
+                if (!card || !card.realm) return null;
+                let displayRealm = card.realm;
+                if (card.wasRuins) displayRealm = 'RUINS'; else if (card.wasPlanet) displayRealm = 'PLANET'; else if (card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) displayRealm = 'FOUNTAIN';
+                const isSpecial = card.isSpecial || card.wasFountain;
+                
+                const isWildType = displayRealm === 'PLANET' || displayRealm === 'RUINS';
+                const isFountainWild = displayRealm === 'FOUNTAIN' && isSpecial;
+                const theme = THEMES[displayRealm] || 'fantasy';
+                const rColor = REALMS[displayRealm] ? REALMS[displayRealm].color : '#fff';
+                const shadowColor = REALMS[displayRealm] ? REALMS[displayRealm].shadow : 'rgba(255,255,255,0.4)';
+                const fontClass = `font-${theme}`;
+
+                const cardRef = useRef(null);
+                const [tiltStyle, setTiltStyle] = useState({ transform: 'rotateX(0deg) rotateY(0deg)', '--mx': '50%', '--my': '50%' });
+                const [isHovered, setIsHovered] = useState(false);
+
+                const handleMouseMove = (e) => {
+                    if (!playable && !isField) return; 
+                    if (isField) return; 
+                    if (!cardRef.current) return;
+                    const rect = cardRef.current.getBoundingClientRect();
+                    const rotateX = ((e.clientY - rect.top - rect.height / 2) / (rect.height / 2)) * -25; 
+                    const rotateY = ((e.clientX - rect.left - rect.width / 2) / (rect.width / 2)) * 25;
+                    setTiltStyle({ 
+                        transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`, 
+                        '--mx': `${((e.clientX - rect.left) / rect.width) * 100}%`, 
+                        '--my': `${((e.clientY - rect.top) / rect.height) * 100}%`, 
+                        transition: 'none' 
+                    });
+                };
+
+                const handleMouseLeave = () => {
+                    setIsHovered(false);
+                    setTiltStyle({ transform: 'rotateX(0deg) rotateY(0deg)', '--mx': '50%', '--my': '50%', transition: 'all 0.6s ease-out' });
+                };
+
+                let iconStyle = { color: rColor };
+                if (isWildType || isFountainWild) {
+                    iconStyle = { filter: 'drop-shadow(0 0 10px #fff)', stroke: 'url(#rainbow-gradient)' };
+                }
+
+                // 基準サイズ230x332を、ピッタリ 90x130に収める縮小率 (90 / 230 = 0.3913)
+                const baseScale = 0.3913;
+                const hoverScale = 0.55; 
+                const currentScale = (isHovered && !isField) ? hoverScale : baseScale;
+                const hoverTranslateY = (isHovered && !isField) ? '-25px' : '0px';
+                
+                // 配置枠としてのラッパー（オリジナルの90x130）
+                return (
+                    <div 
+                        className={`card-wrapper-3d ${isHovered ? 'hovered' : ''}`}
+                        style={{ 
+                            width: 'var(--card-w)', height: 'var(--card-h)', 
+                            zIndex: isField ? 'auto' : (isHovered ? 1000 : 1),
+                            cursor: playable && !isField ? 'pointer' : 'default',
+                            ...style 
+                        }}
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={handleMouseLeave}
+                        onMouseEnter={() => { if(playable && !isField) setIsHovered(true); }}
+                        onClick={() => { if(playable && !isField) onClick(); }}
+                        ref={cardRef}
+                    >
+                        {/* 内部で3Dカードを生成し、中心を基準に縮小させる */}
+                        <div 
+                            className={`card-3d theme-${theme} ${!playable && !isField ? 'not-playable' : ''}`} 
+                            style={{
+                                position: 'absolute', top: '50%', left: '50%',
+                                width: '230px', height: '332px',
+                                '--r-color': rColor, 
+                                '--r-shadow-color': shadowColor, 
+                                transform: `translate(-50%, calc(-50% + ${hoverTranslateY})) scale(${currentScale}) ${tiltStyle.transform}`,
+                                ...tiltStyle
+                            }}
+                        >
+                            <div className="card-content">
+                                <div className="identity-label label-bg">
+                                    <span className={fontClass}>{displayRealm}</span>
+                                </div>
+                                
+                                {displayRealm === 'MACHINE' && isSpecial && (
+                                    <div className="unit-reverse-text">REVERSE</div>
+                                )}
+                                {isFountainWild && (
+                                    <div className="effect-text-wild" style={{fontSize: '32px'}}>LIMIT WILD</div>
+                                )}
+                                {displayRealm === 'GEAR' && isSpecial && (
+                                    <div className="unit-draw2"><div className="num">2</div><div className="txt">DRAW</div></div>
+                                )}
+                                {isWildType && (
+                                    <div className="effect-text-wild">PURE WILD</div>
+                                )}
+
+                                <div className="card-icon-3d" style={iconStyle}>
+                                    <svg width="0" height="0" style={{position:'absolute'}}>
+                                        <defs>
+                                            <linearGradient id="rainbow-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" style={{stopColor:'#f00'}} />
+                                                <stop offset="20%" style={{stopColor:'#ff0'}} />
+                                                <stop offset="40%" style={{stopColor:'#0f0'}} />
+                                                <stop offset="60%" style={{stopColor:'#0ff'}} />
+                                                <stop offset="80%" style={{stopColor:'#00f'}} />
+                                                <stop offset="100%" style={{stopColor:'#f0f'}} />
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                    {isSpecial && displayRealm === 'MACHINE' ? ICONS.MACHINE_S : ICONS[displayRealm]}
+                                </div>
+                                <div className={`card-footer-3d ${fontClass}`}>{REALMS[displayRealm] ? REALMS[displayRealm].n : '???'}</div>
+                            </div>
+                            <div className="card-holo" style={{ backgroundPosition: `var(--mx) var(--my)`, opacity: isSpecial || isWildType ? 0.5 : 0.1 }}></div>
+                            <div className="card-glare" style={{ left: `var(--mx)`, top: `var(--my)` }}></div>
+                        </div>
+                    </div>
+                );
             };
 
             const getNextPlayableRealms = () => {
@@ -623,8 +546,8 @@
                             <div className="field">
                                 <div style={{fontFamily:'Cinzel', fontSize: 13, opacity: 0.5}}>{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
                                 {gs?.nextDrawAmount > 1 && <div style={{color: 'var(--danger)', fontWeight:900, fontSize:24, textShadow:'0 0 10px #f00'}}>DRAW +{gs.nextDrawAmount}</div>}
-                                <div style={{display:'flex', alignItems:'center', gap:15, width: '100%', justifyContent: 'center'}}>
-                                    <div style={{position: 'relative', width: `${230 * 0.35}px`, height: `${330 * 0.35}px`}}>
+                                <div style={{display:'flex', alignItems:'center', gap:15}}>
+                                    <div style={{position: 'relative', width: 'var(--card-w)', height: 'var(--card-h)'}}>
                                         {gs?.playHistory?.map((card, i) => (
                                             <div key={`hist-${i}-${card?.id || i}`} style={{ position: 'absolute', top: 0, left: 0, transform: `rotate(${(i * 5) % 10 - 5}deg) translate(${i*-1}px, ${i*-1}px)`, zIndex: i + 1, opacity: 0.35 }}>
                                                 <CardView card={card} isField={true} />
@@ -634,9 +557,9 @@
                                             <CardView card={gs?.fieldCard} isField={true} />
                                         </div>
                                     </div>
-                                    <div className="info-panel" style={{ width: '130px', padding: '8px 10px' }}>
-                                        <div className="realm-title" style={{ fontSize: '18px' }}>{REALMS[currentRealm] ? REALMS[currentRealm].n : '???'}</div>
-                                        <div style={{fontSize:10, opacity:0.8, marginTop:4, lineHeight:1.2}}>{REALMS[currentRealm] ? REALMS[currentRealm].desc : ''}</div>
+                                    <div className="info-panel">
+                                        <div className="realm-title">{REALMS[currentRealm] ? REALMS[currentRealm].n : '???'}</div>
+                                        <div style={{fontSize:11, opacity:0.8, marginTop:4, lineHeight:1.2}}>{REALMS[currentRealm] ? REALMS[currentRealm].desc : ''}</div>
                                     </div>
                                 </div>
                             </div>
@@ -656,8 +579,8 @@
                                     {(() => {
                                         const totalCards = sortedHand?.length || 0;
                                         const maxHandWidth = Math.min(windowWidth * 0.95, 550);
-                                        const cardW = 230 * 0.30; 
-                                        let overlap = 40; 
+                                        const cardW = 90; 
+                                        let overlap = 55; 
                                         if (totalCards > 1) { 
                                             const idealWidth = cardW + (totalCards - 1) * overlap; 
                                             if (idealWidth > maxHandWidth) { overlap = (maxHandWidth - cardW) / (totalCards - 1); } 
@@ -665,7 +588,7 @@
                                         const containerW = totalCards > 0 ? cardW + (totalCards - 1) * overlap : 0;
                                         const marginL = overlap - cardW;
                                         return (
-                                            <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                                            <div style={{ display: 'flex', justifySelf: 'center', width: '100%', justifyContent: 'center' }}>
                                                 <div style={{ display: 'flex', alignItems: 'flex-end', width: `${containerW}px`, position: 'relative' }}>
                                                     {sortedHand.map((card, index) => (
                                                         <CardView 
@@ -673,7 +596,7 @@
                                                             card={card} 
                                                             playable={canPlay(card)} 
                                                             onClick={() => handlePlay(card)} 
-                                                            style={{ marginLeft: index === 0 ? '0px' : `${marginL}px`, position: 'relative', zIndex: index }} 
+                                                            style={{ marginLeft: index === 0 ? '0px' : `${marginL}px` }} 
                                                         />
                                                     ))}
                                                 </div>
