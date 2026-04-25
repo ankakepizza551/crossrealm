@@ -145,10 +145,12 @@ io.on('connection', (socket) => {
   socket.on('start-game', (data) => {
     const room = rooms[data.roomId.toUpperCase()];
     if (room && room.players.length >= 2) {
-      // === 修正ポイント: プレイ順をランダムにシャッフル ===
+      // プレイ順シャッフル
       room.players = room.players.sort(() => Math.random() - 0.5);
-      
       room.status = 'playing'; room.deck = createDeck();
+      room.turnIndex = 0; // 必ず0番目から開始
+      room.isReversed = false; // 逆転解除
+      room.nextDrawAmount = 1; // 蓄積解除
       room.players.forEach(p => { p.hand = []; for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop()); p.handCount = p.hand.length; });
       room.fieldCard = room.deck.pop();
       room.logs = []; addLog(room, "[SYS] ミッション開始");
@@ -199,8 +201,17 @@ io.on('connection', (socket) => {
 
   socket.on('play-again', (data) => {
     const rid = data.roomId.toUpperCase();
-    if (rooms[rid]) { rooms[rid].status = 'waiting'; rooms[rid].players.forEach(p => { p.hand = []; p.handCount = 0; }); rooms[rid].playHistory = []; rooms[rid].logs = []; }
-    io.to(rid).emit('update-game', rooms[rid]);
+    const room = rooms[rid];
+    if (room) {
+        room.status = 'waiting';
+        room.players.forEach(p => { p.hand = []; p.handCount = 0; p.isActing = false; });
+        room.playHistory = [];
+        room.logs = [];
+        room.isReversed = false;
+        room.nextDrawAmount = 1;
+        room.fieldCard = null;
+        io.to(rid).emit('update-game', room);
+    }
   });
 });
 
