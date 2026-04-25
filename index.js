@@ -11,6 +11,7 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 const HAND_LIMIT = 12;
 
+// 不適切語句フィルタ
 const NG_WORDS = [
   'FUCK', 'SHIT', 'BITCH', 'ASSHOLE', 'DICK', 'PUSSY', 'RETARD', 
   'SHINE', 'KASU', 'GOMI', '死ね', 'バカ', 'アホ', 'カス', 'ゴミ', 
@@ -89,13 +90,13 @@ const emitUpdate = (roomId) => {
 io.on('connection', (socket) => {
   socket.on('join-room', ({ roomId, playerName }) => {
     const cleanId = roomId?.toUpperCase().trim();
-    const cleanName = playerName?.trim(); // 大文字強制を解除
+    const cleanName = playerName?.trim(); // 大文字変換を削除
 
-    if (!cleanId || !cleanName) return socket.emit('join-error', 'IDと名前が必要です。');
-    if (cleanName.length > 10) return socket.emit('join-error', '名前が長すぎます。');
+    if (!cleanId || !cleanName) return socket.emit('join-error', 'IDと名前を入力してください。');
+    if (cleanName.length > 10) return socket.emit('join-error', '名前は10文字以内です。');
     
     const isNG = NG_WORDS.some(word => 
-      cleanName.toUpperCase().includes(word.toUpperCase()) || cleanId.includes(word.toUpperCase())
+      cleanName.toUpperCase().includes(word) || cleanId.includes(word)
     );
     if (isNG) return socket.emit('join-error', '不適切な言葉が含まれています。');
 
@@ -107,8 +108,8 @@ io.on('connection', (socket) => {
       };
     }
     const room = rooms[cleanId];
-    if (room.status !== 'waiting') return socket.emit('join-error', '進行中のため参加できません。');
-    if (room.players.length >= 4) return socket.emit('join-error', 'ルームが満員です。');
+    if (room.status !== 'waiting') return socket.emit('join-error', '進行中のゲームには参加できません。');
+    if (room.players.length >= 4) return socket.emit('join-error', 'このルームは満員です。');
 
     if (room.players.findIndex(p => p.id === socket.id) === -1) {
       room.players.push({ id: socket.id, name: cleanName, hand: [] });
@@ -195,5 +196,5 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = 3001;
-server.listen(PORT, () => console.log(`Cross Realm Server v3.1.3 Ready`));
+const serverPort = process.env.PORT || 3001;
+server.listen(serverPort, () => console.log(`Cross Realm Server v3.1.5 Active`));
