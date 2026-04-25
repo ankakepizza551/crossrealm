@@ -11,6 +11,9 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 const HAND_LIMIT = 12;
 
+// 属性サイクルの正解データ
+const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
+
 const createDeck = () => {
   const realmConfig = {
     GEAR: { total: 10, special: 3 },      
@@ -39,7 +42,7 @@ const createDeck = () => {
 };
 
 /**
- * タクティカル・ペアサイクル判定 (v3準拠)
+ * タクティカル・ペア・システム バリデーション
  */
 const canPlayCard = (room, card) => {
   const field = room.fieldCard.realm;
@@ -58,7 +61,8 @@ const canPlayCard = (room, card) => {
     return (field === 'ICEAGE' || field === 'FOUNTAIN');
   }
 
-  // 4. ペアサイクル・フロー
+  // 4. ペアサイクル判定
+  // 氷河期・電池・古文書（ゲートキーパー）は同じ属性を重ねられない
   switch (field) {
     case 'GEAR':     return (hand === 'GEAR' || hand === 'ICEAGE');
     case 'ICEAGE':   return (hand === 'FOUNTAIN' || hand === 'BATTERY');
@@ -195,4 +199,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = 3001;
-server.listen(PORT, () => console.log(`Tactical Pair Server Ready`));
+server.listen(PORT, () => console.log(`Tactical System Online`));
