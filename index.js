@@ -11,7 +11,7 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rooms = {};
 const HAND_LIMIT = 12;
 
-// 属性サイクルの正解データ
+// 属性サイクルの定義（内部ロジック用）
 const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
 
 const createDeck = () => {
@@ -42,13 +42,13 @@ const createDeck = () => {
 };
 
 /**
- * タクティカル・ペア・システム バリデーション
+ * タクティカル・ペア・システム バリデーション (v3.0.5)
  */
 const canPlayCard = (room, card) => {
   const field = room.fieldCard.realm;
   const hand = card.realm;
 
-  // 1. ドロー蓄積中
+  // 1. ドロー蓄積中：特殊歯車(S)でのみスタック可能
   if (room.nextDrawAmount > 1) {
     return (hand === 'GEAR' && card.isSpecial);
   }
@@ -56,13 +56,14 @@ const canPlayCard = (room, card) => {
   // 2. 純粋ワイルド
   if (hand === 'PLANET' || hand === 'RUINS') return true;
 
-  // 3. 限定ワイルド：噴水(S)
+  // 3. 限定ワイルド：噴水(S) - 氷河期か噴水の上のみ
   if (hand === 'FOUNTAIN' && card.isSpecial) {
     return (field === 'ICEAGE' || field === 'FOUNTAIN');
   }
 
   // 4. ペアサイクル判定
-  // 氷河期・電池・古文書（ゲートキーパー）は同じ属性を重ねられない
+  // 維持属性：GEAR, FOUNTAIN, MACHINE
+  // 遷移属性（ゲートキーパー）：ICEAGE, BATTERY, ARCHIVE
   switch (field) {
     case 'GEAR':     return (hand === 'GEAR' || hand === 'ICEAGE');
     case 'ICEAGE':   return (hand === 'FOUNTAIN' || hand === 'BATTERY');
