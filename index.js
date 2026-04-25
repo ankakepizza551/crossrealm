@@ -36,13 +36,20 @@ function createDeck() {
   return deck.sort(() => Math.random() - 0.5);
 }
 
+// ターン移動の共通処理
+function nextTurn(room, skip = false) {
+  const step = room.isReversed ? -1 : 1;
+  const count = skip ? 2 : 1;
+  room.turnIndex = (room.turnIndex + (step * count) + room.players.length) % room.players.length;
+}
+
 function getBotAction(room, bot) {
   const playable = bot.hand.filter(card => {
     if (room.nextDrawAmount > 1) return (card.realm === 'GEAR' && card.isSpecial);
     const field = room.fieldCard.realm;
     const h = card.realm;
     if (h === 'PLANET' || h === 'RUINS') return true;
-    if (field === 'PLANET' || field === 'RUINS') return true; // 場がワイルドなら何でも出せる
+    if (field === 'PLANET' || field === 'RUINS') return true;
     if (h === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
     const cycle = { 
       GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], 
@@ -57,23 +64,20 @@ function getBotAction(room, bot) {
   if (bot.personality === 'Aggressive') {
     targetCard = playable.find(c => c.isSpecial) || playable[0];
   } else if (bot.personality === 'Defensive') {
-    if (bot.hand.length < 7) {
-      targetCard = playable.find(c => !c.isSpecial && !['PLANET','RUINS'].includes(c.realm)) || playable[0];
-    } else {
-      targetCard = playable.find(c => c.isSpecial) || playable[0];
-    }
+    targetCard = (bot.hand.length < 7) ? (playable.find(c => !c.isSpecial && !['PLANET','RUINS'].includes(c.realm)) || playable[0]) : (playable.find(c => c.isSpecial) || playable[0]);
   } else if (bot.personality === 'Tactical') {
     const counts = {};
     bot.hand.forEach(c => counts[c.realm] = (counts[c.realm] || 0) + 1);
-    const favorite = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, 'GEAR');
-    targetCard = playable.find(c => c.realm === favorite) || playable[0];
+    const fav = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, 'GEAR');
+    targetCard = playable.find(c => c.realm === fav) || playable[0];
   }
 
   let chosenRealm = undefined;
-  if (['PLANET', 'RUINS'].includes(targetCard.realm) || (targetCard.realm === 'FOUNTAIN' && targetCard.isSpecial)) {
-    const counts = {};
-    bot.hand.forEach(c => counts[c.realm] = (counts[c.realm] || 0) + 1);
-    chosenRealm = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, 'GEAR');
+  if (['PLANET', 'RUINS', 'FOUNTAIN'].includes(targetCard.realm) && (targetCard.realm !== 'FOUNTAIN' || targetCard.isSpecial)) {
+    const mains = ['GEAR', 'FOUNTAIN', 'MACHINE'];
+    const counts = { GEAR:0, FOUNTAIN:0, MACHINE:0 };
+    bot.hand.forEach(c => { if(mains.includes(c.realm)) counts[c.realm]++; });
+    chosenRealm = mains.reduce((a, b) => counts[a] >= counts[b] ? a : b);
   }
   return { type: 'play', card: targetCard, chosenRealm };
 }
@@ -81,25 +85,25 @@ function getBotAction(room, bot) {
 function processBotTurn(roomId) {
   const room = rooms[roomId];
   if (!room || room.status !== 'playing') return;
-  const currentPlayer = room.players[room.turnIndex];
-  if (!currentPlayer || !currentPlayer.isBot) return;
+  const bot = room.players[room.turnIndex];
+  if (!bot || !bot.isBot) return;
 
   setTimeout(() => {
-    if (!rooms[roomId] || rooms[roomId].status !== 'playing' || rooms[roomId].players[rooms[roomId].turnIndex].id !== currentPlayer.id) return;
+    if (!rooms[roomId] || rooms[roomId].status !== 'playing' || rooms[roomId].players[rooms[roomId].turnIndex].id !== bot.id) return;
 
-    const action = getBotAction(room, currentPlayer);
+    const action = getBotAction(room, bot);
     if (action.type === 'draw') {
       const amount = room.nextDrawAmount;
       for (let i = 0; i < amount; i++) {
         if (room.deck.length === 0) room.deck = createDeck();
-        currentPlayer.hand.push(room.deck.pop());
+        bot.hand.push(room.deck.pop());
       }
-      room.logs.push({ id: Math.random(), text: `[SYS] ${currentPlayer.name} が ${amount}枚 ドロー` });
+      room.logs.push({ id: Math.random(), text: `[SYS] ${bot.name} が ${amount}枚 ドロー` });
       room.nextDrawAmount = 1;
-      room.turnIndex = (room.turnIndex + (room.isReversed ? -1 : 1) + room.players.length) % room.players.length;
+      nextTurn(room);
     } else {
       const { card, chosenRealm } = action;
-      currentPlayer.hand = currentPlayer.hand.filter(c => c.id !== card.id);
+      bot.hand = bot.hand.filter(c => c.id !== card.id);
       if (chosenRealm) {
         card.wasPlanet = card.realm === 'PLANET'; card.wasRuins = card.realm === 'RUINS';
         card.wasFountain = card.realm === 'FOUNTAIN'; card.realm = chosenRealm;
@@ -107,22 +111,21 @@ function processBotTurn(roomId) {
       room.playHistory.push(room.fieldCard);
       if (room.playHistory.length > 5) room.playHistory.shift();
       room.fieldCard = card;
-      room.logs.push({ id: Math.random(), text: `[PLAY] ${currentPlayer.name} : ${card.realm}${card.isSpecial ? '(S)' : ''}` });
+      room.logs.push({ id: Math.random(), text: `[PLAY] ${bot.name} : ${card.realm}${card.isSpecial ? '(S)' : ''}` });
       
+      let skip = false;
       if (card.isSpecial) {
         if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
-        if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
+        if (card.realm === 'MACHINE') {
+          room.isReversed = !room.isReversed;
+          if (room.players.length === 2) skip = true;
+        }
       }
-
-      if (currentPlayer.hand.length === 0) {
-        room.status = 'finished';
-      } else {
-        room.turnIndex = (room.turnIndex + (room.isReversed ? -1 : 1) + room.players.length) % room.players.length;
-      }
+      if (bot.hand.length === 0) room.status = 'finished';
+      else nextTurn(room, skip);
     }
-    currentPlayer.handCount = currentPlayer.hand.length;
+    bot.handCount = bot.hand.length;
     room.players.forEach(p => { if (p.hand.length > HAND_LIMIT) room.status = 'finished'; });
-
     io.to(roomId).emit('update-game', room);
     if (room.status === 'playing') processBotTurn(roomId);
   }, 1500);
@@ -178,12 +181,17 @@ io.on('connection', (socket) => {
     if (room.playHistory.length > 5) room.playHistory.shift();
     room.fieldCard = card;
     room.logs.push({ id: Math.random(), text: `[PLAY] ${player.name} : ${card.realm}${card.isSpecial ? '(S)' : ''}` });
+    
+    let skip = false;
     if (card.isSpecial) {
       if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : room.nextDrawAmount + 2;
-      if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
+      if (card.realm === 'MACHINE') {
+        room.isReversed = !room.isReversed;
+        if (room.players.length === 2) skip = true;
+      }
     }
     if (player.hand.length === 0) room.status = 'finished';
-    else room.turnIndex = (room.turnIndex + (room.isReversed ? -1 : 1) + room.players.length) % room.players.length;
+    else nextTurn(room, skip);
     player.handCount = player.hand.length;
     io.to(room.id).emit('update-game', room);
     processBotTurn(room.id);
@@ -198,11 +206,11 @@ io.on('connection', (socket) => {
       if (room.deck.length === 0) room.deck = createDeck();
       player.hand.push(room.deck.pop());
     }
-    room.logs.push({ id: Math.random(), text: `[SYS] ${player.name} が ${amount}枚 ドロー` });
+    room.logs.push({ id: Math.random(), text: `[SYS] ${player.name} ドロー ${amount}` });
     room.nextDrawAmount = 1;
     player.handCount = player.hand.length;
     if (player.handCount > HAND_LIMIT) room.status = 'finished';
-    else room.turnIndex = (room.turnIndex + (room.isReversed ? -1 : 1) + room.players.length) % room.players.length;
+    else nextTurn(room);
     io.to(room.id).emit('update-game', room);
     processBotTurn(room.id);
   });
