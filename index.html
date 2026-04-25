@@ -52,14 +52,14 @@
         @keyframes sweepBtn { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; height: 100%; overflow: hidden; }
-        .turn-direction { flex-shrink: 0; position: relative; text-align: center; font-size: 14px; font-weight: 900; color: var(--accent); letter-spacing: 2px; background: rgba(0,0,0,0.85); padding: 6px; border-bottom: 1px solid rgba(138,43,226,0.5); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(138,43,226,0.1); }
+        .turn-direction { flex-shrink: 0; position: relative; text-align: center; font-size: 16px; font-weight: 900; color: var(--accent); letter-spacing: 2px; background: rgba(0,0,0,0.85); padding: 6px; border-bottom: 1px solid rgba(138,43,226,0.5); display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(138,43,226,0.1); }
         .mute-btn-game { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; background: rgba(0,0,0,0.8); border: 1px solid var(--steam-gold); border-radius: 50%; color: var(--steam-gold); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; }
 
         .opponents-area { flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 6px 10px; background: rgba(0,0,0,0.7); border-bottom: 1px solid var(--border); backdrop-filter: blur(5px); }
         .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; border-radius: 6px; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(138,43,226,0.05)); border-left: 3px solid var(--border); transition: 0.4s; position: relative; overflow: hidden; }
         .opp-row.active { border-left-color: var(--accent); background: linear-gradient(90deg, rgba(64,224,208,0.2), rgba(138,43,226,0.2)); box-shadow: 0 0 15px rgba(138,43,226,0.4); animation: activePulse 1.5s infinite; }
         @keyframes activePulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
-        .opp-name { font-weight: 900; font-size: 13px; color: #fff; max-width: 75px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+        .opp-name { font-weight: 900; font-size: 15px; color: #fff; max-width: 75px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
         .opp-hand-visual { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
         .mini-cards-stack { position: relative; width: 45px; height: var(--opp-card-h); }
         .mini-card-back { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #2a1a3a, #000); border: 1px solid var(--steam-gold); border-radius: 2px; position: absolute; top: 0; box-shadow: -2px 0 5px rgba(0,0,0,0.8); }
@@ -70,17 +70,17 @@
         .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 12px var(--dot-color), 0 0 20px var(--dot-color); }
         .cycle-dot.next-playable { background: var(--guide-gold); box-shadow: 0 0 15px var(--guide-gold); animation: pulseGold 0.8s infinite alternate; }
         @keyframes pulseGold { from { opacity: 0.3; transform: scaleX(0.7); } to { opacity: 1; transform: scaleX(1); } }
-        .cycle-label { font-size: 10px; font-weight: 900; opacity: 0.4; font-family: 'Cinzel', serif; }
+        .cycle-label { font-size: 12px; font-weight: 900; opacity: 0.4; font-family: 'Cinzel', serif; }
         .cycle-item.active .cycle-label { opacity: 1; color: var(--dot-color); text-shadow: 0 0 5px var(--dot-color); }
         .cycle-item.next-playable .cycle-label { opacity: 1; color: var(--guide-gold); text-shadow: 0 0 5px var(--guide-gold); }
 
         .field { flex: 1; min-height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; position: relative; }
         .info-panel { background: linear-gradient(180deg, rgba(10,10,20,0.95), rgba(0,0,0,0.95)); border: 1px solid var(--steam-gold); padding: 10px 14px; border-radius: 8px; width: 160px; text-align: center; box-shadow: 0 0 30px rgba(138,43,226,0.3); backdrop-filter: blur(5px); }
-        .realm-title { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 900; color: var(--realm-color); text-shadow: 0 0 15px var(--realm-color); }
+        .realm-title { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 900; color: var(--realm-color); text-shadow: 0 0 15px var(--realm-color); }
 
         .log-terminal-container { flex-shrink: 0; width: 100%; padding: 0 10px; margin-bottom: 5px; z-index: 50; }
         .log-terminal { height: 50px; background: linear-gradient(90deg, rgba(5,5,15,0.9), rgba(20,10,30,0.9)); border: 1px solid rgba(138,43,226,0.4); border-radius: 6px; padding: 4px 10px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; font-family: monospace; box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 0 0 10px rgba(138,43,226,0.2); }
-        .log-line { font-size: 11px; color: rgba(255,255,255,0.6); white-space: nowrap; text-shadow: 0 0 2px rgba(255,255,255,0.3); }
+        .log-line { font-size: 13px; color: rgba(255,255,255,0.6); white-space: nowrap; text-shadow: 0 0 2px rgba(255,255,255,0.3); }
         .log-line.play { color: var(--accent); font-weight: bold; text-shadow: 0 0 5px var(--accent); }
         .log-line.sys { color: var(--steam-gold); }
 
@@ -97,16 +97,16 @@
         .logo-container { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .logo-main { margin: 0; padding: 0; font-family: 'Cinzel', serif; font-size: clamp(24px, 8vw, 36px); font-weight: 900; letter-spacing: 4px; background: linear-gradient(to bottom, #FFF8DC 0%, #FFD700 30%, #D4AF37 70%, #8B6B23 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 2px 10px rgba(0,0,0,0.8)); white-space: nowrap; animation: titleGlow 3s infinite alternate; }
         .logo-main span.cross { font-size: 0.8em; color: var(--steam-gold); -webkit-text-fill-color: var(--steam-gold); opacity: 0.9; margin: 0 8px; }
-        .logo-sub { font-size: clamp(10px, 3.5vw, 15px); letter-spacing: 8px; color: var(--accent); font-weight: 900; margin-top: 10px; font-family: 'Exo 2', sans-serif; opacity: 0.9; text-transform: uppercase; white-space: nowrap; text-shadow: 0 0 15px rgba(64,224,208,0.8); }
+        .logo-sub { font-size: clamp(12px, 4vw, 18px); letter-spacing: 8px; color: var(--accent); font-weight: 900; margin-top: 10px; font-family: 'Exo 2', sans-serif; opacity: 0.9; text-transform: uppercase; white-space: nowrap; text-shadow: 0 0 15px rgba(64,224,208,0.8); }
 
-        .panel input { width: 100%; padding: 20px; background: rgba(0,0,0,0.6); border: 1px solid rgba(138,43,226,0.3); border-bottom: 2px solid var(--steam-gold); color: #fff; text-align: center; font-size: 18px; border-radius: 4px; outline: none; box-sizing: border-box; transition: 0.3s; font-family: 'Exo 2', sans-serif; letter-spacing: 2px; }
+        .panel input { width: 100%; padding: 20px; background: rgba(0,0,0,0.6); border: 1px solid rgba(138,43,226,0.3); border-bottom: 2px solid var(--steam-gold); color: #fff; text-align: center; font-size: 20px; border-radius: 4px; outline: none; box-sizing: border-box; transition: 0.3s; font-family: 'Exo 2', sans-serif; letter-spacing: 2px; }
         .panel input:focus { border-color: var(--accent); box-shadow: 0 0 20px rgba(64,224,208,0.3), inset 0 0 10px rgba(138,43,226,0.2); }
 
-        .btn-main { display: flex; align-items: center; justify-content: center; min-height: 55px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1px solid #FFF8DC; padding: 0 20px; border-radius: 6px; font-weight: 900; font-size: 18px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 4px; transition: 0.4s; box-shadow: 0 4px 20px rgba(212,175,55,0.5); box-sizing: border-box; animation: sweepBtn 3s linear infinite; line-height: 1; }
+        .btn-main { display: flex; align-items: center; justify-content: center; min-height: 55px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1px solid #FFF8DC; padding: 0 20px; border-radius: 6px; font-weight: 900; font-size: 20px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 4px; transition: 0.4s; box-shadow: 0 4px 20px rgba(212,175,55,0.5); box-sizing: border-box; animation: sweepBtn 3s linear infinite; line-height: 1; }
         .btn-main:hover { box-shadow: 0 0 40px rgba(212,175,55,0.9); transform: scale(1.02); }
         .btn-main:disabled { background: #222; color: #444; border-color: #333; cursor: not-allowed; box-shadow: none; animation: none; transform: none; }
         
-        .btn-sub { display: flex; align-items: center; justify-content: center; min-height: 48px; background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.5); color: #d8b4fe; padding: 0 16px; width: 100%; cursor: pointer; border-radius: 4px; font-weight: 900; font-size: 16px; transition: 0.3s; letter-spacing: 2px; box-sizing: border-box; line-height: 1; }
+        .btn-sub { display: flex; align-items: center; justify-content: center; min-height: 48px; background: rgba(138,43,226,0.1); border: 1px solid rgba(138,43,226,0.5); color: #d8b4fe; padding: 0 16px; width: 100%; cursor: pointer; border-radius: 4px; font-weight: 900; font-size: 18px; transition: 0.3s; letter-spacing: 2px; box-sizing: border-box; line-height: 1; }
         .btn-sub:hover { background: rgba(138,43,226,0.3); color: #fff; border-color: #c084fc; box-shadow: 0 0 15px rgba(138,43,226,0.5); }
 
         .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
@@ -117,7 +117,7 @@
         .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 10px; margin-bottom: 5px; padding-top: 15px; }
         .waiting-player { background: linear-gradient(90deg, rgba(64,224,208,0.1), rgba(138,43,226,0.1)); border: 1px solid rgba(212,175,55,0.3); border-left: 4px solid var(--accent); padding: 16px 22px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; position: relative; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); overflow: hidden; }
         .waiting-player.empty { background: rgba(255,255,255,0.02); border: 1px dashed rgba(138,43,226,0.3); opacity: 0.5; overflow: hidden; }
-        .host-badge { position: absolute; top: 0; right: 0; background: var(--steam-gold); color: #000; font-size: 10px; font-weight: 900; padding: 3px 10px; border-radius: 0 4px 0 8px; box-shadow: -2px 2px 10px rgba(0,0,0,0.5); }
+        .host-badge { position: absolute; top: 0; right: 0; background: var(--steam-gold); color: #000; font-size: 11px; font-weight: 900; padding: 3px 10px; border-radius: 0 4px 0 8px; box-shadow: -2px 2px 10px rgba(0,0,0,0.5); }
         
         .sync-dot { width: 10px; height: 10px; background: var(--accent); box-shadow: 0 0 15px var(--accent); transform: rotate(45deg); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.4; filter: hue-rotate(0deg); } 50% { opacity: 1; filter: hue-rotate(30deg); } }
@@ -154,17 +154,17 @@
 
         /* 属性ラベル（左上） */
         .identity-label {
-            position: absolute; top: 6px; left: 6px; padding: 2px 6px;
+            position: absolute; top: 6px; left: 6px; padding: 3px 8px;
             background: rgba(0,0,0,0.9); border-radius: 2px;
             border-left: 3px solid var(--r-color);
             transform: translateZ(20px); z-index: 30;
             box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
-        .identity-label span { color: #fff; font-size: 8px; font-weight: 900; letter-spacing: 1px; }
+        .identity-label span { color: #fff; font-size: 11px; font-weight: 900; letter-spacing: 1px; }
 
         /* フッターテキスト */
         .card-footer-3d { 
-            position: absolute; bottom: 0; width: 100%; font-size: 10px; font-weight: 900; padding: 15px 0 6px 0; 
+            position: absolute; bottom: 0; width: 100%; font-size: 13px; font-weight: 900; padding: 15px 0 6px 0; 
             text-align: center; color: #fff; z-index: 30; transform: translateZ(15px); 
             background: linear-gradient(to top, rgba(0,0,0,1) 40%, transparent 100%);
             text-shadow: 0 0 8px var(--r-color); letter-spacing: 2px;
@@ -185,14 +185,14 @@
         .theme-void .label-bg span { color: #000 !important; text-shadow: none !important; }
 
         /* 特殊文字演出（サイズ調整済） */
-        .unit-reverse-text { position: absolute; top: 60%; left: 50%; width: 70px; background: var(--r-color); color: #000; font-family: 'Orbitron'; font-weight: 900; font-size: 8px; padding: 2px 0; text-align: center; transform: translate(-50%, -50%) translateZ(30px); clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); box-shadow: 0 0 10px var(--r-color); animation: glitch-flicker 0.2s infinite alternate; }
+        .unit-reverse-text { position: absolute; top: 60%; left: 50%; width: 80px; background: var(--r-color); color: #000; font-family: 'Orbitron'; font-weight: 900; font-size: 10px; padding: 2px 0; text-align: center; transform: translate(-50%, -50%) translateZ(30px); clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); box-shadow: 0 0 10px var(--r-color); animation: glitch-flicker 0.2s infinite alternate; }
         @keyframes glitch-flicker { from { opacity: 1; transform: translate(-50%, -50%) translateZ(30px); } to { opacity: 0.8; transform: translate(-51%, -49%) translateZ(30px); } }
 
-        .effect-text-wild { position: absolute; bottom: 30px; left: 50%; width: 100%; text-align: center; transform: translateX(-50%) translateZ(35px); font-size: 16px; font-weight: 900; font-style: italic; background: linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); background-size: 200% 100%; -webkit-background-clip: text; color: transparent; animation: rainbow-glow 2s linear infinite; filter: drop-shadow(0 0 5px #fff); }
+        .effect-text-wild { position: absolute; bottom: 30px; left: 50%; width: 100%; text-align: center; transform: translateX(-50%) translateZ(35px); font-size: 18px; font-weight: 900; font-style: italic; background: linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); background-size: 200% 100%; -webkit-background-clip: text; color: transparent; animation: rainbow-glow 2s linear infinite; filter: drop-shadow(0 0 5px #fff); }
         
-        .unit-draw2 { position: absolute; top: 35px; left: -5px; width: 35px; background: #6a1505; border: 2px solid #D4AF37; border-radius: 2px; transform: translateZ(35px) rotate(-10deg); display: flex; flex-direction: column; align-items: center; padding: 4px 0; box-shadow: 3px 2px 10px #000; animation: vibration 0.05s infinite; }
-        .unit-draw2 .num { font-size: 18px; font-weight: 900; font-family: 'Special Elite'; color: #fff; line-height: 1; text-shadow: 0 0 5px #f00; }
-        .unit-draw2 .txt { font-size: 7px; color: #D4AF37; font-weight: 900; margin-top: 2px; background: #000; width: 100%; text-align: center; }
+        .unit-draw2 { position: absolute; top: 35px; left: -5px; width: 38px; background: #6a1505; border: 2px solid #D4AF37; border-radius: 2px; transform: translateZ(35px) rotate(-10deg); display: flex; flex-direction: column; align-items: center; padding: 4px 0; box-shadow: 3px 2px 10px #000; animation: vibration 0.05s infinite; }
+        .unit-draw2 .num { font-size: 20px; font-weight: 900; font-family: 'Special Elite'; color: #fff; line-height: 1; text-shadow: 0 0 5px #f00; }
+        .unit-draw2 .txt { font-size: 8px; color: #D4AF37; font-weight: 900; margin-top: 2px; background: #000; width: 100%; text-align: center; }
         @keyframes vibration { 0% { transform: translateZ(35px) rotate(-10.5deg); } 100% { transform: translateZ(35px) rotate(-9.5deg); } }
 
         /* 反射レイヤー */
@@ -487,21 +487,21 @@
                             <div className="panel">
                                 <div className="panel-corner1"></div><div className="panel-corner2"></div>
                                 <div style={{textAlign:'center'}}>
-                                    <div className="blink-text" style={{fontSize:14, color:'var(--accent)', fontWeight:900, marginBottom:8, letterSpacing:4}}>AWAITING LINKAGE...</div>
-                                    <div style={{fontSize:36, color:'var(--steam-gold)', fontWeight:900, fontFamily:'Cinzel', letterSpacing: 4}}>ルームID: {room}</div>
+                                    <div className="blink-text" style={{fontSize:16, color:'var(--accent)', fontWeight:900, marginBottom:8, letterSpacing:4}}>AWAITING LINKAGE...</div>
+                                    <div style={{fontSize:40, color:'var(--steam-gold)', fontWeight:900, fontFamily:'Cinzel', letterSpacing: 4}}>ルームID: {room}</div>
                                 </div>
                                 <div className="waiting-list" style={{width:'100%', maxHeight:'300px', overflowY:'auto'}}>
                                     {gs?.players?.map((p, idx) => (
                                         <div key={p.id} className="waiting-player">
                                             {idx === 0 && <div className="host-badge">HOST</div>}
-                                            <span style={{fontWeight:900, fontSize:18, color: p.isBot ? 'var(--steam-gold)' : '#fff', textShadow:'0 0 5px rgba(255,255,255,0.2)'}}>
+                                            <span style={{fontWeight:900, fontSize:20, color: p.isBot ? 'var(--steam-gold)' : '#fff', textShadow:'0 0 5px rgba(255,255,255,0.2)'}}>
                                                 {p.isBot ? '🤖' : '👤'} {p.name}
                                             </span>
                                             {!p.isBot && <div className="sync-dot"></div>}
                                         </div>
                                     ))}
                                     {[...Array(Math.max(0, 4 - (gs?.players?.length || 0)))].map((_, i) => (
-                                        <div key={i} className="waiting-player empty"><span style={{fontSize:16, letterSpacing:1}}>空きスロット</span></div>
+                                        <div key={i} className="waiting-player empty"><span style={{fontSize:18, letterSpacing:1}}>空きスロット</span></div>
                                     ))}
                                 </div>
                                 {gs?.players?.[0]?.id === socket?.id && (
@@ -526,7 +526,7 @@
                                     <div key={p.id} className={`opp-row ${gs?.currentTurnPlayerId === p.id ? 'active' : ''}`}>
                                         <div className="opp-name">{p.isBot ? '🤖' : (p.id === socket?.id ? '⭐' : '👤')} {p.name}</div>
                                         <div className="opp-hand-visual">
-                                            <div style={{fontWeight:900, color: 'var(--accent)', fontSize:18, textShadow: '0 0 5px var(--accent)', minWidth: '18px', textAlign: 'right'}}>{p?.handCount || 0}</div>
+                                            <div style={{fontWeight:900, color: 'var(--accent)', fontSize:20, textShadow: '0 0 5px var(--accent)', minWidth: '20px', textAlign: 'right'}}>{p?.handCount || 0}</div>
                                             <div className="mini-cards-stack">
                                                 {[...Array(Math.max(0, Math.min(p?.handCount || 0, 5)))].map((_, i) => (<div key={i} className="mini-card-back" style={{left: `${i * 6}px`, zIndex: i}} />))}
                                             </div>
@@ -549,8 +549,8 @@
                             </div>
 
                             <div className="field">
-                                <div style={{fontFamily:'Cinzel', fontSize: 13, opacity: 0.5}}>{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
-                                {gs?.nextDrawAmount > 1 && <div style={{color: 'var(--danger)', fontWeight:900, fontSize:24, textShadow:'0 0 10px #f00'}}>DRAW +{gs.nextDrawAmount}</div>}
+                                <div style={{fontFamily:'Cinzel', fontSize: 15, opacity: 0.5}}>{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
+                                {gs?.nextDrawAmount > 1 && <div style={{color: 'var(--danger)', fontWeight:900, fontSize:26, textShadow:'0 0 10px #f00'}}>DRAW +{gs.nextDrawAmount}</div>}
                                 <div style={{display:'flex', alignItems:'center', gap:15}}>
                                     <div style={{position: 'relative', width: 'var(--card-w)', height: 'var(--card-h)'}}>
                                         {gs?.playHistory?.map((card, i) => (
@@ -564,7 +564,7 @@
                                     </div>
                                     <div className="info-panel">
                                         <div className="realm-title">{REALMS[currentRealm] ? REALMS[currentRealm].n : '???'}</div>
-                                        <div style={{fontSize:11, opacity:0.8, marginTop:4, lineHeight:1.2}}>{REALMS[currentRealm] ? REALMS[currentRealm].desc : ''}</div>
+                                        <div style={{fontSize:12, opacity:0.8, marginTop:4, lineHeight:1.2}}>{REALMS[currentRealm] ? REALMS[currentRealm].desc : ''}</div>
                                     </div>
                                 </div>
                             </div>
@@ -612,7 +612,7 @@
                             </div>
                             
                             <div className="action-row">
-                                <div style={{textAlign:'center', fontSize:12, fontWeight:900, color:'var(--steam-gold)', letterSpacing: '2px'}}>
+                                <div style={{textAlign:'center', fontSize:14, fontWeight:900, color:'var(--steam-gold)', letterSpacing: '2px'}}>
                                     SYNC: {sortedHand?.length || 0} / {gs?.handLimit || 10}
                                 </div>
                                 <button className="btn-main" disabled={!isMyTurn} onClick={handleDraw} style={{boxShadow: isMyTurn ? '0 0 20px rgba(138,43,226,0.6)' : 'none', border: isMyTurn ? '1.5px solid #fff' : '1px solid #444' }}>
@@ -626,7 +626,7 @@
                         <div className="overlay">
                             <div className="panel">
                                 <div className="panel-corner1"></div><div className="panel-corner2"></div>
-                                <h3 style={{fontSize:24, fontWeight:900, color:'var(--steam-gold)', fontFamily:'Cinzel', textAlign:'center', marginBottom: 10}}>CHOOSE REALM</h3>
+                                <h3 style={{fontSize:26, fontWeight:900, color:'var(--steam-gold)', fontFamily:'Cinzel', textAlign:'center', marginBottom: 10}}>CHOOSE REALM</h3>
                                 <div className="realm-grid">
                                     {CYCLE_ORDER.map(r => (
                                         <button key={r} className="realm-btn" style={{borderColor:REALMS[r].color, color:REALMS[r].color}} onClick={() => { socket.emit('play-card', {roomId: room, card:selectorCard, chosenRealm:r}); setSelectorCard(null); }}>
@@ -646,11 +646,11 @@
                             <div className="overlay">
                                 <div className="panel">
                                     <div className="panel-corner1"></div><div className="panel-corner2"></div>
-                                    <h2 style={{color: winner ? "var(--accent)" : "var(--danger)", fontSize: 32, fontWeight:900, textShadow: `0 0 20px rgba(64,224,208,0.5)`}}>{resTitle}</h2>
+                                    <h2 style={{color: winner ? "var(--accent)" : "var(--danger)", fontSize: 36, fontWeight:900, textShadow: `0 0 20px rgba(64,224,208,0.5)`}}>{resTitle}</h2>
                                     <div style={{width:'100%'}}>{gs?.players?.slice().sort((a,b) => (a?.handCount || 0) - (b?.handCount || 0)).map((p, i) => (
                                         <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'10px 0', borderBottom:'1px solid rgba(212,175,55,0.1)'}}>
-                                            <span style={{fontWeight:900}}>{i+1}. {p.name} {p.id === socket.id && "(YOU)"}</span>
-                                            <span style={{color:'var(--steam-gold)', fontWeight:900}}>{p.handCount}枚</span>
+                                            <span style={{fontWeight:900, fontSize: 18}}>{i+1}. {p.name} {p.id === socket.id && "(YOU)"}</span>
+                                            <span style={{color:'var(--steam-gold)', fontWeight:900, fontSize: 18}}>{p.handCount}枚</span>
                                         </div>
                                     ))}</div>
                                     <div style={{display: 'flex', gap: 10, width: '100%'}}>
