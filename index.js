@@ -69,7 +69,7 @@ const emitUpdate = (roomId) => {
     players: room.players.map(p => ({
       id: p.id,
       name: p.name,
-      handCount: Number(p.hand.length),
+      handCount: Number(p.hand.length), // 数値の整合性を確保
       hand: p.hand 
     }))
   };
@@ -171,4 +171,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = 3001;
-server.listen(PORT, () => console.log(`Cross Realm Server v3.0.7 Sync Ready`));
+server.listen(PORT, () => console.log(`Cross Realm Server v3.0.7 Synchronized`));
