@@ -3,275 +3,420 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CROSS REALM - Tactical Rule Analysis</title>
+    <title>Cross Realm - Interactive Rulebook</title>
+    
+    <!-- OGP Tags for Discord/Twitter -->
+    <meta property="og:title" content="Cross Realm - Rule & Analysis -">
+    <meta property="og:description" content="Cross Realmの公式ルール解説と、勝つための確率分析。属性の遷移サイクルをインタラクティブにシミュレーションしよう。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ankakepizza551.github.io/crossrealm/Cross_Realm_Interactive_Guide.html">
+    <!-- ガイド用のサムネイル画像 -->
+    <meta property="og:image" content="https://images.unsplash.com/photo-1614729939124-032f0b56c9ce?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80">
+    <meta property="og:site_name" content="Cross Realm Analytics">
+    <meta name="theme-color" content="#FFD700">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 300px;
-            max-height: 400px;
-        }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 350px;
-            }
-        }
-
-        /* 現在の属性：光り続ける（常時点灯） */
-        .node-current {
-            border-color: #06b6d4 !important;
-            box-shadow: 0 0 20px rgba(6, 182, 212, 0.6), inset 0 0 10px rgba(6, 182, 212, 0.2);
-            transform: scale(1.05);
-            background-color: #0c4a6e !important; /* 濃いブルー背景 */
-            z-index: 20;
-        }
-
-        /* 次に出せる属性：点滅（ガイド表示） */
-        .node-next-playable {
-            animation: pulse-guide 1.2s infinite ease-in-out;
-            border-color: #10b981 !important; /* エメラルドグリーン */
-        }
-
-        @keyframes pulse-guide {
-            0%, 100% { 
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
-                transform: scale(1);
-            }
-            50% { 
-                box-shadow: 0 0 15px 5px rgba(16, 185, 129, 0.3);
-                transform: scale(1.02);
-            }
-        }
-
-        .transition-smooth {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .pulse-highlight { animation: highlightPulse 1.5s infinite; border-color: #06b6d4; box-shadow: 0 0 15px rgba(6, 182, 212, 0.5); transform: scale(1.05); z-index: 10; }
+        @keyframes highlightPulse { 0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.5); } 70% { box-shadow: 0 0 0 10px rgba(6, 182, 212, 0); } 100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); } }
+        .transition-fast { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
     </style>
 </head>
-<body class="bg-stone-50 text-slate-900 font-sans leading-relaxed antialiased">
+<body class="bg-slate-50 text-slate-800 font-sans leading-relaxed antialiased">
 
-<!-- Chosen Palette: Warm Industrial (Slate-50 bg, Stone-100 surfaces, Cyan-600/Amber-600 accents) -->
-<!-- Application Structure Plan: 
-     Interactive Cycle Simulator update: 
-     - Current node: Steady Cyan glow.
-     - Playable follow-ups: Pulsing Green glow.
-     - Non-playable nodes: Low opacity.
-     This implementation focuses on the user's specific request for legend behavior (凡例の仕様) and provides a simulation tool to verify the "Tactical Pair System" consistency.
--->
-
-    <nav class="bg-white border-b border-stone-200 sticky top-0 z-50 shadow-sm">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-black tracking-tighter uppercase text-stone-800">
-                Cross<span class="text-cyan-600">Realm</span> <span class="text-xs font-bold text-stone-400 ml-2 tracking-widest">RULE REVIEW</span>
+    <nav class="bg-slate-900 text-slate-100 sticky top-0 z-50 shadow-lg border-b-4 border-cyan-500">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-black tracking-widest uppercase">
+                <span class="text-cyan-400">Cross</span> <span class="text-amber-500">Realm</span>
             </h1>
-            <div class="hidden md:flex space-x-8 text-xs font-black uppercase tracking-widest text-stone-500">
-                <a href="#summary" class="hover:text-cyan-600 transition-colors">基本仕様</a>
-                <a href="#simulator" class="hover:text-cyan-600 transition-colors">サイクル検証</a>
-                <a href="#effects" class="hover:text-cyan-600 transition-colors">特殊効果</a>
-                <a href="#data" class="hover:text-cyan-600 transition-colors">統計データ</a>
-            </div>
+            <ul class="flex space-x-4 md:space-x-6 text-sm font-bold mt-2 md:mt-0">
+                <li><a href="#metrics" class="hover:text-cyan-400 transition-colors">コア制約</a></li>
+                <li><a href="#cycle" class="hover:text-cyan-400 transition-colors">属性サイクル</a></li>
+                <li><a href="#special" class="hover:text-cyan-400 transition-colors">特殊カード</a></li>
+                <li><a href="#analytics" class="hover:text-cyan-400 transition-colors">デッキ分析</a></li>
+            </ul>
         </div>
     </nav>
 
-    <header class="max-w-4xl mx-auto px-6 pt-16 pb-12 text-center">
-        <h2 class="text-3xl md:text-5xl font-black text-stone-900 mb-6 tracking-tight">タクティカル・ルールおさらい</h2>
-        <p class="text-lg text-stone-600 max-w-2xl mx-auto">
-            属性の「維持」と「遷移」の視覚的ガイドをアップデートしました。
-            場のカードを起点に、次の一手を直感的に判断するためのシミュレーターです。
+    <header class="max-w-4xl mx-auto px-4 pt-12 pb-8 text-center">
+        <h2 class="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">Interactive Tactical Guide</h2>
+        <h3 class="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-cyan-600 to-purple-600 mb-6">Eternal Punk Edition</h3>
+        <p class="text-lg text-slate-600 max-w-2xl mx-auto font-medium">
+            スチームパンク、幻想世界、サイバーパンクが交差するオンライン・タクティカル・カードゲームの公式分析データ。
+            勝利を掴むためのルール構造とデッキの確率分布を可視化します。
         </p>
     </header>
 
-    <main class="max-w-6xl mx-auto px-6 pb-24 space-y-24">
+    <main class="max-w-6xl mx-auto px-4 pb-20 space-y-16">
 
-        <section id="simulator" class="scroll-mt-24">
-            <div class="mb-10">
-                <h3 class="text-2xl font-black text-stone-800 uppercase tracking-widest mb-2">属性サイクル・シミュレーター</h3>
-                <div class="w-16 h-1 bg-cyan-600"></div>
-                <p class="mt-4 text-stone-600">
-                    いずれかの属性をクリックしてください。<br>
-                    <span class="inline-flex items-center text-cyan-600 font-bold mr-4"><span class="w-3 h-3 rounded-full bg-cyan-500 mr-2"></span>常時点灯 ＝ 現在場にあるカード</span>
-                    <span class="inline-flex items-center text-emerald-600 font-bold"><span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse mr-2"></span>点滅 ＝ 次に出せるカード</span>
+        <section id="metrics" class="scroll-mt-20">
+            <div class="mb-6 border-l-4 border-slate-800 pl-4">
+                <h3 class="text-2xl font-extrabold text-slate-800">ミッション・コア制約</h3>
+                <p class="text-slate-600 mt-1">
+                    ゲームの進行と勝敗を決定づける絶対的な数値条件です。常にこのリソースと限界を意識してプレイする必要があります。
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
-                <div class="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-stone-200">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-                        <!-- Set A -->
-                        <div class="space-y-4">
-                            <div class="text-[10px] font-black text-stone-400 uppercase tracking-widest text-center border-b border-stone-100 pb-1">Set A: Steam</div>
-                            <button id="node-GEAR" onclick="simulate('GEAR')" class="w-full p-6 bg-stone-50 border-2 border-stone-200 rounded-2xl transition-smooth flex flex-col items-center group">
-                                <span class="text-3xl mb-2 group-hover:rotate-45 transition-transform">⚙️</span>
-                                <span class="font-black label-text text-stone-700">歯車 (GEAR)</span>
-                                <span class="text-[10px] font-bold text-amber-600 mt-1">【維持】</span>
-                            </button>
-                            <button id="node-ICEAGE" onclick="simulate('ICEAGE')" class="w-full p-6 bg-stone-50 border-2 border-stone-200 rounded-2xl transition-smooth flex flex-col items-center group">
-                                <span class="text-3xl mb-2 group-hover:scale-110 transition-transform">❄️</span>
-                                <span class="font-black label-text text-stone-700">氷河期 (ICEAGE)</span>
-                                <span class="text-[10px] font-bold text-cyan-600 mt-1">【遷移】➔ Set B</span>
-                            </button>
-                        </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-card rounded-xl p-6 border-t-4 border-cyan-500 shadow-md hover:shadow-lg transition-fast flex flex-col items-center text-center">
+                    <div class="text-4xl mb-3">🎴</div>
+                    <div class="text-5xl font-black text-cyan-600 mb-2">5</div>
+                    <h4 class="text-sm font-bold text-slate-500 tracking-wide">初期手札 (枚)</h4>
+                    <p class="text-xs text-slate-400 mt-2">出せない場合は1枚ドローしてターン終了</p>
+                </div>
 
-                        <!-- Set B -->
-                        <div class="space-y-4">
-                            <div class="text-[10px] font-black text-stone-400 uppercase tracking-widest text-center border-b border-stone-100 pb-1">Set B: Fantasy</div>
-                            <button id="node-FOUNTAIN" onclick="simulate('FOUNTAIN')" class="w-full p-6 bg-stone-50 border-2 border-stone-200 rounded-2xl transition-smooth flex flex-col items-center group">
-                                <span class="text-3xl mb-2 group-hover:translate-y-[-4px] transition-transform">⛲</span>
-                                <span class="font-black label-text text-stone-700">噴水 (FOUNTAIN)</span>
-                                <span class="text-[10px] font-bold text-amber-600 mt-1">【維持】</span>
-                            </button>
-                            <button id="node-BATTERY" onclick="simulate('BATTERY')" class="w-full p-6 bg-stone-50 border-2 border-stone-200 rounded-2xl transition-smooth flex flex-col items-center group">
-                                <span class="text-3xl mb-2 group-hover:brightness-125 transition-transform">🔋</span>
-                                <span class="font-black label-text text-stone-700">電池 (BATTERY)</span>
-                                <span class="text-[10px] font-bold text-cyan-600 mt-1">【遷移】➔ Set C</span>
-                            </button>
-                        </div>
+                <div class="glass-card rounded-xl p-6 border-t-4 border-amber-500 shadow-md hover:shadow-lg transition-fast flex flex-col items-center text-center">
+                    <div class="text-4xl mb-3">🏆</div>
+                    <div class="text-5xl font-black text-amber-500 mb-2">0</div>
+                    <h4 class="text-sm font-bold text-slate-500 tracking-wide">勝利条件 (枚)</h4>
+                    <p class="text-xs text-slate-400 mt-2">最も早く手札を使い切れば MISSION CLEAR</p>
+                </div>
 
-                        <!-- Set C -->
-                        <div class="space-y-4">
-                            <div class="text-[10px] font-black text-stone-400 uppercase tracking-widest text-center border-b border-stone-100 pb-1">Set C: Cyber</div>
-                            <button id="node-MACHINE" onclick="simulate('MACHINE')" class="w-full p-6 bg-stone-50 border-2 border-stone-200 rounded-2xl transition-smooth flex flex-col items-center group">
-                                <span class="text-3xl mb-2 group-hover:scale-95 transition-transform">🤖</span>
-                                <span class="font-black label-text text-stone-700">機械 (MACHINE)</span>
-                                <span class="text-[10px] font-bold text-amber-600 mt-1">【維持】</span>
-                            </button>
-                            <button id="node-ARCHIVE" onclick="simulate('ARCHIVE')" class="w-full p-6 bg-stone-50 border-2 border-stone-200 rounded-2xl transition-smooth flex flex-col items-center group">
-                                <span class="text-3xl mb-2 group-hover:scale-110 transition-transform">📖</span>
-                                <span class="font-black label-text text-stone-700">古文書 (ARCHIVE)</span>
-                                <span class="text-[10px] font-bold text-cyan-600 mt-1">【遷移】➔ Set A</span>
-                            </button>
-                        </div>
+                <div class="glass-card rounded-xl p-6 border-t-4 border-red-500 shadow-md hover:shadow-lg transition-fast flex flex-col items-center text-center bg-red-50">
+                    <div class="text-4xl mb-3">💀</div>
+                    <div class="text-5xl font-black text-red-500 mb-2">11</div>
+                    <h4 class="text-sm font-bold text-red-600 tracking-wide">バースト限界 (枚)</h4>
+                    <p class="text-xs text-red-500 mt-2">10枚を超えた瞬間 SYSTEM OVERLOAD (敗北)</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="cycle" class="scroll-mt-20">
+            <div class="mb-6 border-l-4 border-cyan-500 pl-4">
+                <h3 class="text-2xl font-extrabold text-slate-800">タクティカル・ペア・システム</h3>
+                <p class="text-slate-600 mt-1">
+                    場の属性に対して次に出せるカードの遷移フローです。<strong>以下の属性パネルをクリック</strong>して、有効な次の手をシミュレートしてください。
+                </p>
+            </div>
+
+            <div class="bg-slate-900 rounded-2xl p-6 md:p-10 shadow-2xl relative overflow-hidden border border-slate-800">
+                <div class="text-center mb-8">
+                    <p id="cycle-instruction" class="text-cyan-400 font-bold text-lg">いずれかの属性をクリックしてフローを開始</p>
+                    <p id="cycle-warning" class="text-red-400 text-sm mt-2 font-bold opacity-0 transition-opacity">※「遷移」カードは連続して重ねることはできません</p>
+                </div>
+
+                <div class="flex flex-col items-center max-w-4xl mx-auto space-y-6 relative z-10">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full items-center">
+                        <button onclick="activateCycle('GEAR')" id="btn-GEAR" class="bg-slate-800 border-2 border-amber-600 text-amber-500 py-4 px-4 rounded-xl transition-fast hover:bg-slate-700 font-bold flex flex-col items-center w-full">
+                            <span class="text-3xl mb-1">⚙️</span>
+                            <span class="text-lg">歯車 (GEAR)</span>
+                            <span class="text-xs text-slate-400 mt-1">【維持】Set A</span>
+                        </button>
+                        
+                        <div class="text-center hidden md:block text-slate-600 text-2xl font-black">➔</div>
+                        <div class="text-center md:hidden text-slate-600 text-2xl font-black">⬇</div>
+
+                        <button onclick="activateCycle('ICEAGE')" id="btn-ICEAGE" class="bg-slate-800 border-2 border-cyan-300 text-cyan-300 py-4 px-4 rounded-xl transition-fast hover:bg-slate-700 font-bold flex flex-col items-center w-full">
+                            <span class="text-3xl mb-1">❄️</span>
+                            <span class="text-lg">氷河期 (ICEAGE)</span>
+                            <span class="text-xs text-slate-400 mt-1">【遷移】A➔B</span>
+                        </button>
+                        
+                        <div class="text-center hidden md:block text-slate-600 text-2xl font-black">➔</div>
+                        <div class="text-center md:hidden text-slate-600 text-2xl font-black">⬇</div>
+
+                        <button onclick="activateCycle('FOUNTAIN')" id="btn-FOUNTAIN" class="bg-slate-800 border-2 border-blue-400 text-blue-400 py-4 px-4 rounded-xl transition-fast hover:bg-slate-700 font-bold flex flex-col items-center w-full">
+                            <span class="text-3xl mb-1">⛲</span>
+                            <span class="text-lg">噴水 (FOUNTAIN)</span>
+                            <span class="text-xs text-slate-400 mt-1">【維持】Set B</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full items-center">
+                        <div class="text-center hidden md:block text-slate-600 text-2xl font-black">⬆</div>
+                        <div></div>
+                        <div class="text-center hidden md:block text-slate-600 text-2xl font-black">⬇</div>
+                        <div class="text-center md:hidden text-slate-600 text-2xl font-black">⬇</div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full items-center">
+                        <button onclick="activateCycle('ARCHIVE')" id="btn-ARCHIVE" class="bg-slate-800 border-2 border-orange-400 text-orange-400 py-4 px-4 rounded-xl transition-fast hover:bg-slate-700 font-bold flex flex-col items-center w-full">
+                            <span class="text-3xl mb-1">📖</span>
+                            <span class="text-lg">古文書 (ARCHIVE)</span>
+                            <span class="text-xs text-slate-400 mt-1">【遷移】C➔A</span>
+                        </button>
+                        
+                        <div class="text-center hidden md:block text-slate-600 text-2xl font-black">⬅</div>
+                        <div class="text-center md:hidden text-slate-600 text-2xl font-black">⬇</div>
+
+                        <button onclick="activateCycle('MACHINE')" id="btn-MACHINE" class="bg-slate-800 border-2 border-slate-400 text-slate-300 py-4 px-4 rounded-xl transition-fast hover:bg-slate-700 font-bold flex flex-col items-center w-full">
+                            <span class="text-3xl mb-1">🤖</span>
+                            <span class="text-lg">機械 (MACHINE)</span>
+                            <span class="text-xs text-slate-400 mt-1">【維持】Set C</span>
+                        </button>
+
+                        <div class="text-center hidden md:block text-slate-600 text-2xl font-black">⬅</div>
+                        <div class="text-center md:hidden text-slate-600 text-2xl font-black">⬇</div>
+
+                        <button onclick="activateCycle('BATTERY')" id="btn-BATTERY" class="bg-slate-800 border-2 border-green-500 text-green-500 py-4 px-4 rounded-xl transition-fast hover:bg-slate-700 font-bold flex flex-col items-center w-full">
+                            <span class="text-3xl mb-1">🔋</span>
+                            <span class="text-lg">電池 (BATTERY)</span>
+                            <span class="text-xs text-slate-400 mt-1">【遷移】B➔C</span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <section id="special" class="scroll-mt-20">
+            <div class="mb-6 border-l-4 border-purple-500 pl-4">
+                <h3 class="text-2xl font-extrabold text-slate-800">特殊兵装 & ワイルド・エフェクト</h3>
+                <p class="text-slate-600 mt-1">
+                    盤面を支配する強力なカード群です。「S」バッジを持つカードや、世界観を超越する純粋ワイルドカードの能力を把握してください。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-card rounded-xl p-6 shadow border-l-8 border-l-amber-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-3xl">⚙️</span>
+                        <span class="bg-slate-900 text-amber-400 text-xs font-black px-2 py-1 rounded">S</span>
+                        <h4 class="text-xl font-bold text-slate-900">歯車 [+2 DRAW]</h4>
+                    </div>
+                    <p class="text-sm text-slate-700 mb-2">次のプレイヤーに強制的に+2枚ドローのペナルティを与えます。</p>
+                    <div class="bg-amber-50 p-3 rounded border border-amber-200 text-xs text-amber-800">
+                        <strong>回避戦術:</strong> 手札に「歯車(S)」があれば重ねて（+4, +6...）回避可能。それ以外のカードは出せません。
                     </div>
                 </div>
 
-                <div class="bg-stone-800 rounded-3xl p-8 text-white shadow-xl min-h-[350px] flex flex-col">
-                    <div class="flex items-center space-x-2 mb-6">
-                        <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
-                        <span class="text-[10px] font-black uppercase tracking-[0.3em] text-stone-400">Analysis Console</span>
+                <div class="glass-card rounded-xl p-6 shadow border-l-8 border-l-slate-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-3xl">🤖</span>
+                        <span class="bg-slate-900 text-slate-300 text-xs font-black px-2 py-1 rounded">S</span>
+                        <h4 class="text-xl font-bold text-slate-900">機械 [REVERSE]</h4>
                     </div>
-                    <div id="sim-result" class="flex-grow">
-                        <p class="text-stone-500 italic text-sm">左のパネルを選択して<br>サイクルを検証してください。</p>
+                    <p class="text-sm text-slate-700 mb-2">手番の進行方向（時計回り ↔ 反時計回り）を即座に反転させます。</p>
+                    <div class="bg-slate-100 p-3 rounded border border-slate-300 text-xs text-slate-700">
+                        <strong>2人対戦時:</strong> 相手をスキップし、連続で自分のターンになります。
                     </div>
-                    <div class="mt-8 pt-6 border-t border-stone-700">
-                        <div class="text-[10px] font-bold text-stone-500 mb-2 uppercase">Core System Logic</div>
-                        <p class="text-[11px] text-stone-400 leading-relaxed italic">
-                            「氷河期・電池・古文書」の上に同じカードは重ねられません。このゲートを通過することで、世界観のレイヤーが切り替わります。
-                        </p>
+                </div>
+
+                <div class="glass-card rounded-xl p-6 shadow border-l-8 border-l-blue-400">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-3xl">⛲</span>
+                        <span class="bg-slate-900 text-blue-400 text-xs font-black px-2 py-1 rounded">S</span>
+                        <h4 class="text-xl font-bold text-slate-900">噴水 [限定 WILD]</h4>
+                    </div>
+                    <p class="text-sm text-slate-700 mb-2">出す時に、場の属性を好きなものに変更できます。</p>
+                    <div class="bg-blue-50 p-3 rounded border border-blue-200 text-xs text-blue-800">
+                        <strong>発動条件:</strong> 場が「氷河期」または「噴水」の時にのみ使用可能です。
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-xl p-6 shadow border-l-8 border-l-purple-500">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-3xl">🪐 / 🏛️</span>
+                        <span class="bg-purple-600 text-white text-xs font-black px-2 py-1 rounded">WILD</span>
+                        <h4 class="text-xl font-bold text-slate-900">惑星 / 廃墟 [純粋 WILD]</h4>
+                    </div>
+                    <p class="text-sm text-slate-700 mb-2">ドロー攻撃中を除き、場の属性に関わらずいつでも出せます。</p>
+                    <div class="bg-purple-50 p-3 rounded border border-purple-200 text-xs text-purple-800">
+                        <strong>絶対領域:</strong> 出した瞬間に、場を完全に好きな属性に塗り替える最強のカードです。
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- (Other sections like Summary, Effects, Data remain but are visually consistent) -->
-        <section id="summary" class="scroll-mt-24">
-            <div class="mb-10 text-center">
-                <h3 class="text-2xl font-black text-stone-800 uppercase tracking-widest mb-2">基本ルール概要</h3>
-                <div class="w-16 h-1 bg-cyan-600 mx-auto"></div>
+        <section id="analytics" class="scroll-mt-20">
+            <div class="mb-6 border-l-4 border-emerald-500 pl-4">
+                <h3 class="text-2xl font-extrabold text-slate-800">デッキ戦略分析 (Total: 51)</h3>
+                <p class="text-slate-600 mt-1">
+                    運の要素を排除し、カウンティングを可能にする固定51枚のデッキ構成を可視化。
+                    相手の手札を読み、残りの特殊カードや遷移カードの枚数を予測することが勝利の鍵となります。
+                </p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
-                    <div class="text-stone-300 font-black text-[10px] uppercase mb-2">Winning Condition</div>
-                    <div class="text-4xl font-black text-stone-800">0 Cards</div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="glass-card rounded-2xl p-6 shadow-lg border border-slate-200">
+                    <h4 class="text-center font-bold text-slate-800 mb-2 text-lg">マクロ構成比率</h4>
+                    <p class="text-center text-xs text-slate-500 mb-4">メイン・遷移・ワイルドのバランス</p>
+                    <div class="chart-container">
+                        <canvas id="macroCompositionChart"></canvas>
+                    </div>
+                    <div class="mt-6 text-sm text-slate-600 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                        全体51枚のうち、純粋ワイルドはわずか6枚(約11.7%)。遷移カード(15枚)はコンボを繋ぐか切るかの要となります。
+                    </div>
                 </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
-                    <div class="text-stone-300 font-black text-[10px] uppercase mb-2">Burst Condition</div>
-                    <div class="text-4xl font-black text-red-500">11 Cards</div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
-                    <div class="text-stone-300 font-black text-[10px] uppercase mb-2">Initial Gear</div>
-                    <div class="text-4xl font-black text-stone-800">5 Cards</div>
+
+                <div class="glass-card rounded-2xl p-6 shadow-lg border border-slate-200">
+                    <h4 class="text-center font-bold text-slate-800 mb-2 text-lg">メイン属性 内訳解析</h4>
+                    <p class="text-center text-xs text-slate-500 mb-4">通常カードと特殊(S)カードの比率</p>
+                    <div class="chart-container">
+                        <canvas id="microCompositionChart"></canvas>
+                    </div>
+                    <div class="mt-6 text-sm text-slate-600 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                        各メイン属性10枚中、盤面を乱す特殊(S)カードは常に3枚。相手が特定のメイン属性を多用した場合、Sカードの警戒度が高まります。
+                    </div>
                 </div>
             </div>
         </section>
 
     </main>
 
-    <footer class="bg-stone-900 text-stone-500 py-16 text-center border-t border-stone-800">
-        <div class="max-w-4xl mx-auto px-6">
-            <h1 class="text-2xl font-black tracking-widest uppercase mb-4 text-white">
-                Cross<span class="text-cyan-500">Realm</span>
+    <footer class="bg-slate-900 border-t-4 border-cyan-600 mt-12 py-10 text-center">
+        <div class="max-w-4xl mx-auto px-4">
+            <h1 class="text-xl font-black tracking-widest uppercase mb-4 text-slate-100">
+                <span class="text-cyan-400">Cross</span> <span class="text-amber-500">Realm</span>
             </h1>
-            <p class="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40">Eternal Punk Edition Rule Analytics Engine</p>
+            <div class="text-xs text-slate-400 space-y-2">
+                <p>非営利のファン活動として制作されたものです。</p>
+                <p>オマージュ元: 株式会社バンダイナムコエンターテインメント様『テイルズ オブ エターニア』内ミニゲーム「ウィス（WHISS）」</p>
+                <p>ゲームシステム設計、プログラム、UIデザインの著作権は制作者に帰属。モチーフ作品の著作権は各権利者様に帰属します。</p>
+            </div>
         </div>
     </footer>
 
     <script>
-        const LOGIC = {
-            'GEAR': { targets: ['GEAR', 'ICEAGE'], desc: '【維持】同じ「歯車」で居座るか、あるいは「氷河期」で世界を冷やしてSet Bへ向かいます。', type: 'loop' },
-            'ICEAGE': { targets: ['FOUNTAIN', 'BATTERY'], desc: '【遷移】同じカードは出せません。氷が解けて「噴水」になるか、冷気で「電池」を保存するかの選択です。', type: 'gate' },
-            'FOUNTAIN': { targets: ['FOUNTAIN', 'BATTERY'], desc: '【維持】同じ「噴水」で潤すか、あるいは「電池」を充電してSet Cへ向かいます。', type: 'loop' },
-            'BATTERY': { targets: ['MACHINE', 'ARCHIVE'], desc: '【遷移】同じカードは出せません。電力を放出して「機械」を動かすか、「古文書」に記録するかの選択です。', type: 'gate' },
-            'MACHINE': { targets: ['MACHINE', 'ARCHIVE'], desc: '【維持】同じ「機械」で稼働を続けるか、あるいは「古文書」で記録をSet Aへ引き継ぎます。', type: 'loop' },
-            'ARCHIVE': { targets: ['GEAR', 'ICEAGE'], desc: '【遷移】同じカードは出せません。記録から「歯車」を再造するか、歴史を「氷河期」で封印するかの選択です。', type: 'gate' }
+        const graphLogic = {
+            'GEAR': { targets: ['btn-GEAR', 'btn-ICEAGE'], text: '【維持】同じ「歯車」か、【遷移】「氷河期」が出せます。', warn: false },
+            'ICEAGE': { targets: ['btn-FOUNTAIN', 'btn-BATTERY'], text: '【強制遷移】「噴水」か「電池」へ移動。', warn: true },
+            'FOUNTAIN': { targets: ['btn-FOUNTAIN', 'btn-BATTERY'], text: '【維持】同じ「噴水」か、【遷移】「電池」が出せます。', warn: false },
+            'BATTERY': { targets: ['btn-MACHINE', 'btn-ARCHIVE'], text: '【強制遷移】「機械」か「古文書」へ移動。', warn: true },
+            'MACHINE': { targets: ['btn-MACHINE', 'btn-ARCHIVE'], text: '【維持】同じ「機械」か、【遷移】「古文書」が出せます。', warn: false },
+            'ARCHIVE': { targets: ['btn-GEAR', 'btn-ICEAGE'], text: '【強制遷移】「歯車」か「氷河期」へ移動。', warn: true }
         };
 
-        const allNodeKeys = Object.keys(LOGIC);
+        const allNodes = Object.keys(graphLogic).map(k => `btn-${k}`);
 
-        window.simulate = function(realm) {
-            // Reset all
-            allNodeKeys.forEach(key => {
-                const el = document.getElementById(`node-${key}`);
-                el.classList.remove('node-current', 'node-next-playable', 'bg-stone-900', 'bg-white');
+        window.activateCycle = function(realm) {
+            allNodes.forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.remove('pulse-highlight', 'scale-105', 'bg-slate-900', 'border-white');
                 el.classList.add('opacity-40');
-                el.querySelector('.label-text').classList.remove('text-white', 'text-stone-700');
-                el.querySelector('.label-text').classList.add('text-stone-700');
             });
 
-            // Set Current (Steady Glow)
-            const currentEl = document.getElementById(`node-${realm}`);
-            currentEl.classList.remove('opacity-40');
-            currentEl.classList.add('node-current');
-            currentEl.querySelector('.label-text').classList.remove('text-stone-700');
-            currentEl.querySelector('.label-text').classList.add('text-white');
+            const sourceNode = document.getElementById(`btn-${realm}`);
+            sourceNode.classList.remove('opacity-40');
+            sourceNode.classList.add('bg-slate-900', 'scale-105', 'border-white');
 
-            // Set Next (Pulsing)
-            LOGIC[realm].targets.forEach(targetKey => {
-                // 現在のカード自身が次に出せる場合、見た目は「点灯」を優先
-                if (targetKey !== realm) {
-                    const nextEl = document.getElementById(`node-${targetKey}`);
-                    nextEl.classList.remove('opacity-40');
-                    nextEl.classList.add('node-next-playable');
+            graphLogic[realm].targets.forEach(tId => {
+                const targetNode = document.getElementById(tId);
+                targetNode.classList.remove('opacity-40');
+                targetNode.classList.add('pulse-highlight');
+            });
+
+            const instructionEl = document.getElementById('cycle-instruction');
+            instructionEl.innerHTML = `<span class="text-white">場が</span> <span class="text-xl font-black mx-1">${sourceNode.children[1].innerText.split(' ')[0]}</span> <span class="text-white">の時：</span> <span class="text-amber-400">${graphLogic[realm].text}</span>`;
+            
+            const warningEl = document.getElementById('cycle-warning');
+            if (graphLogic[realm].warn) {
+                warningEl.classList.remove('opacity-0');
+            } else {
+                warningEl.classList.add('opacity-0');
+            }
+        };
+
+        const wrapLabelStr = (text, limit = 16) => {
+            if (text.length <= limit) return text;
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+            for (let i = 1; i < words.length; i++) {
+                if (currentLine.length + 1 + words[i].length <= limit) {
+                    currentLine += ' ' + words[i];
+                } else {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        };
+
+        const tooltipConfig = {
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    if (Array.isArray(label)) {
+                        return label.join(' ');
+                    } else {
+                        return label;
+                    }
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctxMacro = document.getElementById('macroCompositionChart').getContext('2d');
+            new Chart(ctxMacro, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        wrapLabelStr('メイン属性 (歯車/機械/噴水)'),
+                        wrapLabelStr('サブ遷移属性 (氷河期/電池/古文書)'),
+                        wrapLabelStr('純粋ワイルド (惑星/廃墟)')
+                    ],
+                    datasets: [{
+                        data: [30, 15, 6],
+                        backgroundColor: ['#06b6d4', '#f59e0b', '#a855f7'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#1e293b', font: { family: "'Exo 2', sans-serif", weight: 'bold' } } },
+                        tooltip: tooltipConfig
+                    },
+                    cutout: '65%'
                 }
             });
 
-            // Console output
-            const out = document.getElementById('sim-result');
-            const data = LOGIC[realm];
-            out.innerHTML = `
-                <div class="animate-in fade-in slide-in-from-right-4 duration-500">
-                    <div class="flex items-center space-x-2 mb-4">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase ${data.type === 'loop' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' : 'bg-cyan-500/20 text-cyan-500 border border-cyan-500/30'}">
-                            ${data.type === 'loop' ? 'Maintenance Card' : 'Transition Gate'}
-                        </span>
-                    </div>
-                    <h5 class="text-2xl font-black mb-4 flex items-center">
-                        ${currentEl.querySelector('span:nth-child(1)').innerText}
-                        <span class="ml-2">${currentEl.querySelector('.label-text').innerText}</span>
-                    </h5>
-                    <div class="p-5 bg-stone-900 border border-stone-700 rounded-2xl shadow-inner mb-6">
-                        <p class="text-sm font-medium leading-relaxed text-stone-300">
-                            ${data.desc}
-                        </p>
-                    </div>
-                    <div class="space-y-2">
-                        <span class="text-[10px] font-black text-stone-500 uppercase tracking-widest block">Valid Next Moves:</span>
-                        <div class="flex flex-wrap gap-2">
-                            ${data.targets.map(t => `
-                                <span class="px-3 py-1.5 bg-stone-700/50 border border-stone-600 text-white text-[11px] font-black rounded-lg uppercase flex items-center">
-                                    ${t === realm ? '<span class="w-1.5 h-1.5 rounded-full bg-cyan-400 mr-2"></span>' : '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-2"></span>'}
-                                    ${t}
-                                </span>
-                            `).join('')}
-                        </div>
-                    </div>
-                </div>
-            `;
-        };
+            const ctxMicro = document.getElementById('microCompositionChart').getContext('2d');
+            new Chart(ctxMicro, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        wrapLabelStr('歯車 (GEAR)'),
+                        wrapLabelStr('機械 (MACHINE)'),
+                        wrapLabelStr('噴水 (FOUNTAIN)')
+                    ],
+                    datasets: [
+                        {
+                            label: '通常カード',
+                            data: [7, 7, 7],
+                            backgroundColor: '#94a3b8'
+                        },
+                        {
+                            label: '特殊(S) カード',
+                            data: [3, 3, 3],
+                            backgroundColor: '#10b981'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { 
+                            stacked: true, 
+                            grid: { display: false },
+                            ticks: { color: '#475569', font: { family: "'Exo 2', sans-serif", weight: 'bold' } }
+                        },
+                        y: { 
+                            stacked: true, 
+                            max: 10,
+                            ticks: { stepSize: 2, color: '#475569' },
+                            grid: { color: '#e2e8f0', borderDash: [4, 4] }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { color: '#1e293b', font: { weight: 'bold' } } },
+                        tooltip: tooltipConfig
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>
