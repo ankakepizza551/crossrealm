@@ -84,7 +84,6 @@ function processBotTurn(roomId) {
   const bot = room.players[room.turnIndex];
   if (!bot || !bot.isBot) return;
 
-  // すでにタイマーが動いていないか確認
   if (bot.isActing) return;
   bot.isActing = true;
 
@@ -93,7 +92,6 @@ function processBotTurn(roomId) {
     const currentRoom = rooms[roomId];
     if (!currentRoom || currentRoom.status !== 'playing') return;
     
-    // 現在のターンがこのボットか再確認
     const currentPlayer = currentRoom.players[currentRoom.turnIndex];
     if (!currentPlayer || currentPlayer.id !== bot.id) return;
 
@@ -133,11 +131,9 @@ function processBotTurn(roomId) {
     bot.handCount = bot.hand.length;
     currentRoom.players.forEach(p => { if (p.handCount > HAND_LIMIT) currentRoom.status = 'finished'; });
     
-    // 現在のターンのIDを明示的に更新
     currentRoom.currentTurnPlayerId = currentRoom.players[currentRoom.turnIndex].id;
     io.to(roomId).emit('update-game', currentRoom);
     
-    // 次のターンもボットなら継続
     if (currentRoom.status === 'playing' && currentRoom.players[currentRoom.turnIndex].isBot) {
       processBotTurn(roomId);
     }
