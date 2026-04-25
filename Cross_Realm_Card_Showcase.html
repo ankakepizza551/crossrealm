@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross Realm - v16.0 Final Prototype Showcase -</title>
+
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Cinzel:wght@400;700;900&family=Audiowide&family=Cinzel+Decorative:wght@700&family=Orbitron:wght@700;900&family=Special+Elite&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --card-w: 230px; 
+            --card-h: 330px; 
+            --accent: #40E0D0;
+        }
+        body { 
+            margin: 0; background: #000; color: white; font-family: 'Exo 2', sans-serif; 
+            min-height: 100vh; padding: 60px 20px; overflow-x: hidden;
+            perspective: 3000px;
+        }
+        
+        .bg-layer { position: fixed; inset: 0; pointer-events: none; z-index: -1; background: radial-gradient(circle at center, #0a0a25 0%, #000 100%); }
+
+        /* --- フォント --- */
+        .font-steampunk { font-family: 'Special Elite', cursive; }
+        .font-fantasy { font-family: 'Cinzel Decorative', serif; }
+        .font-cyber { font-family: 'Orbitron', sans-serif; }
+        .font-void { font-family: 'Audiowide', cursive; }
+
+        /* --- 3Dカード基礎 --- */
+        .card-wrapper { perspective: 2000px; transform-style: preserve-3d; position: relative; margin: 45px; }
+        
+        .card { 
+            box-sizing: border-box; width: var(--card-w); height: var(--card-h); 
+            position: relative; flex-shrink: 0; cursor: pointer;
+            transform-style: preserve-3d; transition: transform 0.12s ease-out, box-shadow 0.4s ease;
+        }
+        .card-content { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; border-radius: inherit; overflow: hidden; }
+
+        /* 巨大アイコン */
+        .card-icon { 
+            position: absolute; top: 38%; left: 50%; width: 120px; height: 120px; color: var(--r-color); 
+            transform: translate(-50%, -50%) translateZ(120px); 
+            z-index: 10; filter: drop-shadow(0 0 20px var(--r-color));
+            transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        .card-wrapper:hover .card-icon { transform: translate(-50%, -50%) translateZ(180px) scale(1.1); filter: drop-shadow(0 0 60px var(--r-color)) brightness(2.2); }
+
+        /* 属性ラベル */
+        .identity-label {
+            position: absolute; top: 15px; left: 15px; padding: 6px 15px;
+            background: rgba(0,0,0,0.9); border-radius: 2px;
+            border-left: 5px solid var(--r-color);
+            transform: translateZ(100px); z-index: 30;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .identity-label span { color: #fff; font-size: 14px; font-weight: 900; letter-spacing: 2px; }
+
+        .card-footer { 
+            position: absolute; bottom: 0; width: 100%; font-size: 22px; font-weight: 900; padding: 45px 0 20px 0; 
+            text-align: center; color: #fff; z-index: 30; transform: translateZ(90px); 
+            background: linear-gradient(to top, rgba(0,0,0,1) 50%, transparent 100%);
+            text-shadow: 0 0 15px var(--r-color); letter-spacing: 6px;
+        }
+
+        /* =========================================
+           世界観別極限マテリアル
+           ========================================= */
+
+        .theme-steampunk { 
+            border: 8px solid #3d2416; border-radius: 6px;
+            background: linear-gradient(135deg, #4a2511 0%, #1a0802 100%);
+            box-shadow: 0 20px 50px #000, inset 0 0 100px #000;
+        }
+        .theme-steampunk::before {
+            content: ''; position: absolute; inset: 0;
+            background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.3) 0, rgba(0,0,0,0.3) 3px, transparent 3px, transparent 6px);
+            opacity: 0.7; z-index: 1;
+        }
+
+        .theme-fantasy { 
+            border-radius: 60px 15px; border: 4px solid rgba(255,255,255,0.8);
+            background: radial-gradient(circle at 50% 50%, #2a1b7e 0%, #05021a 100%);
+            box-shadow: 0 0 50px var(--r-shadow-color), inset 0 0 100px var(--r-shadow-color);
+        }
+
+        .theme-cyber { 
+            border: none; border-radius: 0px; background: #000; 
+            clip-path: polygon(0 15%, 15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%);
+            box-shadow: inset 0 0 60px var(--r-shadow-color);
+        }
+        .theme-cyber .cyber-border { position: absolute; inset: 0; border: 4px solid rgba(255,255,255,0.15); border-left: 15px solid var(--r-color); z-index: 10; }
+
+        .theme-void { 
+            border: none; background: #000; box-shadow: 0 0 60px var(--r-shadow-color), inset 0 0 150px var(--r-shadow-color);
+            animation: liquid-shape 10s infinite alternate ease-in-out;
+        }
+        @keyframes liquid-shape { 0% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; } 100% { border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%; } }
+        .theme-void .label-bg { background: #fff !important; border-left: 10px solid var(--r-color) !important; box-shadow: 0 0 40px #fff; }
+        .theme-void .label-bg span { color: #000 !important; text-shadow: none !important; }
+
+        /* =========================================
+           特殊効果：アイコン改良 ＆ 文字演出
+           ========================================= */
+
+        /* REVERSE専用演出: 矢印文字パネル */
+        .unit-reverse-text {
+            position: absolute; top: 60%; left: 50%; width: 150px;
+            background: var(--r-color); color: #000;
+            font-family: 'Orbitron'; font-weight: 900; font-size: 16px;
+            padding: 5px 0; text-align: center;
+            transform: translate(-50%, -50%) translateZ(145px);
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+            box-shadow: 0 0 30px var(--r-color);
+            animation: glitch-flicker 0.2s infinite alternate;
+        }
+        @keyframes glitch-flicker { from { opacity: 1; transform: translate(-50%, -50%) translateZ(145px); } to { opacity: 0.8; transform: translate(-51%, -49%) translateZ(145px); } }
+
+        /* WILD専用演出: 虹色巨大文字 */
+        .effect-text-wild {
+            position: absolute; bottom: 85px; left: 50%; width: 100%; text-align: center;
+            transform: translateX(-50%) translateZ(170px);
+            font-size: 48px; font-weight: 900; font-style: italic;
+            background: linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+            background-size: 200% 100%; -webkit-background-clip: text; color: transparent;
+            animation: rainbow-glow 2s linear infinite; filter: drop-shadow(0 0 15px #fff);
+        }
+        @keyframes rainbow-glow { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+
+        /* DRAW 2専用演出 */
+        .unit-draw2 {
+            position: absolute; top: 100px; left: -15px; width: 70px;
+            background: #6a1505; border: 3px solid #D4AF37; border-radius: 4px;
+            transform: translateZ(160px) rotate(-10deg);
+            display: flex; flex-direction: column; align-items: center; padding: 12px 0;
+            box-shadow: 10px 5px 30px #000; animation: vibration 0.05s infinite;
+        }
+        @keyframes vibration { 0% { transform: translateZ(160px) rotate(-10.5deg); } 100% { transform: translateZ(160px) rotate(-9.5deg); } }
+
+        /* 共通アニメーション */
+        @keyframes rotate-slow { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        /* ホログラム反射 */
+        .card-holo { position: absolute; inset: 0; z-index: 49; pointer-events: none; mix-blend-mode: color-dodge; opacity: 0.2; background: linear-gradient(115deg, transparent 20%, #fff 25%, #0ff 35%, #f0f 45%, #ff0 55%, transparent 60%); background-size: 300% 300%; transition: 0.3s; }
+        .card-glare { position: absolute; inset: 0; z-index: 50; pointer-events: none; mix-blend-mode: overlay; opacity: 0.35; background: radial-gradient(circle at var(--mx) var(--my), #fff 0%, transparent 65%); }
+        .card-wrapper:hover .card-holo { opacity: 1; }
+
+        .logo-main { text-align: center; margin-bottom: 60px; font-family: 'Cinzel', serif; font-size: 58px; font-weight: 900; background: linear-gradient(to bottom, #FFF, #D4AF37); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 35px rgba(64,224,208,0.4)); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useRef } = React;
+
+        const REALMS = {
+            GEAR: { n: '歯車', color: '#FF8C00', shadow: 'rgba(255, 140, 0, 0.7)' },
+            ICEAGE: { n: '氷河期', color: '#00BFFF', shadow: 'rgba(0, 191, 255, 0.9)' },
+            FOUNTAIN: { n: '噴水', color: '#4169E1', shadow: 'rgba(65, 105, 225, 0.9)' },
+            BATTERY: { n: '電池', color: '#32CD32', shadow: 'rgba(50, 205, 50, 0.9)' },
+            MACHINE: { n: '機械', color: '#94A3B8', shadow: 'rgba(148, 163, 184, 0.7)' },
+            ARCHIVE: { n: '古文書', color: '#FF3131', shadow: 'rgba(255, 49, 49, 0.9)' }, 
+            PLANET: { n: '惑星', color: '#9400D3', shadow: 'rgba(148, 0, 211, 1)' },
+            RUINS: { n: '廃墟', color: '#FFFFFF', shadow: 'rgba(255, 255, 255, 0.8)' }
+        };
+        const THEMES = { GEAR: 'steampunk', ARCHIVE: 'steampunk', ICEAGE: 'fantasy', FOUNTAIN: 'fantasy', PLANET: 'void', RUINS: 'void', BATTERY: 'cyber', MACHINE: 'cyber' };
+        
+        // アイコン定義の改良
+        const ICONS = {
+            GEAR: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg>,
+            ICEAGE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m10 20-2.5-2.5L5 20"/><path d="M12 22V2"/><path d="m14 20 2.5-2.5L19 20"/><path d="m10 4-2.5 2.5L5 4"/><path d="m14 4 2.5 2.5L19 4"/><path d="m20 10-2.5 2.5L20 15"/><path d="M22 12H2"/><path d="m4 10 2.5 2.5L4 15"/></svg>,
+            // 噴水：ワイルド用虹色グラデーション対応
+            FOUNTAIN: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4A9.7 9.7 0 0 1 12 22z"></path></svg>,
+            BATTERY: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect><line x1="22" x2="22" y1="11" y2="13"></line><line x1="6" x2="6" y1="11" y2="13"></line><line x1="10" x2="10" y1="11" y2="13"></line><line x1="14" x2="14" y1="11" y2="13"></line></svg>,
+            // 機械：基盤の中央にリバース矢印
+            MACHINE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>,
+            MACHINE_S: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="4" width="16" height="16" rx="2" ry="2" opacity="0.5"></rect><path d="M12 8v4l3 3" strokeWidth="2"/><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" strokeWidth="2"/><polyline points="16 8 21 8 21 3" strokeWidth="2"/></svg>,
+            ARCHIVE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>,
+            PLANET: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10z"></path></svg>,
+            RUINS: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 20h20"></path><path d="M5 20v-8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8"></path><path d="M9 20v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"></path></svg>
+        };
+
+        const CardView = ({ displayRealm, isSpecial }) => {
+            const theme = THEMES[displayRealm] || 'fantasy';
+            const rColor = REALMS[displayRealm] ? REALMS[displayRealm].color : '#fff';
+            const shadowColor = REALMS[displayRealm] ? REALMS[displayRealm].shadow : 'rgba(255,255,255,0.4)';
+
+            const cardRef = useRef(null);
+            const [style, setStyle] = useState({ transform: 'rotateX(0deg) rotateY(0deg)', '--mx': '50%', '--my': '50%' });
+
+            const handleMouseMove = (e) => {
+                if (!cardRef.current) return;
+                const rect = cardRef.current.getBoundingClientRect();
+                const rotateX = ((e.clientY - rect.top - rect.height / 2) / (rect.height / 2)) * -25; 
+                const rotateY = ((e.clientX - rect.left - rect.width / 2) / (rect.width / 2)) * 25;
+                setStyle({ transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`, '--mx': `${((e.clientX - rect.left) / rect.width) * 100}%`, '--my': `${((e.clientY - rect.top) / rect.height) * 100}%`, transition: 'none' });
+            };
+
+            let fontClass = `font-${theme}`;
+            const isWildType = displayRealm === 'PLANET' || displayRealm === 'RUINS';
+            const isFountainWild = displayRealm === 'FOUNTAIN' && isSpecial;
+            
+            // アイコンのカラーリング決定
+            let iconStyle = { color: rColor };
+            if (isWildType || isFountainWild) {
+                iconStyle = { filter: 'drop-shadow(0 0 10px #fff)', stroke: 'url(#rainbow-gradient)' };
+            }
+
+            return (
+                <div className="card-wrapper" onMouseMove={handleMouseMove} onMouseLeave={() => setStyle({ transform: 'rotateX(0deg) rotateY(0deg)', '--mx': '50%', '--my': '50%', transition: 'all 0.6s ease-out' })}>
+                    <div ref={cardRef} className={`card theme-${theme}`} style={{'--r-color': rColor, '--r-shadow-color': shadowColor, ...style}}>
+                        <div className="card-content">
+                            <div className="bg-fx"></div>
+                            
+                            {/* 属性ラベル（ヴォイド反転） */}
+                            <div className="identity-label label-bg">
+                                <span className={fontClass}>{displayRealm}</span>
+                            </div>
+                            
+                            {/* --- 特殊効果演出 --- */}
+                            {displayRealm === 'MACHINE' && isSpecial && (
+                                <>
+                                    <div className="unit-reverse-gear"></div>
+                                    <div className="unit-reverse-text">REVERSE</div>
+                                </>
+                            )}
+                            
+                            {isFountainWild && (
+                                <>
+                                    <div className="unit-wild-core"></div>
+                                    <div className="effect-text-wild" style={{fontSize: '32px'}}>LIMIT WILD</div>
+                                </>
+                            )}
+                            
+                            {displayRealm === 'GEAR' && isSpecial && (
+                                <div className="unit-draw2"><div className="num">2</div><div className="txt">DRAW</div></div>
+                            )}
+
+                            {isWildType && (
+                                <>
+                                    <div className="unit-wild-core"></div>
+                                    <div className="effect-text-wild">PURE WILD</div>
+                                </>
+                            )}
+
+                            {/* 中央アイコン（SVGグラデーション定義を内蔵） */}
+                            <div className="card-icon" style={iconStyle}>
+                                <svg width="0" height="0" style={{position:'absolute'}}>
+                                    <defs>
+                                        <linearGradient id="rainbow-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style={{stopColor:'#f00'}} />
+                                            <stop offset="20%" style={{stopColor:'#ff0'}} />
+                                            <stop offset="40%" style={{stopColor:'#0f0'}} />
+                                            <stop offset="60%" style={{stopColor:'#0ff'}} />
+                                            <stop offset="80%" style={{stopColor:'#00f'}} />
+                                            <stop offset="100%" style={{stopColor:'#f0f'}} />
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                {isSpecial && displayRealm === 'MACHINE' ? ICONS.MACHINE_S : ICONS[displayRealm]}
+                            </div>
+
+                            <div className={`card-footer ${fontClass}`}>{REALMS[displayRealm] ? REALMS[displayRealm].n : '???'}</div>
+                        </div>
+                        
+                        <div className="card-holo" style={{ backgroundPosition: `var(--mx) var(--my)`, opacity: isSpecial || isWildType ? 0.5 : 0.1 }}></div>
+                        <div className="card-glare" style={{ left: `var(--mx)`, top: `var(--my)` }}></div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const cardList = [
+                { realm: 'GEAR', isSpecial: false }, { realm: 'GEAR', isSpecial: true },
+                { realm: 'MACHINE', isSpecial: false }, { realm: 'MACHINE', isSpecial: true },
+                { realm: 'FOUNTAIN', isSpecial: false }, { realm: 'FOUNTAIN', isSpecial: true },
+                { realm: 'ICEAGE', isSpecial: false }, { realm: 'BATTERY', isSpecial: false },
+                { realm: 'ARCHIVE', isSpecial: false }, { realm: 'PLANET', isSpecial: false },
+                { realm: 'RUINS', isSpecial: false }
+            ];
+            return (
+                <div style={{ paddingBottom: '100px' }}>
+                    <div className="bg-layer"></div>
+                    <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+                        <h1 className="logo-main tracking-widest">CROSS REALM</h1>
+                        <div style={{ color: 'var(--accent)', letterSpacing: '22px', fontWeight: 900, fontSize: '18px', textShadow: '0 0 25px var(--accent)' }}>FINAL PROTOTYPE</div>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '30px', justifyContent: 'center' }}>
+                        {cardList.map((c, i) => <CardView key={i} displayRealm={c.realm} isSpecial={c.isSpecial} />)}
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
