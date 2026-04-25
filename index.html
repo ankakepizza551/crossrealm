@@ -15,199 +15,119 @@
             --card-w: 108px; --card-h: 156px; --opp-card-w: 32px; --opp-card-h: 46px; --border: rgba(212, 175, 55, 0.45);
         }
         body { margin: 0; background: #000; color: white; font-family: 'Exo 2', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        
+        /* 画面外枠 */
         .screen-wrapper { width: 100vw; height: 100vh; max-width: calc(100vh * 9 / 16); max-height: 100vh; background: var(--bg); position: relative; overflow: hidden; display: flex; flex-direction: column; border-left: 2px solid var(--steam-gold); border-right: 2px solid var(--steam-gold); }
         
+        /* 背景レイヤー */
         .bg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
         .bg-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 180%; height: 180%; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="95" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.5"/><circle cx="100" cy="100" r="75" fill="none" stroke="rgba(64,224,208,0.05)" stroke-width="0.4"/></svg>'); animation: rotate-eternal 180s linear infinite; }
         @keyframes rotate-eternal { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
-        
         .bg-magic-aura { position: absolute; inset: 0; background-color: var(--realm-color); -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 85%); mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 85%); opacity: 0.7; transition: background-color 3s ease-in-out; }
-        .bg-scanline { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.2) 50%); background-size: 100% 4px; z-index: 5; }
+        .bg-scanline { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.15) 50%); background-size: 100% 4px; z-index: 5; }
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
 
-        .turn-direction { text-align: center; font-size: 16px; font-weight: 900; color: var(--accent); letter-spacing: 2px; font-family: 'Exo 2', sans-serif; background: rgba(0,0,0,0.5); padding: 8px 12px; border-bottom: 1px solid rgba(64,224,208,0.3); display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.5s; }
+        /* ターン方向 */
+        .turn-direction { text-align: center; font-size: 14px; font-weight: 900; color: var(--accent); letter-spacing: 2px; background: rgba(0,0,0,0.6); padding: 10px; border-bottom: 1px solid rgba(64,224,208,0.3); display: flex; justify-content: center; align-items: center; gap: 8px; }
 
-        .opponents-area { display: flex; flex-direction: column; gap: 10px; padding: 15px; border-bottom: 2px solid var(--border); background: rgba(0,0,0,0.6); }
-        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 8px; background: rgba(255,255,255,0.04); border-left: 4px solid var(--border); }
-        .opp-row.active { border-left-color: var(--accent); background: rgba(64, 224, 208, 0.1); box-shadow: inset 0 0 15px rgba(64, 224, 208, 0.15); }
-        .opp-name { font-weight: 900; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; letter-spacing: 1px; color: #fff; }
-        
-        .opp-hand-visual { display: flex; align-items: center; justify-content: flex-end; position: relative; width: 110px; height: var(--opp-card-h); }
-        .mini-card-back { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #333, #000); border: 1px solid var(--steam-gold); border-radius: 3px; position: absolute; box-shadow: 2px 0 5px rgba(0,0,0,0.5); }
+        /* 対戦相手エリア */
+        .opponents-area { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-bottom: 2px solid var(--border); background: rgba(0,0,0,0.6); }
+        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 6px; background: rgba(255,255,255,0.04); border-left: 4px solid var(--border); }
+        .opp-row.active { border-left-color: var(--accent); background: rgba(64, 224, 208, 0.1); box-shadow: inset 0 0 15px rgba(64, 224, 208, 0.2); }
+        .opp-name { font-weight: 900; font-size: 16px; color: #fff; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .opp-hand-visual { display: flex; align-items: center; position: relative; width: 100px; height: var(--opp-card-h); }
+        .mini-card-back { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #333, #000); border: 1px solid var(--steam-gold); border-radius: 3px; position: absolute; }
 
-        .cycle-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px 28px 10px; background: rgba(0,0,0,0.85); border-bottom: 2px solid var(--border); position: relative; gap: 4px; }
-        .cycle-dot { flex: 1; height: 5px; background: #1a1a1a; position: relative; border-radius: 2px; }
+        /* サイクルバー */
+        .cycle-bar { display: flex; justify-content: space-between; padding: 10px 10px 24px 10px; background: rgba(0,0,0,0.85); border-bottom: 2px solid var(--border); position: relative; gap: 4px; }
+        .cycle-dot { flex: 1; height: 5px; background: #1a1a1a; border-radius: 2px; }
         .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 12px var(--dot-color); }
-        .cycle-label { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); font-size: 14px; font-weight: 900; opacity: 0.7; font-family: 'Cinzel', serif; white-space: nowrap; }
+        .cycle-label { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 900; opacity: 0.7; font-family: 'Cinzel', serif; white-space: nowrap; }
 
+        /* バトルログ */
+        .battle-log { position: absolute; top: -45px; left: 15px; z-index: 1000; pointer-events: none; display: flex; flex-direction: column; gap: 6px; max-width: 65%; }
+        .log-entry { font-size: 14px; font-weight: 700; color: #fff; background: rgba(0,0,0,0.7); border-left: 3px solid var(--accent); padding: 8px 12px; border-radius: 0 4px 4px 0; animation: logAnim 5s forwards; }
+        @keyframes logAnim { 0% { transform: translateX(-10px); opacity: 0; } 5% { transform: translateX(0); opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
+
+        /* フィールドエリア */
         .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; position: relative; }
-        
-        .battle-log { position: absolute; top: -45px; left: 15px; z-index: 1000; pointer-events: none; display: flex; flex-direction: column; gap: 6px; max-width: 60%; }
-        .log-entry { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.9); background: rgba(0,0,0,0.6); border-left: 3px solid var(--accent); padding: 8px 14px; border-radius: 0 6px 6px 0; text-shadow: 0 0 3px #000; box-shadow: 0 2px 5px rgba(0,0,0,0.3); backdrop-filter: blur(2px); animation: logAnim 5s forwards; }
-        @keyframes logAnim { 0% { transform: translateX(-15px); opacity: 0; } 5% { transform: translateX(0); opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; pointer-events: none; } }
+        .info-panel { background: rgba(10,10,15,0.95); border: 1px solid var(--steam-gold); padding: 15px; border-radius: 8px; max-width: 180px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .realm-title { font-family: 'Cinzel', serif; font-size: 24px; font-weight: 900; color: var(--realm-color); text-shadow: 0 0 10px var(--realm-color); }
 
-        .info-panel { background: rgba(10,10,15,0.98); border: 1px solid var(--steam-gold); padding: 18px; border-radius: 8px; max-width: 210px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.8), inset 0 0 10px rgba(212,175,55,0.1); }
-        .realm-title { font-family: 'Cinzel', serif; font-size: 30px; font-weight: 900; color: var(--realm-color); margin-bottom: 4px; letter-spacing: 2px; text-shadow: 0 0 12px var(--realm-color); }
-
+        /* 手札コンテナ (中央揃え & 圧縮対応) */
         .hand-container { position: relative; z-index: 9999; width: 100%; overflow: visible; background: linear-gradient(to top, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%); }
-        
-        /* スクロールを廃止し、はみ出ない設定に変更 */
         .hand-flex { display: block; padding: 180px 0 25px 0; min-height: 350px; overflow: visible; margin-top: -180px; box-sizing: border-box; }
 
-        .action-row { background: #000; border-top: 1px solid rgba(212,175,55,0.3); padding: 15px 0 35px 0; display: flex; justify-content: center; z-index: 10; position: relative; }
+        .action-row { background: #000; border-top: 1px solid rgba(212,175,55,0.3); padding: 15px 0 35px 0; display: flex; justify-content: center; position: relative; z-index: 10; }
 
-        /* ======== 完全CSS＋SVGによる世界観カード ======== */
+        /* カードUI本体 */
         .card { 
             width: var(--card-w); height: var(--card-h); 
             border-radius: 8px; border: 2.5px solid var(--r-color); 
-            background: #000; 
-            overflow: hidden; position: relative; 
-            flex-shrink: 0; transition: 0.2s cubic-bezier(0.2, 1, 0.3, 1); 
+            background: #000; overflow: hidden; position: relative; 
+            flex-shrink: 0; transition: transform 0.2s cubic-bezier(0.2, 1, 0.3, 1), margin 0.2s; 
         }
-        
-        /* 1. スチームパンク (GEAR, ARCHIVE) */
-        .theme-steampunk { 
-            border-color: #B87333; 
-            background: radial-gradient(circle at center, #2a1a0a 0%, #050301 100%);
-            box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 30px rgba(184,115,51,0.6); 
-        }
-        .theme-steampunk::before { 
-            /* 斜めの金属スリット模様 */
-            content: ''; position: absolute; inset: 0; 
-            background: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(184,115,51,0.15) 8px, rgba(184,115,51,0.15) 16px); 
-            pointer-events: none; z-index: 1; 
-        }
-        .theme-steampunk.playable:hover { border-color: #FFD700; box-shadow: 0 40px 100px rgba(0,0,0,1), 0 0 50px rgba(184,115,51,0.9); }
 
-        /* 2. 幻想世界 (ICEAGE, FOUNTAIN, PLANET, RUINS) */
-        .theme-fantasy { 
-            border-color: #87CEEB; 
-            background: radial-gradient(circle at top, #0f1a24 0%, #000 100%);
-            box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 30px rgba(135,206,235,0.5); 
-        }
-        .theme-fantasy::before { 
-            /* 魔法のオーラ */
-            content: ''; position: absolute; inset: 0; 
-            background: radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, transparent 60%); 
-            pointer-events: none; z-index: 1; 
-        }
-        .theme-fantasy::after {
-            /* 星屑（パーティクル） */
-            content: ''; position: absolute; inset: 0;
-            background-image: radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px);
-            background-size: 14px 14px; opacity: 0.4; z-index: 1;
-        }
-        .theme-fantasy.playable:hover { border-color: #FFF; box-shadow: 0 40px 100px rgba(0,0,0,1), 0 0 50px rgba(135,206,235,0.9); }
+        /* テーマ別フレーム装飾 */
+        .theme-steampunk { border-color: #B87333; background: radial-gradient(circle at center, #2a1a0a 0%, #000 100%); box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 30px rgba(184,115,51,0.6); }
+        .theme-steampunk::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(184,115,51,0.1) 8px, rgba(184,115,51,0.1) 16px); pointer-events: none; }
 
-        /* 3. サイバーパンク (BATTERY, MACHINE) */
-        .theme-cyber { 
-            border-color: #0FF; 
-            background: linear-gradient(135deg, #001a1a 0%, #000 100%);
-            box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 30px rgba(0,255,255,0.5); 
-        }
-        .theme-cyber::before { 
-            /* スキャンライン */
-            content: ''; position: absolute; inset: 0; 
-            background: linear-gradient(transparent 50%, rgba(0,255,255,0.15) 50%); 
-            background-size: 100% 4px; pointer-events: none; z-index: 1; 
-        }
-        .theme-cyber::after {
-            /* デジタルグリッド */
-            content: ''; position: absolute; inset: 0;
-            background-image: linear-gradient(rgba(0,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,255,0.15) 1px, transparent 1px);
-            background-size: 20px 20px; opacity: 0.6; z-index: 1;
-        }
-        .theme-cyber.playable:hover { border-color: #FFF; box-shadow: 0 40px 100px rgba(0,0,0,1), 0 0 50px rgba(0,255,255,0.9); }
+        .theme-fantasy { border-color: #87CEEB; background: radial-gradient(circle at top, #0f1a24 0%, #000 100%); box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 30px rgba(135,206,235,0.5); }
+        .theme-fantasy::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 60%); pointer-events: none; }
+        .theme-fantasy::after { content: ''; position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px); background-size: 14px 14px; opacity: 0.3; }
 
-        /* 特殊カード(S)の共通バッジ装飾 */
+        .theme-cyber { border-color: #0FF; background: linear-gradient(135deg, #001a1a 0%, #000 100%); box-shadow: 0 5px 15px rgba(0,0,0,1), inset 0 0 30px rgba(0,255,255,0.5); }
+        .theme-cyber::before { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent 50%, rgba(0,255,255,0.1) 50%); background-size: 100% 4px; pointer-events: none; }
+        .theme-cyber::after { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(0,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,255,0.1) 1px, transparent 1px); background-size: 20px 20px; opacity: 0.5; }
+
         .card.is-special { border-width: 4px; }
-
-        /* カードのホログラムアイコン */
-        .card-icon {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 54px; height: 54px; color: var(--r-color);
-            filter: drop-shadow(0 0 10px var(--r-color)); z-index: 2;
-        }
-
-        /* 特殊効果のテキスト（NEW） */
-        .card-effect-text { 
-            position: absolute; bottom: 32px; width: 100%; 
-            text-align: center; font-size: 13px; font-weight: 900; 
-            color: #fff; text-shadow: 0 0 5px var(--r-color), 0 0 10px #000; 
-            letter-spacing: 2px; font-family: 'Exo 2', sans-serif; z-index: 3; 
-        }
-
-        /* カード情報（テキスト・バッジ） */
-        .card-realm-mini { position: absolute; top: 6px; left: 8px; font-size: 12px; font-weight: 900; color: #fff; text-shadow: 0 0 5px var(--r-color), 0 0 10px #000; letter-spacing: 1px; font-family: 'Exo 2', sans-serif; z-index: 3; }
+        .card-icon { position: absolute; top: 48%; left: 50%; transform: translate(-50%, -50%); width: 54px; height: 54px; color: var(--r-color); filter: drop-shadow(0 0 10px var(--r-color)); z-index: 2; }
         
-        /* 友人のアドバイスを反映: バッジを左側に移動（重なっても見えるように） */
-        .card-badge { position: absolute; top: 24px; left: 8px; background: var(--r-color); color: #000; font-size: 11px; font-weight: 900; padding: 2px 6px; border-radius: 4px; letter-spacing: 1px; box-shadow: 0 0 8px var(--r-color); z-index: 3; }
-        
-        .card-footer { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); font-size: 14px; font-weight: 900; padding: 5px 0; text-align: center; border-top: 2px solid var(--r-color); color: #fff; font-family: 'Cinzel', serif; z-index: 3; text-shadow: 0 0 5px var(--r-color); }
+        .card-effect-text { position: absolute; bottom: 34px; width: 100%; text-align: center; font-size: 11px; font-weight: 900; color: #fff; text-shadow: 0 0 5px var(--r-color), 0 0 10px #000; letter-spacing: 1.5px; font-family: 'Exo 2', sans-serif; z-index: 3; }
+        .card-realm-mini { position: absolute; top: 6px; left: 8px; font-size: 11px; font-weight: 900; color: #fff; text-shadow: 0 0 5px #000; z-index: 3; opacity: 0.8; }
+        .card-badge { position: absolute; top: 22px; left: 8px; background: var(--r-color); color: #000; font-size: 10px; font-weight: 900; padding: 2px 5px; border-radius: 3px; z-index: 3; box-shadow: 0 0 8px var(--r-color); }
+        .card-footer { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); font-size: 13px; font-weight: 900; padding: 6px 0; text-align: center; border-top: 2px solid var(--r-color); color: #fff; font-family: 'Cinzel', serif; z-index: 3; }
 
-        /* 手札の重なり調整 (margin-leftを変数で動的に受け取る) */
-        .my-card { margin-left: var(--card-margin, -44px); transform-origin: bottom center; cursor: pointer; position: relative; transition: transform 0.2s, margin 0.2s; }
+        .my-card { margin-left: var(--card-margin, -44px); transform-origin: bottom center; cursor: pointer; position: relative; }
         .my-card:first-child { margin-left: 0 !important; }
-        .my-card.playable:hover { transform: translateY(-20px) scale(1.45) !important; z-index: 10000 !important; }
-        .my-card.not-playable { opacity: 0.5; filter: grayscale(0.6) brightness(0.5); cursor: not-allowed; }
+        .my-card.playable:hover { transform: translateY(-25px) scale(1.45) !important; z-index: 10000 !important; border-color: #fff; }
+        .my-card.not-playable { opacity: 0.5; filter: grayscale(0.8) brightness(0.4); cursor: not-allowed; }
 
+        /* パネル類 */
         .overlay { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(12px); background: rgba(0,0,0,0.2); padding: 30px; }
-        
-        .panel { 
-            position: relative;
-            background: linear-gradient(135deg, rgba(15,15,20,0.95), rgba(5,5,10,0.98)); 
-            border: 1px solid var(--steam-gold); 
-            padding: 45px 30px; 
-            border-radius: 4px;
-            text-align: center; 
-            width: 100%; 
-            max-width: 400px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 25px; 
-            box-shadow: 0 0 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(212,175,55,0.05); 
-        }
+        .panel { position: relative; background: linear-gradient(135deg, rgba(15,15,20,0.95), rgba(5,5,10,0.98)); border: 1px solid var(--steam-gold); padding: 40px 25px; width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; gap: 20px; box-shadow: 0 0 40px rgba(0,0,0,0.9); }
         .panel::before, .panel::after { content: ''; position: absolute; width: 20px; height: 20px; border-color: var(--steam-gold); border-style: solid; opacity: 0.8; }
         .panel::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
         .panel::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
-        .panel-corner1, .panel-corner2 { position: absolute; width: 20px; height: 20px; border-color: var(--steam-gold); border-style: solid; opacity: 0.8; }
-        .panel-corner1 { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
-        .panel-corner2 { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
-        
-        .input-group { width: 100%; position: relative; text-align: left; margin-top: 10px; }
-        .input-group label { position: absolute; top: -12px; left: 12px; background: #0b0b0e; padding: 0 8px; font-size: 13px; font-weight: 900; color: var(--steam-gold); letter-spacing: 2px; z-index: 1; }
-        .panel input { width: 100%; padding: 20px 15px; background: rgba(0,0,0,0.6); border: 1px solid rgba(64, 224, 208, 0.3); border-left: 4px solid var(--accent); color: var(--accent); text-align: center; font-size: 20px; border-radius: 4px; outline: none; font-family: 'Exo 2', sans-serif; box-sizing: border-box; transition: 0.3s; text-shadow: 0 0 5px rgba(64, 224, 208, 0.5); }
-        .panel input:focus { background: rgba(64, 224, 208, 0.05); border-color: var(--accent); box-shadow: 0 0 15px rgba(64, 224, 208, 0.2), inset 0 0 10px rgba(64, 224, 208, 0.1); }
+        .panel-corner1 { position: absolute; top: -1px; right: -1px; width: 20px; height: 20px; border-top: 2px solid var(--steam-gold); border-right: 2px solid var(--steam-gold); opacity: 0.8; }
+        .panel-corner2 { position: absolute; bottom: -1px; left: -1px; width: 20px; height: 20px; border-bottom: 2px solid var(--steam-gold); border-left: 2px solid var(--steam-gold); opacity: 0.8; }
 
-        .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 12px; margin: 10px 0; }
-        .waiting-player { background: linear-gradient(90deg, rgba(64,224,208,0.1), rgba(0,0,0,0)); border: 1px solid rgba(64,224,208,0.2); border-left: 4px solid var(--accent); padding: 15px 20px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
-        .waiting-player.empty { background: rgba(255,255,255,0.02); border: 1px dashed rgba(212,175,55,0.3); border-left: 1px dashed rgba(212,175,55,0.3); opacity: 0.5; }
+        /* 入力とボタン */
+        .input-group { width: 100%; position: relative; }
+        .input-group label { position: absolute; top: -10px; left: 10px; background: #0b0b0e; padding: 0 6px; font-size: 11px; font-weight: 900; color: var(--steam-gold); z-index: 1; }
+        .panel input { width: 100%; padding: 18px; background: rgba(0,0,0,0.6); border: 1px solid rgba(64,224,208,0.3); border-left: 4px solid var(--accent); color: var(--accent); text-align: center; font-size: 18px; border-radius: 4px; outline: none; box-sizing: border-box; }
 
-        .btn-main { background: linear-gradient(90deg, #B8860B, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1px solid #FFE4B5; padding: 20px 0; border-radius: 4px; font-weight: 900; font-size: 20px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 6px; box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); transition: 0.4s; overflow: hidden; }
-        .btn-main:hover { background-position: right center; box-shadow: 0 0 30px rgba(212, 175, 55, 0.6); color: #fff; text-shadow: 0 0 5px #000; }
-        .btn-main:active { transform: scale(0.98); }
-        .btn-main:disabled { background: #333; color: #666; border-color: #444; box-shadow: none; cursor: not-allowed; }
+        .btn-main { background: linear-gradient(90deg, #B8860B, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1px solid #FFE4B5; padding: 16px 0; border-radius: 4px; font-weight: 900; font-size: 18px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 4px; transition: 0.3s; }
+        .btn-main:hover { background-position: right center; box-shadow: 0 0 20px var(--steam-gold); }
+        .btn-main:disabled { background: #333; color: #666; border-color: #444; cursor: not-allowed; }
+        .btn-sub { background: rgba(255,255,255,0.05); border: 1px solid #555; color: #aaa; padding: 16px 0; width: 100%; cursor: pointer; border-radius: 4px; font-weight: 900; transition: 0.3s; }
+        .btn-sub:hover { background: rgba(255,255,255,0.15); color: #fff; }
 
-        .btn-sub { background: linear-gradient(90deg, #2a2a30, #3f3f46, #2a2a30); background-size: 200% auto; color: #a1a1aa; border: 1px solid #52525b; padding: 20px 0; border-radius: 4px; font-weight: 900; font-size: 20px; cursor: pointer; width: 100%; font-family: 'Cinzel', serif; letter-spacing: 6px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4); transition: 0.4s; overflow: hidden; }
-        .btn-sub:hover { background-position: right center; box-shadow: 0 0 20px rgba(255, 255, 255, 0.1); color: #fff; border-color: #a1a1aa; }
-        .btn-sub:active { transform: scale(0.98); }
+        .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+        .waiting-player { background: linear-gradient(90deg, rgba(64,224,208,0.08), transparent); border: 1px solid rgba(64,224,208,0.15); border-left: 4px solid var(--accent); padding: 12px 18px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
+        .waiting-player.empty { background: rgba(255,255,255,0.02); border: 1px dashed rgba(212,175,55,0.2); opacity: 0.4; }
 
-        .logo-main { font-family: 'Cinzel', serif; font-size: 48px; font-weight: 900; letter-spacing: 12px; background: linear-gradient(to bottom, #FFE4B5, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(212,175,55,0.4)); margin-bottom: 2px; }
-        
-        .sync-dot { width: 10px; height: 10px; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.5s infinite; transform: rotate(45deg); }
+        .logo-main { font-family: 'Cinzel', serif; font-size: 42px; font-weight: 900; letter-spacing: 8px; background: linear-gradient(to bottom, #FFE4B5, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
+        .sync-dot { width: 8px; height: 8px; background: var(--accent); box-shadow: 0 0 8px var(--accent); transform: rotate(45deg); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
         .blink-text { animation: textBlink 2s infinite; }
         @keyframes textBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        .error-msg { color: var(--danger); font-weight: 900; font-size: 14px; border: 1px solid var(--danger); padding: 10px; border-radius: 4px; background: rgba(255, 69, 0, 0.1); width: 100%; }
-        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
-        .realm-btn { padding: 20px; border: 1px solid var(--steam-gold); background: rgba(255,255,255,0.05); color: #fff; font-weight: 900; font-family: 'Cinzel', serif; cursor: pointer; border-radius: 4px; font-size: 18px; transition: 0.3s; }
-        .realm-btn:hover { background: rgba(212,175,55,0.2); box-shadow: 0 0 15px rgba(212,175,55,0.4); }
-
-        .mute-btn { position: absolute; top: 20px; right: 20px; z-index: 60000; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--steam-gold); color: var(--steam-gold); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-        .mute-btn:hover { background: rgba(212, 175, 55, 0.2); box-shadow: 0 0 15px rgba(212, 175, 55, 0.5); transform: scale(1.1); }
+        .mute-btn { position: absolute; top: 15px; right: 15px; z-index: 60000; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--steam-gold); color: var(--steam-gold); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .mute-btn:hover { transform: scale(1.1); background: rgba(212,175,55,0.1); }
+        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+        .realm-btn { padding: 16px; border: 1px solid var(--steam-gold); background: rgba(255,255,255,0.05); color: #fff; font-weight: 900; cursor: pointer; border-radius: 4px; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -226,38 +146,34 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
         const REALMS = {
-            GEAR: { n: '歯車', color: '#FF8C00', desc: 'セットA：維持。', effect: '特殊(S): +2ドロー' },
-            ICEAGE: { n: '氷河期', color: '#00BFFF', desc: 'セットA→B：遷移。', effect: '' },
-            FOUNTAIN: { n: '噴水', color: '#4169E1', desc: 'セットB：維持。', effect: '特殊(S): 限定ワイルド' },
-            BATTERY: { n: '電池', color: '#32CD32', desc: 'セットB→C：遷移。', effect: '' },
-            MACHINE: { n: '機械', color: '#2F4F4F', desc: 'セットC：維持。', effect: '特殊(S): 順番反転' },
-            ARCHIVE: { n: '古文書', color: '#8B4513', desc: 'セットC→A：遷移。', effect: '' },
-            PLANET: { n: '惑星', color: '#9400D3', desc: '星々の加護。', effect: 'ワイルド' },
-            RUINS: { n: '廃墟', color: '#696969', desc: '遺跡の記憶。', effect: 'ワイルド' }
+            GEAR: { n: '歯車', color: '#FF8C00', desc: 'セットA：維持。' },
+            ICEAGE: { n: '氷河期', color: '#00BFFF', desc: 'セットA→B：遷移。' },
+            FOUNTAIN: { n: '噴水', color: '#4169E1', desc: 'セットB：維持。' },
+            BATTERY: { n: '電池', color: '#32CD32', desc: 'セットB→C：遷移。' },
+            MACHINE: { n: '機械', color: '#2F4F4F', desc: 'セットC：維持。' },
+            ARCHIVE: { n: '古文書', color: '#8B4513', desc: 'セットC→A：遷移。' },
+            PLANET: { n: '惑星', color: '#9400D3', desc: '星々の加護。' },
+            RUINS: { n: '廃墟', color: '#696969', desc: '遺跡の記憶。' }
         };
-        
-        // 3つの世界観へのマッピング
         const THEMES = {
             GEAR: 'steampunk', ARCHIVE: 'steampunk',
             ICEAGE: 'fantasy', FOUNTAIN: 'fantasy', PLANET: 'fantasy', RUINS: 'fantasy',
             BATTERY: 'cyber', MACHINE: 'cyber'
         };
-        
         const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
 
-        // サイバーパンク風 SVGアイコン集（S専用デザインを追加）
         const ICONS = {
-            GEAR: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg>,
-            GEAR_S: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><g transform="translate(-2, -2) scale(0.8)"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></g><g transform="translate(6, 6) scale(0.8)"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></g></svg>,
-            ICEAGE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m10 20-2.5-2.5L5 20"/><path d="M12 22V2"/><path d="m14 20 2.5-2.5L19 20"/><path d="m10 4-2.5 2.5L5 4"/><path d="m14 4 2.5 2.5L19 4"/><path d="m20 10-2.5 2.5L20 15"/><path d="M22 12H2"/><path d="m4 10 2.5 2.5L4 15"/></svg>,
-            FOUNTAIN: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4A9.7 9.7 0 0 1 12 22z"></path></svg>,
-            FOUNTAIN_S: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4A9.7 9.7 0 0 1 12 22z"></path><path d="M4 14a8 8 0 0 1 16 0" strokeDasharray="3 3"></path><path d="M7 16a5 5 0 0 1 10 0" strokeDasharray="2 4"></path></svg>,
-            BATTERY: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect><line x1="22" x2="22" y1="11" y2="13"></line><line x1="6" x2="6" y1="11" y2="13"></line><line x1="10" x2="10" y1="11" y2="13"></line><line x1="14" x2="14" y1="11" y2="13"></line></svg>,
-            MACHINE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>,
-            MACHINE_S: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><path d="M8 11a4 4 0 0 1 8 0"></path><polyline points="16,11 18,9 14,9" fill="currentColor"></polyline><path d="M16 13a4 4 0 0 1-8 0"></path><polyline points="8,13 6,15 10,15" fill="currentColor"></polyline><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>,
-            ARCHIVE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>,
-            PLANET: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>,
-            RUINS: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h20"></path><path d="M5 20v-8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8"></path><path d="M9 20v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"></path><path d="M5 10V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"></path></svg>
+            GEAR: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg>,
+            GEAR_S: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><g transform="translate(-2, -2) scale(0.8)"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></g><g transform="translate(6, 6) scale(0.8)"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></g></svg>,
+            ICEAGE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="m10 20-2.5-2.5L5 20"/><path d="M12 22V2"/><path d="m14 20 2.5-2.5L19 20"/><path d="m10 4-2.5 2.5L5 4"/><path d="m14 4 2.5 2.5L19 4"/><path d="m20 10-2.5 2.5L20 15"/><path d="M22 12H2"/><path d="m4 10 2.5 2.5L4 15"/></svg>,
+            FOUNTAIN: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4A9.7 9.7 0 0 1 12 22z"></path></svg>,
+            FOUNTAIN_S: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4A9.7 9.7 0 0 1 12 22z"></path><path d="M4 14a8 8 0 0 1 16 0" strokeDasharray="3 3"></path><path d="M7 16a5 5 0 0 1 10 0" strokeDasharray="2 4"></path></svg>,
+            BATTERY: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect><line x1="22" x2="22" y1="11" y2="13"></line><line x1="6" x2="6" y1="11" y2="13"></line><line x1="10" x2="10" y1="11" y2="13"></line><line x1="14" x2="14" y1="11" y2="13"></line></svg>,
+            MACHINE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>,
+            MACHINE_S: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><path d="M8 11a4 4 0 0 1 8 0"></path><polyline points="16,11 18,9 14,9" fill="currentColor"></polyline><path d="M16 13a4 4 0 0 1-8 0"></path><polyline points="8,13 6,15 10,15" fill="currentColor"></polyline><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>,
+            ARCHIVE: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>,
+            PLANET: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>,
+            RUINS: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 20h20"></path><path d="M5 20v-8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8"></path><path d="M9 20v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"></path><path d="M5 10V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"></path></svg>
         };
 
         const App = () => {
@@ -270,8 +186,6 @@
             const [error, setError] = useState('');
             const [bgRealm, setBgRealm] = useState('GEAR');
             const [isMuted, setIsMuted] = useState(false); 
-            
-            // ウィンドウサイズを監視するためのState
             const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
             const prevTurnRef = useRef(null);
@@ -281,25 +195,17 @@
                 setSocket(s);
                 s.on('update-game', (data) => { setGs(data); setError(''); });
                 s.on('join-error', (msg) => { setError(msg); setJoined(false); });
-                return () => s.disconnect();
-            }, []);
-
-            // 画面サイズのリサイズイベントを監視
-            useEffect(() => {
                 const handleResize = () => setWindowWidth(window.innerWidth);
                 window.addEventListener('resize', handleResize);
-                return () => window.removeEventListener('resize', handleResize);
+                return () => { s.disconnect(); window.removeEventListener('resize', handleResize); };
             }, []);
 
             useEffect(() => {
                 if (gs && gs.status === 'playing') {
                     const isMyTurnNow = gs.currentTurnPlayerId === socket?.id;
                     if (isMyTurnNow && prevTurnRef.current !== socket?.id) {
-                        if (gs.nextDrawAmount > 1) {
-                            window.sfx.alert.currentTime = 0; window.sfx.alert.play().catch(()=>{});
-                        } else {
-                            window.sfx.turn.currentTime = 0; window.sfx.turn.play().catch(()=>{});
-                        }
+                        if (gs.nextDrawAmount > 1) { window.sfx.alert.currentTime = 0; window.sfx.alert.play().catch(()=>{}); }
+                        else { window.sfx.turn.currentTime = 0; window.sfx.turn.play().catch(()=>{}); }
                     }
                     prevTurnRef.current = gs.currentTurnPlayerId;
                 }
@@ -315,9 +221,7 @@
                         });
                     }, 4000); 
                 }
-                return () => {
-                    if (interval) clearInterval(interval);
-                };
+                return () => { if (interval) clearInterval(interval); };
             }, [gs]);
 
             const toggleMute = () => {
@@ -356,45 +260,29 @@
 
             const handlePlay = (card) => {
                 if (!canPlay(card)) return;
-                
-                window.sfx.alert.pause();
-                window.sfx.alert.currentTime = 0;
-                
+                window.sfx.alert.pause(); window.sfx.alert.currentTime = 0;
                 window.sfx.play.currentTime = 0; window.sfx.play.play().catch(()=>{});
-
                 const isWild = (card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial));
-                if (isWild && sortedHand.length > 1) {
-                    setSelectorCard(card);
-                } else {
-                    socket.emit('play-card', { roomId: room.toUpperCase(), card, chosenRealm: isWild ? 'GEAR' : undefined });
-                }
+                if (isWild && sortedHand.length > 1) { setSelectorCard(card); }
+                else { socket.emit('play-card', { roomId: room.toUpperCase(), card, chosenRealm: isWild ? 'GEAR' : undefined }); }
             };
 
             const handleDraw = () => {
-                window.sfx.alert.pause();
-                window.sfx.alert.currentTime = 0;
-                
+                window.sfx.alert.pause(); window.sfx.alert.currentTime = 0;
                 window.sfx.draw.currentTime = 0; window.sfx.draw.play().catch(()=>{});
                 socket.emit('draw-card',{roomId:room});
             };
 
             const CardView = ({ card, playable, onClick, isField }) => {
                 if (!card) return null;
-                
-                // 属性の決定
                 let displayRealm = card.realm;
                 if (card.wasRuins) displayRealm = 'RUINS';
                 else if (card.wasPlanet) displayRealm = 'PLANET';
                 else if (card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) displayRealm = 'FOUNTAIN';
-                
                 const isSpecial = card.isSpecial || card.wasFountain;
                 const rColor = REALMS[displayRealm].color;
                 const themeClass = `theme-${THEMES[displayRealm]}`;
-                
-                // S（特殊）専用のアイコンキーを取得
                 const iconKey = isSpecial && ICONS[`${displayRealm}_S`] ? `${displayRealm}_S` : displayRealm;
-
-                // 特殊効果のテキストを決定
                 let effectText = "";
                 if (displayRealm === 'PLANET' || displayRealm === 'RUINS' || (displayRealm === 'FOUNTAIN' && isSpecial)) effectText = "WILD";
                 else if (displayRealm === 'GEAR' && isSpecial) effectText = "+2 DRAW";
@@ -403,21 +291,11 @@
                 return (
                     <div className={`card ${isField ? '' : (playable ? 'playable my-card' : 'not-playable my-card')} ${isSpecial ? 'is-special' : ''} ${themeClass}`} 
                          style={{'--r-color': rColor}} onClick={onClick}>
-                        
                         <div className="card-realm-mini">{displayRealm.substring(0, 3)}</div>
                         {isSpecial && <div className="card-badge">S</div>}
-                        
-                        {/* 中央のホログラムSVGアイコン（Sの場合は特殊デザイン） */}
-                        <div className="card-icon">
-                            {ICONS[iconKey]}
-                        </div>
-                        
-                        {/* 特殊効果テキストの表示 */}
+                        <div className="card-icon">{ICONS[iconKey]}</div>
                         {effectText && <div className="card-effect-text">{effectText}</div>}
-                        
-                        <div className="card-footer">
-                            {REALMS[displayRealm].n}
-                        </div>
+                        <div className="card-footer">{REALMS[displayRealm].n}</div>
                     </div>
                 );
             };
@@ -428,72 +306,42 @@
                     <div className="bg-layer bg-magic-aura" style={{ backgroundColor: REALMS[currentRealm].color }}></div>
                     <div className="bg-layer bg-scanline"></div>
 
-                    <button onClick={toggleMute} className="mute-btn" title={isMuted ? "音声をオン" : "音声をオフ"}>
-                        {isMuted ? '🔇' : '🔊'}
-                    </button>
+                    <button onClick={toggleMute} className="mute-btn">{isMuted ? '🔇' : '🔊'}</button>
 
                     {!joined && (
                         <div className="overlay">
                             <div className="panel">
-                                <div className="panel-corner1"></div>
-                                <div className="panel-corner2"></div>
-                                
-                                <div>
-                                    <h1 className="logo-main">CROSS REALM</h1>
-                                    <div style={{fontSize: 12, letterSpacing: 8, color: 'var(--accent)', marginTop: '-8px', fontFamily: 'Exo 2', fontWeight: 900}}>ETERNAL PUNK EDITION</div>
-                                </div>
-                                
-                                {error && <div className="error-msg">⚠️ {error}</div>}
-                                
-                                <div style={{width:'100%', display:'flex', flexDirection:'column', gap:20}}>
-                                    <div className="input-group">
-                                        <label>プレイヤー名</label>
-                                        <input type="text" value={name} onChange={e=>setName(e.target.value)} maxLength={10} />
-                                    </div>
-                                    <div className="input-group">
-                                        <label>ルームID</label>
-                                        <input type="text" value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} />
-                                    </div>
-                                </div>
-                                <button onClick={()=>{
-                                    window.sfx.turn.load(); window.sfx.play.load(); window.sfx.draw.load(); window.sfx.alert.load();
-                                    setJoined(true); 
-                                    socket.emit('join-room',{roomId:room, playerName:name});
-                                }} className="btn-main">接続開始</button>
+                                <div className="panel-corner1"></div><div className="panel-corner2"></div>
+                                <div><h1 className="logo-main">CROSS REALM</h1><div style={{fontSize:10, letterSpacing:6, color:'var(--accent)', textAlign:'center', fontWeight:900}}>ETERNAL PUNK EDITION</div></div>
+                                {error && <div style={{color:'var(--danger)', fontSize:12}}>⚠️ {error}</div>}
+                                <div className="input-group"><label>PLAYER NAME</label><input type="text" value={name} onChange={e=>setName(e.target.value)} maxLength={10} /></div>
+                                <div className="input-group"><label>ROOM ID</label><input type="text" value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} /></div>
+                                <button onClick={()=>{ window.sfx.turn.load(); window.sfx.play.load(); window.sfx.draw.load(); window.sfx.alert.load(); setJoined(true); socket.emit('join-room',{roomId:room, playerName:name}); }} className="btn-main">接続開始</button>
                             </div>
                         </div>
                     )}
-                    {/* === 待機画面 === */}
+
                     {joined && (!gs || gs.status === 'waiting') && (
                         <div className="overlay">
                             <div className="panel">
-                                <div className="panel-corner1"></div>
-                                <div className="panel-corner2"></div>
-
-                                <div>
-                                    <div className="blink-text" style={{letterSpacing:6, opacity:0.8, fontSize:14, fontWeight:900, marginBottom:8, color:'var(--accent)', fontFamily:'Exo 2'}}>接続待機中...</div>
-                                    <div style={{fontSize:36, color:'var(--steam-gold)', fontWeight:900, fontFamily:'Cinzel', letterSpacing: 4}}>ルームID: {room}</div>
-                                </div>
-                                
+                                <div className="panel-corner1"></div><div className="panel-corner2"></div>
+                                <div style={{textAlign:'center'}}><div className="blink-text" style={{fontSize:12, color:'var(--accent)', fontWeight:900, marginBottom:5}}>AWAITING LINKAGE...</div><div style={{fontSize:28, color:'var(--steam-gold)', fontWeight:900, fontFamily:'Cinzel'}}>ROOM: {room}</div></div>
                                 <div className="waiting-list">
                                     {gs?.players?.map(p => (
                                         <div key={p.id} className="waiting-player">
-                                            <span style={{fontWeight:900, fontSize:18, color:'#fff', textShadow:'0 0 5px rgba(255,255,255,0.3)'}}>👤 {p.name}</span>
-                                            <div className="sync-dot"></div>
+                                            <span style={{fontWeight:900, fontSize:16, color: p.isBot ? 'var(--steam-gold)' : '#fff'}}>{p.isBot ? '🤖' : '👤'} {p.name}</span>
+                                            {!p.isBot && <div className="sync-dot"></div>}
                                         </div>
                                     ))}
-                                    {/* ここを2枠から4枠固定に変更 */}
                                     {[...Array(Math.max(0, 4 - (gs?.players?.length || 0)))].map((_, i) => (
-                                        <div key={i} className="waiting-player empty">
-                                            <span style={{fontSize:16, letterSpacing:1}}>プレイヤーを待機中...</span>
-                                        </div>
+                                        <div key={i} className="waiting-player empty"><span style={{fontSize:14, letterSpacing:1}}>空きスロット</span></div>
                                     ))}
                                 </div>
-                                
-                                {gs?.players?.[0]?.id === socket?.id ? (
-                                    <button onClick={()=>socket.emit('start-game',{roomId:room})} className="btn-main" disabled={gs?.players?.length < 2}>ゲーム開始</button>
-                                ) : (
-                                    <div style={{fontSize: 14, color: 'var(--steam-gold)', fontWeight: 900, letterSpacing: 2}}>ホストの起動待機中...</div>
+                                {gs?.players?.[0]?.id === socket?.id && (
+                                    <div style={{display:'flex', gap:10, width:'100%'}}>
+                                        <button onClick={()=>socket.emit('add-cpu',{roomId:room})} className="btn-sub" disabled={gs?.players?.length >= 4}>CPU追加</button>
+                                        <button onClick={()=>socket.emit('start-game',{roomId:room})} className="btn-main" disabled={gs?.players?.length < 2}>開始</button>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -501,122 +349,64 @@
 
                     {joined && gs?.status === 'playing' && (
                         <div className="game-container">
-                            
-                            <div className="turn-direction">
-                                TURN DIRECTION: 
-                                <span style={{transform: gs.isReversed ? 'rotate(180deg)' : 'rotate(0deg)', transition:'0.5s', display:'inline-block'}}>
-                                    {gs.isReversed ? '⟲' : '⟳'}
-                                </span>
-                                {gs.isReversed ? ' REVERSE' : ' NORMAL'}
-                            </div>
-
+                            <div className="turn-direction">DIRECTION: <span style={{transform: gs.isReversed ? 'rotate(180deg)' : 'rotate(0deg)', transition:'0.5s'}}>{gs.isReversed ? '⟲' : '⟳'}</span> {gs.isReversed ? 'REVERSE' : 'NORMAL'}</div>
                             <div className="opponents-area">
                                 {gs.players.filter(p => p.id !== socket?.id).map(p => (
                                     <div key={p.id} className={`opp-row ${gs.currentTurnPlayerId === p.id ? 'active' : ''}`}>
-                                        <div className="opp-name">{p.name}</div>
+                                        <div className="opp-name">{p.isBot ? '🤖' : '👤'} {p.name}</div>
                                         <div className="opp-hand-visual">
-                                            {[...Array(Math.min(p.handCount, 5))].map((_, i) => (
-                                                <div key={i} className="mini-card-back" style={{right: `${i * 14}px`, zIndex: i}} />
-                                            ))}
-                                            <div style={{fontWeight:900, color: 'var(--accent)', fontSize:24, position:'absolute', left:-60}}>{p.handCount}</div>
+                                            {[...Array(Math.min(p.handCount, 5))].map((_, i) => (<div key={i} className="mini-card-back" style={{right: `${i * 12}px`, zIndex: i}} />))}
+                                            <div style={{fontWeight:900, color: 'var(--accent)', fontSize:20, position:'absolute', left:-45}}>{p.handCount}</div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-
                             <div className="cycle-bar">
-                                {CYCLE_ORDER.map(r => (
-                                    <div key={r} className={`cycle-dot ${currentRealm === r ? 'active' : ''}`} style={{'--dot-color': REALMS[r].color}}>
-                                        <div className="cycle-label">{REALMS[r].n}</div>
-                                    </div>
-                                ))}
+                                {CYCLE_ORDER.map(r => (<div key={r} className={`cycle-dot ${currentRealm === r ? 'active' : ''}`} style={{'--dot-color': REALMS[r].color}}><div className="cycle-label">{REALMS[r].n}</div></div>))}
                             </div>
-
                             <div className="field">
-                                {gs.logs && (
-                                    <div className="battle-log">
-                                        {gs.logs.map((log) => (
-                                            <div key={log.id} className="log-entry">
-                                                {log.text}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                <div style={{fontFamily:'Cinzel', fontSize: 18, opacity: 0.6, letterSpacing:2}}>{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
-                                {gs.nextDrawAmount > 1 && <div style={{color: 'var(--danger)', fontWeight:900, fontSize:32, textShadow:'0 0 10px rgba(255,0,0,0.5)'}}>DRAW +{gs.nextDrawAmount}</div>}
-                                <div style={{display:'flex', alignItems:'center', gap:20}}>
-                                    
+                                {gs.logs && (<div className="battle-log">{gs.logs.map((log) => (<div key={log.id} className="log-entry">{log.text}</div>))}</div>)}
+                                <div style={{fontFamily:'Cinzel', fontSize: 14, opacity: 0.6, letterSpacing:2}}>{isMyTurn ? 'YOUR TURN' : 'WAITING'}</div>
+                                {gs.nextDrawAmount > 1 && <div style={{color: 'var(--danger)', fontWeight:900, fontSize:28, textShadow:'0 0 10px #f00'}}>DRAW +{gs.nextDrawAmount}</div>}
+                                <div style={{display:'flex', alignItems:'center', gap:15}}>
                                     <div style={{position: 'relative', width: 'var(--card-w)', height: 'var(--card-h)'}}>
                                         {gs.playHistory?.map((card, i) => {
                                             const isLast = i === gs.playHistory.length - 1;
-                                            const rotate = (i * 7) % 15 - 7; 
-                                            const offsetX = (gs.playHistory.length - 1 - i) * -2;
-                                            const offsetY = (gs.playHistory.length - 1 - i) * -2;
-                                            return (
-                                                <div key={i} style={{
-                                                    position: 'absolute', top: 0, left: 0, 
-                                                    transform: `rotate(${rotate}deg) translate(${offsetX}px, ${offsetY}px)`,
-                                                    zIndex: i,
-                                                    opacity: isLast ? 1 : 0.4,
-                                                    pointerEvents: isLast ? 'auto' : 'none'
-                                                }}>
-                                                    <CardView card={card} isField={true} />
-                                                </div>
-                                            );
+                                            return (<div key={i} style={{ position: 'absolute', top: 0, left: 0, transform: `rotate(${(i * 5) % 10 - 5}deg) translate(${i*-1}px, ${i*-1}px)`, zIndex: i, opacity: isLast ? 1 : 0.4 }}><CardView card={card} isField={true} /></div>);
                                         })}
                                         {!gs.playHistory && <CardView card={gs.fieldCard} isField={true} />}
                                     </div>
-
                                     <div className="info-panel">
                                         <div className="realm-title">{REALMS[currentRealm].n}</div>
-                                        <div style={{fontSize:16, opacity:0.8, marginTop:5, lineHeight:1.4}}>{REALMS[currentRealm].desc}</div>
+                                        <div style={{fontSize:14, opacity:0.8, marginTop:5, lineHeight:1.3}}>{REALMS[currentRealm].desc}</div>
                                     </div>
                                 </div>
                             </div>
-
                             <div className="hand-container">
                                 <div className="hand-flex">
                                     {(() => {
-                                        // 手札の枚数と画面幅から、はみ出さない最適な重なり具合を計算する魔法のロジック
                                         const totalCards = sortedHand.length;
-                                        const maxHandWidth = Math.min(windowWidth * 0.95, 600); // 画面の95% か 最大600px に収める
+                                        const maxHandWidth = Math.min(windowWidth * 0.95, 600);
                                         const cardWidth = 108;
-                                        let overlap = 64; // デフォルトのカードの増える幅 (108px - 44px重なり = 64px)
-
+                                        let overlap = 64; 
                                         if (totalCards > 1) {
                                             const idealWidth = cardWidth + (totalCards - 1) * overlap;
-                                            if (idealWidth > maxHandWidth) {
-                                                // はみ出る場合は、幅にピッタリ収まるように重なり間隔を圧縮する
-                                                overlap = (maxHandWidth - cardWidth) / (totalCards - 1);
-                                            }
+                                            if (idealWidth > maxHandWidth) { overlap = (maxHandWidth - cardWidth) / (totalCards - 1); }
                                         }
-
                                         const containerWidth = totalCards > 0 ? cardWidth + (totalCards - 1) * overlap : 0;
-                                        const marginLeftVal = overlap - cardWidth; // CSSに渡す実際の margin-left 値 (-44px など)
-
+                                        const marginLeftVal = overlap - cardWidth;
                                         return (
-                                            <div style={{ 
-                                                display: 'flex', 
-                                                alignItems: 'flex-end', 
-                                                width: `${containerWidth}px`,
-                                                margin: '0 auto',
-                                                position: 'relative',
-                                                '--card-margin': `${marginLeftVal}px`
-                                            }}>
-                                                {sortedHand.map((card) => (
-                                                    <CardView key={card.id} card={card} playable={canPlay(card)} onClick={() => handlePlay(card)} />
-                                                ))}
+                                            <div style={{ display: 'flex', alignItems: 'flex-end', width: `${containerWidth}px`, margin: '0 auto', position: 'relative', '--card-margin': `${marginLeftVal}px` }}>
+                                                {sortedHand.map((card) => (<CardView key={card.id} card={card} playable={canPlay(card)} onClick={() => handlePlay(card)} />))}
                                             </div>
                                         );
                                     })()}
                                 </div>
-                                <div style={{textAlign:'center', fontSize:18, fontWeight:900, paddingBottom: 8, color:'var(--steam-gold)', letterSpacing:4}}>SYNC: {sortedHand.length} / {gs.handLimit}</div>
+                                <div style={{textAlign:'center', fontSize:16, fontWeight:900, paddingBottom: 8, color:'var(--steam-gold)', letterSpacing:3}}>SYNC: {sortedHand.length} / {gs.handLimit}</div>
                             </div>
-
                             <div className="action-row">
-                                <button className="btn-main" disabled={!isMyTurn} onClick={handleDraw} style={{padding: '15px 0', fontSize: '20px'}}>
-                                    {gs.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引く` : (isMyTurn ? 'カードを引く' : '待機中...')}
+                                <button className="btn-main" disabled={!isMyTurn} onClick={handleDraw} style={{height:60}}>
+                                    {gs.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引く` : (isMyTurn ? 'ドロー' : '待機中...')}
                                 </button>
                             </div>
                         </div>
@@ -624,17 +414,10 @@
 
                     {selectorCard && (
                         <div className="overlay">
-                            <div className="panel">
-                                <div className="panel-corner1"></div>
-                                <div className="panel-corner2"></div>
-                                <h3 style={{fontSize:28, fontWeight:900, color:'var(--steam-gold)', fontFamily:'Cinzel'}}>属性を選択</h3>
-                                <div className="realm-grid">
-                                    {CYCLE_ORDER.map(r => (
-                                        <button key={r} className="realm-btn" style={{borderColor:REALMS[r].color, color:REALMS[r].color}} 
-                                                onClick={() => { socket.emit('play-card', {roomId: room, card:selectorCard, chosenRealm:r}); setSelectorCard(null); }}>{REALMS[r].n}</button>
-                                    ))}
-                                </div>
-                                <button onClick={()=>setSelectorCard(null)} style={{color:'#fff', cursor:'pointer', border:'none', background:'none', fontWeight:900, fontSize:18, opacity:0.6}}>キャンセル</button>
+                            <div className="panel"><div className="panel-corner1"></div><div className="panel-corner2"></div>
+                                <h3 style={{fontSize:24, fontWeight:900, color:'var(--steam-gold)', fontFamily:'Cinzel'}}>CHOOSE REALM</h3>
+                                <div className="realm-grid">{CYCLE_ORDER.map(r => (<button key={r} className="realm-btn" style={{borderColor:REALMS[r].color, color:REALMS[r].color}} onClick={() => { socket.emit('play-card', {roomId: room, card:selectorCard, chosenRealm:r}); setSelectorCard(null); }}>{REALMS[r].n}</button>))}</div>
+                                <button onClick={()=>setSelectorCard(null)} className="btn-sub">CANCEL</button>
                             </div>
                         </div>
                     )}
@@ -642,51 +425,21 @@
                     {gs?.status === 'finished' && (() => {
                         const winner = gs.players.find(p => p.handCount === 0);
                         const bursted = gs.players.find(p => p.handCount > gs.handLimit);
-                        
-                        let resultTitle = "MISSION END";
-                        let resultSub = "";
-                        let titleColor = "var(--steam-gold)";
-                        let titleFont = "Cinzel";
-
-                        if (winner) {
-                            resultTitle = `${winner.name} WIN!`;
-                            resultSub = "";
-                            titleColor = "var(--accent)";
-                            titleFont = "'Exo 2', sans-serif";
-                        } else if (bursted) {
-                            resultTitle = "SYSTEM OVERLOAD";
-                            resultSub = `BURST: ${bursted.name}`;
-                            titleColor = "var(--danger)";
-                        }
-
+                        let resTitle = winner ? `${winner.name} WIN!` : "OVERLOAD";
+                        let resCol = winner ? "var(--accent)" : "var(--danger)";
                         return (
                             <div className="overlay">
-                                <div className="panel" style={{maxWidth: '450px'}}>
-                                    <div className="panel-corner1"></div>
-                                    <div className="panel-corner2"></div>
-                                    
-                                    <div style={{marginBottom: '10px', width: '100%'}}>
-                                        <h2 style={{color: titleColor, fontSize: winner ? 34 : 40, fontWeight:900, fontFamily: titleFont, textShadow: `0 0 20px ${titleColor}`, margin: 0, letterSpacing: 2, wordBreak: 'break-all'}}>
-                                            {resultTitle}
-                                        </h2>
-                                        {resultSub && <div style={{fontSize: 24, color: '#fff', fontWeight: 900, marginTop: 10, letterSpacing: 2}}>{resultSub}</div>}
-                                    </div>
-
-                                    <div style={{width:'100%', margin:'10px 0'}}>
-                                        {gs.players.slice().sort((a,b) => a.handCount - b.handCount).map((p, i) => (
-                                            <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'15px 0', borderBottom:'1px solid rgba(212,175,55,0.2)', alignItems: 'center'}}>
-                                                <span style={{fontWeight:900, fontSize:22, display:'flex', alignItems:'center', gap: 8}}>
-                                                    {i+1}. {p.name}
-                                                    {p.id === socket.id && <span style={{fontSize: 12, color: 'var(--steam-gold)', border: '1px solid var(--steam-gold)', padding: '2px 6px', borderRadius: 4}}>YOU</span>}
-                                                </span>
-                                                <span style={{color:'var(--steam-gold)', fontWeight:900, fontSize:24}}>{p.handCount}枚</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    
-                                    <div style={{display: 'flex', gap: 15, width: '100%', marginTop: 10}}>
-                                        <button onClick={() => socket.emit('play-again', {roomId: room})} className="btn-main" style={{padding: '18px 0', fontSize: 20}}>再戦</button>
-                                        <button onClick={() => window.location.reload()} className="btn-sub" style={{padding: '18px 0', fontSize: 20}}>終了</button>
+                                <div className="panel"><div className="panel-corner1"></div><div className="panel-corner2"></div>
+                                    <h2 style={{color: resCol, fontSize: 32, fontWeight:900, textShadow: `0 0 20px ${resCol}`, wordBreak: 'break-all'}}>{resTitle}</h2>
+                                    <div style={{width:'100%'}}>{gs.players.slice().sort((a,b) => a.handCount - b.handCount).map((p, i) => (
+                                        <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'10px 0', borderBottom:'1px solid rgba(212,175,55,0.1)'}}>
+                                            <span style={{fontWeight:900}}>{i+1}. {p.name} {p.id === socket.id && "(YOU)"}</span>
+                                            <span style={{color:'var(--steam-gold)', fontWeight:900}}>{p.handCount}枚</span>
+                                        </div>
+                                    ))}</div>
+                                    <div style={{display: 'flex', gap: 10, width: '100%'}}>
+                                        <button onClick={() => socket.emit('play-again', {roomId: room})} className="btn-main">再戦</button>
+                                        <button onClick={() => window.location.reload()} className="btn-sub">終了</button>
                                     </div>
                                 </div>
                             </div>
