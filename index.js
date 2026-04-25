@@ -9,7 +9,7 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
 const rooms = {};
-const HAND_LIMIT = 12;
+const HAND_LIMIT = 10;
 
 const NG_WORDS = ['FUCK', 'SHIT', 'BITCH', 'ASSHOLE', 'DICK', 'PUSSY', 'RETARD', 'SHINE', 'KASU', 'GOMI', '死ね', 'バカ', 'アホ', 'カス', 'ゴミ'];
 
