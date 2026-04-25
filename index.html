@@ -15,8 +15,8 @@
             --steam-gold: #D4AF37;
             --danger: #FF4500;
             --bg: #050508; 
-            --card-w: 100px; 
-            --card-h: 140px; 
+            --card-w: 90px;
+            --card-h: 126px; 
             --opp-card-w: 30px;
             --opp-card-h: 42px;
             --border: rgba(212, 175, 55, 0.45);
@@ -41,88 +41,83 @@
 
         .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
 
-        .opponents-area { display: flex; flex-direction: column; gap: 10px; padding: 25px 15px 15px 15px; border-bottom: 2px solid var(--border); z-index: 10; background: rgba(0,0,0,0.5); }
-        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; border-radius: 12px; background: rgba(255,255,255,0.03); border-left: 6px solid var(--border); transition: 0.3s; gap: 10px; }
-        .opp-row.active { border-left-color: var(--accent); background: rgba(64, 224, 208, 0.12); box-shadow: inset 0 0 25px rgba(64, 224, 208, 0.2); }
-        .opp-info { display: flex; flex-direction: column; gap: 6px; flex: 1; overflow: hidden; }
-        .opp-name { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; color: var(--steam-gold); letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .opp-hand-visual { display: flex; height: var(--opp-card-h); align-items: center; min-width: 50px; }
+        .opponents-area { display: flex; flex-direction: column; gap: 8px; padding: 20px 15px 10px 15px; border-bottom: 2px solid var(--border); z-index: 10; background: rgba(0,0,0,0.5); }
+        .opp-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; border-radius: 10px; background: rgba(255,255,255,0.03); border-left: 5px solid var(--border); transition: 0.3s; gap: 8px; }
+        .opp-row.active { border-left-color: var(--accent); background: rgba(64, 224, 208, 0.12); box-shadow: inset 0 0 15px rgba(64, 224, 208, 0.1); }
+        .opp-info { display: flex; flex-direction: column; gap: 4px; flex: 1; overflow: hidden; }
+        .opp-name { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; color: var(--steam-gold); letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .opp-hand-visual { display: flex; height: var(--opp-card-h); align-items: center; }
         .mini-card-back { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #222, #000); border: 1px solid var(--steam-gold); border-radius: 3px; box-shadow: 2px 0 5px rgba(0,0,0,0.5); flex-shrink: 0; position: relative; }
 
-        .cycle-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 10px 30px 10px; background: rgba(0,0,0,0.85); border-bottom: 2px solid var(--border); gap: 4px; }
-        .cycle-dot { flex: 1; height: 6px; border-radius: 3px; background: #1a1a1a; position: relative; transition: 0.5s; }
-        .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 15px var(--dot-color); }
-        .cycle-dot.active::after { content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); width: 20px; height: 20px; border-radius: 50%; background: var(--dot-color); box-shadow: 0 0 20px var(--dot-color), inset 0 0 5px #fff; }
-        .cycle-label { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 900; color: #fff; opacity: 0.35; letter-spacing: 0.5px; transition: 0.3s; white-space: nowrap; }
+        .cycle-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px 25px 10px; background: rgba(0,0,0,0.85); border-bottom: 2px solid var(--border); gap: 4px; }
+        .cycle-dot { flex: 1; height: 5px; border-radius: 2px; background: #1a1a1a; position: relative; transition: 0.5s; }
+        .cycle-dot.active { background: var(--dot-color); box-shadow: 0 0 12px var(--dot-color); }
+        .cycle-dot.active::after { content: ''; position: absolute; top: -5px; left: 50%; transform: translateX(-50%); width: 16px; height: 16px; border-radius: 50%; background: var(--dot-color); box-shadow: 0 0 15px var(--dot-color), inset 0 0 4px #fff; }
+        .cycle-label { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 900; color: #fff; opacity: 0.35; letter-spacing: 0.5px; transition: 0.3s; white-space: nowrap; }
 
-        .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; gap: 30px; }
-        .field-main-area { display: flex; align-items: center; gap: 30px; width: 100%; justify-content: center; z-index: 10; }
+        .field { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; gap: 20px; }
+        .field-main-area { display: flex; align-items: center; gap: 20px; width: 100%; justify-content: center; z-index: 10; }
 
-        .info-panel { flex: 1; background: rgba(10,10,15,0.95); border: 2.5px solid var(--steam-gold); padding: 22px; border-radius: 12px; backdrop-filter: blur(15px); box-shadow: 0 0 45px rgba(0,0,0,0.9); max-width: 220px; }
-        .realm-title { font-family: 'Cinzel', serif; font-size: 26px; font-weight: 900; color: var(--realm-color); margin-bottom: 8px; letter-spacing: 2px; text-shadow: 0 0 15px var(--realm-color); }
+        .info-panel { flex: 1; background: rgba(10,10,15,0.95); border: 2px solid var(--steam-gold); padding: 18px; border-radius: 12px; backdrop-filter: blur(15px); box-shadow: 0 0 35px rgba(0,0,0,0.9); max-width: 200px; }
+        .realm-title { font-family: 'Cinzel', serif; font-size: 22px; font-weight: 900; color: var(--realm-color); margin-bottom: 6px; letter-spacing: 2px; text-shadow: 0 0 12px var(--realm-color); }
 
-        /* セーフティ・マージンの調整 */
-        .action-area { padding: 10px 0 35px 0; display: flex; justify-content: center; align-items: center; z-index: 110; width: 100%; box-sizing: border-box; }
-        .action-area .btn-main { width: 85%; max-width: 400px; }
+        /* レイアウト修正: 垂直方向の距離をさらに確保 */
+        .action-area { 
+            padding: 10px 0 60px 0; 
+            display: flex; justify-content: center; align-items: center; 
+            z-index: 1100; /* 手札より常に前面 */
+            width: 100%; box-sizing: border-box; 
+        }
+        .action-area .btn-main { width: 85%; max-width: 380px; box-shadow: 0 15px 35px rgba(0,0,0,0.8); }
 
         .hand-area { 
             background: linear-gradient(to top, rgba(5,5,10,1) 0%, rgba(5,5,10,0.96) 85%, transparent 100%); 
-            padding-bottom: 15px; 
-            margin-top: 10px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            width: 100%; 
-            z-index: 100; 
+            padding-bottom: 20px; margin-top: 15px; 
+            display: flex; flex-direction: column; align-items: center; width: 100%; z-index: 100; 
         }
         .hand-flex { 
-            display: flex; 
-            justify-content: flex-start; 
-            padding: 60px 100px 30px 100px; 
-            min-height: 220px; 
-            align-items: flex-end; 
-            overflow-x: auto; 
-            width: 100%; 
-            box-sizing: border-box; 
-            -webkit-overflow-scrolling: touch; 
-            scroll-behavior: smooth; 
+            display: flex; justify-content: flex-start; 
+            padding: 40px 100px 20px 100px; 
+            min-height: 180px; align-items: flex-end; 
+            overflow-x: auto; width: 100%; box-sizing: border-box; 
+            -webkit-overflow-scrolling: touch; scroll-behavior: smooth; 
         }
         .hand-flex::-webkit-scrollbar { height: 4px; }
         .hand-flex::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
         .hand-flex::-webkit-scrollbar-thumb { background: var(--steam-gold); border-radius: 2px; }
 
-        .card { width: var(--card-w); height: var(--card-h); border-radius: 8px; border: 3px solid var(--steam-gold); background: #000; overflow: hidden; position: relative; box-shadow: 0 15px 45px rgba(0,0,0,1); flex-shrink: 0; }
+        .card { width: var(--card-w); height: var(--card-h); border-radius: 6px; border: 2.5px solid var(--steam-gold); background: #000; overflow: hidden; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,1); flex-shrink: 0; }
         .card img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.9); }
-        .card-footer { position: absolute; bottom: 0; width: 100%; background: rgba(5,5,10,0.98); font-size: 12px; font-weight: 900; padding: 6px 0; text-align: center; border-top: 2.5px solid var(--r-color); color: var(--steam-gold); font-family: 'Cinzel', serif; }
+        .card-footer { position: absolute; bottom: 0; width: 100%; background: rgba(5,5,10,0.98); font-size: 11px; font-weight: 900; padding: 5px 0; text-align: center; border-top: 2px solid var(--r-color); color: var(--steam-gold); font-family: 'Cinzel', serif; }
 
-        .my-card { margin-left: -50px; transform-origin: bottom center; cursor: pointer; transition: 0.3s cubic-bezier(0.2, 1, 0.3, 1); position: relative; }
+        .my-card { margin-left: -40px; transform-origin: bottom center; cursor: pointer; transition: 0.25s cubic-bezier(0.2, 1, 0.3, 1); position: relative; }
         .my-card:first-child { margin-left: 0; }
 
-        /* ホバー高さの制限 */
+        /* ホバー高さの制限: 20pxに抑えて物理的な被りを回避 */
         .my-card.playable:hover { 
-            transform: translateY(-35px) scale(1.3) !important; 
-            z-index: 1000 !important; 
-            border-color: #fff; 
-            box-shadow: 0 35px 70px rgba(0,0,0,1), 0 0 45px var(--accent); 
+            transform: translateY(-20px) scale(1.3) !important; 
+            z-index: 1000 !important; border-color: #fff; 
+            box-shadow: 0 25px 50px rgba(0,0,0,1), 0 0 35px var(--accent); 
         }
         .my-card.not-playable { opacity: 0.15; filter: grayscale(1) brightness(0.3); cursor: not-allowed; }
 
+        /* オーバーレイ等 */
         .overlay { position: absolute; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); background: rgba(0,0,0,0.4); padding: 40px; }
-        .panel { background: rgba(10, 10, 15, 0.85); border: 2px solid var(--border); padding: 50px 30px; border-radius: 24px; text-align: center; width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; gap: 30px; box-shadow: 0 40px 100px rgba(0,0,0,0.8); backdrop-filter: blur(20px); }
-        .btn-main { background: linear-gradient(135deg, var(--steam-gold), #B8860B); color: #000; border: none; padding: 20px 0; border-radius: 12px; font-weight: 900; font-size: 18px; box-shadow: 0 10px 30px rgba(184, 134, 11, 0.3); cursor: pointer; width: 100%; transition: 0.3s; letter-spacing: 6px; font-family: 'Cinzel', serif; display: flex; align-items: center; justify-content: center; }
+        .panel { background: rgba(10, 10, 15, 0.85); border: 2px solid var(--border); padding: 40px 30px; border-radius: 24px; text-align: center; width: 100%; max-width: 360px; display: flex; flex-direction: column; align-items: center; gap: 25px; box-shadow: 0 30px 80px rgba(0,0,0,0.8); backdrop-filter: blur(20px); }
+        .btn-main { background: linear-gradient(135deg, var(--steam-gold), #B8860B); color: #000; border: none; padding: 18px 0; border-radius: 12px; font-weight: 900; font-size: 18px; cursor: pointer; width: 100%; transition: 0.3s; letter-spacing: 5px; font-family: 'Cinzel', serif; display: flex; align-items: center; justify-content: center; }
         
-        .logo-main { font-family: 'Cinzel', serif; font-size: 38px; font-weight: 900; letter-spacing: 12px; color: var(--steam-gold); text-shadow: 0 0 20px rgba(212,175,55,0.4); text-align: center; width: 100%; padding-left: 12px; box-sizing: border-box; }
-        .panel input { width: 100%; padding: 18px; background: rgba(0,0,0,0.5); border: 1.5px solid rgba(212,175,55,0.3); color: var(--accent); text-align: center; font-size: 18px; border-radius: 12px; outline: none; font-weight: 700; box-sizing: border-box; }
+        .logo-main { font-family: 'Cinzel', serif; font-size: 32px; font-weight: 900; letter-spacing: 10px; color: var(--steam-gold); text-shadow: 0 0 15px rgba(212,175,55,0.4); text-align: center; width: 100%; padding-left: 10px; box-sizing: border-box; }
+        .panel input { width: 100%; padding: 16px; background: rgba(0,0,0,0.5); border: 1.5px solid rgba(212,175,55,0.3); color: var(--accent); text-align: center; font-size: 16px; border-radius: 10px; outline: none; font-weight: 700; box-sizing: border-box; }
 
         .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
         .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 10px; }
         .waiting-player { background: rgba(255,255,255,0.03); border: 1px solid rgba(212,175,55,0.15); padding: 16px 20px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; font-size: 16px; font-weight: 700; color: #eee; }
         
-        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
-        .realm-btn { padding: 22px; border: 2px solid var(--steam-gold); background: rgba(255,255,255,0.04); color: #fff; font-weight: 900; font-size: 17px; font-family: 'Cinzel', serif; cursor: pointer; transition: 0.2s; border-radius: 12px; text-align: center; }
-        .status-badge { background: #000; color: var(--danger); border: 4.5px solid var(--danger); padding: 18px 45px; font-weight: 900; font-size: 20px; margin-bottom: 45px; animation: glitch 0.3s infinite; text-transform: uppercase; letter-spacing: 6px; }
-        @keyframes glitch { 0% { transform: translate(0); text-shadow: 4px 0 var(--accent); } 50% { transform: translate(-5px, 2px); text-shadow: -4px 0 var(--cyber-pink); } 100% { transform: translate(0); } }
+        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
+        .realm-btn { padding: 18px; border: 2px solid var(--steam-gold); background: rgba(255,255,255,0.04); color: #fff; font-weight: 900; font-size: 16px; font-family: 'Cinzel', serif; cursor: pointer; transition: 0.2s; border-radius: 10px; text-align: center; }
+        .status-badge { background: #000; color: var(--danger); border: 3.5px solid var(--danger); padding: 15px 35px; font-weight: 900; font-size: 18px; margin-bottom: 30px; animation: glitch 0.3s infinite; text-transform: uppercase; letter-spacing: 5px; }
+        @keyframes glitch { 0% { transform: translate(0); text-shadow: 3px 0 var(--accent); } 50% { transform: translate(-3px, 1px); text-shadow: -3px 0 var(--cyber-pink); } 100% { transform: translate(0); } }
     </style>
 </head>
 <body>
@@ -161,7 +156,6 @@
 
             const isMyTurn = gs?.currentTurnPlayerId === socket?.id && gs?.status === 'playing';
             
-            // 同期修正：手番が終了したら強制キャンセル
             useEffect(() => {
                 if (gs && !isMyTurn && selectorCard) {
                     setSelectorCard(null);
@@ -238,7 +232,6 @@
                             <div className="panel">
                                 <div style={{width: '100%'}}>
                                     <h1 className="logo-main">CROSS REALM</h1>
-                                    <p className="logo-sub">Eternal Punk Edition</p>
                                 </div>
                                 <div style={{width:'100%', display:'flex', flexDirection:'column', gap:15}}>
                                     <input type="text" value={name} onChange={e=>setName(e.target.value.toUpperCase())} placeholder="プレイヤー名" maxLength={10} />
@@ -253,8 +246,8 @@
                         <div className="overlay">
                             <div className="panel">
                                 <div>
-                                    <h2 style={{letterSpacing:8, opacity:0.8, fontSize:14, fontWeight:900, fontFamily:'Cinzel', color:'var(--steam-gold)', marginBottom:10}}>接続待機中</h2>
-                                    <div style={{fontSize:24, color:'var(--accent)', fontWeight:900, letterSpacing:4, textShadow:'0 0 10px rgba(64,224,208,0.5)'}}>ルームID: {room}</div>
+                                    <h2 style={{letterSpacing:6, opacity:0.8, fontSize:14, fontWeight:900, fontFamily:'Cinzel', color:'var(--steam-gold)', marginBottom:10}}>接続待機中</h2>
+                                    <div style={{fontSize:22, color:'var(--accent)', fontWeight:900, letterSpacing:4, textShadow:'0 0 10px rgba(64,224,208,0.5)'}}>ルームID: {room}</div>
                                 </div>
                                 <div className="waiting-list">
                                     {gs?.players?.map(p => (
@@ -289,7 +282,7 @@
                                                 ))}
                                             </div>
                                         </div>
-                                        <div style={{fontWeight:900, color: 'var(--accent)', fontSize:24, minWidth: '85px', textAlign: 'right'}}>{p.handCount} Units</div>
+                                        <div style={{fontWeight:900, color: 'var(--accent)', fontSize:22, minWidth: '80px', textAlign: 'right'}}>{p.handCount} Units</div>
                                     </div>
                                 ))}
                             </div>
@@ -315,10 +308,10 @@
                                         <div className="realm-desc">
                                             {(REALMS[currentRealm] || {desc:''}).desc}
                                             {gs.fieldCard?.isSpecial && REALMS[currentRealm]?.effect && (
-                                                <div className="effect-badge">{REALMS[currentRealm].effect}</div>
+                                                <div className="effect-badge" style={{color: 'var(--accent)', fontSize: '10px', marginTop: '5px', fontWeight: 'bold'}}>{REALMS[currentRealm].effect}</div>
                                             )}
                                         </div>
-                                        <div className="next-hint">
+                                        <div className="next-hint" style={{fontSize: '9px', marginTop: '10px', opacity: '0.6'}}>
                                             {gs.nextDrawAmount > 1 ? "対抗: 歯車(S) のみ" : "サイクルに従ってください"}
                                         </div>
                                     </div>
@@ -347,7 +340,7 @@
                                                   }} />
                                     ))}
                                 </div>
-                                <div style={{textAlign:'center', fontSize:14, fontWeight:900, marginTop:10, opacity:0.8, color:'var(--steam-gold)', letterSpacing:5}}>
+                                <div style={{textAlign:'center', fontSize:13, fontWeight:900, marginTop:8, opacity:0.8, color:'var(--steam-gold)', letterSpacing:4}}>
                                     CORE SYNC: {sortedHand.length} / {gs.handLimit}
                                 </div>
                             </div>
@@ -357,7 +350,7 @@
                     {selectorCard && (
                         <div className="overlay">
                             <div className="panel" style={{maxWidth:'450px'}}>
-                                <h3 style={{fontSize:28, fontWeight:900, marginBottom:15, color:'var(--steam-gold)', fontFamily:'Cinzel'}}>属性変更</h3>
+                                <h3 style={{fontSize:26, fontWeight:900, marginBottom:15, color:'var(--steam-gold)', fontFamily:'Cinzel'}}>属性変更</h3>
                                 <div className="realm-grid">
                                     {CYCLE_ORDER.map(r => (
                                         <button key={r} className="realm-btn" style={{borderColor:REALMS[r].color, color:REALMS[r].color}} 
@@ -367,7 +360,7 @@
                                                 }}>{REALMS[r].n}</button>
                                     ))}
                                 </div>
-                                <button onClick={()=>setSelectorCard(null)} style={{marginTop:20, opacity:0.8, color:'#fff', cursor:'pointer', border:'none', background:'none', fontWeight:900, fontSize:18}}>キャンセル</button>
+                                <button onClick={()=>setSelectorCard(null)} style={{marginTop:20, opacity:0.8, color:'#fff', cursor:'pointer', border:'none', background:'none', fontWeight:900, fontSize:16}}>キャンセル</button>
                             </div>
                         </div>
                     )}
@@ -375,10 +368,10 @@
                     {gs?.status === 'finished' && (
                         <div className="overlay">
                             <div className="panel">
-                                <h2 style={{color:'var(--steam-gold)', fontSize:36, fontWeight:900, fontFamily:'Cinzel'}}>結果</h2>
-                                <div style={{width:'100%', margin:'30px 0'}}>
+                                <h2 style={{color:'var(--steam-gold)', fontSize:32, fontWeight:900, fontFamily:'Cinzel'}}>結果</h2>
+                                <div style={{width:'100%', margin:'25px 0'}}>
                                     {gs.players.slice().sort((a,b) => a.handCount - b.handCount).map((p, i) => (
-                                        <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'18px 0', borderBottom:'1px solid rgba(212,175,55,0.2)', fontSize:20}}>
+                                        <div key={p.id} style={{display:'flex', justifyContent:'space-between', padding:'15px 0', borderBottom:'1px solid rgba(212,175,55,0.2)', fontSize:18}}>
                                             <span style={{fontWeight:900}}>{i+1}. {p.name}</span>
                                             <span style={{color:'var(--steam-gold)', fontWeight:900}}>{p.handCount}枚</span>
                                         </div>
