@@ -281,11 +281,11 @@
                                 
                                 <div style={{width:'100%', display:'flex', flexDirection:'column', gap:20}}>
                                     <div className="input-group">
-                                        <label>PILOT NAME</label>
+                                        <label>プレイヤー名</label>
                                         <input type="text" value={name} onChange={e=>setName(e.target.value)} maxLength={10} />
                                     </div>
                                     <div className="input-group">
-                                        <label>SECTOR ID</label>
+                                        <label>ルームID</label>
                                         <input type="text" value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} />
                                     </div>
                                 </div>
@@ -306,8 +306,8 @@
                                 <div className="panel-corner2"></div>
 
                                 <div>
-                                    <div className="blink-text" style={{letterSpacing:6, opacity:0.8, fontSize:12, fontWeight:900, marginBottom:8, color:'var(--accent)', fontFamily:'Exo 2'}}>AWAITING LINKAGE...</div>
-                                    <div style={{fontSize:32, color:'var(--steam-gold)', fontWeight:900, fontFamily:'Cinzel', letterSpacing: 4}}>SECTOR: {room}</div>
+                                    <div className="blink-text" style={{letterSpacing:6, opacity:0.8, fontSize:12, fontWeight:900, marginBottom:8, color:'var(--accent)', fontFamily:'Exo 2'}}>接続待機中...</div>
+                                    <div style={{fontSize:32, color:'var(--steam-gold)', fontWeight:900, fontFamily:'Cinzel', letterSpacing: 4}}>ルームID: {room}</div>
                                 </div>
                                 
                                 <div className="waiting-list">
@@ -319,7 +319,7 @@
                                     ))}
                                     {[...Array(Math.max(0, 2 - (gs?.players?.length || 0)))].map((_, i) => (
                                         <div key={i} className="waiting-player empty">
-                                            <span style={{fontSize:14, letterSpacing:1}}>Awaiting Pilot...</span>
+                                            <span style={{fontSize:14, letterSpacing:1}}>プレイヤーを待機中...</span>
                                         </div>
                                     ))}
                                 </div>
