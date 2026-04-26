@@ -43,6 +43,7 @@
         @keyframes arcane-shimmer { 0% { transform: rotate(0deg) scale(1); opacity: 0.3; } 50% { transform: rotate(180deg) scale(1.1); opacity: 0.6; } 100% { transform: rotate(360deg) scale(1); opacity: 0.3; } }
         @keyframes sweepBtn { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
         @keyframes vortex-pulse { 0% { transform: rotate(0deg) scale(1.5); opacity: 0.15; } 50% { transform: rotate(180deg) scale(2.5); opacity: 0.4; } 100% { transform: rotate(360deg) scale(1.5); opacity: 0.15; } }
+        @keyframes mana-flow { 0% { transform: translateY(0) scale(1); opacity: 0.8; } 100% { transform: translateY(-150px) scale(0); opacity: 0; } }
 
         /* === ド派手背景コア === */
         .bg-core { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
@@ -67,11 +68,33 @@
 
         /* === 3Dカードマテリアル === */
         .card-wrapper-3d { width: var(--card-w); height: var(--card-h); perspective: 1000px; position: relative; }
-        .card-3d { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1); cursor: pointer; border-radius: 6px; }
-        .card-content { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; overflow: hidden; border-radius: inherit; }
+        
+        .card-3d { 
+            width: 100%; height: 100%; position: relative; 
+            transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1); 
+            cursor: pointer; border-radius: 6px; 
+        }
+        
+        .card-content { 
+            position: absolute; inset: 0; pointer-events: none; 
+            overflow: hidden; border-radius: inherit; 
+            transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+            transform: translateZ(0); -webkit-transform: translateZ(0); 
+        }
 
         .mat-steam { background: radial-gradient(circle at 50% 10%, #FF8C00 0%, #0a0402 100%); border: 3.5px solid #4a2f1c; box-shadow: 0 10px 40px #000, inset 0 0 20px #000; }
-        .mat-fantasy { background: radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%); border: 2.5px solid #fff; box-shadow: 0 0 45px var(--r-color-glow); }
+        
+        /* 修正箇所：確実に「葉っぱ型」になるようにパーセント指定を修正！ */
+        .mat-fantasy { 
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.85) 100%), 
+                        radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%) !important; 
+            border: 2px solid rgba(255,255,255,0.95) !important; 
+            border-radius: 45% 15% !important; /* これで間違いなく葉っぱ型になります */
+            box-shadow: 0 0 35px var(--r-color-glow), inset 0 0 15px rgba(255,255,255,0.2) !important; 
+            backdrop-filter: blur(15px) !important;
+        }
+        
         .mat-cyber { background: #000; border: none; clip-path: polygon(0 15%, 15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%); box-shadow: inset 0 0 50px var(--r-color-dim); border-left: 5.5px solid var(--r-color); }
         .mat-void-planet { background: radial-gradient(circle at 50% 50%, #fff7 0%, #000 100%); border: none; animation: liquid-morph 5s infinite alternate ease-in-out; box-shadow: 0 0 35px #fff7; }
         .mat-void-ruins { background: radial-gradient(circle at 50% 50%, #444 0%, #000 100%); border: none; animation: liquid-morph 8s infinite alternate-reverse ease-in-out; box-shadow: 0 0 35px #666; }
@@ -87,7 +110,13 @@
         .steam-hand { position: absolute; top: 50%; left: 50%; width: 1.5px; height: 12px; background: #f33; transform-origin: bottom center; transform: translate(-50%, -100%) rotate(-45deg); animation: gear-spin 5s infinite alternate; }
         .cyber-matrix-layer { position: absolute; inset: 0; overflow: hidden; opacity: 0.8; z-index: 30; }
         .matrix-unit { position: absolute; color: var(--r-color); font-family: 'Orbitron', monospace; font-size: 6px; writing-mode: vertical-rl; animation: digital-rain 2.8s linear infinite; }
-        .arcane-ring-mega { position: absolute; inset: -20%; display: flex; align-items: center; justify-content: center; z-index: 20; opacity: 0.6; animation: arcane-shimmer 30s linear infinite; }
+        
+        .arcane-circle-layer { 
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; 
+            z-index: 80; pointer-events: none; overflow: hidden; border-radius: inherit;
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+        }
+        
         .rivet-omega { position: absolute; width: 3px; height: 3px; background: #8B6B23; border-radius: 50%; box-shadow: inset 1px 1px 1px #FFF8DC, 1px 1px 3px #000; }
 
         /* === 究極パネル (中央固定) === */
@@ -107,7 +136,6 @@
         .opp-card-omega-peak { padding: 10px 12px; border-radius: 8px; background: linear-gradient(145deg, rgba(40,40,60,1), rgba(5,5,5,1)); border-left: 4px solid rgba(255,255,255,0.15); box-shadow: inset 0 0 30px #000; display: flex; flex-direction: column; }
         .opp-card-omega-peak.active { border-left-color: var(--accent); background: rgba(64,224,208,0.3); box-shadow: 0 0 50px rgba(64,224,208,0.5); }
         
-        /* サイクルバー（凡例）のスタイル修正 */
         .cycle-strip-classic { flex-shrink: 0; display: flex; justify-content: space-between; padding: 8px 6px; background: rgba(0,0,0,1); border-bottom: 2px solid var(--border); z-index: 10; }
         .cycle-node-container { flex: 1; display: flex; flex-direction: column; align-items: center; margin: 0 4px; }
         .cycle-node-omega { width: 100%; height: 3px; background: rgba(255,255,255,0.15); transition: 0.5s; border-radius: 2px; }
@@ -115,27 +143,13 @@
         .cycle-label { font-size: clamp(8px, 2.2vw, 11px); font-weight: 900; margin-top: 4px; text-align: center; white-space: nowrap; color: rgba(255,255,255,0.4); transition: 0.3s; letter-spacing: -0.5px; }
         .cycle-label.active { color: var(--c); text-shadow: 0 0 8px var(--c); }
         
-        /* 【追加】次に出せる属性の点滅アニメーション */
-        @keyframes blink-node {
-            0%, 100% { opacity: 0.3; box-shadow: none; background: rgba(255,255,255,0.2); }
-            50% { opacity: 1; box-shadow: 0 0 15px var(--c); background: var(--c); }
-        }
-        @keyframes blink-text {
-            0%, 100% { color: rgba(255,255,255,0.4); text-shadow: none; }
-            50% { color: var(--c); text-shadow: 0 0 8px var(--c); }
-        }
+        @keyframes blink-node { 0%, 100% { opacity: 0.3; box-shadow: none; background: rgba(255,255,255,0.2); } 50% { opacity: 1; box-shadow: 0 0 15px var(--c); background: var(--c); } }
+        @keyframes blink-text { 0%, 100% { color: rgba(255,255,255,0.4); text-shadow: none; } 50% { color: var(--c); text-shadow: 0 0 8px var(--c); } }
         .cycle-node-omega.next-blink { animation: blink-node 1.5s infinite ease-in-out; }
         .cycle-label.next-blink-text { animation: blink-text 1.5s infinite ease-in-out; }
 
-        /* 魔法陣エリア */
-        .field-core-omega { 
-            flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; 
-            position: relative; z-index: 5; padding: 5px 0; 
-        }
-        .magic-ring-core { 
-            position: absolute; width: clamp(140px, 35vh, 220px); height: clamp(140px, 35vh, 220px); 
-            border: 4px dashed rgba(64,224,208,0.3); border-radius: 50%; animation: gear-spin 25s linear infinite; 
-        }
+        .field-core-omega { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; position: relative; z-index: 5; padding: 5px 0; }
+        .magic-ring-core { position: absolute; width: clamp(140px, 35vh, 220px); height: clamp(140px, 35vh, 220px); border: 4px dashed rgba(64,224,208,0.3); border-radius: 50%; animation: gear-spin 25s linear infinite; }
         .magic-ring-core::after { content: ''; position: absolute; inset: 10%; border: 2.5px solid rgba(138,43,226,0.25); border-radius: 50%; animation: gear-spin 15s linear infinite reverse; }
         
         .info-panel-mega { border: 2px solid var(--steam-gold); padding: 6px 12px; border-radius: 12px; width: clamp(140px, 35vw, 180px); text-align: center; background: rgba(5, 5, 8, 0.98); backdrop-filter: blur(30px); z-index: 20; box-shadow: 0 0 50px rgba(212,175,55,0.4); }
@@ -207,7 +221,6 @@
         };
         const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
         
-        // 遷移定義マップ（点滅ガイド用）
         const NEXT_REALMS_MAP = {
             GEAR: ['GEAR', 'ICEAGE'],
             ICEAGE: ['FOUNTAIN', 'BATTERY'],
@@ -274,7 +287,25 @@
                                     <div className="rivet-omega top-2 left-2"/><div className="rivet-omega top-2 right-2"/><div className="rivet-omega bottom-2 left-2"/><div className="rivet-omega bottom-2 right-2"/>
                                 </>
                             )}
-                            {rData.theme === 'fantasy' && <div className="arcane-ring-mega"><svg viewBox="0 0 100 100" style={{color:rData.color, width:'140%', height:'140%'}}><circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="1.3" strokeDasharray="3 4"/><path d="M50 5 L89 75 L11 75 Z" fill="none" stroke="currentColor" strokeWidth="0.7"/><circle cx="50" cy="50" r="24" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="6 2"/></svg></div>}
+                            
+                            {rData.theme === 'fantasy' && (
+                                <div className="arcane-circle-layer">
+                                    <svg viewBox="0 0 200 200" style={{color: rData.color, width: '160%', height: '160%', animation: 'arcane-shimmer 20s linear infinite', opacity: 0.85}}>
+                                        <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="3 7"/>
+                                        <circle cx="100" cy="100" r="82" fill="none" stroke="currentColor" strokeWidth="1"/>
+                                        <path d="M100 8 L188 155 L12 155 Z" fill="none" stroke="currentColor" strokeWidth="0.8"/>
+                                        <path d="M100 192 L12 45 L188 45 Z" fill="none" stroke="currentColor" strokeWidth="0.8"/>
+                                        <circle cx="100" cy="100" r="48" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="8 4"/>
+                                        {[0, 60, 120, 180, 240, 300].map(d => (
+                                            <text key={d} x="100" y="32" transform={`rotate(${d} 100 100)`} fill="currentColor" fontSize="12" fontWeight="bold" opacity="0.8">❈</text>
+                                        ))}
+                                    </svg>
+                                    {[...Array(6)].map((_, i) => (
+                                        <div key={i} className="absolute w-1 h-1 rounded-full" style={{ left: `${Math.random()*100}%`, bottom: '-10%', background: rData.color, boxShadow: `0 0 10px ${rData.color}`, animation: `mana-flow ${3+Math.random()*2}s infinite`, animationDelay: `${Math.random()*3}s` }} />
+                                    ))}
+                                </div>
+                            )}
+
                             {rData.theme === 'cyber' && <div className="cyber-matrix-layer">{[...Array(6)].map((_,i)=><div key={i} className="matrix-unit" style={{left:`${i*15+5}%`, animationDelay:`${i*0.4}s`}}>101101</div>)}</div>}
 
                             <div className="card-label-tag"><span>{dr}</span></div>
@@ -407,7 +438,7 @@
                                                     <div className={`w-12 h-12 flex-shrink-0 rounded-full ${p ? 'bg-accent/20 text-accent border border-accent/60 shadow-[0_0_20px_var(--accent)]' : 'bg-white/5 text-white/5 border border-white/10'} flex items-center justify-center font-bold text-2xl`}>{p ? '👤' : ''}</div>
                                                     <span className="slot-name-tag">{p ? p.name : '空きスロット'}</span>
                                                 </div>
-                                                {p && i === 0 && <div className="bg-[#D4AF37] flex-shrink-0 text-black text-[12px] px-4 py-1 font-black rounded-sm shadow-xl">HOST</div>}
+                                                {p && i === 0 && <div className="bg-steam-gold flex-shrink-0 text-black text-[12px] px-4 py-1 font-black rounded-sm shadow-xl">HOST</div>}
                                             </div>
                                         );
                                     })}
@@ -440,7 +471,6 @@
                                 ))}
                             </div>
                             
-                            {/* === サイクルバー（点滅ガイド機能付き） === */}
                             <div className="cycle-strip-classic">
                                 {CYCLE_ORDER.map(r => {
                                     const isActive = currentR === r;
@@ -489,17 +519,24 @@
                             </div>
                         </div>
                     )}
+                    
                     {selector && (
-                        <div className="absolute inset-0 flex items-center justify-center p-6 z-[200000] backdrop-filter blur(50px) bg-black/90">
-                            <div className="panel-omega" style={{borderColor: 'var(--steam-gold)', padding: '50px 30px'}}>
-                                <h3 className="text-3xl font-black text-center mb-12 text-steam-gold steam-glow" style={{fontFamily:'Cinzel'}}>属性を選択</h3>
-                                <div className="grid grid-cols-2 gap-6">{CYCLE_ORDER.map(r => (<button key={r} className="p-5 border border-white/20 rounded-lg flex items-center gap-4 hover:bg-white/10" style={{color: REALMS[r].color}} onClick={() => { socket.emit('play-card', {roomId: room, card:selector, chosenRealm:r}); setSelector(null); }}><div className="w-9 h-9"><IconRenderer r={r} spec={false}/></div><span className="font-black text-2xl">{REALMS[r].n}</span></button>))}</div>
-                                <button onClick={()=>setSelector(null)} className="w-full mt-12 text-white/40 text-sm py-2 tracking-[15px] font-black uppercase">Cancel</button>
+                        <div className="absolute inset-0 flex items-center justify-center p-4 z-[200000] backdrop-filter blur(50px) bg-black/90">
+                            <div className="panel-omega" style={{borderColor: 'var(--steam-gold)', padding: '40px 20px'}}>
+                                <h3 className="text-2xl md:text-3xl font-black text-center mb-8 text-steam-gold steam-glow" style={{fontFamily:'Cinzel'}}>属性を選択</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {CYCLE_ORDER.map(r => (
+                                        <button key={r} className="p-3 md:p-4 border border-white/20 rounded-lg flex items-center justify-center gap-2 md:gap-4 hover:bg-white/10" style={{color: REALMS[r].color}} onClick={() => { socket.emit('play-card', {roomId: room, card:selector, chosenRealm:r}); setSelector(null); }}>
+                                            <div className="w-6 h-6 md:w-8 md:h-8 flex-shrink-0"><IconRenderer r={r} spec={false}/></div>
+                                            <span className="font-black text-lg md:text-xl whitespace-nowrap">{REALMS[r].n}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                                <button onClick={()=>setSelector(null)} className="w-full mt-8 text-white/40 text-sm py-2 tracking-[10px] font-black uppercase">Cancel</button>
                             </div>
                         </div>
                     )}
                     
-                    {/* === ミッション終了（リザルト）画面：日本語化 === */}
                     {gs?.status === 'finished' && (
                         <div className="absolute inset-0 flex items-center justify-center p-4 z-[250000] bg-black/90 backdrop-blur-sm">
                             <div className="panel-omega" style={{borderColor: 'var(--steam-gold)', padding: '40px 20px', width: '100%', maxWidth: '400px'}}>
