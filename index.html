@@ -381,7 +381,7 @@
                                                     <div className={`w-12 h-12 flex-shrink-0 rounded-full ${p ? 'bg-accent/20 text-accent border border-accent/60 shadow-[0_0_20px_var(--accent)]' : 'bg-white/5 text-white/5 border border-white/10'} flex items-center justify-center font-bold text-2xl`}>{p ? '👤' : ''}</div>
                                                     <span className="slot-name-tag">{p ? p.name : '空きスロット'}</span>
                                                 </div>
-                                                {p && i === 0 && <div className="bg-steam-gold flex-shrink-0 text-black text-[12px] px-4 py-1 font-black rounded-sm shadow-xl">HOST</div>}
+                                                {p && i === 0 && <div className="bg-[#D4AF37] flex-shrink-0 text-black text-[12px] px-4 py-1 font-black rounded-sm shadow-xl">HOST</div>}
                                             </div>
                                         );
                                     })}
@@ -477,7 +477,7 @@
                     {gs?.status === 'finished' && (
                         <div className="absolute inset-0 flex items-center justify-center p-4 z-[250000] bg-black/90 backdrop-blur-sm">
                             <div className="panel-omega" style={{borderColor: 'var(--steam-gold)', padding: '40px 20px', width: '100%', maxWidth: '400px'}}>
-                                <h2 className="text-3xl md:text-4xl font-black text-center mb-8 text-white steam-glow" style={{fontFamily: "'Exo 2', sans-serif"}}>ミッション終了</h2>
+                                <h2 className="text-3xl md:text-4xl font-black text-center mb-8 text-[#D4AF37] steam-glow" style={{fontFamily: "'Exo 2', sans-serif"}}>{gs.players.slice().sort((a,b) => a.handCount - b.handCount)[0]?.name} 勝利！</h2>
                                 <div className="space-y-3 mb-10 max-h-[50vh] overflow-y-auto pr-2">
                                     {gs.players.slice().sort((a,b) => a.handCount - b.handCount).map((p, i) => (
                                         <div key={p.id} className={`p-4 rounded-xl border flex items-center transition-all ${p.handCount === 0 ? 'border-accent bg-accent/20 scale-[1.02] shadow-[0_0_15px_var(--accent)]' : p.handCount > 10 ? 'border-red-500 bg-red-500/20' : 'border-white/10 opacity-70'}`}>
