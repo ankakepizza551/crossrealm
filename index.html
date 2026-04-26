@@ -132,10 +132,11 @@
         .btn-sub { display: flex; align-items: center; justify-content: center; min-height: 48px; background: rgba(138,43,226,0.25); border: 1px solid rgba(138,43,226,0.9); color: #e2b0ff; padding: 0 16px; width: 100%; cursor: pointer; border-radius: 6px; font-weight: 900; font-size: 18px; transition: 0.3s; letter-spacing: 2px; box-sizing: border-box; line-height: 1; text-shadow: 0 0 15px rgba(138,43,226,0.9); font-family: 'Exo 2', sans-serif; white-space: nowrap; box-shadow: inset 0 0 20px rgba(138,43,226,0.4); z-index: 20; position: relative;}
         .btn-sub:hover { background: rgba(138,43,226,0.6); color: #fff; border-color: #fff; box-shadow: 0 0 30px rgba(138,43,226,0.9); transform: scale(1.03); }
 
-        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; z-index: 20; position: relative;}
-        .realm-btn { padding: 20px 10px; border: 2px solid var(--steam-gold); background: linear-gradient(180deg, rgba(30,20,40,0.9), rgba(0,0,0,0.9)); color: #fff; font-weight: 900; cursor: pointer; border-radius: 10px; font-size: 18px; display: flex; flex-direction: column; align-items: center; gap: 10px; transition: 0.2s; box-shadow: 0 5px 30px rgba(0,0,0,0.9); z-index: 20;}
-        .realm-btn:hover { transform: scale(1.08); border-color: #fff; box-shadow: 0 0 45px var(--steam-gold), inset 0 0 30px rgba(255,255,255,0.4); }
-        .realm-btn svg { width: 40px; height: 40px; filter: drop-shadow(0 0 15px currentColor); transition: 0.3s; }
+        /* WILD属性選択ボタンの巨大化 */
+        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; max-width: 450px; margin: 0 auto; z-index: 20; position: relative;}
+        .realm-btn { padding: 25px 10px; border: 2px solid var(--steam-gold); background: linear-gradient(180deg, rgba(30,20,40,0.9), rgba(0,0,0,0.9)); color: #fff; font-weight: 900; cursor: pointer; border-radius: 12px; font-size: 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; transition: 0.2s; box-shadow: 0 5px 30px rgba(0,0,0,0.9); z-index: 20;}
+        .realm-btn:hover { transform: scale(1.05); border-color: #fff; box-shadow: 0 0 45px var(--steam-gold), inset 0 0 30px rgba(255,255,255,0.4); }
+        .realm-btn svg { width: 50px; height: 50px; filter: drop-shadow(0 0 15px currentColor); transition: 0.3s; }
         .realm-btn:hover svg { filter: drop-shadow(0 0 25px currentColor) brightness(1.8); transform: scale(1.1); }
 
         .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 5px; padding-top: 15px; z-index: 20; position: relative;}
@@ -197,8 +198,7 @@
 </head>
 <body>
     <script>
-        // === オーディオの完全並列再生（プール）化 ===
-        // 連打や非同期エラーを完璧に防ぐため、各音源を5つずつ生成して順繰りに使い回す
+        // === オーディオの完全並列再生＆非同期キャンセラー ===
         const SFX_URLS = {
             turn: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3',
             play: 'https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3',
@@ -208,33 +208,49 @@
         
         window.sfxPools = {};
         window.sfxIndex = {};
+        window.stopFlags = {}; // 停止命令フラグを管理
+
         for(let key in SFX_URLS){
-            window.sfxPools[key] = Array.from({length: 5}, () => {
+            window.sfxPools[key] = Array.from({length: 3}, () => {
                 let a = new Audio(SFX_URLS[key]);
                 a.preload = 'auto';
                 a.volume = 0.3;
                 return a;
             });
             window.sfxIndex[key] = 0;
+            window.stopFlags[key] = false;
         }
         window.isMutedGlobal = false;
 
         window.safePlay = (type) => {
             if (window.isMutedGlobal) return;
+            window.stopFlags[type] = false; // 停止フラグをリセット
+            
             try {
                 const pool = window.sfxPools[type];
                 const idx = window.sfxIndex[type];
                 const a = pool[idx];
+                window.sfxIndex[type] = (idx + 1) % pool.length; // 次のインスタンスへ
+                
                 a.pause();
                 a.currentTime = 0;
                 a.volume = 0.3;
                 const p = a.play();
-                if(p !== undefined) p.catch(()=>{});
-                window.sfxIndex[type] = (idx + 1) % pool.length; // 次のインスタンスへ
+                
+                if (p !== undefined) {
+                    p.then(() => {
+                        // 再生が開始された直後に、もし停止命令が出ていたら即座に止める（鳴り止まないバグ防止）
+                        if (window.stopFlags[type]) {
+                            a.pause();
+                            a.currentTime = 0;
+                        }
+                    }).catch(()=>{});
+                }
             } catch(e){}
         };
 
         window.safeStop = (type) => {
+            window.stopFlags[type] = true; // 停止命令フラグを立てる
             try {
                 window.sfxPools[type].forEach(a => {
                     a.pause();
@@ -689,16 +705,16 @@
 
                     {selectorCard && (
                         <div className="overlay" style={{zIndex: 100000}}>
-                            <div className="panel panel-magic">
+                            <div className="panel panel-magic" style={{maxWidth: '500px', padding: '40px 20px'}}>
                                 <h3 style={{fontSize:26, fontWeight:900, color:'#e2b0ff', fontFamily:'Cinzel Decorative', textAlign:'center', marginBottom: 10}} className="magic-glow font-base">属性を選択</h3>
                                 <div className="realm-grid">
                                     {CYCLE_ORDER.map(r => (
                                         <button key={r} className="realm-btn" style={{borderColor:REALMS[r].color, color:REALMS[r].color, textShadow: `0 0 10px ${REALMS[r].color}`}} onClick={() => { socket.emit('play-card', {roomId: room, card:selectorCard, chosenRealm:r}); setSelectorCard(null); }}>
-                                            {ICONS[r]} <span className="font-base text-sm">{REALMS[r].n}</span>
+                                            {ICONS[r]} <span className="font-base text-lg">{REALMS[r].n}</span>
                                         </button>
                                     ))}
                                 </div>
-                                <button onClick={()=>setSelectorCard(null)} className="btn-sub bg-black/50 text-white border-white/30 font-base">キャンセル</button>
+                                <button onClick={()=>setSelectorCard(null)} className="btn-sub bg-black/50 text-white border-white/30 font-base" style={{marginTop: '10px', minHeight: '55px', fontSize: '20px'}}>キャンセル</button>
                             </div>
                         </div>
                     )}
