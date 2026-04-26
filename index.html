@@ -443,6 +443,35 @@
                             </div>
                         </div>
                     )}
+                    
+                    {/* ミッション終了（リザルト）画面 */}
+                    {gs?.status === 'finished' && (
+                        <div className="absolute inset-0 flex items-center justify-center p-4 z-[250000] bg-black/90 backdrop-blur-sm">
+                            <div className="panel-omega" style={{borderColor: 'var(--steam-gold)', padding: '40px 20px', width: '100%', maxWidth: '400px'}}>
+                                <h2 className="text-3xl md:text-4xl font-black text-center mb-8 text-white steam-glow" style={{fontFamily:'Cinzel'}}>MISSION END</h2>
+                                <div className="space-y-3 mb-10 max-h-[50vh] overflow-y-auto pr-2">
+                                    {gs.players.slice().sort((a,b) => a.handCount - b.handCount).map((p, i) => (
+                                        <div key={p.id} className={`p-4 rounded-xl border flex items-center transition-all ${p.handCount === 0 ? 'border-accent bg-accent/20 scale-[1.02] shadow-[0_0_15px_var(--accent)]' : p.handCount > 10 ? 'border-red-500 bg-red-500/20' : 'border-white/10 opacity-70'}`}>
+                                            <span className="font-black text-2xl mr-4 italic text-slate-500" style={{fontFamily:'Cinzel'}}>#{i+1}</span>
+                                            <div className="flex-1 overflow-hidden">
+                                                <div className="font-black text-lg tracking-wider uppercase truncate">{p.name}</div>
+                                                {p.handCount > 10 && <div className="text-[10px] text-red-500 tracking-widest font-black uppercase mt-1">System Overload</div>}
+                                                {p.handCount === 0 && <div className="text-[10px] text-accent tracking-widest font-black uppercase mt-1">Mission Clear</div>}
+                                            </div>
+                                            <span className={`font-black text-2xl ml-3 ${p.handCount > 10 ? 'text-red-500' : 'text-accent'}`} style={{fontFamily:'Orbitron'}}>{p.handCount}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                {gs.players[0]?.id === socket?.id ? (
+                                    <button onClick={() => socket.emit('play-again', {roomId: room})} className="btn-omega-singularity w-full">
+                                        RE-LINK SECTOR
+                                    </button>
+                                ) : (
+                                    <div className="text-center text-slate-400 font-bold tracking-widest text-sm py-4">WAITING FOR HOST...</div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         };
