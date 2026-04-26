@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Cross Realm - Omega Singularity v30.3</title>
+    <title>Cross Realm - Omega Singularity v30.4</title>
 
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -14,7 +14,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Cinzel:wght@400;700;900&family=Audiowide&family=Cinzel+Decorative:wght@700&family=Orbitron:wght@700;900&family=Special+Elite&display=swap" rel="stylesheet">
     
     <style>
-        /* === 修正: カードのサイズをスマホ画面比率に合わせて可変(clamp)に変更 === */
         :root { 
             --accent: #40E0D0; --steam-gold: #D4AF37; --magic-purple: #8A2BE2; --danger: #FF4500; 
             --bg: #010103; 
@@ -108,9 +107,13 @@
         .opp-card-omega-peak { padding: 10px 12px; border-radius: 8px; background: linear-gradient(145deg, rgba(40,40,60,1), rgba(5,5,5,1)); border-left: 4px solid rgba(255,255,255,0.15); box-shadow: inset 0 0 30px #000; display: flex; flex-direction: column; }
         .opp-card-omega-peak.active { border-left-color: var(--accent); background: rgba(64,224,208,0.3); box-shadow: 0 0 50px rgba(64,224,208,0.5); }
         
-        .cycle-strip-classic { flex-shrink: 0; display: flex; justify-content: space-between; padding: 10px 12px; background: rgba(0,0,0,1); border-bottom: 2px solid var(--border); z-index: 10; }
-        .cycle-node-omega { flex: 1; margin: 0 4px; height: 3px; background: rgba(255,255,255,0.1); transition: 0.5s; border-radius: 2px; }
+        /* サイクルバー（凡例）のスタイル修正 */
+        .cycle-strip-classic { flex-shrink: 0; display: flex; justify-content: space-between; padding: 8px 6px; background: rgba(0,0,0,1); border-bottom: 2px solid var(--border); z-index: 10; }
+        .cycle-node-container { flex: 1; display: flex; flex-direction: column; align-items: center; margin: 0 4px; }
+        .cycle-node-omega { width: 100%; height: 3px; background: rgba(255,255,255,0.1); transition: 0.5s; border-radius: 2px; }
         .cycle-node-omega.active { height: 6px; background: var(--c); box-shadow: 0 0 20px var(--c); }
+        .cycle-label { font-size: clamp(8px, 2.2vw, 11px); font-weight: 900; margin-top: 4px; text-align: center; white-space: nowrap; color: rgba(255,255,255,0.4); transition: 0.3s; letter-spacing: -0.5px; }
+        .cycle-label.active { color: var(--c); text-shadow: 0 0 8px var(--c); }
         
         /* 魔法陣エリア：マージンを均等配置し、重なりを防ぐ */
         .field-core-omega { 
@@ -126,8 +129,8 @@
         /* パネルを少しコンパクトに */
         .info-panel-mega { border: 2px solid var(--steam-gold); padding: 6px 12px; border-radius: 12px; width: clamp(140px, 35vw, 180px); text-align: center; background: rgba(5, 5, 8, 0.98); backdrop-filter: blur(30px); z-index: 20; box-shadow: 0 0 50px rgba(212,175,55,0.4); }
         
-        /* ログの背景を半透明にし、被っても見えるように調整 */
-        .terminal-log-omega { flex-shrink: 0; height: clamp(40px, 6vh, 60px); margin: 0 10px 5px; padding: 6px 15px; font-size: 11px; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); border-left: 5px solid var(--accent); overflow-y: auto; font-family: 'Orbitron', monospace; color: #fff; box-shadow: inset 0 0 30px rgba(0,0,0,0.8); z-index: 10; }
+        /* ログの高さを低くし、背景を半透明に（被り防止） */
+        .terminal-log-omega { flex-shrink: 0; height: clamp(35px, 5vh, 50px); margin: 0 10px 5px; padding: 4px 15px; font-size: 10px; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); border-left: 5px solid var(--accent); overflow-y: auto; font-family: 'Orbitron', monospace; color: #fff; box-shadow: inset 0 0 30px rgba(0,0,0,0.8); z-index: 10; }
         
         /* 手札の高さをカード可変サイズに追従させる */
         .hand-Omega-Peak { flex-shrink: 0; display: flex; justify-content: center; align-items: flex-end; height: calc(var(--card-h) + 20px); padding-bottom: 10px; background: linear-gradient(to top, rgba(0,0,0,1) 60%, transparent 100%); z-index: 20; }
@@ -143,7 +146,7 @@
 </head>
 <body>
     <script>
-        // === オーディオコア強化 (Discord/通知時の重複再生バグ対策) ===
+        // === オーディオコア ===
         const SFX_MAP = { turn: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3', play: 'https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3', draw: 'https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3', alert: 'https://assets.mixkit.co/active_storage/sfx/2862/2862-preview.mp3' };
         window.sfxPool = {}; 
         for(let k in SFX_MAP) { 
@@ -379,18 +382,27 @@
                             <div className="opp-mega-grid">
                                 {gs?.players?.map(p => (
                                     <div key={p.id} className={`opp-card-omega-peak ${gs?.currentTurnPlayerId === p.id ? 'active' : ''}`}>
-                                        <div className="flex justify-between items-center text-xs mb-1">
+                                        <div className="flex justify-between items-center text-xs mb-2">
                                             <div className="font-bold truncate max-w-[80%]">{p.id === socket?.id ? '⭐' : '👤'} {p.name}</div>
                                             <div className="text-accent font-black text-sm">{p.handCount}</div>
                                         </div>
-                                        <div className="relative h-[28px] w-full">
+                                        <div className="relative h-[34px] w-full">
                                             {[...Array(Math.min(p.handCount, 4))].map((_, i) => <div key={i} className="mini-back-final" style={{left: `${i*8}px`, zIndex: i}} />)}
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <div className="cycle-strip-classic">{CYCLE_ORDER.map(r => (<div key={r} className={`cycle-node-omega active ${currentR === r ? 'active' : ''}`} style={{'--c': REALMS[r].color}}/>))}</div>
                             
+                            {/* サイクルバー（凡例付き） */}
+                            <div className="cycle-strip-classic">
+                                {CYCLE_ORDER.map(r => (
+                                    <div key={r} className="cycle-node-container" style={{'--c': REALMS[r].color}}>
+                                        <div className={`cycle-node-omega ${currentR === r ? 'active' : ''}`} style={{background: currentR === r ? 'var(--c)' : 'rgba(255,255,255,0.2)'}}/>
+                                        <div className={`cycle-label ${currentR === r ? 'active' : ''}`}>{REALMS[r].n}</div>
+                                    </div>
+                                ))}
+                            </div>
+
                             <div className="field-core-omega">
                                 <div className={`text-[11px] font-black tracking-[8px] uppercase z-20 ${isMyTurn ? 'text-accent animate-pulse drop-shadow-[0_0_8px_var(--accent)]' : 'text-slate-500'}`}>{isMyTurn ? 'YOUR TURN' : 'WAITING...'}</div>
                                 <div className="relative my-2" style={{ width: 'var(--card-w)', height: 'var(--card-h)' }}>
@@ -408,11 +420,13 @@
                             </div>
 
                             <div ref={logEndRef} className="terminal-log-omega">{gs?.logs?.slice(-10).map((l) => (<div key={l.id} className={`mb-1 ${l.text.includes('PLAY') ? 'text-accent font-bold' : ''}`}>{l.text}</div>))}</div>
+                            
                             <div className="hand-Omega-Peak">{(() => {
                                 const cnt = sortedHand.length; 
                                 const ov = Math.min(75, window.innerWidth * 0.8 / Math.max(cnt, 1));
                                 return sortedHand.map((c, i) => (<CardView key={c.id || i} card={c} playable={canPlay(c)} onClick={() => handlePlay(c)} index={i} style={{ marginLeft: i === 0 ? 0 : `-${90 - ov}px` }} />));
                             })()}</div>
+                            
                             <div className="action-area-Final">
                                 <button className="btn-omega-singularity" disabled={!isMyTurn} onClick={() => { window.safePlay('draw'); socket.emit('draw-card',{roomId:room}); }}>
                                     {gs?.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引く` : 'ドロー'}
