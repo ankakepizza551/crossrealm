@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm - Eternal Punk Edition - v19.0</title>
+    <title>Cross Realm - Eternal Punk Edition - v19.1</title>
 
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -36,10 +36,10 @@
         @keyframes gear-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes digital-rain { 0% { transform: translateY(-100%); opacity: 0; } 100% { transform: translateY(180%); opacity: 0; } }
         @keyframes liquid-morph { 0% { border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%; } 100% { border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%; } }
-        @keyframes arcade-shimmer { 0% { transform: rotate(0deg) scale(1); opacity: 0.2; } 50% { transform: rotate(180deg) scale(1.05); opacity: 0.4; } 100% { transform: rotate(360deg) scale(1); opacity: 0.2; } }
+        @keyframes arcane-shimmer { 0% { transform: rotate(0deg) scale(1); opacity: 0.2; } 50% { transform: rotate(180deg) scale(1.05); opacity: 0.4; } 100% { transform: rotate(360deg) scale(1); opacity: 0.2; } }
         @keyframes sweepBtn { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
 
-        /* === 背景 === */
+        /* === 背景演出 (v17.3) === */
         .bg-container { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
         .layer-fantasy { position: absolute; inset: 0; background: radial-gradient(circle at 20% 30%, rgba(138, 43, 226, 0.3), transparent 60%), radial-gradient(circle at 80% 70%, rgba(0, 191, 255, 0.25), transparent 60%); animation: pulse-magic 8s infinite alternate; mix-blend-mode: screen; }
         .layer-cyber { position: absolute; inset: -50%; background-image: linear-gradient(rgba(64, 224, 208, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(64, 224, 208, 0.15) 1px, transparent 1px); background-size: 50px 50px; transform: perspective(800px) rotateX(60deg); animation: grid-move 12s linear infinite; mix-blend-mode: screen; }
@@ -47,15 +47,15 @@
         .layer-steam { position: absolute; inset: 0; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(212,175,55,0.06)" stroke-width="3" stroke-dasharray="8 6"/><circle cx="50" cy="50" r="25" fill="none" stroke="rgba(184,134,11,0.08)" stroke-width="2" stroke-dasharray="4 4"/></svg>'); background-position: center; animation: gear-spin 60s linear infinite; }
         .bg-magic-aura { position: absolute; inset: 0; background-color: var(--realm-color); -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%); opacity: 0.5; transition: 1.5s ease; mix-blend-mode: screen; z-index: 1; }
 
-        /* === 3Dカードマテリアル (Showcase 移植) === */
+        /* === カードデザイン限界突破 (v29.5移植) === */
         .mat-steam { background: radial-gradient(circle at 50% 10%, var(--r-color-bright) 0%, #0d0400 100%); border: 3px solid #4a2f1c; border-radius: 4px; box-shadow: 0 10px 30px #000, inset 1px 1px 2px rgba(255,255,255,0.1); }
         .mat-fantasy { background: radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%); border: 2px solid rgba(255,255,255,0.9); border-radius: 12px 4px; box-shadow: 0 0 30px var(--r-color-glow); }
         .mat-cyber { background: #000; border: none; border-radius: 0; clip-path: polygon(0 15%, 15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%); box-shadow: inset 0 0 40px var(--r-color-dim); border-left: 4px solid var(--r-color); }
-        .mat-void-planet { background: radial-gradient(circle at 50% 50%, #fff4 0%, #000 100%); border: none; animation: liquid-morph 5s infinite alternate ease-in-out; box-shadow: 0 0 40px #fff4; }
-        .mat-void-ruins { background: radial-gradient(circle at 50% 50%, #2a2a2a 0%, #000 100%); border: none; animation: liquid-morph 8s infinite alternate-reverse ease-in-out; box-shadow: 0 0 40px #444; }
+        .mat-void-planet { background: radial-gradient(circle at 50% 50%, #fff4 0%, #000 100%); border: none; animation: liquid-morph 5s infinite alternate ease-in-out; }
+        .mat-void-ruins { background: radial-gradient(circle at 50% 50%, #2a2a2a 0%, #000 100%); border: none; animation: liquid-morph 8s infinite alternate-reverse ease-in-out; }
 
-        .card-wrapper-3d { position: relative; perspective: 1000px; flex-shrink: 0; width: var(--card-w); height: var(--card-h); }
-        .card-3d { box-sizing: border-box; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 4px; }
+        .card-wrapper-3d { position: relative; perspective: 1000px; flex-shrink: 0; width: var(--card-w); height: var(--card-h); transition: z-index 0.3s; }
+        .card-3d { box-sizing: border-box; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 4px; position: relative; }
         .card-content { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; border-radius: inherit; overflow: hidden; }
         
         .identity-label-new { position: absolute; top: 8px; left: 8px; padding: 2px 6px; background: #000; border-left: 4px solid var(--r-color); transform: translateZ(40px); z-index: 50; }
@@ -67,52 +67,61 @@
         /* 装飾 */
         .steam-needle-mini { position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; background: #2a1508; border: 2px solid #5d3a1a; border-radius: 50%; transform: translateZ(45px); }
         .cyber-rain-mini { position: absolute; inset: 0; opacity: 0.4; }
-        .rain-bit-mini { position: absolute; color: var(--r-color); font-size: 6px; writing-mode: vertical-rl; animation: digital-rain 2s linear infinite; }
+        .rain-bit-mini { position: absolute; color: var(--accent); font-size: 6px; writing-mode: vertical-rl; animation: digital-rain 2s linear infinite; }
         .arcane-shimmer-mini { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0.3; animation: arcane-shimmer 20s linear infinite; }
 
-        /* === v17.3 完全復刻レイアウト === */
+        /* === UIパネル装飾 (v17.3ベース + 中央寄せ) === */
+        .magic-ring-bg { position: absolute; top: 50%; left: 50%; width: 140vw; height: 140vw; max-width: 800px; transform: translate(-50%, -50%); border-radius: 50%; border: 3px dashed rgba(64,224,208,0.3); animation: gear-spin 40s linear infinite; pointer-events: none; z-index: 1; }
         .hud-frame { position: absolute; inset: 0; pointer-events: none; border: 2px solid rgba(64,224,208,0.5); clip-path: polygon(0 40px, 40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%); z-index: 5; }
         .hud-corner { position: absolute; width: 25px; height: 25px; border: 3px solid #40E0D0; filter: drop-shadow(0 0 8px #40E0D0); }
         .hud-tl { top: 0; left: 0; border-right: none; border-bottom: none; } .hud-tr { top: 0; right: 0; border-left: none; border-bottom: none; } .hud-bl { bottom: 0; left: 0; border-right: none; border-top: none; } .hud-br { bottom: 0; right: 0; border-left: none; border-top: none; }
 
-        .panel-large { position: relative; z-index: 500; pointer-events: auto; width: 100%; max-width: 440px; background: rgba(5,10,15,0.96); border: 2px solid var(--accent); padding: 50px 35px; clip-path: polygon(0 40px, 40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%); box-shadow: 0 0 60px rgba(64,224,208,0.3); }
-        .panel-large input { width: 100%; padding: 22px; background: rgba(0,0,0,0.8); border: 1px solid rgba(64,224,208,0.4); border-bottom: 3px solid var(--accent); color: #fff; text-align: center; font-size: 22px; outline: none; margin-bottom: 25px; font-family: 'Exo 2', sans-serif; font-weight: 900; }
+        .panel-center { position: relative; z-index: 500; pointer-events: auto; width: 100%; max-width: 440px; background: rgba(5,10,15,0.98); border: 2px solid var(--accent); padding: 50px 35px; clip-path: polygon(0 40px, 40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%); box-shadow: 0 0 60px rgba(64,224,208,0.3); }
+        .panel-center input { width: 100%; padding: 20px; background: rgba(0,0,0,0.8); border: 1px solid rgba(64,224,208,0.4); border-bottom: 3px solid var(--accent); color: #fff; text-align: center; font-size: 20px; outline: none; margin-bottom: 25px; font-family: 'Exo 2', sans-serif; font-weight: 900; }
+        
+        .btn-gold { display: flex; align-items: center; justify-content: center; min-height: 55px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1px solid #FFF8DC; border-radius: 6px; font-weight: 900; font-size: 20px; cursor: pointer; width: 100%; position: relative; overflow: hidden; animation: sweepBtn 3s linear infinite; box-shadow: 0 0 35px rgba(212,175,55,0.7); }
 
-        .btn-main-peak { display: flex; align-items: center; justify-content: center; min-height: 60px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1px solid #FFF8DC; border-radius: 8px; font-weight: 900; font-size: 22px; cursor: pointer; width: 100%; position: relative; overflow: hidden; animation: sweepBtn 3s linear infinite; box-shadow: 0 5px 30px rgba(212,175,55,0.6); }
-
-        .waiting-slot-extreme { 
-            background: linear-gradient(90deg, rgba(64,224,208,0.08), rgba(138,43,226,0.12)); 
+        .waiting-slot { 
+            background: linear-gradient(90deg, rgba(64,224,208,0.1), rgba(138,43,226,0.15)); 
             border: 1px solid rgba(255,255,255,0.1); border-left: 5px solid var(--accent); 
-            padding: 20px 25px; display: flex; align-items: center; justify-content: space-between; 
+            padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; 
             clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px)); 
-            margin-bottom: 12px; width: 100%;
+            margin-bottom: 10px; width: 100%;
         }
-        .waiting-slot-extreme.empty { border: 1px dashed rgba(138,43,226,0.4); background: rgba(255,255,255,0.02); }
+        .waiting-slot.empty { border: 1px dashed rgba(138,43,226,0.5); opacity: 0.4; }
 
-        /* ゲーム画面 */
-        .game-header { flex-shrink: 0; background: linear-gradient(90deg, transparent, rgba(0,40,40,0.8), transparent); padding: 8px; border-bottom: 2px solid var(--accent); text-align: center; font-family: 'Orbitron'; font-weight: 900; color: var(--accent); font-size: 14px; }
-        .opp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; background: rgba(0,0,0,0.6); border-bottom: 1px solid var(--border); }
-        .opp-card-peak { padding: 10px; border-radius: 6px; background: linear-gradient(135deg, rgba(30,30,45,0.9), rgba(10,10,15,0.95)); border-left: 3px solid rgba(255,255,255,0.2); transition: 0.3s; }
-        .opp-card-peak.active { border-left-color: var(--accent); background: linear-gradient(135deg, rgba(64,224,208,0.2), rgba(138,43,226,0.2)); box-shadow: 0 0 20px rgba(64,224,208,0.4); }
-        .cycle-bar-peak { display: flex; justify-content: space-between; padding: 8px 6px; background: rgba(0,0,0,0.8); border-bottom: 2px solid var(--border); }
+        /* === v17.3 対戦画面構成 === */
+        .game-container { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; height: 100%; overflow: hidden; }
+        .turn-header { flex-shrink: 0; background: linear-gradient(90deg, transparent, rgba(0,40,40,0.8), transparent); padding: 8px; border-bottom: 2px solid var(--accent); text-align: center; font-family: 'Orbitron'; font-weight: 900; color: var(--accent); font-size: 14px; }
+        .opponents-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; background: rgba(0,0,0,0.6); border-bottom: 1px solid var(--border); }
+        .opp-box { padding: 10px; border-radius: 6px; background: linear-gradient(135deg, rgba(30,30,45,0.9), rgba(10,10,15,0.95)); border-left: 3px solid rgba(255,255,255,0.2); position: relative; }
+        .opp-box.active { border-left-color: var(--accent); background: rgba(64,224,208,0.2); }
+        .cycle-bar { flex-shrink: 0; display: flex; justify-content: space-between; padding: 8px 6px; background: rgba(0,0,0,0.85); border-bottom: 2px solid var(--border); }
         .cycle-dot { width: 100%; height: 3px; background: rgba(255,255,255,0.1); }
         .cycle-dot.active { height: 4px; background: var(--c); box-shadow: 0 0 15px var(--c); }
-        .field-core { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        .info-panel-peak { border: 1px solid var(--steam-gold); padding: 12px 18px; border-radius: 10px; width: 170px; text-align: center; background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(15px); }
-        .log-terminal-peak { height: 50px; margin: 0 12px 15px; padding: 6px 12px; font-size: 11px; background: rgba(0,0,0,0.9); border-left: 3px solid var(--accent); border-radius: 4px; font-family: 'Orbitron'; overflow-y: auto; }
-        .action-row-peak { padding: 18px 15px; border-top: 2px solid var(--magic-purple); background: linear-gradient(to top, #000, #0a050d); }
+        .field-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .info-panel-mega { border: 1px solid var(--steam-gold); padding: 12px 18px; border-radius: 10px; width: 170px; text-align: center; background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(15px); }
+        .realm-title-omega { font-family: 'Cinzel', serif; font-size: 26px; font-weight: 900; color: var(--realm-color); text-shadow: 0 0 30px var(--realm-color); }
+        .log-terminal-classic { height: 50px; margin: 0 12px 12px; padding: 6px 12px; font-size: 11px; background: rgba(0,0,0,0.9); border-left: 3px solid var(--accent); border-radius: 4px; font-family: 'Orbitron'; overflow-y: auto; }
+        .hand-flex-Omega { display: flex; justify-content: center; align-items: flex-end; height: 165px; padding-bottom: 20px; }
+        .action-footer { padding: 18px 15px; border-top: 2px solid var(--magic-purple); background: #000; }
+        .mini-card-stack { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #4a1a6a, #000); border: 1px solid var(--steam-gold); border-radius: 2px; position: absolute; top: 0; box-shadow: -3px 0 8px rgba(0,0,0,0.9); }
+        
+        .overlay-center { position: absolute; inset: 0; z-index: 50000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); background: rgba(5,5,15,0.85); padding: 25px; }
+        .not-playable { opacity: 0.4 !important; filter: grayscale(100%) brightness(0.6) !important; transform: translateY(15px) scale(0.95); z-index: 1 !important; }
     </style>
 </head>
 <body>
     <script>
-        const SFX = { turn: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3', play: 'https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3', draw: 'https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3', alert: 'https://assets.mixkit.co/active_storage/sfx/2862/2862-preview.mp3' };
-        window.audio = {}; for(let k in SFX) { window.audio[k] = new Audio(SFX[k]); }
-        window.safePlay = (k) => { try { window.audio[k].currentTime = 0; window.audio[k].play(); } catch(e){} };
-        window.unlock = () => { for(let k in window.audio) { window.audio[k].volume = 0; window.audio[k].play().then(()=>window.audio[k].pause()); } };
+        const SFX_CONFIG = { turn: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3', play: 'https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3', draw: 'https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3', alert: 'https://assets.mixkit.co/active_storage/sfx/2862/2862-preview.mp3' };
+        window.audioPool = {}; for(let k in SFX_CONFIG) { window.audioPool[k] = new Audio(SFX_CONFIG[k]); }
+        window.safePlay = (k) => { try { window.audioPool[k].currentTime = 0; window.audioPool[k].play(); } catch(e){} };
+        window.unlockAudio = () => { for(let k in window.audioPool) { window.audioPool[k].volume = 0; window.audioPool[k].play().then(()=>window.audioPool[k].pause()); } };
     </script>
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
+
         const REALMS = {
             GEAR:    { n: '歯車', color: '#8B4513', bright: '#5d3a1a', glow: 'rgba(139,69,19,0.7)', dim: 'rgba(139,69,19,0.2)', theme: 'steam', font: 'Special Elite', desc: 'セットA：維持。' },
             ARCHIVE: { n: '古文書', color: '#B22222', bright: '#7a1010', glow: 'rgba(178,34,34,0.7)', dim: 'rgba(178,34,34,0.2)', theme: 'steam', font: 'Special Elite', desc: 'セットC→A：遷移。' },
@@ -123,20 +132,21 @@
             PLANET:  { n: '惑星', color: '#FFFFFF', bright: '#000', glow: 'rgba(255,255,255,0.8)', dim: 'rgba(255,255,255,0.2)', theme: 'void-planet', font: 'Audiowide', desc: '星々の加護。' },
             RUINS:   { n: '廃墟', color: '#999999', bright: '#000', glow: 'rgba(150,150,150,0.4)', dim: 'rgba(60,60,60,0.5)', theme: 'void-ruins', font: 'Audiowide', desc: '遺跡の記憶。' }
         };
-        const CYCLE = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
+        const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
 
-        const IconRenderer = ({ r, spec }) => {
-            const sw = spec ? 3.5 : 1.8;
-            const p = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: sw, className: "w-full h-full" };
-            switch(r) {
-                case 'GEAR': return <svg {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>;
-                case 'ARCHIVE': return <svg {...p}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15Z"/><path d="M9 10h6" strokeWidth="1.2" opacity={spec ? 1 : 0}/></svg>;
-                case 'FOUNTAIN': return <svg {...p}><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4A9.7 9.7 0 0 1 12 22z"/></svg>;
-                case 'ICEAGE': return <svg {...p}><path d="M12 2v20M2 12h20M7 7l10 10M7 17L17 7"/></svg>;
-                case 'MACHINE': return <svg {...p}><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><path d="M9 9h6v6H9z"/></svg>;
-                case 'BATTERY': return <svg {...p}><rect width="16" height="10" x="2" y="7" rx="2" ry="2"/><path d="M22 11v2"/></svg>;
-                case 'PLANET': return <svg {...p}><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>;
-                case 'RUINS': return <svg {...p}><path d="M3 21h18M5 21V10a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11M9 21v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4"/></svg>;
+        const IconRenderer = ({ r, isSpec }) => {
+            const sw = isSpec ? 3.5 : 1.8;
+            const props = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: sw, className: "w-full h-full" };
+            switch (r) {
+                case 'GEAR': return <svg {...props}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" /></svg>;
+                case 'ARCHIVE': return <svg {...props}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15Z" /><path d="M9 10h6" strokeWidth="1.2" opacity={isSpec ? 1 : 0} /></svg>;
+                case 'FOUNTAIN': return <svg {...props}><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4A9.7 9.7 0 0 1 12 22z" /></svg>;
+                case 'ICEAGE': return <svg {...props}><path d="M12 2v20M2 12h20M7 7l10 10M7 17L17 7" /></svg>;
+                case 'MACHINE': return <svg {...props}><rect x="4" y="4" width="16" height="16" rx="2" ry="2" /><path d="M9 9h6v6H9z" /></svg>;
+                case 'BATTERY': return <svg {...props}><rect width="16" height="10" x="2" y="7" rx="2" ry="2" /><path d="M22 11v2" /></svg>;
+                case 'PLANET': return <svg {...props}><circle cx="12" cy="12" r="10" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>;
+                case 'RUINS': return <svg {...props}><path d="M3 21h18M5 21V10a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11M9 21v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4" /></svg>;
+                default: return null;
             }
         };
 
@@ -145,7 +155,7 @@
             let dr = card.realm;
             if (card.wasRuins) dr = 'RUINS'; else if (card.wasPlanet) dr = 'PLANET'; else if (card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) dr = 'FOUNTAIN';
             const spec = card.isSpecial || card.wasFountain;
-            const rD = REALMS[dr] || REALMS.GEAR;
+            const rData = REALMS[dr] || REALMS.GEAR;
             const cardRef = useRef(null);
             const [tilt, setTilt] = useState({ transform: 'rotateX(0deg) rotateY(0deg)', '--mx': '50%', '--my': '50%' });
             const [hov, setHov] = useState(false);
@@ -161,16 +171,16 @@
 
             return (
                 <div className={`card-wrapper-3d ${hov ? 'z-[2000]' : ''} ${!play && !isField ? 'not-playable' : ''}`} style={style} onMouseMove={handleMove} onMouseLeave={reset} onMouseEnter={() => play && !isField && setHov(true)} onClick={() => play && !isField && onClick()} ref={cardRef}>
-                    <div className={`card-3d mat-${rD.theme}`} style={{'--r-color': rD.color, '--r-color-glow': rD.glow, '--r-color-dim': rD.dim, '--r-color-bright': rD.bright, transform: `${(hov && !isField) ? 'translateY(-20px) scale(1.15)' : ''} ${tilt.transform}`}}>
+                    <div className={`card-3d mat-${rData.theme}`} style={{'--r-color': rData.color, '--r-color-glow': rData.glow, '--r-color-dim': rData.dim, '--r-color-bright': rData.bright, transform: `${(hov && !isField) ? 'translateY(-20px) scale(1.15)' : ''} ${tilt.transform}`}}>
                         <div className="card-content">
-                            {rD.theme === 'steam' && <div className="steam-needle-mini"></div>}
-                            {rD.theme === 'fantasy' && <div className="arcane-shimmer-mini"><svg viewBox="0 0 100 100" style={{color:rD.color}}><circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2 4"/><path d="M50 5 L89 75 L11 75 Z" fill="none" stroke="currentColor" strokeWidth="0.5"/></svg></div>}
-                            {rD.theme === 'cyber' && <div className="cyber-rain-mini">{[...Array(5)].map((_,i)=><div key={i} className="rain-bit-mini" style={{left:`${i*20}%`, animationDelay:`${i*0.3}s`}}>10</div>)}</div>}
+                            {rData.theme === 'steam' && <div className="steam-needle-mini"></div>}
+                            {rData.theme === 'fantasy' && <div className="arcane-shimmer-mini"><svg viewBox="0 0 100 100" style={{color:rData.color}}><circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2 4"/><path d="M50 5 L89 75 L11 75 Z" fill="none" stroke="currentColor" strokeWidth="0.5"/></svg></div>}
+                            {rData.theme === 'cyber' && <div className="cyber-rain-mini">{[...Array(5)].map((_,i)=><div key={i} className="rain-bit-mini" style={{left:`${i*20}%`, animationDelay:`${i*0.3}s`}}>10</div>)}</div>}
                             <div className="identity-label-new"><span>{dr}</span></div>
                             {spec && dr === 'GEAR' && <div className="badge-extreme">DRAW +2</div>}
-                            {spec && dr === 'MACHINE' && <div className="badge-extreme" style={{background:'#1a012a', borderLeftColor:rD.color}}>REVERSE</div>}
-                            <div className="card-icon-overload" style={{ color: rD.color }}><IconRenderer r={dr} spec={spec} /></div>
-                            <div className="card-footer-peak"><span>{rD.n}</span></div>
+                            {spec && dr === 'MACHINE' && <div className="badge-extreme" style={{background:'#1a012a', borderLeftColor:rData.color}}>REVERSE</div>}
+                            <div className="card-icon-overload" style={{ color: rData.color }}><IconRenderer r={dr} isSpec={spec} /></div>
+                            <div className="card-footer-peak"><span>{rData.n}</span></div>
                         </div>
                         <div className="absolute inset-0 pointer-events-none mix-blend-overlay opacity-60" style={{ background: `radial-gradient(circle at var(--mx) var(--my), #fff 0%, transparent 65%)` }}></div>
                     </div>
@@ -199,7 +209,7 @@
             const currentR = (gs?.status === 'playing' && gs?.fieldCard) ? gs.fieldCard.realm : bgR;
             const sortedHand = useMemo(() => {
                 const me = gs?.players?.find(p => p.id === socket?.id);
-                return (me?.hand || []).slice().sort((a,b) => CYCLE.indexOf(a.realm) - CYCLE.indexOf(b.realm));
+                return (me?.hand || []).slice().sort((a,b) => CYCLE_ORDER.indexOf(a.realm) - CYCLE_ORDER.indexOf(b.realm));
             }, [gs, socket]);
 
             const canPlay = (c) => {
@@ -227,35 +237,38 @@
                         <div className="layer-steam"></div><div className="layer-fantasy"></div><div className="layer-cyber"></div>
                     </div>
                     <div className="bg-magic-aura"></div>
-                    <div className="magic-ring-bg"></div>
-                    <div className="hud-frame"><div className="hud-corner hud-tl"/><div className="hud-corner hud-tr"/><div className="hud-corner hud-bl"/><div className="hud-corner hud-br"/></div>
                     
                     {!joined ? (
-                        <div className="overlay">
-                            <div className="panel-large hex-bg">
+                        <div className="overlay-center">
+                            <div className="magic-ring-bg"></div>
+                            <div className="panel-center">
+                                <div className="hud-frame"><div className="hud-corner hud-tl"/><div className="hud-corner hud-tr"/><div className="hud-corner hud-bl"/><div className="hud-corner hud-br"/></div>
                                 <div className="text-center mb-10">
-                                    <h1 className="logo-main"><span className="text-steam-gold">CROSS</span><span className="mx-2 font-cyber text-accent glitch-text">X</span><span className="text-steam-gold">REALM</span></h1>
-                                    <div className="logo-sub">ETERNAL PUNK EDITION</div>
+                                    <div style={{fontFamily:'Cinzel', fontWeight:900, color:'#FFF8DC', fontSize:14, letterSpacing:2}}>CROSS X REALM</div>
+                                    <div style={{fontFamily:'Exo 2', fontWeight:900, color: 'var(--accent)', fontSize:12, letterSpacing:4, marginTop:4}}>ETERNAL PUNK EDITION</div>
                                 </div>
                                 <div style={{position:'relative', zIndex: 600}}>
                                     <input type="text" value={name} placeholder="プレイヤー名" onChange={e=>setName(e.target.value)} maxLength={10} />
                                     <input type="text" value={room} placeholder="ルームID" onChange={e=>setRoom(e.target.value.toUpperCase())} />
-                                    <button onClick={()=>{ window.unlock(); setJoined(true); socket.emit('join-room',{roomId:room, playerName:name}); }} className="btn-main-peak">接続開始</button>
+                                    <button onClick={()=>{ window.unlockAudio(); setJoined(true); socket.emit('join-room',{roomId:room, playerName:name}); }} className="btn-gold">接続開始</button>
                                 </div>
                             </div>
                         </div>
                     ) : (gs?.status === 'waiting') ? (
-                        <div className="overlay">
-                            <div className="panel-large hex-bg" style={{borderColor: 'var(--magic-purple)'}}>
-                                <div className="text-center mb-10"><div className="text-4xl text-steam-gold font-bold font-['Cinzel'] tracking-widest steam-glow">ROOM: {room}</div></div>
+                        <div className="overlay-center">
+                            <div className="magic-ring-bg"></div>
+                            <div className="panel-center" style={{borderColor: 'var(--magic-purple)'}}>
+                                <div className="hud-frame"><div className="hud-corner hud-tl" style={{borderColor:'#8A2BE2'}}/><div className="hud-corner hud-tr" style={{borderColor:'#8A2BE2'}}/><div className="hud-corner hud-bl" style={{borderColor:'#8A2BE2'}}/><div className="hud-corner hud-br" style={{borderColor:'#8A2BE2'}}/></div>
+                                <div className="text-center mb-10"><div className="text-4xl text-steam-gold font-bold font-['Cinzel'] tracking-widest">ROOM: {room}</div></div>
                                 <div className="space-y-3 mb-10">
+                                    {/* 常に4スロット表示 (v17.3準拠) */}
                                     {[...Array(4)].map((_, i) => {
                                         const p = gs?.players?.[i];
                                         return (
-                                            <div key={i} className={`waiting-slot-extreme ${!p ? 'empty' : ''}`}>
+                                            <div key={i} className={`waiting-slot ${!p ? 'empty' : ''}`}>
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`w-8 h-8 rounded-full ${p ? 'bg-accent/20' : 'bg-white/5'} flex items-center justify-center text-accent`}>{p ? '👤' : ''}</div>
-                                                    <span className="font-bold text-xl">{p ? p.name : <span className="opacity-30">空きスロット</span>}</span>
+                                                    <div className={`w-8 h-8 rounded-full ${p ? 'bg-accent/20 text-accent' : 'bg-white/5 text-white/10'} flex items-center justify-center font-bold`}>{p ? '👤' : ''}</div>
+                                                    <span className="font-bold text-xl">{p ? p.name : '空きスロット'}</span>
                                                 </div>
                                                 {p && i === 0 && <div className="bg-steam-gold text-black text-[10px] px-3 py-1 font-black rounded-sm">HOST</div>}
                                             </div>
@@ -265,52 +278,53 @@
                                 {gs?.players?.[0]?.id === socket?.id && (
                                     <div className="flex gap-4">
                                         <button onClick={()=>socket.emit('add-cpu',{roomId:room})} className="flex-1 p-4 border border-magic-purple text-[#e2b0ff] font-bold rounded-lg text-lg">CPU追加</button>
-                                        <button onClick={()=>socket.emit('start-game',{roomId:room})} className="flex-1 btn-main-peak" disabled={gs?.players?.length < 2}>開始</button>
+                                        <button onClick={()=>socket.emit('start-game',{roomId:room})} className="flex-1 btn-gold" disabled={gs?.players?.length < 2}>開始</button>
                                     </div>
                                 )}
                             </div>
                         </div>
                     ) : gs?.fieldCard && (
                         <div className="game-container">
-                            <div className="game-header">DIRECTION: {gs?.isReversed ? '⟲ REVERSE' : '⟳ NORMAL'}</div>
-                            <div className="opp-grid">
+                            {/* v17.3 対戦画面レイアウト復元 */}
+                            <div className="turn-header">DIRECTION: {gs?.isReversed ? '⟲ REVERSE' : '⟳ NORMAL'}</div>
+                            <div className="opponents-grid">
                                 {gs?.players?.map(p => (
-                                    <div key={p.id} className={`opp-card-peak ${gs?.currentTurnPlayerId === p.id ? 'active' : ''}`}>
+                                    <div key={p.id} className={`opp-box ${gs?.currentTurnPlayerId === p.id ? 'active' : ''}`}>
                                         <div className="flex justify-between items-center text-xs mb-1">
                                             <div className="font-bold">{p.id === socket?.id ? '⭐' : '👤'} {p.name}</div>
                                             <div className="text-accent font-black text-sm">{p.handCount}</div>
                                         </div>
-                                        <div className="relative h-8 flex justify-start">
-                                            {[...Array(Math.min(p.handCount, 4))].map((_, i) => <div key={i} className="mini-card-back" style={{left: `${i*6}px`, zIndex: i}} />)}
+                                        <div className="relative h-8">
+                                            {[...Array(Math.min(p.handCount, 4))].map((_, i) => <div key={i} className="mini-card-stack" style={{left: `${i*6}px`, zIndex: i}} />)}
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <div className="cycle-bar-peak">{CYCLE.map(r => (<div key={r} className="flex-1 flex flex-col items-center"><div className="cycle-dot active" style={{'--c': REALMS[r].color, opacity: currentR === r ? 1 : 0.1}}/><div className="text-[9px] mt-1 opacity-50">{REALMS[r].n}</div></div>))}</div>
-                            <div className="field-core">
+                            <div className="cycle-bar">{CYCLE_ORDER.map(r => (<div key={r} className="flex-1 flex flex-col items-center"><div className="cycle-dot active" style={{'--c': REALMS[r].color, opacity: currentR === r ? 1 : 0.1}}/><div className="text-[9px] mt-1 opacity-50">{REALMS[r].n}</div></div>))}</div>
+                            <div className="field-area">
                                 <div className={`text-xs mb-3 font-bold tracking-[3px] ${gs?.currentTurnPlayerId === socket?.id ? 'text-accent' : 'text-slate-500'}`}>{gs?.currentTurnPlayerId === socket?.id ? 'YOUR TURN' : 'WAITING'}</div>
                                 <div className="relative w-[90px] h-[130px] mb-6">
                                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-dashed border-white/20 rounded-full animate-[gear-spin_30s_linear_infinite]"></div>
                                     <div className="relative z-10"><CardView card={gs?.fieldCard} isField={true} /></div>
                                 </div>
-                                <div className="info-panel-peak">
-                                    <div className="realm-title">{REALMS[currentR]?.n}</div>
+                                <div className="info-panel-mega">
+                                    <div className="realm-title-omega">{REALMS[currentR]?.n}</div>
                                     <div className="text-[10px] opacity-60 mt-1 leading-tight">{REALMS[currentR]?.desc}</div>
                                 </div>
                             </div>
-                            <div ref={logEndRef} className="log-terminal-peak">{gs?.logs?.slice(-10).map((l) => (<div key={l.id} className={`log-line ${l.text.includes('PLAY') ? 'text-accent' : 'text-white/50'}`}>{l.text}</div>))}</div>
-                            <div className="hand-container"><div className="hand-flex">{(() => {
+                            <div ref={logEndRef} className="log-terminal-classic">{gs?.logs?.slice(-10).map((l) => (<div key={l.id} className={`log-line ${l.text.includes('PLAY') ? 'text-accent font-bold' : 'text-white/50'}`}>{l.text}</div>))}</div>
+                            <div className="hand-flex-Omega">{(() => {
                                 const cnt = sortedHand.length; const ov = cnt > 8 ? (window.innerWidth * 0.8 / cnt) : 60;
                                 return sortedHand.map((c, i) => (<CardView key={c.id || i} card={c} play={canPlay(c)} onClick={() => handlePlay(c)} index={i} style={{ marginLeft: i === 0 ? 0 : `-${90 - ov}px` }} />));
-                            })()}</div></div>
-                            <div className="action-row-peak"><button className="btn-main-peak" disabled={gs?.currentTurnPlayerId !== socket?.id} onClick={() => socket.emit('draw-card',{roomId:room})}>{gs?.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引く` : 'ドロー'}</button></div>
+                            })()}</div>
+                            <div className="action-footer"><button className="btn-gold" disabled={gs?.currentTurnPlayerId !== socket?.id} onClick={() => { window.safePlay('draw'); socket.emit('draw-card',{roomId:room}); }}>{gs?.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引く` : 'ドロー'}</button></div>
                         </div>
                     )}
                     {selector && (
-                        <div className="overlay" style={{zIndex: 500000}}>
-                            <div className="panel-large hex-bg" style={{borderColor: 'var(--steam-gold)', padding: '40px 25px'}}>
-                                <h3 className="text-2xl font-black text-center mb-8 text-steam-gold font-['Cinzel'] steam-glow">属性を選択</h3>
-                                <div className="grid grid-cols-2 gap-4">{CYCLE.map(r => (<button key={r} className="p-4 border border-white/20 rounded-lg flex items-center gap-3 hover:bg-white/10" style={{color: REALMS[r].color}} onClick={() => { socket.emit('play-card', {roomId: room, card:selector, chosenRealm:r}); setSelector(null); }}><div className="w-6 h-6"><IconRenderer r={r} spec={false}/></div><span className="font-bold text-lg">{REALMS[r].n}</span></button>))}</div>
+                        <div className="overlay-center" style={{zIndex: 500000}}>
+                            <div className="panel-center" style={{borderColor: 'var(--steam-gold)', padding: '40px 25px'}}>
+                                <h3 className="text-2xl font-black text-center mb-8 text-steam-gold font-['Cinzel']">属性を選択</h3>
+                                <div className="grid grid-cols-2 gap-4">{CYCLE_ORDER.map(r => (<button key={r} className="p-4 border border-white/20 rounded-lg flex items-center gap-3 hover:bg-white/10" style={{color: REALMS[r].color}} onClick={() => { socket.emit('play-card', {roomId: room, card:selector, chosenRealm:r}); setSelector(null); }}><div className="w-6 h-6"><IconRenderer r={r} isSpec={false}/></div><span className="font-bold text-lg">{REALMS[r].n}</span></button>))}</div>
                                 <button onClick={()=>setSelector(null)} className="w-full mt-6 text-white/40 text-sm py-2">キャンセル</button>
                             </div>
                         </div>
