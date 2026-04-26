@@ -43,6 +43,7 @@
         @keyframes arcane-shimmer { 0% { transform: rotate(0deg) scale(1); opacity: 0.3; } 50% { transform: rotate(180deg) scale(1.1); opacity: 0.6; } 100% { transform: rotate(360deg) scale(1); opacity: 0.3; } }
         @keyframes sweepBtn { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
         @keyframes vortex-pulse { 0% { transform: rotate(0deg) scale(1.5); opacity: 0.15; } 50% { transform: rotate(180deg) scale(2.5); opacity: 0.4; } 100% { transform: rotate(360deg) scale(1.5); opacity: 0.15; } }
+        @keyframes mana-flow { 0% { transform: translateY(0) scale(1); opacity: 0.8; } 100% { transform: translateY(-150px) scale(0); opacity: 0; } }
 
         /* === ド派手背景コア === */
         .bg-core { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
@@ -72,14 +73,14 @@
 
         .mat-steam { background: radial-gradient(circle at 50% 10%, #FF8C00 0%, #0a0402 100%); border: 3.5px solid #4a2f1c; box-shadow: 0 10px 40px #000, inset 0 0 20px #000; }
         
-        /* 修正箇所1：ファンタジー（噴水・氷河期）の枠を％指定にして葉っぱ型を強制する */
+        /* 修正箇所：強制的にスタイルを上書きしてファンタジーの枠を曲げる */
         .mat-fantasy { 
             background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.85) 100%), 
-                        radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%); 
-            border: 2.5px solid rgba(255,255,255,0.95); 
-            border-radius: 35% 10% !important; 
-            box-shadow: 0 0 45px var(--r-color-glow), inset 0 0 20px rgba(255,255,255,0.2); 
-            backdrop-filter: blur(15px);
+                        radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%) !important; 
+            border: 3px solid rgba(255,255,255,0.95) !important; 
+            border-radius: 25px 6px !important; 
+            box-shadow: 0 0 35px var(--r-color-glow), inset 0 0 15px rgba(255,255,255,0.2) !important; 
+            backdrop-filter: blur(15px) !important;
         }
         
         .mat-cyber { background: #000; border: none; clip-path: polygon(0 15%, 15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%); box-shadow: inset 0 0 50px var(--r-color-dim); border-left: 5.5px solid var(--r-color); }
@@ -98,10 +99,10 @@
         .cyber-matrix-layer { position: absolute; inset: 0; overflow: hidden; opacity: 0.8; z-index: 30; }
         .matrix-unit { position: absolute; color: var(--r-color); font-family: 'Orbitron', monospace; font-size: 6px; writing-mode: vertical-rl; animation: digital-rain 2.8s linear infinite; }
         
-        /* 修正箇所2：魔法陣がカードの枠内にピッタリ収まるようにコンテナを設定 */
+        /* 魔法陣のレイヤー順序を強制的に前に出す */
         .arcane-circle-layer { 
             position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; 
-            z-index: 20; pointer-events: none; overflow: hidden; border-radius: inherit;
+            z-index: 80; pointer-events: none; overflow: hidden; border-radius: inherit;
         }
         
         .rivet-omega { position: absolute; width: 3px; height: 3px; background: #8B6B23; border-radius: 50%; box-shadow: inset 1px 1px 1px #FFF8DC, 1px 1px 3px #000; }
@@ -275,10 +276,10 @@
                                 </>
                             )}
                             
-                            {/* 修正箇所2：魔法陣をカード枠内に完全クリップするための専用コンテナを使用 */}
+                            {/* 修正箇所：ファンタジー属性の魔法陣と光の粒（ショーケース版完全移植） */}
                             {rData.theme === 'fantasy' && (
                                 <div className="arcane-circle-layer">
-                                    <svg viewBox="0 0 200 200" style={{color: rData.color, width: '135%', height: '135%', animation: 'arcane-shimmer 45s linear infinite', opacity: 0.8}}>
+                                    <svg viewBox="0 0 200 200" style={{color: rData.color, width: '160%', height: '160%', animation: 'arcane-shimmer 20s linear infinite', opacity: 0.85}}>
                                         <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="3 7"/>
                                         <circle cx="100" cy="100" r="82" fill="none" stroke="currentColor" strokeWidth="1"/>
                                         <path d="M100 8 L188 155 L12 155 Z" fill="none" stroke="currentColor" strokeWidth="0.8"/>
@@ -288,6 +289,9 @@
                                             <text key={d} x="100" y="32" transform={`rotate(${d} 100 100)`} fill="currentColor" fontSize="12" fontWeight="bold" opacity="0.8">❈</text>
                                         ))}
                                     </svg>
+                                    {[...Array(6)].map((_, i) => (
+                                        <div key={i} className="absolute w-1 h-1 rounded-full" style={{ left: `${Math.random()*100}%`, bottom: '-10%', background: rData.color, boxShadow: `0 0 10px ${rData.color}`, animation: `mana-flow ${3+Math.random()*2}s infinite`, animationDelay: `${Math.random()*3}s` }} />
+                                    ))}
                                 </div>
                             )}
 
