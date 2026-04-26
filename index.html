@@ -219,14 +219,26 @@
 
         const IconRenderer = ({ r, spec }) => {
             const sw = spec ? 4.2 : 2.1;
-            const p = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: sw, className: "w-full h-full" };
+            const p = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: sw, strokeLinecap: "round", strokeLinejoin: "round", className: "w-full h-full" };
+
+            const SpecialBurst = () => spec && (
+                <g style={{animation: 'gear-spin 10s linear infinite', transformOrigin: 'center'}}>
+                    <circle cx="12" cy="12" r="11" strokeWidth="0.8" strokeDasharray="4 2" opacity="0.6" />
+                    {[0, 60, 120, 180, 240, 300].map(d => (
+                        <path key={d} d="M12 2 L13 5 L11 5 Z" fill="currentColor" transform={`rotate(${d} 12 12)`} />
+                    ))}
+                </g>
+            );
+
             switch (r) {
-                case 'GEAR': return <svg {...p}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" /></svg>;
-                case 'ARCHIVE': return <svg {...p}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15Z" /><path d="M9 10h6" strokeWidth="1.5" opacity={spec ? 1 : 0} /></svg>;
-                case 'FOUNTAIN': return <svg {...p}><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4A9.7 9.7 0 0 1 12 22z" /></svg>;
-                case 'ICEAGE': return <svg {...p}><path d="M12 2v20M2 12h20M7 7l10 10M7 17L17 7" /></svg>;
-                case 'MACHINE': return <svg {...p}><rect x="4" y="4" width="16" height="16" rx="2" ry="2" /><path d="M9 9h6v6H9z" /></svg>;
-                case 'BATTERY': return <svg {...p}><rect width="16" height="10" x="2" y="7" rx="2" ry="2" /><path d="M22 11v2" /></svg>;
+                case 'GEAR': return <svg {...p}><SpecialBurst/><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" /></svg>;
+                case 'ARCHIVE': return <svg {...p}><SpecialBurst/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15Z" /><path d="M9 10h6" strokeWidth="1.5" opacity={spec ? 1 : 0} /></svg>;
+                case 'FOUNTAIN': return <svg {...p}><SpecialBurst/><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4A9.7 9.7 0 0 1 12 22z" /></svg>;
+                case 'ICEAGE': return <svg {...p}><SpecialBurst/><path d="M12 2v20M2 12h20M7 7l10 10M7 17L17 7" /></svg>;
+                case 'MACHINE': 
+                    if (spec) return <svg {...p}><SpecialBurst/><path d="M12 2v20M7 7l5-5 5 5M17 17l-5 5-5-5" strokeWidth="3.5" /></svg>;
+                    return <svg {...p}><rect x="4" y="4" width="16" height="16" rx="2" ry="2" /><path d="M9 9h6v6H9z" /></svg>;
+                case 'BATTERY': return <svg {...p}><SpecialBurst/><rect width="16" height="10" x="2" y="7" rx="2" ry="2" /><path d="M22 11v2" /></svg>;
                 case 'PLANET': return <svg {...p}><circle cx="12" cy="12" r="10" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>;
                 case 'RUINS': return <svg {...p}><path d="M3 21h18M5 21V10a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11M9 21v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4" /></svg>;
                 default: return null;
@@ -266,9 +278,17 @@
                             {rData.theme === 'cyber' && <div className="cyber-matrix-layer">{[...Array(6)].map((_,i)=><div key={i} className="matrix-unit" style={{left:`${i*15+5}%`, animationDelay:`${i*0.4}s`}}>101101</div>)}</div>}
 
                             <div className="card-label-tag"><span>{dr}</span></div>
+                            
                             {spec && dr === 'GEAR' && <div className="badge-mega"><span>DRAW +2</span></div>}
                             {spec && dr === 'MACHINE' && <div className="badge-mega" style={{background:'#1a012a', borderLeftColor:rData.color}}><span>REVERSE</span></div>}
-                            <div className="card-icon-Omega" style={{ color: rData.color }}><IconRenderer r={dr} spec={spec} /></div>
+                            {spec && dr === 'FOUNTAIN' && <div className="badge-mega" style={{background:'#100520', borderLeftColor:rData.color, color: '#0ff', textShadow: '0 0 5px #0ff'}}><span>LIMIT WILD</span></div>}
+
+                            <div className="card-icon-Omega" style={{ 
+                                color: rData.color, 
+                                filter: (dr === 'PLANET' || dr === 'RUINS') ? 'drop-shadow(0 0 10px #fff)' : 'none' 
+                            }}>
+                                <IconRenderer r={dr} spec={spec} />
+                            </div>
                             
                             <div className="card-footer-Omega" style={{ fontFamily: rData.font }}><span>{rData.n}</span></div>
                         </div>
@@ -310,6 +330,12 @@
 
             const toggleMute = () => { const n = !mute; setMute(n); window.isMutedGlobal = n; };
             const isMyTurn = gs?.currentTurnPlayerId === socket?.id && gs?.status === 'playing';
+
+            useEffect(() => {
+                if (isMyTurn) {
+                    window.safePlay('turn');
+                }
+            }, [isMyTurn]);
 
             const currentR = (gs?.status === 'playing' && gs?.fieldCard) ? gs.fieldCard.realm : bgR;
             const nextPlayableRealms = NEXT_REALMS_MAP[currentR] || [];
