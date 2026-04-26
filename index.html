@@ -132,12 +132,12 @@
         .btn-sub { display: flex; align-items: center; justify-content: center; min-height: 48px; background: rgba(138,43,226,0.25); border: 1px solid rgba(138,43,226,0.9); color: #e2b0ff; padding: 0 16px; width: 100%; cursor: pointer; border-radius: 6px; font-weight: 900; font-size: 18px; transition: 0.3s; letter-spacing: 2px; box-sizing: border-box; line-height: 1; text-shadow: 0 0 15px rgba(138,43,226,0.9); font-family: 'Exo 2', sans-serif; white-space: nowrap; box-shadow: inset 0 0 20px rgba(138,43,226,0.4); z-index: 20; position: relative;}
         .btn-sub:hover { background: rgba(138,43,226,0.6); color: #fff; border-color: #fff; box-shadow: 0 0 30px rgba(138,43,226,0.9); transform: scale(1.03); }
 
-        /* WILD属性選択ボタンの巨大化 */
-        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; max-width: 450px; margin: 0 auto; z-index: 20; position: relative;}
-        .realm-btn { padding: 25px 10px; border: 2px solid var(--steam-gold); background: linear-gradient(180deg, rgba(30,20,40,0.9), rgba(0,0,0,0.9)); color: #fff; font-weight: 900; cursor: pointer; border-radius: 12px; font-size: 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; transition: 0.2s; box-shadow: 0 5px 30px rgba(0,0,0,0.9); z-index: 20;}
-        .realm-btn:hover { transform: scale(1.05); border-color: #fff; box-shadow: 0 0 45px var(--steam-gold), inset 0 0 30px rgba(255,255,255,0.4); }
-        .realm-btn svg { width: 50px; height: 50px; filter: drop-shadow(0 0 15px currentColor); transition: 0.3s; }
-        .realm-btn:hover svg { filter: drop-shadow(0 0 25px currentColor) brightness(1.8); transform: scale(1.1); }
+        /* WILD属性選択ボタンの横長化 */
+        .realm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 450px; margin: 0 auto; z-index: 20; position: relative;}
+        .realm-btn { padding: 16px 12px; border: 2px solid var(--steam-gold); background: linear-gradient(180deg, rgba(30,20,40,0.9), rgba(0,0,0,0.9)); color: #fff; font-weight: 900; cursor: pointer; border-radius: 8px; font-size: 18px; display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 12px; transition: 0.2s; box-shadow: 0 5px 25px rgba(0,0,0,0.9); z-index: 20;}
+        .realm-btn:hover { transform: scale(1.05); border-color: #fff; box-shadow: 0 0 35px var(--steam-gold), inset 0 0 20px rgba(255,255,255,0.3); }
+        .realm-btn svg { width: 36px; height: 36px; filter: drop-shadow(0 0 10px currentColor); transition: 0.3s; flex-shrink: 0; }
+        .realm-btn:hover svg { filter: drop-shadow(0 0 20px currentColor) brightness(1.5); transform: scale(1.1); }
 
         .waiting-list { width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 5px; padding-top: 15px; z-index: 20; position: relative;}
         /* 待機リストもHUD風にナナメ切り抜き */
