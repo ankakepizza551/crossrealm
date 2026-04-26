@@ -85,12 +85,11 @@
 
         .mat-steam { background: radial-gradient(circle at 50% 10%, #FF8C00 0%, #0a0402 100%); border: 3.5px solid #4a2f1c; box-shadow: 0 10px 40px #000, inset 0 0 20px #000; }
         
-        /* 修正箇所：確実に「葉っぱ型」になるようにパーセント指定を修正！ */
         .mat-fantasy { 
             background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.85) 100%), 
                         radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%) !important; 
             border: 2px solid rgba(255,255,255,0.95) !important; 
-            border-radius: 45% 15% !important; /* これで間違いなく葉っぱ型になります */
+            border-radius: 45% 15% !important;
             box-shadow: 0 0 35px var(--r-color-glow), inset 0 0 15px rgba(255,255,255,0.2) !important; 
             backdrop-filter: blur(15px) !important;
         }
@@ -438,7 +437,8 @@
                                                     <div className={`w-12 h-12 flex-shrink-0 rounded-full ${p ? 'bg-accent/20 text-accent border border-accent/60 shadow-[0_0_20px_var(--accent)]' : 'bg-white/5 text-white/5 border border-white/10'} flex items-center justify-center font-bold text-2xl`}>{p ? '👤' : ''}</div>
                                                     <span className="slot-name-tag">{p ? p.name : '空きスロット'}</span>
                                                 </div>
-                                                {p && i === 0 && <div className="bg-steam-gold flex-shrink-0 text-black text-[12px] px-4 py-1 font-black rounded-sm shadow-xl">HOST</div>}
+                                                {/* 修正箇所：HOSTバッジの色を確実にゴールドに！ */}
+                                                {p && i === 0 && <div className="bg-[#D4AF37] flex-shrink-0 text-black text-[12px] px-4 py-1 font-black rounded-sm shadow-xl">HOST</div>}
                                             </div>
                                         );
                                     })}
@@ -537,6 +537,7 @@
                         </div>
                     )}
                     
+                    {/* === ミッション終了（リザルト）画面 === */}
                     {gs?.status === 'finished' && (
                         <div className="absolute inset-0 flex items-center justify-center p-4 z-[250000] bg-black/90 backdrop-blur-sm">
                             <div className="panel-omega" style={{borderColor: 'var(--steam-gold)', padding: '40px 20px', width: '100%', maxWidth: '400px'}}>
@@ -547,8 +548,8 @@
                                             <span className="font-black text-xl mr-4 italic text-slate-400" style={{fontFamily: "'Exo 2', sans-serif"}}>{i+1}位</span>
                                             <div className="flex-1 overflow-hidden">
                                                 <div className="font-black text-lg tracking-wider uppercase truncate">{p.name}</div>
+                                                {/* 修正箇所：手札0枚の時の「ミッションクリア」の文字を削除してスッキリと！ */}
                                                 {p.handCount > 10 && <div className="text-[10px] text-red-500 tracking-widest font-black mt-1">システムオーバーロード</div>}
-                                                {p.handCount === 0 && <div className="text-[10px] text-accent tracking-widest font-black mt-1">ミッションクリア</div>}
                                             </div>
                                             <span className={`font-black text-2xl ml-3 ${p.handCount > 10 ? 'text-red-500' : 'text-accent'}`} style={{fontFamily:'Orbitron'}}>{p.handCount}</span>
                                         </div>
