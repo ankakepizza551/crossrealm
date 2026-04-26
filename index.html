@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm - Omega Singularity v30.0</title>
+    <title>Cross Realm - Omega Singularity v30.1</title>
 
-    <script src="[https://unpkg.com/react@18/umd/react.production.min.js](https://unpkg.com/react@18/umd/react.production.min.js)"></script>
-    <script src="[https://unpkg.com/react-dom@18/umd/react-dom.production.min.js](https://unpkg.com/react-dom@18/umd/react-dom.production.min.js)"></script>
-    <script src="[https://unpkg.com/@babel/standalone/babel.min.js](https://unpkg.com/@babel/standalone/babel.min.js)"></script>
-    <script src="[https://cdn.socket.io/4.7.2/socket.io.min.js](https://cdn.socket.io/4.7.2/socket.io.min.js)"></script>
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    <link href="[https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Cinzel:wght@400;700;900&family=Audiowide&family=Cinzel+Decorative:wght@700&family=Orbitron:wght@700;900&family=Special+Elite&display=swap](https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Cinzel:wght@400;700;900&family=Audiowide&family=Cinzel+Decorative:wght@700&family=Orbitron:wght@700;900&family=Special+Elite&display=swap)" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Cinzel:wght@400;700;900&family=Audiowide&family=Cinzel+Decorative:wght@700&family=Orbitron:wght@700;900&family=Special+Elite&display=swap" rel="stylesheet">
     
     <style>
         :root { 
@@ -39,7 +39,6 @@
         @keyframes arcane-shimmer { 0% { transform: rotate(0deg) scale(1); opacity: 0.3; } 50% { transform: rotate(180deg) scale(1.1); opacity: 0.6; } 100% { transform: rotate(360deg) scale(1); opacity: 0.3; } }
         @keyframes sweepBtn { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
         @keyframes vortex-pulse { 0% { transform: rotate(0deg) scale(1.5); opacity: 0.15; } 50% { transform: rotate(180deg) scale(2.5); opacity: 0.4; } 100% { transform: rotate(360deg) scale(1.5); opacity: 0.15; } }
-        @keyframes neon-flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } 90% { opacity: 0.9; } }
 
         /* === ド派手背景コア === */
         .bg-core { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
@@ -50,43 +49,19 @@
         .particle-mega { position: absolute; background: white; border-radius: 50%; opacity: 0; animation: float-mega var(--d) ease-in infinite; mix-blend-mode: screen; filter: blur(0.5px); }
         @keyframes float-mega { 0% { transform: translateY(115vh) translateX(0) scale(0.2); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-15vh) translateX(var(--x)) scale(3); opacity: 0; } }
 
-        /* === 3行ロゴ & サブタイトル (最適化) === */
+        /* === 3行ロゴ & サブタイトル === */
         .logo-stack { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 100; margin-bottom: 30px; width: 100%; max-width: 95%; margin-left: auto; margin-right: auto; }
-        .logo-row { 
-            font-family: 'Cinzel', serif; font-weight: 900; line-height: 0.82; text-transform: uppercase;
-            background: linear-gradient(to bottom, #FFF8DC 0%, #FFD700 40%, #D4AF37 60%, #8B6B23 100%);
-            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 20px rgba(212,175,55,0.6));
-            white-space: nowrap; text-align: center;
-        }
+        .logo-row { font-family: 'Cinzel', serif; font-weight: 900; line-height: 0.82; text-transform: uppercase; background: linear-gradient(to bottom, #FFF8DC 0%, #FFD700 40%, #D4AF37 60%, #8B6B23 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px rgba(212,175,55,0.6)); white-space: nowrap; text-align: center; }
         .row-cross { font-size: clamp(30px, 11vw, 65px); letter-spacing: 12px; }
         .row-realm { font-size: clamp(30px, 11vw, 65px); letter-spacing: 12px; }
-        .row-x { 
-            font-family: 'Orbitron', sans-serif; font-size: clamp(55px, 16vw, 100px); 
-            color: var(--accent); -webkit-text-fill-color: var(--accent);
-            text-shadow: 0 0 35px var(--accent), 0 0 70px var(--accent);
-            margin: -10px 0; font-weight: 900; text-align: center; width: 100%;
-        }
+        .row-x { font-family: 'Orbitron', sans-serif; font-size: clamp(55px, 16vw, 100px); color: var(--accent); -webkit-text-fill-color: var(--accent); text-shadow: 0 0 35px var(--accent), 0 0 70px var(--accent); margin: -10px 0; font-weight: 900; text-align: center; width: 100%; }
         
-        .sub-banner-omega { 
-            margin-top: 25px; width: fit-content; min-width: 60%; max-width: 90%; padding: 6px 15px; position: relative; overflow: hidden;
-            background: rgba(0,0,0,0.9); border: 1.5px solid var(--accent);
-            box-shadow: 0 0 20px var(--accent); display: flex; justify-content: center; align-items: center;
-        }
-        .sub-banner-omega::after {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(90deg, transparent, rgba(64,224,208,0.3), transparent);
-            background-size: 200% 100%; animation: sub-bar-shimmer 3s linear infinite;
-        }
-        .sub-text-final { 
-            font-family: 'Audiowide', sans-serif; 
-            font-size: clamp(8px, 2.5vw, 11px); 
-            letter-spacing: clamp(1px, 1.5vw, 4px); 
-            color: #fff; position: relative; z-index: 2; 
-            text-shadow: 0 0 8px #0ff; white-space: nowrap; text-transform: uppercase; 
-        }
+        .sub-banner-omega { margin-top: 25px; width: fit-content; min-width: 60%; max-width: 90%; padding: 6px 15px; position: relative; overflow: hidden; background: rgba(0,0,0,0.9); border: 1.5px solid var(--accent); box-shadow: 0 0 20px var(--accent); display: flex; justify-content: center; align-items: center; }
+        .sub-banner-omega::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(64,224,208,0.3), transparent); background-size: 200% 100%; animation: sub-bar-shimmer 3s linear infinite; }
+        @keyframes sub-bar-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+        .sub-text-final { font-family: 'Audiowide', sans-serif; font-size: clamp(8px, 2.5vw, 11px); letter-spacing: clamp(1px, 1.5vw, 4px); color: #fff; position: relative; z-index: 2; text-shadow: 0 0 8px #0ff; white-space: nowrap; text-transform: uppercase; }
 
-        /* === 3Dカードマテリアル (完全版) === */
+        /* === 3Dカードマテリアル === */
         .card-wrapper-3d { width: var(--card-w); height: var(--card-h); perspective: 1000px; position: relative; }
         .card-3d { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1); cursor: pointer; border-radius: 6px; }
         .card-content { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; overflow: hidden; border-radius: inherit; }
@@ -99,47 +74,30 @@
 
         /* カード装飾群 */
         .card-label-tag { position: absolute; top: 8px; left: 8px; padding: 2px 6px; background: #000; border-left: 4px solid var(--r-color); transform: translateZ(40px); z-index: 100; }
-        .card-label-tag span { font-size: 8px; font-weight: 900; color: #fff; letter-spacing: 1px; }
+        .card-label-tag span { font-size: 8px; font-weight: 900; color: #fff; letter-spacing: 1px; font-family: 'Exo 2', sans-serif;}
         .card-icon-Omega { position: absolute; top: 58%; left: 50%; width: 45px; height: 45px; transform: translate(-50%, -50%) translateZ(60px); filter: drop-shadow(0 0 15px var(--r-color)); z-index: 95; }
         .card-footer-Omega { position: absolute; bottom: 0; width: 100%; padding: 10px 0 6px; background: linear-gradient(to top, rgba(0,0,0,1) 0%, transparent 100%); text-align: center; color: #fff; z-index: 100; transform: translateZ(40px); text-shadow: 0 0 12px var(--r-color); font-weight: 900; font-size: 12px; letter-spacing: 2px; }
-        .badge-mega { position: absolute; top: 30px; left: -12px; background: #a00000; border: 2px solid #FFD700; padding: 4px 10px; transform: translateZ(80px) rotate(-12deg); box-shadow: 8px 8px 20px #000; z-index: 200; font-family: 'Special Elite'; font-size: 10px; font-weight: 900; color: #fff; }
+        .badge-mega { position: absolute; top: 30px; left: -12px; background: #a00000; border: 2px solid #FFD700; padding: 4px 10px; transform: translateZ(80px) rotate(-12deg); box-shadow: 8px 8px 20px #000; z-index: 200; font-family: 'Special Elite', monospace; font-size: 10px; font-weight: 900; color: #fff; }
         
         .steam-gauge-mega { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; background: #2a1508; border: 2px solid #5d3a1a; border-radius: 50%; transform: translateZ(50px); z-index: 160; box-shadow: inset 0 0 10px #000; }
         .steam-hand { position: absolute; top: 50%; left: 50%; width: 1.5px; height: 12px; background: #f33; transform-origin: bottom center; transform: translate(-50%, -100%) rotate(-45deg); animation: gear-spin 5s infinite alternate; }
         .cyber-matrix-layer { position: absolute; inset: 0; overflow: hidden; opacity: 0.8; z-index: 30; }
-        .matrix-unit { position: absolute; color: var(--r-color); font-family: 'Orbitron'; font-size: 6px; writing-mode: vertical-rl; animation: digital-rain 2.8s linear infinite; }
+        .matrix-unit { position: absolute; color: var(--r-color); font-family: 'Orbitron', monospace; font-size: 6px; writing-mode: vertical-rl; animation: digital-rain 2.8s linear infinite; }
         .arcane-ring-mega { position: absolute; inset: -20%; display: flex; align-items: center; justify-content: center; z-index: 20; opacity: 0.6; animation: arcane-shimmer 30s linear infinite; }
         .rivet-omega { position: absolute; width: 3px; height: 3px; background: #8B6B23; border-radius: 50%; box-shadow: inset 1px 1px 1px #FFF8DC, 1px 1px 3px #000; }
 
         /* === 究極パネル (中央固定) === */
-        .panel-omega { 
-            position: relative; z-index: 500; width: 100%; max-width: 440px; 
-            background: rgba(8,12,20,0.98); border: 2px solid var(--accent); padding: 45px 30px; 
-            clip-path: polygon(0 40px, 40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%); 
-            box-shadow: 0 0 120px rgba(64,224,208,0.4); 
-        }
+        .panel-omega { position: relative; z-index: 500; width: 100%; max-width: 440px; background: rgba(8,12,20,0.98); border: 2px solid var(--accent); padding: 45px 30px; clip-path: polygon(0 40px, 40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%); box-shadow: 0 0 120px rgba(64,224,208,0.4); }
         .panel-omega input { width: 100%; padding: 22px; background: rgba(0,0,0,0.9); border: 1.5px solid rgba(64,224,208,0.4); border-bottom: 4px solid var(--accent); color: #fff; text-align: center; font-size: 24px; outline: none; margin-bottom: 30px; font-family: 'Exo 2', sans-serif; font-weight: 900; }
-        .btn-omega-singularity { display: flex; align-items: center; justify-content: center; min-height: clamp(55px, 8vh, 70px); background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1.5px solid #FFF8DC; border-radius: 8px; font-weight: 900; font-size: clamp(18px, 4vw, 26px); cursor: pointer; width: 100%; position: relative; overflow: hidden; animation: sweepBtn 3s linear infinite; box-shadow: 0 10px 40px rgba(212,175,55,0.6); }
+        .btn-omega-singularity { display: flex; align-items: center; justify-content: center; min-height: clamp(55px, 8vh, 70px); background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1.5px solid #FFF8DC; border-radius: 8px; font-weight: 900; font-size: clamp(18px, 4vw, 26px); cursor: pointer; width: 100%; position: relative; overflow: hidden; animation: sweepBtn 3s linear infinite; box-shadow: 0 10px 40px rgba(212,175,55,0.6); font-family: 'Exo 2', sans-serif;}
 
-        .slot-Omega-Final { 
-            background: linear-gradient(90deg, rgba(64,224,208,0.18), rgba(138,43,226,0.22)); 
-            border: 1px solid rgba(255,255,255,0.2); border-left: 8px solid var(--accent); 
-            padding: 24px 30px; display: flex; align-items: center; justify-content: space-between; 
-            clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px)); 
-            margin-bottom: 12px; width: 100%; min-height: 85px;
-        }
+        .slot-Omega-Final { background: linear-gradient(90deg, rgba(64,224,208,0.18), rgba(138,43,226,0.22)); border: 1px solid rgba(255,255,255,0.2); border-left: 8px solid var(--accent); padding: 24px 30px; display: flex; align-items: center; justify-content: space-between; clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px)); margin-bottom: 12px; width: 100%; min-height: 85px; }
         .slot-name-tag { font-family: 'Exo 2', sans-serif; font-weight: 900; font-size: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
         .slot-Omega-Final.empty { border: 1.5px dashed rgba(255,255,255,0.3); opacity: 0.35; }
 
-        /* === v17.3 黄金レイアウト復元 === */
-        .game-ui-container {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-        .hud-header-bar { flex-shrink: 0; background: linear-gradient(90deg, transparent, rgba(0,60,60,0.98), transparent); padding: 14px; border-bottom: 3.5px solid var(--accent); text-align: center; font-family: 'Orbitron'; font-weight: 900; color: var(--accent); letter-spacing: 6px; font-size: 16px; position: relative; z-index: 20; }
+        /* === ゲームUIレイアウト === */
+        .game-ui-container { display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; }
+        .hud-header-bar { flex-shrink: 0; background: linear-gradient(90deg, transparent, rgba(0,60,60,0.98), transparent); padding: 14px; border-bottom: 3.5px solid var(--accent); text-align: center; font-family: 'Orbitron', monospace; font-weight: 900; color: var(--accent); letter-spacing: 6px; font-size: 16px; position: relative; z-index: 20; }
         
         .opp-mega-grid { flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; background: rgba(0,0,0,0.8); border-bottom: 1px solid var(--border); z-index: 15; }
         .opp-card-omega-peak { padding: 12px 14px; border-radius: 8px; background: linear-gradient(145deg, rgba(40,40,60,1), rgba(5,5,5,1)); border-left: 4px solid rgba(255,255,255,0.15); box-shadow: inset 0 0 30px #000; display: flex; flex-direction: column; }
@@ -162,24 +120,33 @@
         .mini-back-final { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #6a1a8a, #000); border: 1.5px solid var(--steam-gold); border-radius: 2px; position: absolute; top: 2px; box-shadow: -5px 0 15px rgba(0,0,0,1); }
         .not-playable { opacity: 0.35 !important; filter: grayscale(100%) brightness(0.5) !important; transform: translateY(15px) scale(0.9) !important; z-index: 1 !important; pointer-events: none; }
 
-        .btn-omega-singularity:disabled { 
-            background: linear-gradient(90deg, #111, #222); color: #444; border-color: #333; 
-            box-shadow: none; animation: none; filter: grayscale(1); opacity: 0.6; cursor: not-allowed;
-        }
+        .btn-omega-singularity:disabled { background: linear-gradient(90deg, #111, #222); color: #444; border-color: #333; box-shadow: none; animation: none; filter: grayscale(1); opacity: 0.6; cursor: not-allowed; }
     </style>
 </head>
 <body>
     <script>
         // === オーディオコア ===
-        const SFX_MAP = { turn: '[https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3](https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3)', play: '[https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3](https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3)', draw: '[https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3](https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3)', alert: '[https://assets.mixkit.co/active_storage/sfx/2862/2862-preview.mp3](https://assets.mixkit.co/active_storage/sfx/2862/2862-preview.mp3)' };
+        const SFX_MAP = { turn: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3', play: 'https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3', draw: 'https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3', alert: 'https://assets.mixkit.co/active_storage/sfx/2862/2862-preview.mp3' };
         window.sfxPool = {}; for(let k in SFX_MAP) { window.sfxPool[k] = new Audio(SFX_MAP[k]); window.sfxPool[k].preload = 'auto'; }
         window.isMutedGlobal = false;
         window.safePlay = (k) => { if (window.isMutedGlobal) return; try { window.sfxPool[k].currentTime = 0; window.sfxPool[k].play(); } catch(e){} };
-        window.unlockAudio = () => { for(let k in window.sfxPool) { window.sfxPool[k].volume = 0; window.sfxPool[k].play().then(()=> { window.sfxPool[k].pause(); window.sfxPool[k].volume = 0.5; }); } };
+        window.unlockAudio = () => { for(let k in window.sfxPool) { window.sfxPool[k].volume = 0; window.sfxPool[k].play().then(()=> { window.sfxPool[k].pause(); window.sfxPool[k].volume = 0.5; }).catch(()=>{}); } };
     </script>
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
+
+        // エラーハンドリング用（真っ白・真っ黒回避）
+        class ErrorBoundary extends React.Component {
+            constructor(props) { super(props); this.state = { hasError: false, errorInfo: null }; }
+            static getDerivedStateFromError(error) { return { hasError: true, errorInfo: error }; }
+            render() {
+                if (this.state.hasError) {
+                    return <div style={{color:'red', padding:'20px', background:'#000', height:'100vh', fontFamily:'sans-serif'}}><h3>致命的なエラーが発生しました</h3><p>{this.state.errorInfo?.toString()}</p></div>;
+                }
+                return this.props.children;
+            }
+        }
 
         const REALMS = {
             GEAR:    { n: '歯車', color: '#8B4513', bright: '#FF8C00', glow: 'rgba(212,175,55,1)', dim: 'rgba(139,69,19,0.3)', theme: 'steam', font: 'Special Elite', desc: 'セットA：維持。' },
@@ -245,7 +212,9 @@
                             {spec && dr === 'GEAR' && <div className="badge-mega"><span>DRAW +2</span></div>}
                             {spec && dr === 'MACHINE' && <div className="badge-mega" style={{background:'#1a012a', borderLeftColor:rData.color}}><span>REVERSE</span></div>}
                             <div className="card-icon-Omega" style={{ color: rData.color }}><IconRenderer r={dr} spec={spec} /></div>
-                            <div className={`card-footer-Omega font-['${rData.font}']`}><span>{rData.n}</span></div>
+                            
+                            {/* フォントの動的クラス指定をインラインスタイルに変更し、安全に */}
+                            <div className="card-footer-Omega" style={{ fontFamily: rData.font }}><span>{rData.n}</span></div>
                         </div>
                         <div className="absolute inset-0 pointer-events-none mix-blend-overlay opacity-90" style={{ background: `radial-gradient(circle at var(--mx) var(--my), #fff 0%, transparent 60%)` }}></div>
                     </div>
@@ -276,7 +245,7 @@
             const logEndRef = useRef(null);
 
             useEffect(() => {
-                const s = io('[https://crossrealm-server.onrender.com](https://crossrealm-server.onrender.com)'); setSocket(s);
+                const s = io('https://crossrealm-server.onrender.com'); setSocket(s);
                 s.on('update-game', setGs);
                 return () => s.disconnect();
             }, []);
@@ -323,10 +292,9 @@
                     </div>
                     
                     {!joined ? (
-                        <div className="overlay-omega h-full flex items-center justify-center relative z-10 w-full px-4">
+                        <div className="h-full flex items-center justify-center relative z-10 w-full px-4">
                             <div className="panel-omega">
                                 <SparkleVFX />
-                                <div className="hud-corner hud-tl"/><div className="hud-corner hud-tr"/><div className="hud-corner hud-bl"/><div className="hud-corner hud-br"/>
                                 <div className="logo-stack">
                                     <div className="logo-row row-cross">CROSS</div>
                                     <div className="row-x">X</div>
@@ -343,10 +311,9 @@
                             </div>
                         </div>
                     ) : (gs?.status === 'waiting') ? (
-                        <div className="overlay-omega h-full flex items-center justify-center relative z-10 w-full px-4">
+                        <div className="h-full flex items-center justify-center relative z-10 w-full px-4">
                             <div className="panel-omega" style={{borderColor: 'var(--magic-purple)', maxWidth: '480px'}}>
-                                <div className="hud-corner hud-tl" style={{borderColor:'#8A2BE2'}}/><div className="hud-corner hud-tr" style={{borderColor:'#8A2BE2'}}/><div className="hud-corner hud-bl" style={{borderColor:'#8A2BE2'}}/><div className="hud-corner hud-br" style={{borderColor:'#8A2BE2'}}/>
-                                <div className="text-center mb-10"><div className="text-4xl text-steam-gold font-bold font-['Cinzel'] tracking-widest steam-glow">ROOM: {room || gs.roomId}</div></div>
+                                <div className="text-center mb-10"><div className="text-4xl text-steam-gold font-bold tracking-widest steam-glow" style={{fontFamily:'Cinzel'}}>ROOM: {room || gs.roomId}</div></div>
                                 <div className="space-y-3 mb-12">
                                     {[...Array(4)].map((_, i) => {
                                         const p = gs?.players?.[i];
@@ -418,7 +385,7 @@
                     {selector && (
                         <div className="absolute inset-0 flex items-center justify-center p-6 z-[200000] backdrop-filter blur(50px) bg-black/90">
                             <div className="panel-omega" style={{borderColor: 'var(--steam-gold)', padding: '50px 30px'}}>
-                                <h3 className="text-3xl font-black text-center mb-12 text-steam-gold font-['Cinzel'] steam-glow">属性を選択</h3>
+                                <h3 className="text-3xl font-black text-center mb-12 text-steam-gold steam-glow" style={{fontFamily:'Cinzel'}}>属性を選択</h3>
                                 <div className="grid grid-cols-2 gap-6">{CYCLE_ORDER.map(r => (<button key={r} className="p-5 border border-white/20 rounded-lg flex items-center gap-4 hover:bg-white/10" style={{color: REALMS[r].color}} onClick={() => { socket.emit('play-card', {roomId: room, card:selector, chosenRealm:r}); setSelector(null); }}><div className="w-9 h-9"><IconRenderer r={r} spec={false}/></div><span className="font-black text-2xl">{REALMS[r].n}</span></button>))}</div>
                                 <button onClick={()=>setSelector(null)} className="w-full mt-12 text-white/40 text-sm py-2 tracking-[15px] font-black uppercase">Cancel</button>
                             </div>
@@ -428,7 +395,7 @@
             );
         };
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        root.render(<ErrorBoundary><App /></ErrorBoundary>);
     </script>
 </body>
 </html>
