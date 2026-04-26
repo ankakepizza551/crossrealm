@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cross Realm - Eternal Punk Edition - v16.4</title>
+    <title>Cross Realm - Eternal Punk Edition - v16.7</title>
 
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -37,7 +37,6 @@
             box-shadow: 0 0 50px rgba(138, 43, 226, 0.2); 
         }
         
-        /* --- 背景・レイアウト (オリジナル維持) --- */
         .bg-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
         .bg-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200%; height: 200%; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"><circle cx="150" cy="150" r="140" fill="none" stroke="rgba(212,175,55,0.05)" stroke-width="0.5"/><circle cx="150" cy="150" r="110" fill="none" stroke="rgba(64,224,208,0.05)" stroke-width="0.5"/><path d="M150 10 L150 290 M10 150 L290 150" stroke="rgba(138,43,226,0.05)" stroke-width="0.5"/><circle cx="150" cy="150" r="80" fill="none" stroke="rgba(212,175,55,0.08)" stroke-width="0.3" stroke-dasharray="4 4"/></svg>'); animation: rotate-eternal 240s linear infinite; }
         @keyframes rotate-eternal { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
@@ -181,6 +180,7 @@
         @keyframes glitch-flicker { from { opacity: 1; transform: translate(-50%, -50%) translateZ(30px); } to { opacity: 0.8; transform: translate(-51%, -49%) translateZ(30px); } }
 
         .effect-text-wild { position: absolute; bottom: 30px; left: 50%; width: 100%; text-align: center; transform: translateX(-50%) translateZ(35px); font-size: 18px; font-weight: 900; font-style: italic; background: linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); background-size: 200% 100%; -webkit-background-clip: text; color: transparent; animation: rainbow-glow 2s linear infinite; filter: drop-shadow(0 0 5px #fff); }
+        
         .unit-draw2 { position: absolute; top: 35px; left: -5px; width: 38px; background: #6a1505; border: 2px solid #D4AF37; border-radius: 2px; transform: translateZ(35px) rotate(-10deg); display: flex; flex-direction: column; align-items: center; padding: 4px 0; box-shadow: 3px 2px 10px #000; animation: vibration 0.05s infinite; }
         .unit-draw2 .num { font-size: 20px; font-weight: 900; font-family: 'Special Elite'; color: #fff; line-height: 1; text-shadow: 0 0 5px #f00; }
         .unit-draw2 .txt { font-size: 8px; color: #D4AF37; font-weight: 900; margin-top: 2px; background: #000; width: 100%; text-align: center; }
@@ -195,34 +195,73 @@
         .card-wrapper-3d.hovered .card-icon-3d { transform: translate(-50%, -50%) translateZ(40px) scale(1.1); filter: drop-shadow(0 0 15px var(--r-color)) brightness(1.5); }
 
         .not-playable { opacity: 0.5 !important; filter: grayscale(100%) !important; transform: translateY(15px) scale(0.95); z-index: 1 !important; }
+        
+        /* 接続エラー時の警告UI */
+        .connection-alert {
+            position: absolute; top: 10px; left: 10px; background: rgba(255,69,0,0.9); color: white;
+            font-size: 11px; font-weight: 900; padding: 4px 10px; border-radius: 4px;
+            z-index: 999999; box-shadow: 0 0 15px rgba(255,0,0,0.5); font-family: 'Orbitron', sans-serif;
+            animation: pulse-alert 1s infinite alternate;
+        }
+        @keyframes pulse-alert { 0% { opacity: 0.8; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1.05); } }
     </style>
 </head>
 <body>
     <script>
+        // === iOS/Discordブラウザ対策: さらに強力なオーディオロック解除 ===
         window.sfx = { 
             turn: new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'), 
             play: new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3'), 
             draw: new Audio('https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3'), 
             alert: new Audio('https://assets.mixkit.co/active_storage/sfx/2862/2862-preview.mp3') 
         };
-        Object.values(window.sfx).forEach(a => a.volume = 0.3);
+        
+        window.isMutedGlobal = false;
+        
+        Object.values(window.sfx).forEach(a => {
+            a.preload = 'auto';
+            a.volume = 0.3;
+        });
 
-        // iOS Safari Audio Unlock Hack
+        // WebViewクラッシュ防止用の安全な再生ラッパー
+        window.safePlay = (audioObj) => {
+            if (window.isMutedGlobal) return;
+            try {
+                if (audioObj.readyState >= 2) audioObj.currentTime = 0;
+                const p = audioObj.play();
+                if (p !== undefined) p.catch(e => { /* Safari blocked audio, silently ignore */ });
+            } catch (e) { /* ignore */ }
+        };
+
+        window.safeStop = (audioObj) => {
+            try {
+                audioObj.pause();
+                if (audioObj.readyState >= 2) audioObj.currentTime = 0;
+            } catch (e) { /* ignore */ }
+        };
+
+        // タッチやクリックのありとあらゆるイベントで強制アンロック
+        window.audioUnlocked = false;
         window.unlockAudio = () => {
             if (window.audioUnlocked) return;
             Object.values(window.sfx).forEach(a => {
-                a.volume = 0;
-                a.play().then(() => {
-                    a.pause();
-                    a.currentTime = 0;
-                    a.volume = 0.3;
-                }).catch(()=>{});
+                try {
+                    a.volume = 0;
+                    const p = a.play();
+                    if (p !== undefined) {
+                        p.then(() => {
+                            a.pause();
+                            if (a.readyState >= 2) a.currentTime = 0;
+                            a.volume = window.isMutedGlobal ? 0 : 0.3;
+                        }).catch(()=>{});
+                    }
+                } catch(e){}
             });
             window.audioUnlocked = true;
+            ['touchstart', 'touchend', 'mousedown', 'click'].forEach(e => document.removeEventListener(e, window.unlockAudio));
         };
 
-        document.addEventListener('touchstart', window.unlockAudio, {once: true});
-        document.addEventListener('click', window.unlockAudio, {once: true});
+        ['touchstart', 'touchend', 'mousedown', 'click'].forEach(e => document.addEventListener(e, window.unlockAudio, {once: true}));
     </script>
     <div id="root"></div>
     <script type="text/babel">
@@ -254,6 +293,7 @@
 
         const App = () => {
             const [socket, setSocket] = useState(null);
+            const [isConnected, setIsConnected] = useState(false); // Discordブラウザの通信切断検知用
             const [gs, setGs] = useState(null);
             const [room, setRoom] = useState('');
             const [name, setName] = useState('');
@@ -268,11 +308,19 @@
             useEffect(() => {
                 const s = io('https://crossrealm-server.onrender.com'); 
                 setSocket(s);
+                
+                s.on('connect', () => setIsConnected(true));
+                s.on('disconnect', () => setIsConnected(false));
+                
                 s.on('update-game', (data) => { setGs(data); setError(''); });
                 s.on('join-error', (msg) => { setError(msg); setJoined(false); });
                 const handleResize = () => setWindowWidth(window.innerWidth);
                 window.addEventListener('resize', handleResize);
-                return () => { s.disconnect(); window.removeEventListener('resize', handleResize); };
+                
+                return () => { 
+                    s.off('connect'); s.off('disconnect'); s.disconnect(); 
+                    window.removeEventListener('resize', handleResize); 
+                };
             }, []);
 
             useEffect(() => { if (logTerminalRef.current) logTerminalRef.current.scrollTop = logTerminalRef.current.scrollHeight; }, [gs?.logs]);
@@ -282,8 +330,8 @@
                 if (gs && gs.status === 'playing') {
                     const isMyTurnNow = gs.currentTurnPlayerId === socket?.id;
                     if (isMyTurnNow && gs.currentTurnPlayerId !== prevTurnRef.current) {
-                        if (gs.nextDrawAmount > 1) { window.sfx.alert.currentTime = 0; window.sfx.alert.play().catch(()=>{}); }
-                        else { window.sfx.turn.currentTime = 0; window.sfx.turn.play().catch(()=>{}); }
+                        if (gs.nextDrawAmount > 1) { window.safePlay(window.sfx.alert); }
+                        else { window.safePlay(window.sfx.turn); }
                     }
                     prevTurnRef.current = gs.currentTurnPlayerId;
                 }
@@ -299,7 +347,12 @@
                 return () => { if (interval) clearInterval(interval); };
             }, [gs]);
 
-            const toggleMute = () => { const nextMuted = !isMuted; setIsMuted(nextMuted); Object.values(window.sfx).forEach(a => a.volume = nextMuted ? 0 : 0.3); };
+            const toggleMute = () => { 
+                const nextMuted = !isMuted; 
+                setIsMuted(nextMuted); 
+                window.isMutedGlobal = nextMuted;
+                Object.values(window.sfx).forEach(a => a.volume = nextMuted ? 0 : 0.3); 
+            };
             
             const isMyTurn = gs?.currentTurnPlayerId === socket?.id && gs?.status === 'playing';
             const currentRealm = (gs?.status === 'playing' && gs?.fieldCard) ? gs.fieldCard.realm : bgRealm;
@@ -325,20 +378,23 @@
 
             const handlePlay = (card) => {
                 if (!canPlay(card)) return;
-                window.sfx.alert.pause(); window.sfx.alert.currentTime = 0;
-                window.sfx.play.currentTime = 0; window.sfx.play.play().catch(()=>{});
+                
+                window.safeStop(window.sfx.alert);
+                window.safePlay(window.sfx.play);
+                
                 const isWild = (card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial));
                 if (isWild && sortedHand.length > 1) { setSelectorCard(card); }
                 else { socket.emit('play-card', { roomId: room.toUpperCase(), card, chosenRealm: isWild ? 'GEAR' : undefined }); }
             };
+
             const handleDraw = () => { 
-                window.sfx.alert.pause(); window.sfx.alert.currentTime = 0; 
-                window.sfx.draw.currentTime = 0; window.sfx.draw.play().catch(()=>{}); 
+                window.safeStop(window.sfx.alert);
+                window.safePlay(window.sfx.draw);
                 socket.emit('draw-card',{roomId:room}); 
             };
 
-            /* === 完全ネイティブサイズの3Dカードコンポーネント (z-index修正版) === */
-            const CardView = ({ card, playable, onClick, isField, style }) => {
+            /* === iOS Z-Indexバグ & Androidタップ漏れ 修正版コンポーネント === */
+            const CardView = ({ card, playable, onClick, isField, style, index = 0 }) => {
                 if (!card || !card.realm) return null;
                 let displayRealm = card.realm;
                 if (card.wasRuins) displayRealm = 'RUINS'; else if (card.wasPlanet) displayRealm = 'PLANET'; else if (card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) displayRealm = 'FOUNTAIN';
@@ -355,9 +411,11 @@
                 const [tiltStyle, setTiltStyle] = useState({ transform: 'rotateX(0deg) rotateY(0deg)', '--mx': '50%', '--my': '50%' });
                 const [isHovered, setIsHovered] = useState(false);
 
+                const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
                 const handleMouseMove = (e) => {
                     if (!playable && !isField) return; 
-                    if (isField) return; 
+                    if (isField || isTouchDevice) return; 
                     if (!cardRef.current) return;
                     const rect = cardRef.current.getBoundingClientRect();
                     const rotateX = ((e.clientY - rect.top - rect.height / 2) / (rect.height / 2)) * -20; 
@@ -371,8 +429,21 @@
                 };
 
                 const handleMouseLeave = () => {
+                    if (isTouchDevice) return;
                     setIsHovered(false);
                     setTiltStyle({ transform: 'rotateX(0deg) rotateY(0deg)', '--mx': '50%', '--my': '50%', transition: 'all 0.4s ease-out' });
+                };
+
+                const handleMouseEnter = () => {
+                    if (playable && !isField && !isTouchDevice) setIsHovered(true);
+                };
+
+                // Android WebViewのタップ漏れ対策イベント
+                const handleCardAction = (e) => {
+                    if (playable && !isField) {
+                        if (e.type === 'touchend') e.preventDefault(); // WebViewのゴーストクリック防止
+                        onClick();
+                    }
                 };
 
                 let iconStyle = { color: rColor };
@@ -382,10 +453,9 @@
 
                 const hoverTranslateY = (isHovered && !isField) ? 'translateY(-15px) scale(1.15)' : '';
                 
-                // Safari 3D Transform z-indexバグ対応
-                // isFieldでない場合は、親から渡された zIndex(index) をベースに、ホバー時のみ最前面にする
-                const baseZIndex = style?.zIndex !== undefined ? style.zIndex : 1;
-                const finalZIndex = isField ? 'auto' : (isHovered ? 1000 : baseZIndex);
+                // Safari 3D Z-indexバグ対策: 右にあるカードほど物理的にZ軸を手前にする(1枚あたり2px)
+                const zOffset = isField ? 0 : index * 2;
+                const finalZIndex = isField ? 'auto' : (isHovered ? 1000 : index);
 
                 return (
                     <div 
@@ -397,8 +467,9 @@
                         }}
                         onMouseMove={handleMouseMove}
                         onMouseLeave={handleMouseLeave}
-                        onMouseEnter={() => { if(playable && !isField) setIsHovered(true); }}
-                        onClick={() => { if(playable && !isField) onClick(); }}
+                        onMouseEnter={handleMouseEnter}
+                        onClick={handleCardAction}
+                        onTouchEnd={handleCardAction}
                         ref={cardRef}
                     >
                         <div 
@@ -406,7 +477,8 @@
                             style={{
                                 '--r-color': rColor, 
                                 '--r-shadow-color': shadowColor, 
-                                transform: `${hoverTranslateY} ${tiltStyle.transform}`,
+                                // ここで Z軸 を物理的にズラすことでSafariでも重なり順を強制する
+                                transform: `${hoverTranslateY} ${tiltStyle.transform} translateZ(${zOffset}px)`,
                                 ...tiltStyle
                             }}
                         >
@@ -476,6 +548,13 @@
                     <div className="bg-layer bg-watermark"></div>
                     <div className="bg-layer bg-magic-aura" style={{ backgroundColor: (REALMS[currentRealm] ? REALMS[currentRealm].color : '#000') }}></div>
                     
+                    {/* 通信切断時の警告UI */}
+                    {!isConnected && (
+                        <div className="connection-alert">
+                            CONNECTION LOST - RECONNECTING...
+                        </div>
+                    )}
+
                     {(!joined || (gs && gs.status === 'waiting')) && (
                         <button onClick={toggleMute} className="mute-btn">{isMuted ? '🔇' : '🔊'}</button>
                     )}
@@ -617,8 +696,9 @@
                                                             card={card} 
                                                             playable={canPlay(card)} 
                                                             onClick={() => handlePlay(card)} 
-                                                            /* --- 重なり順（z-index）を明示的にラッパーに付与 --- */
-                                                            style={{ marginLeft: index === 0 ? '0px' : `${marginL}px`, zIndex: index }} 
+                                                            // indexを渡してZ-indexと物理的なZ軸の重なり順を制御させる
+                                                            index={index}
+                                                            style={{ marginLeft: index === 0 ? '0px' : `${marginL}px` }} 
                                                         />
                                                     ))}
                                                 </div>
@@ -632,7 +712,13 @@
                                 <div style={{textAlign:'center', fontSize:14, fontWeight:900, color:'var(--steam-gold)', letterSpacing: '2px'}}>
                                     SYNC: {sortedHand?.length || 0} / {gs?.handLimit || 10}
                                 </div>
-                                <button className="btn-main" disabled={!isMyTurn} onClick={handleDraw} style={{boxShadow: isMyTurn ? '0 0 20px rgba(138,43,226,0.6)' : 'none', border: isMyTurn ? '1.5px solid #fff' : '1px solid #444' }}>
+                                <button 
+                                    className="btn-main" 
+                                    disabled={!isMyTurn} 
+                                    onClick={(e)=>{ e.preventDefault(); handleDraw(); }} 
+                                    onTouchEnd={(e)=>{ e.preventDefault(); handleDraw(); }}
+                                    style={{boxShadow: isMyTurn ? '0 0 20px rgba(138,43,226,0.6)' : 'none', border: isMyTurn ? '1.5px solid #fff' : '1px solid #444' }}
+                                >
                                     {gs?.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引く` : (isMyTurn ? 'ドロー' : '待機中...')}
                                 </button>
                             </div>
@@ -640,7 +726,7 @@
                     )}
 
                     {selectorCard && (
-                        <div className="overlay">
+                        <div className="overlay" style={{zIndex: 100000}}>
                             <div className="panel">
                                 <div className="panel-corner1"></div><div className="panel-corner2"></div>
                                 <h3 style={{fontSize:26, fontWeight:900, color:'var(--steam-gold)', fontFamily:'Cinzel', textAlign:'center', marginBottom: 10}}>CHOOSE REALM</h3>
