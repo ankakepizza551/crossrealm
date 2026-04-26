@@ -72,12 +72,12 @@
 
         .mat-steam { background: radial-gradient(circle at 50% 10%, #FF8C00 0%, #0a0402 100%); border: 3.5px solid #4a2f1c; box-shadow: 0 10px 40px #000, inset 0 0 20px #000; }
         
-        /* 修正箇所: ファンタジー属性（噴水など）の枠形状をショーケース版に合わせる */
+        /* 修正箇所1：ファンタジー（噴水・氷河期）の枠を％指定にして葉っぱ型を強制する */
         .mat-fantasy { 
             background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.85) 100%), 
                         radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%); 
             border: 2.5px solid rgba(255,255,255,0.95); 
-            border-radius: 20px 6px !important; 
+            border-radius: 35% 10% !important; 
             box-shadow: 0 0 45px var(--r-color-glow), inset 0 0 20px rgba(255,255,255,0.2); 
             backdrop-filter: blur(15px);
         }
@@ -97,7 +97,13 @@
         .steam-hand { position: absolute; top: 50%; left: 50%; width: 1.5px; height: 12px; background: #f33; transform-origin: bottom center; transform: translate(-50%, -100%) rotate(-45deg); animation: gear-spin 5s infinite alternate; }
         .cyber-matrix-layer { position: absolute; inset: 0; overflow: hidden; opacity: 0.8; z-index: 30; }
         .matrix-unit { position: absolute; color: var(--r-color); font-family: 'Orbitron', monospace; font-size: 6px; writing-mode: vertical-rl; animation: digital-rain 2.8s linear infinite; }
-        .arcane-ring-mega { position: absolute; inset: -20%; display: flex; align-items: center; justify-content: center; z-index: 20; opacity: 0.6; }
+        
+        /* 修正箇所2：魔法陣がカードの枠内にピッタリ収まるようにコンテナを設定 */
+        .arcane-circle-layer { 
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; 
+            z-index: 20; pointer-events: none; overflow: hidden; border-radius: inherit;
+        }
+        
         .rivet-omega { position: absolute; width: 3px; height: 3px; background: #8B6B23; border-radius: 50%; box-shadow: inset 1px 1px 1px #FFF8DC, 1px 1px 3px #000; }
 
         /* === 究極パネル (中央固定) === */
@@ -269,10 +275,10 @@
                                 </>
                             )}
                             
-                            {/* 修正箇所：ファンタジー属性の魔法陣をショーケース版のリッチなSVGに差し替え */}
+                            {/* 修正箇所2：魔法陣をカード枠内に完全クリップするための専用コンテナを使用 */}
                             {rData.theme === 'fantasy' && (
-                                <div className="arcane-ring-mega" style={{overflow: 'hidden', borderRadius: 'inherit'}}>
-                                    <svg viewBox="0 0 200 200" style={{color: rData.color, width: '150%', height: '150%', animation: 'arcane-shimmer 45s linear infinite'}}>
+                                <div className="arcane-circle-layer">
+                                    <svg viewBox="0 0 200 200" style={{color: rData.color, width: '135%', height: '135%', animation: 'arcane-shimmer 45s linear infinite', opacity: 0.8}}>
                                         <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="3 7"/>
                                         <circle cx="100" cy="100" r="82" fill="none" stroke="currentColor" strokeWidth="1"/>
                                         <path d="M100 8 L188 155 L12 155 Z" fill="none" stroke="currentColor" strokeWidth="0.8"/>
@@ -417,7 +423,7 @@
                                                     <div className={`w-12 h-12 flex-shrink-0 rounded-full ${p ? 'bg-accent/20 text-accent border border-accent/60 shadow-[0_0_20px_var(--accent)]' : 'bg-white/5 text-white/5 border border-white/10'} flex items-center justify-center font-bold text-2xl`}>{p ? '👤' : ''}</div>
                                                     <span className="slot-name-tag">{p ? p.name : '空きスロット'}</span>
                                                 </div>
-                                                {p && i === 0 && <div className="bg-[#D4AF37] flex-shrink-0 text-black text-[12px] px-4 py-1 font-black rounded-sm shadow-xl">HOST</div>}
+                                                {p && i === 0 && <div className="bg-steam-gold flex-shrink-0 text-black text-[12px] px-4 py-1 font-black rounded-sm shadow-xl">HOST</div>}
                                             </div>
                                         );
                                     })}
@@ -499,7 +505,6 @@
                         </div>
                     )}
                     
-                    {/* 修正箇所：ワイルド属性の選択画面のボタンレイアウトを横並びに強制 */}
                     {selector && (
                         <div className="absolute inset-0 flex items-center justify-center p-4 z-[200000] backdrop-filter blur(50px) bg-black/90">
                             <div className="panel-omega" style={{borderColor: 'var(--steam-gold)', padding: '40px 20px'}}>
