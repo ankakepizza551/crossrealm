@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Cross Realm - Omega Singularity v30.4</title>
+    <title>Cross Realm - Omega Singularity v30.5</title>
 
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -110,12 +110,24 @@
         /* サイクルバー（凡例）のスタイル修正 */
         .cycle-strip-classic { flex-shrink: 0; display: flex; justify-content: space-between; padding: 8px 6px; background: rgba(0,0,0,1); border-bottom: 2px solid var(--border); z-index: 10; }
         .cycle-node-container { flex: 1; display: flex; flex-direction: column; align-items: center; margin: 0 4px; }
-        .cycle-node-omega { width: 100%; height: 3px; background: rgba(255,255,255,0.1); transition: 0.5s; border-radius: 2px; }
+        .cycle-node-omega { width: 100%; height: 3px; background: rgba(255,255,255,0.15); transition: 0.5s; border-radius: 2px; }
         .cycle-node-omega.active { height: 6px; background: var(--c); box-shadow: 0 0 20px var(--c); }
         .cycle-label { font-size: clamp(8px, 2.2vw, 11px); font-weight: 900; margin-top: 4px; text-align: center; white-space: nowrap; color: rgba(255,255,255,0.4); transition: 0.3s; letter-spacing: -0.5px; }
         .cycle-label.active { color: var(--c); text-shadow: 0 0 8px var(--c); }
         
-        /* 魔法陣エリア：マージンを均等配置し、重なりを防ぐ */
+        /* 【追加】次に出せる属性の点滅アニメーション */
+        @keyframes blink-node {
+            0%, 100% { opacity: 0.3; box-shadow: none; background: rgba(255,255,255,0.2); }
+            50% { opacity: 1; box-shadow: 0 0 15px var(--c); background: var(--c); }
+        }
+        @keyframes blink-text {
+            0%, 100% { color: rgba(255,255,255,0.4); text-shadow: none; }
+            50% { color: var(--c); text-shadow: 0 0 8px var(--c); }
+        }
+        .cycle-node-omega.next-blink { animation: blink-node 1.5s infinite ease-in-out; }
+        .cycle-label.next-blink-text { animation: blink-text 1.5s infinite ease-in-out; }
+
+        /* 魔法陣エリア */
         .field-core-omega { 
             flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; 
             position: relative; z-index: 5; padding: 5px 0; 
@@ -126,13 +138,10 @@
         }
         .magic-ring-core::after { content: ''; position: absolute; inset: 10%; border: 2.5px solid rgba(138,43,226,0.25); border-radius: 50%; animation: gear-spin 15s linear infinite reverse; }
         
-        /* パネルを少しコンパクトに */
         .info-panel-mega { border: 2px solid var(--steam-gold); padding: 6px 12px; border-radius: 12px; width: clamp(140px, 35vw, 180px); text-align: center; background: rgba(5, 5, 8, 0.98); backdrop-filter: blur(30px); z-index: 20; box-shadow: 0 0 50px rgba(212,175,55,0.4); }
         
-        /* ログの高さを低くし、背景を半透明に（被り防止） */
         .terminal-log-omega { flex-shrink: 0; height: clamp(35px, 5vh, 50px); margin: 0 10px 5px; padding: 4px 15px; font-size: 10px; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); border-left: 5px solid var(--accent); overflow-y: auto; font-family: 'Orbitron', monospace; color: #fff; box-shadow: inset 0 0 30px rgba(0,0,0,0.8); z-index: 10; }
         
-        /* 手札の高さをカード可変サイズに追従させる */
         .hand-Omega-Peak { flex-shrink: 0; display: flex; justify-content: center; align-items: flex-end; height: calc(var(--card-h) + 20px); padding-bottom: 10px; background: linear-gradient(to top, rgba(0,0,0,1) 60%, transparent 100%); z-index: 20; }
         
         .action-area-Final { flex-shrink: 0; padding: 10px 10px max(10px, env(safe-area-inset-bottom)); border-top: 4px solid var(--magic-purple); background: #000; display: flex; flex-direction: column; align-items: center; z-index: 30; }
@@ -197,6 +206,16 @@
             RUINS:   { n: '廃墟', color: '#999999', bright: '#CCCCCC', glow: 'rgba(150,150,150,1)', dim: 'rgba(60,60,60,0.6)', theme: 'void-ruins', font: 'Audiowide', desc: '遺跡の記憶。' }
         };
         const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
+        
+        // 遷移定義マップ（点滅ガイド用）
+        const NEXT_REALMS_MAP = {
+            GEAR: ['GEAR', 'ICEAGE'],
+            ICEAGE: ['FOUNTAIN', 'BATTERY'],
+            FOUNTAIN: ['FOUNTAIN', 'BATTERY'],
+            BATTERY: ['MACHINE', 'ARCHIVE'],
+            MACHINE: ['MACHINE', 'ARCHIVE'],
+            ARCHIVE: ['GEAR', 'ICEAGE']
+        };
 
         const IconRenderer = ({ r, spec }) => {
             const sw = spec ? 4.2 : 2.1;
@@ -293,6 +312,8 @@
             const isMyTurn = gs?.currentTurnPlayerId === socket?.id && gs?.status === 'playing';
 
             const currentR = (gs?.status === 'playing' && gs?.fieldCard) ? gs.fieldCard.realm : bgR;
+            const nextPlayableRealms = NEXT_REALMS_MAP[currentR] || [];
+
             const sortedHand = useMemo(() => {
                 const me = gs?.players?.find(p => p.id === socket?.id);
                 return (me?.hand || []).slice().sort((a,b) => CYCLE_ORDER.indexOf(a.realm) - CYCLE_ORDER.indexOf(b.realm));
@@ -304,9 +325,9 @@
                 const h = c.realm; const f = currentR;
                 if (h === 'PLANET' || h === 'RUINS' || f === 'PLANET' || f === 'RUINS') return true;
                 if (h === 'FOUNTAIN' && c.isSpecial) return (f === 'ICEAGE' || f === 'FOUNTAIN');
-                const cyc = { GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] };
+                
                 if (['ICEAGE', 'BATTERY', 'ARCHIVE'].includes(f) && f === h) return false;
-                return f === h || (cyc[f]?.includes(h));
+                return f === h || (nextPlayableRealms.includes(h));
             };
 
             const handlePlay = (c) => {
@@ -393,14 +414,22 @@
                                 ))}
                             </div>
                             
-                            {/* サイクルバー（凡例付き） */}
+                            {/* === サイクルバー（点滅ガイド機能付き） === */}
                             <div className="cycle-strip-classic">
-                                {CYCLE_ORDER.map(r => (
-                                    <div key={r} className="cycle-node-container" style={{'--c': REALMS[r].color}}>
-                                        <div className={`cycle-node-omega ${currentR === r ? 'active' : ''}`} style={{background: currentR === r ? 'var(--c)' : 'rgba(255,255,255,0.2)'}}/>
-                                        <div className={`cycle-label ${currentR === r ? 'active' : ''}`}>{REALMS[r].n}</div>
-                                    </div>
-                                ))}
+                                {CYCLE_ORDER.map(r => {
+                                    const isActive = currentR === r;
+                                    const isNext = nextPlayableRealms.includes(r);
+                                    
+                                    return (
+                                        <div key={r} className="cycle-node-container" style={{'--c': REALMS[r].color}}>
+                                            <div className={`cycle-node-omega ${isActive ? 'active' : ''} ${isNext && !isActive ? 'next-blink' : ''}`} 
+                                                 style={{background: isActive ? 'var(--c)' : 'rgba(255,255,255,0.15)'}}/>
+                                            <div className={`cycle-label ${isActive ? 'active' : ''} ${isNext && !isActive ? 'next-blink-text' : ''}`}>
+                                                {REALMS[r].n}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
 
                             <div className="field-core-omega">
@@ -444,30 +473,30 @@
                         </div>
                     )}
                     
-                    {/* ミッション終了（リザルト）画面 */}
+                    {/* === ミッション終了（リザルト）画面：日本語化 === */}
                     {gs?.status === 'finished' && (
                         <div className="absolute inset-0 flex items-center justify-center p-4 z-[250000] bg-black/90 backdrop-blur-sm">
                             <div className="panel-omega" style={{borderColor: 'var(--steam-gold)', padding: '40px 20px', width: '100%', maxWidth: '400px'}}>
-                                <h2 className="text-3xl md:text-4xl font-black text-center mb-8 text-white steam-glow" style={{fontFamily:'Cinzel'}}>MISSION END</h2>
+                                <h2 className="text-3xl md:text-4xl font-black text-center mb-8 text-white steam-glow" style={{fontFamily: "'Exo 2', sans-serif"}}>ミッション終了</h2>
                                 <div className="space-y-3 mb-10 max-h-[50vh] overflow-y-auto pr-2">
                                     {gs.players.slice().sort((a,b) => a.handCount - b.handCount).map((p, i) => (
                                         <div key={p.id} className={`p-4 rounded-xl border flex items-center transition-all ${p.handCount === 0 ? 'border-accent bg-accent/20 scale-[1.02] shadow-[0_0_15px_var(--accent)]' : p.handCount > 10 ? 'border-red-500 bg-red-500/20' : 'border-white/10 opacity-70'}`}>
-                                            <span className="font-black text-2xl mr-4 italic text-slate-500" style={{fontFamily:'Cinzel'}}>#{i+1}</span>
+                                            <span className="font-black text-xl mr-4 italic text-slate-400" style={{fontFamily: "'Exo 2', sans-serif"}}>{i+1}位</span>
                                             <div className="flex-1 overflow-hidden">
                                                 <div className="font-black text-lg tracking-wider uppercase truncate">{p.name}</div>
-                                                {p.handCount > 10 && <div className="text-[10px] text-red-500 tracking-widest font-black uppercase mt-1">System Overload</div>}
-                                                {p.handCount === 0 && <div className="text-[10px] text-accent tracking-widest font-black uppercase mt-1">Mission Clear</div>}
+                                                {p.handCount > 10 && <div className="text-[10px] text-red-500 tracking-widest font-black mt-1">システムオーバーロード</div>}
+                                                {p.handCount === 0 && <div className="text-[10px] text-accent tracking-widest font-black mt-1">ミッションクリア</div>}
                                             </div>
                                             <span className={`font-black text-2xl ml-3 ${p.handCount > 10 ? 'text-red-500' : 'text-accent'}`} style={{fontFamily:'Orbitron'}}>{p.handCount}</span>
                                         </div>
                                     ))}
                                 </div>
                                 {gs.players[0]?.id === socket?.id ? (
-                                    <button onClick={() => socket.emit('play-again', {roomId: room})} className="btn-omega-singularity w-full">
-                                        RE-LINK SECTOR
+                                    <button onClick={() => socket.emit('play-again', {roomId: room})} className="btn-omega-singularity w-full text-xl">
+                                        もう一度プレイ
                                     </button>
                                 ) : (
-                                    <div className="text-center text-slate-400 font-bold tracking-widest text-sm py-4">WAITING FOR HOST...</div>
+                                    <div className="text-center text-slate-400 font-bold tracking-widest text-sm py-4">ホストの再戦操作を待機中...</div>
                                 )}
                             </div>
                         </div>
