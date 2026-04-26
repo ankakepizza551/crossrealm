@@ -73,12 +73,12 @@
 
         .mat-steam { background: radial-gradient(circle at 50% 10%, #FF8C00 0%, #0a0402 100%); border: 3.5px solid #4a2f1c; box-shadow: 0 10px 40px #000, inset 0 0 20px #000; }
         
-        /* 修正箇所：強制的にスタイルを上書きしてファンタジーの枠を曲げる */
+        /* 修正箇所：％指定（35% 10%）を確実に適用！ */
         .mat-fantasy { 
             background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.85) 100%), 
                         radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%) !important; 
             border: 3px solid rgba(255,255,255,0.95) !important; 
-            border-radius: 25px 6px !important; 
+            border-radius: 35% 10% !important; 
             box-shadow: 0 0 35px var(--r-color-glow), inset 0 0 15px rgba(255,255,255,0.2) !important; 
             backdrop-filter: blur(15px) !important;
         }
@@ -99,7 +99,7 @@
         .cyber-matrix-layer { position: absolute; inset: 0; overflow: hidden; opacity: 0.8; z-index: 30; }
         .matrix-unit { position: absolute; color: var(--r-color); font-family: 'Orbitron', monospace; font-size: 6px; writing-mode: vertical-rl; animation: digital-rain 2.8s linear infinite; }
         
-        /* 魔法陣のレイヤー順序を強制的に前に出す */
+        /* 魔法陣レイヤーの表示優先度調整 */
         .arcane-circle-layer { 
             position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; 
             z-index: 80; pointer-events: none; overflow: hidden; border-radius: inherit;
@@ -276,7 +276,6 @@
                                 </>
                             )}
                             
-                            {/* 修正箇所：ファンタジー属性の魔法陣と光の粒（ショーケース版完全移植） */}
                             {rData.theme === 'fantasy' && (
                                 <div className="arcane-circle-layer">
                                     <svg viewBox="0 0 200 200" style={{color: rData.color, width: '160%', height: '160%', animation: 'arcane-shimmer 20s linear infinite', opacity: 0.85}}>
