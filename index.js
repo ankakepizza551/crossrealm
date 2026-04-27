@@ -12,11 +12,8 @@ const rooms = {};
 const HAND_LIMIT = 10;
 const INITIAL_HAND = 5;
 
-const PERSONALITIES = [
-  { name: 'Astra', type: 'Aggressive' },
-  { name: 'Bern', type: 'Defensive' },
-  { name: 'Ciel', type: 'Tactical' }
-];
+// ※CPUの基本情報はクライアント(画面側)から送られてくるようになったため、
+// サーバー側では受信した名前とタイプ(性格)を使って処理します。
 
 function createDeck() {
   const deck = [];
@@ -60,14 +57,27 @@ function getBotAction(room, bot) {
   if (!bot || !bot.hand) return { type: 'draw' };
   const playable = bot.hand.filter(card => canPlay(room, card));
   if (playable.length === 0) return { type: 'draw' };
+  
   let targetCard = playable[0];
-  if (bot.personality === 'Aggressive') targetCard = playable.find(c => c.isSpecial) || playable[0];
-  else if (bot.personality === 'Defensive') targetCard = (bot.hand.length < 7) ? (playable.find(c => !c.isSpecial && !['PLANET','RUINS'].includes(c.realm)) || playable[0]) : (playable.find(c => c.isSpecial) || playable[0]);
-  else {
-    const counts = {}; bot.hand.forEach(c => counts[c.realm] = (counts[c.realm] || 0) + 1);
-    const fav = Object.keys(counts).reduce((a, b) => (counts[a] || 0) > (counts[b] || 0) ? a : b, 'GEAR');
-    targetCard = playable.find(c => c.realm === fav) || playable[0];
+  const pType = bot.personality ? bot.personality.toUpperCase() : '';
+  
+  // CPUの性格(タイプ)に応じたAI思考ロジック
+  if (pType === 'AGGRO' || pType === 'AGGRESSIVE' || pType === 'SPEED' || pType === 'HUNTER') {
+      // 攻撃的：特殊カードを優先して切る
+      targetCard = playable.find(c => c.isSpecial) || playable[0];
+  } else if (pType === 'DEFENSE' || pType === 'DEFENSIVE' || pType === 'TANK') {
+      // 防御的：手札が少ない時は特殊・WILDを温存。ピンチなら切る。
+      targetCard = (bot.hand.length < 7) 
+        ? (playable.find(c => !c.isSpecial && !['PLANET','RUINS'].includes(c.realm)) || playable[0]) 
+        : (playable.find(c => c.isSpecial) || playable[0]);
+  } else {
+      // バランス・戦術的 (FLEX, CHAOS, BALANCE, TACTICAL 等)
+      // 自分が一番多く持っている属性を優先して出して、手札を減らしやすくする
+      const counts = {}; bot.hand.forEach(c => counts[c.realm] = (counts[c.realm] || 0) + 1);
+      const fav = Object.keys(counts).reduce((a, b) => (counts[a] || 0) > (counts[b] || 0) ? a : b, 'GEAR');
+      targetCard = playable.find(c => c.realm === fav) || playable[0];
   }
+
   let chosenRealm = undefined;
   if (['PLANET', 'RUINS', 'FOUNTAIN'].includes(targetCard.realm) && (targetCard.realm !== 'FOUNTAIN' || targetCard.isSpecial)) {
     const mains = ['GEAR', 'FOUNTAIN', 'MACHINE'];
@@ -129,7 +139,10 @@ io.on('connection', (socket) => {
     const rid = data.roomId.toUpperCase();
     if (!rooms[rid]) rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], playHistory: [], handLimit: HAND_LIMIT, currentTurnPlayerId: null };
     const room = rooms[rid];
-    if (room.status !== 'waiting' || room.players.length >= 4) return socket.emit('join-error', '満員です');
+    
+    // 【修正】4人制限を 5人制限 に拡張！
+    if (room.status !== 'waiting' || room.players.length >= 5) return socket.emit('join-error', '満員です');
+    
     room.players.push({ id: socket.id, name: (data.playerName || 'Pilot').substring(0,10), hand: [], handCount: 0, isBot: false, isActing: false });
     socket.join(rid);
     io.to(rid).emit('update-game', room);
@@ -137,10 +150,22 @@ io.on('connection', (socket) => {
 
   socket.on('add-cpu', (data) => {
     const room = rooms[data.roomId.toUpperCase()];
-    if (room && room.status === 'waiting' && room.players.length < 4) {
-      const bIdx = room.players.filter(p=>p.isBot).length;
-      const pInfo = PERSONALITIES[bIdx % PERSONALITIES.length];
-      room.players.push({ id: 'CPU_' + Math.random().toString(36).substr(2,5), name: pInfo.name, personality: pInfo.type, hand: [], handCount: 0, isBot: true, isActing: false });
+    // 【修正】4人制限を 5人制限 に拡張！
+    if (room && room.status === 'waiting' && room.players.length < 5) {
+      
+      // 【修正】クライアントから送られてきた個性的なAI情報を受け取る
+      const botName = data.botName ? `${data.botName} (AI)` : `CPU_${Math.random().toString(36).substr(2,3)}`;
+      const botType = data.botType || 'TACTICAL';
+
+      room.players.push({ 
+          id: 'CPU_' + Math.random().toString(36).substr(2,5), 
+          name: botName, 
+          personality: botType, 
+          hand: [], 
+          handCount: 0, 
+          isBot: true, 
+          isActing: false 
+      });
       io.to(room.id).emit('update-game', room);
     }
   });
