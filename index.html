@@ -3,17 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Cross Realm - Omega Singularity v31.0</title>
+    <title>Cross Realm - Omega Singularity v118.0 THE END</title>
     
-    <!-- Discord OGP Tags -->
-    <meta property="og:title" content="Cross Realm - Omega Singularity v31.0" />
-    <meta property="og:description" content="最大5人対戦対応！新感覚・属性遷移型カードゲーム「Cross Realm」。直感的なルールと深い戦略性が交差するサイバーパンク・カードバトル。" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://ankakepizza551.github.io/crossrealm/" />
-    <meta property="og:image" content="https://ankakepizza551.github.io/crossrealm/ogp.jpg" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="theme-color" content="#40E0D0" />
-
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -25,190 +16,146 @@
     <style>
         :root { 
             --accent: #40E0D0; --steam-gold: #D4AF37; --magic-purple: #8A2BE2; --danger: #FF4500; 
-            --bg: #010103; 
-            --card-w: clamp(75px, 20.5vw, 86px); 
+            --bg-deep: #020208; 
+            --card-w: clamp(48px, 14vw, 74px); 
             --card-h: calc(var(--card-w) * 1.4); 
-            --border: rgba(212, 175, 15, 0.45);
         }
         body { 
-            margin: 0; background: var(--bg); color: white; font-family: 'Exo 2', sans-serif; 
+            margin: 0; background: #000; color: white; font-family: 'Exo 2', sans-serif; 
             display: flex; justify-content: center; align-items: center; 
             height: 100vh; height: 100dvh; overflow: hidden; 
         }
+
+        /* === アニメーション === */
+        @keyframes flow-border-nova { 0% { border-color: var(--steam-gold); box-shadow: 0 0 15px var(--steam-gold); } 33% { border-color: var(--magic-purple); box-shadow: 0 0 15px var(--magic-purple); } 66% { border-color: var(--accent); box-shadow: 0 0 15px var(--accent); } 100% { border-color: var(--steam-gold); box-shadow: 0 0 15px var(--steam-gold); } }
+        @keyframes logo-shine { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+        @keyframes emblem-pulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); filter: brightness(1) drop-shadow(0 0 15px var(--accent)); } 50% { transform: translate(-50%, -50%) scale(1.05); filter: brightness(1.3) drop-shadow(0 0 35px var(--accent)); } }
+        @keyframes draw-pulse { 0%, 100% { filter: brightness(1); box-shadow: 0 0 15px var(--steam-gold); } 50% { filter: brightness(1.3); box-shadow: 0 0 30px var(--steam-gold); } }
+        @keyframes gear-roll { 0% { transform: translate(var(--sx), var(--sy)) rotate(0deg); opacity: 0; } 5% { opacity: var(--op); } 95% { opacity: var(--op); } 100% { transform: translate(var(--ex), var(--ey)) rotate(var(--rot)); opacity: 0; } }
+        @keyframes magic-mega-zoom { 0% { transform: translate(var(--sx), -300px) scale(0.3) rotate(0deg); opacity: 0; } 20% { opacity: var(--op); } 80% { opacity: var(--op); } 100% { transform: translate(var(--ex), 120vh) scale(4.5) rotate(var(--rot)); opacity: 0; } }
+        @keyframes rotate-inner { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes rotate-outer { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+        @keyframes pulse-shimmer { 0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 2px rgba(255,255,255,0.5)); transform: scale(1); } 50% { opacity: 1; filter: drop-shadow(0 0 8px #fff) brightness(1.5); transform: scale(1.1); color: #fff; } }
+
         .screen-wrapper { 
-            width: 100vw; height: 100vh; height: 100dvh;
-            max-width: 480px; 
+            width: 100vw; height: 100vh; height: 100dvh; max-width: 480px; 
             position: relative; overflow: hidden; display: flex; flex-direction: column; 
-            border-left: 2px solid rgba(212,175,55,0.3); border-right: 2px solid rgba(64,224,208,0.3); 
-            background: var(--bg);
+            background: #000; border: 4px solid var(--accent); animation: flow-border-nova 10s infinite ease-in-out;
         }
 
-        /* === 究極の画面エフェクト === */
-        .scanlines {
-            position: absolute; inset: 0; z-index: 9999; pointer-events: none;
-            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
-            background-size: 100% 4px; opacity: 0.6;
+        .astral-canvas { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; background: #000; }
+        .matrix-code-canvas { position: absolute; inset: 0; z-index: 2; opacity: 0.5; pointer-events: none; mix-blend-mode: screen; }
+        .flow-gear { position: absolute; top: 0; left: 0; animation: gear-roll var(--dur) linear infinite; opacity: 0; z-index: 3; filter: drop-shadow(0 0 10px var(--glow-color)) drop-shadow(0 0 5px var(--glow-color)); }
+        .flow-magic { position: absolute; top: 0; left: 0; animation: magic-mega-zoom var(--dur) ease-in-out infinite; opacity: 0; z-index: 3; filter: drop-shadow(0 0 25px var(--glow-color)); }
+
+        .ui-viewport { position: relative; z-index: 100; width: 100%; height: 100%; display: flex; flex-direction: column; pointer-events: auto; overflow-y: auto; overflow-x: hidden; }
+
+        .volume-btn-fixed { position: absolute; left: 12px; top: 40%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: 2.5px solid var(--accent); display: flex; justify-content: center; align-items: center; color: var(--accent); background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); cursor: pointer; z-index: 950; transition: 0.3s; }
+
+        /* === トップ画面 === */
+        .top-logo-area { position: relative; width: 100%; height: 260px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1rem; }
+        .emblem-bg-layer { position: absolute; top: 50%; left: 50%; width: 220px; height: 220px; z-index: 1; animation: emblem-pulse 8s infinite ease-in-out; pointer-events: none; opacity: 0.9; }
+        .logo-text-layer { position: relative; z-index: 10; text-align: center; }
+        .main-logo-text { font-family: 'Cinzel', serif; font-weight: 950; font-size: clamp(2.5rem, 10vw, 3.6rem); line-height: 0.85; background: linear-gradient(90deg, #fff, var(--steam-gold), #fff, var(--magic-purple), #fff, var(--accent), #fff); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: logo-shine 6s linear infinite; letter-spacing: 12px; filter: drop-shadow(0 0 10px rgba(0,0,0,1)); }
+        
+        .trinity-flavor-box { background: rgba(0,0,0,0.92); border: 1.5px solid rgba(255,255,255,0.25); border-left: 6px solid var(--accent); padding: 1.2rem; border-radius: 4px 14px 14px 4px; margin: 0 1.5rem 1.2rem; box-shadow: 0 20px 60px rgba(0,0,0,1); text-align: center; backdrop-filter: blur(10px); flex-shrink: 0; }
+        .f-steam { font-family: 'Special Elite', cursive; color: var(--steam-gold); font-size: 1.1rem; text-shadow: 0 0 8px var(--steam-gold); }
+        .f-fantasy { font-family: 'Cinzel Decorative', cursive; color: var(--magic-purple); font-size: 1.2rem; text-shadow: 0 0 10px var(--magic-purple); }
+        .f-cyber { font-family: 'Orbitron', sans-serif; color: var(--accent); font-size: 1rem; font-weight: 950; text-shadow: 0 0 10px var(--accent); }
+
+        .input-wrap { position: relative; width: 100%; margin-bottom: 1rem; padding: 0 2rem; display: flex; flex-direction: column; flex-shrink: 0; }
+        .input-wrap::before { content: ''; position: absolute; left: 2rem; top: 0; width: 4px; height: 100%; background: var(--accent); box-shadow: 0 0 12px var(--accent); z-index: 10; }
+        .input-label-tech { font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 900; color: var(--accent); letter-spacing: 2px; margin-bottom: 6px; padding-left: 14px; text-transform: uppercase; }
+        .input-field-nova { width: 100%; padding: 14px 16px 14px 26px; background: rgba(0,0,0,0.95) !important; border: 1px solid rgba(255,255,255,0.2); color: #fff !important; font-weight: 900; font-size: 1.2rem; outline: none; border-radius: 2px; }
+
+        .system-status-bar { margin-top: auto; padding: 14px 24px; border-top: 2px solid rgba(255,255,255,0.15); font-family: 'Orbitron', sans-serif; font-size: 11px; color: rgba(255,255,255,0.5); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); width: 100%; flex-shrink: 0; }
+        .status-tag { color: #fff; background: var(--accent); padding: 2px 8px; border-radius: 2px; font-weight: 900; animation: pulse-shimmer 1.5s infinite; }
+
+        /* 待機画面 */
+        .waiting-room-list { overflow-y: auto; max-height: 48vh; padding: 4px; margin: 0 1.2rem 10px 80px; flex-shrink: 0; } 
+        .waiting-slot-box { background: rgba(0,0,0,0.95); border: 1px solid rgba(255,255,255,0.3); padding: 10px 20px; border-radius: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; min-height: 56px; box-shadow: 0 8px 25px rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
+        .waiting-slot-box.active { border-left: 8px solid var(--accent); border-color: rgba(64,224,208,0.8); }
+        .waiting-name { font-weight: 950; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; }
+
+        /* === 究極のHUD (アイコンの美しい右下スタックと見切れ完全防止) === */
+        .player-hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 6px 8px; background: rgba(0,0,0,0.95); border-bottom: 2.5px solid rgba(255,255,255,0.15); flex-shrink: 0; }
+        .player-slot { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; padding: 4px 10px; position: relative; height: 52px; display: flex; flex-direction: column; justify-content: center; }
+        .player-slot.active { background: rgba(255,255,255,0.15); border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+        .player-slot.eliminated { filter: grayscale(100%) brightness(0.4); border-color: var(--danger); overflow: hidden; }
+        
+        .p-info-count { font-size: 18px; font-weight: 1000; color: #fff; font-family: 'Orbitron'; line-height: 1; margin-top: 1px; }
+        .p-info-name { font-size: 10px; font-weight: 900; opacity: 0.9; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 75%; }
+        .eliminated-tag { position: absolute; inset: 0; background: rgba(255,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 1000; color: var(--danger); letter-spacing: 4px; transform: rotate(-5deg); text-shadow: 0 0 10px #000; z-index: 20; }
+        
+        /* 手札アイコン: 枠に収まるよう右下に広がる */
+        .hand-stack-visual { position: absolute; top: 8px; right: 26px; width: 14px; height: 20px; z-index: 10; opacity: 0.9; }
+
+        /* 凡例バー */
+        .realm-legend-nav { display: flex !important; flex-direction: row !important; justify-content: space-around !important; background: rgba(0,0,0,0.95); border-bottom: 1.5px solid rgba(255,255,255,0.15); padding: 8px 2px; flex-shrink: 0; width: 100%; height: auto; align-items: center; z-index: 10; }
+        .legend-label { font-size: 11px; font-weight: 950; color: rgba(255,255,255,0.3); white-space: nowrap; margin-bottom: 4px; transition: 0.3s; }
+        .legend-label.playable { animation: pulse-shimmer 1.5s infinite ease-in-out; color: var(--accent); }
+        .legend-underline { width: 80%; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.05); transition: 0.3s; }
+        .legend-underline.playable-light { box-shadow: 0 0 8px var(--r-color); background: rgba(255,255,255,0.2); }
+        .legend-underline.active { background: var(--r-color) !important; box-shadow: 0 0 10px var(--r-color), 0 0 5px #fff; }
+
+        /* フィールド */
+        .field-main-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; width: 100%; padding: 5px 0; min-height: 160px; flex-shrink: 0; z-index: 5; }
+        .tactical-cycle-wheel { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); width: 160px; height: 160px; opacity: 0.95; pointer-events: none; z-index: 100; overflow: visible; }
+        .field-kanji-text { font-size: 48px; font-weight: 1000; letter-spacing: 12px; margin-top: 10px; text-shadow: 0 0 40px var(--r-color); font-family: 'Cinzel Decorative', serif; }
+
+        /* ログ */
+        .tactical-log-box { width: 94%; margin: 2px auto 4px; background: rgba(0,0,0,0.95); border: 1.5px solid rgba(255,255,255,0.2); border-left: 5px solid var(--accent); height: 56px; border-radius: 4px; padding: 4px 12px; overflow-y: auto; flex-shrink: 0; box-shadow: 0 10px 30px rgba(0,0,0,1); }
+        .log-entry { font-size: 11px; font-weight: 800; color: rgba(255,255,255,1); margin-bottom: 2px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        /* === 手札とホバーアクション === */
+        .hand-container { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; justify-content: center !important; align-items: flex-end !important; width: 100%; padding: 15px 10px 10px; overflow-x: auto; background: rgba(0,0,0,0.7); border-top: 1.5px solid rgba(255,255,255,0.15); min-height: 125px; flex-shrink: 0; }
+        
+        .card-anchor { transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; pointer-events: auto; margin-right: -10px; flex-shrink: 0; }
+        @media (hover: hover) { 
+            .card-anchor.playable:hover { transform: translateY(-10px) scale(1.05); z-index: 500; filter: brightness(1.15); margin-right: -5px; margin-left: -5px; } 
         }
-
-        /* アニメーション */
-        @keyframes sweepBtn { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
-        @keyframes vortex-pulse { 0% { transform: rotate(0deg) scale(1.5); opacity: 0.15; } 50% { transform: rotate(180deg) scale(2.5); opacity: 0.4; } 100% { transform: rotate(360deg) scale(1.5); opacity: 0.15; } }
-        @keyframes spark-float { 0% { transform: translateY(0) rotate(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(var(--ty)) translateX(var(--tx)) rotate(360deg); opacity: 0; } }
-        @keyframes blink-light { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; box-shadow: 0 0 12px var(--c); background: var(--c); } }
-        @keyframes glitch { 0% { transform: translate(0) } 20% { transform: translate(-2px, 2px) } 40% { transform: translate(-2px, -2px) } 60% { transform: translate(2px, 2px) } 80% { transform: translate(2px, -2px) } 100% { transform: translate(0) } }
-
-        /* 背景レイヤー */
-        .bg-core { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-        .layer-vortex { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent, rgba(138,43,226,0.2), transparent 40%, rgba(64,224,208,0.15), transparent); animation: vortex-pulse 30s linear infinite; filter: blur(90px); }
-        .layer-grid { position: absolute; inset: -50%; background-image: linear-gradient(rgba(64, 224, 208, 0.15) 2.5px, transparent 2.5px), linear-gradient(90deg, rgba(64, 224, 208, 0.15) 2.5px, transparent 2.5px); background-size: 80px 80px; transform: perspective(1000px) rotateX(75deg); animation: grid-scroll 15s linear infinite; mask-image: radial-gradient(circle at center, black, transparent 80%); }
-        @keyframes grid-scroll { 0% { background-position: 0 0; } 100% { background-position: 0 80px; } }
-        .layer-nebula { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, var(--realm-color), transparent 75%); opacity: 0.4; transition: 3s ease; mix-blend-mode: color-dodge; }
-
-        /* === ロゴ領域 (盛った) === */
-        .logo-stack { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 100; margin-bottom: 10px; width: 100%; }
-        .logo-glow { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); width: 80%; height: 60%; background: var(--accent); filter: blur(60px); opacity: 0.2; pointer-events: none; z-index: -1; }
-        .logo-row { font-family: 'Cinzel', serif; font-weight: 900; line-height: 0.85; text-transform: uppercase; background: linear-gradient(to bottom, #FFF8DC 0%, #FFD700 40%, #D4AF37 60%, #8B6B23 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 25px rgba(212,175,55,0.7)); white-space: nowrap; }
-        .row-cross { font-size: clamp(35px, 11vw, 65px); letter-spacing: 14px; }
-        .row-realm { font-size: clamp(35px, 11vw, 65px); letter-spacing: 14px; }
-        .row-x { font-family: 'Orbitron', sans-serif; font-size: clamp(60px, 16vw, 100px); color: var(--accent); -webkit-text-fill-color: var(--accent); text-shadow: 0 0 40px var(--accent), 0 0 80px var(--accent); margin: -15px 0; font-weight: 900; animation: blink-light 4s infinite alternate; }
-        .sub-banner-omega { margin-top: 15px; padding: 6px 20px; position: relative; overflow: hidden; background: rgba(0,0,0,0.95); border: 1px solid var(--accent); box-shadow: 0 0 30px rgba(64,224,208,0.5); display: flex; justify-content: center; align-items: center; clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); }
-        .sub-text-final { font-family: 'Audiowide', sans-serif; font-size: clamp(8px, 2.2vw, 11px); letter-spacing: 5px; color: #fff; position: relative; z-index: 2; text-shadow: 0 0 10px var(--accent); white-space: nowrap; text-transform: uppercase; }
-
-        /* === フレーバーテキスト領域 === */
-        .flavor-box { position: relative; padding: 15px; background: linear-gradient(90deg, rgba(64,224,208,0.1) 0%, rgba(0,0,0,0.8) 50%, rgba(64,224,208,0.1) 100%); border-top: 1px solid rgba(64,224,208,0.3); border-bottom: 1px solid rgba(64,224,208,0.3); margin-bottom: 25px; }
-        .flavor-box::before { content: ''; position: absolute; left: 0; top: 0; width: 3px; height: 100%; background: var(--accent); box-shadow: 0 0 15px var(--accent); }
-        .flavor-box::after { content: ''; position: absolute; right: 0; top: 0; width: 3px; height: 100%; background: var(--accent); box-shadow: 0 0 15px var(--accent); }
-        .corner-br { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent); }
-        .corner-tl { position: absolute; top: 0; left: 0; width: 10px; height: 10px; border-top: 2px solid var(--accent); border-left: 2px solid var(--accent); }
-
-        /* =====================================================================
-           === 究極カードデザイン (Showcase完全準拠 + 黄金比スケール対応) ===
-           ===================================================================== */
         
-        @keyframes gear-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes digital-rain { 0% { transform: translateY(-100%); opacity: 0; } 20% { opacity: 0.6; } 80% { opacity: 0.6; } 100% { transform: translateY(180%); opacity: 0; } }
-        @keyframes liquid-morph { 0% { border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%; } 100% { border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%; } }
-        @keyframes needle-move { 0% { transform: rotate(-45deg); } 50% { transform: rotate(65deg); } 100% { transform: rotate(-45deg); } }
-        @keyframes needle-panic { 0% { transform: rotate(85deg); } 50% { transform: rotate(105deg); } 100% { transform: rotate(85deg); } }
-        @keyframes alert-glow { 0%, 100% { box-shadow: 0 0 5px #f00; filter: brightness(1); } 50% { box-shadow: 0 0 15px #f00; filter: brightness(1.5); } }
-        @keyframes arcane-spin { 0% { transform: rotate(0deg) scale(1); opacity: 0.2; } 50% { transform: rotate(180deg) scale(1.05); opacity: 0.4; } 100% { transform: rotate(360deg) scale(1); opacity: 0.2; } }
-
-        .card-wrapper-3d { width: var(--card-w); height: var(--card-h); perspective: 1000px; position: relative; }
-        .card-3d { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1); border-radius: calc(var(--card-w)*0.02); }
-        .card-content { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; overflow: hidden; border-radius: inherit; }
-
-        .mat-steam { background: radial-gradient(circle at 50% 10%, var(--r-color-bright) 0%, #0d0400 100%); border: calc(var(--card-w)*0.046) solid #4a2f1c; box-shadow: 0 10px 20px #000, inset 2px 2px 4px rgba(255,255,255,0.15), inset -2px -2px 4px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.9); }
-        .mat-steam::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 0% 0%, transparent 58%, rgba(255,255,255,0.05) 60%, transparent 63%), radial-gradient(circle at 100% 100%, transparent 38%, rgba(255,255,255,0.03) 40%, transparent 44%), radial-gradient(circle at 50% 50%, transparent 70%, rgba(255,255,255,0.02) 72%, transparent 75%); background-size: 40% 40%; opacity: 0.8; z-index: 1; }
+        /* 出せないカード: 透明度0.45、ホバーアクション無効化 */
+        .card-anchor.not-playable { opacity: 0.45 !important; filter: grayscale(60%) brightness(0.65) !important; transform: scale(0.95); pointer-events: none !important; cursor: default; }
         
-        .mat-fantasy { background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.85) 100%), radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%); border: calc(var(--card-w)*0.02) solid rgba(255,255,255,0.95); border-radius: 26% 6% !important; box-shadow: 0 0 20px var(--r-color-glow), inset 0 0 10px rgba(255,255,255,0.2); backdrop-filter: blur(5px); }
-        
-        .mat-cyber { background: #000; clip-path: polygon(0 20%, 20% 0, 100% 0, 100% 80%, 80% 100%, 0 100%); box-shadow: inset 0 0 25px var(--r-color-dim); border-left: calc(var(--card-w)*0.03) solid var(--r-color); border-radius: 0 !important; }
-        
-        .mat-void-planet { background: radial-gradient(circle at 50% 50%, #fff4 0%, #000 100%); box-shadow: 0 0 25px #fff7, inset 0 0 40px #fff2; animation: liquid-morph 5s infinite alternate ease-in-out; border-radius: 40% !important; }
-        .mat-void-ruins { background: radial-gradient(circle at 50% 50%, #2a2a2a 0%, #000 100%); box-shadow: 0 0 20px #444, inset 0 0 40px #111; animation: liquid-morph 8s infinite alternate-reverse ease-in-out; border-radius: 40% !important; }
+        .card-anchor.is-my-turn.playable { pointer-events: auto; }
+        .card-anchor.selected { transform: translateY(-20px) scale(1.15); z-index: 500; filter: brightness(1.25); border: 2.5px solid #fff; border-radius: 8px; margin-right: 15px; margin-left: 15px; }
 
-        .card-info-top { position: absolute; top: 8%; left: 8%; padding: 4% 9%; background: #000; border-left: calc(var(--card-w)*0.04) solid var(--r-color); transform: translateZ(40px); z-index: 50; box-shadow: 0 4px 10px #000; border-radius: 2px; }
-        .card-info-top span { font-size: calc(var(--card-w)*0.065); font-weight: 900; letter-spacing: 1px; color: #fff; }
-        .mat-void-planet .card-info-top { background: #fff; border-left-color: #fff; box-shadow: 0 0 10px #fff; }
-        .mat-void-planet .card-info-top span { color: #000; }
+        /* 特殊バッジ */
+        .special-badge-base { position: absolute; left: -10px; top: 40%; background: linear-gradient(90deg, #FF0000, #900); border: 1.5px solid #FFF; color: #FFF; font-size: 8px; font-weight: 1000; padding: 4px 8px; text-align: center; border-radius: 3px 8px 8px 3px; box-shadow: 0 5px 15px rgba(0,0,0,0.9); z-index: 200; line-height: 1.1; text-transform: uppercase; letter-spacing: 0.5px; transform: translateZ(60px); }
 
-        .card-icon-overload { position: absolute; top: 58%; left: 50%; width: 56%; height: 56%; transform: translate(-50%, -50%) translateZ(50px); z-index: 45; filter: drop-shadow(0 0 3px rgba(0,0,0,0.9)) drop-shadow(0 0 8px var(--r-color)); }
-        
-        .card-footer-peak { position: absolute; bottom: 0; width: 100%; padding: 25% 0 10%; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 40%, transparent 100%); text-align: center; color: #fff; z-index: 50; transform: translateZ(35px); text-shadow: 0 0 8px var(--r-color), 0 0 4px #000; letter-spacing: 2px; font-weight: 900; font-size: calc(var(--card-w)*0.13); }
+        /* ドローボタン */
+        .draw-action-footer { width: 100%; padding: 0 10px 10px; flex-shrink: 0; }
+        .btn-mega-draw { width: 100%; height: 60px; background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%); color: #000; font-weight: 1000; font-size: 22px; letter-spacing: 8px; clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px); cursor: pointer; transition: 0.3s; }
+        .btn-mega-draw:not(:disabled) { animation: draw-pulse 3s infinite ease-in-out; }
+        .btn-mega-draw:disabled { background: #1a1a1a; color: #444; filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; clip-path: none; border: 1px solid #333; }
 
-        .steam-meter-abs { position: absolute; top: 8%; right: 6%; width: 20%; height: 20%; background: #2a1508; border: calc(var(--card-w)*0.016) solid #5d3a1a; border-radius: 50%; transform: translateZ(45px); z-index: 46; box-shadow: inset 0 0 5px #000; }
-        .steam-needle { position: absolute; top: 50%; left: 50%; width: 1px; height: 45%; background: #f33; transform-origin: bottom center; transform: translate(-50%, -100%) rotate(-45deg); animation: needle-move 5s infinite ease-in-out; }
-        .special-overload .steam-needle { animation: needle-panic 0.1s infinite linear; }
-        .steam-meter-psi { position: absolute; bottom: 8%; width: 100%; text-align: center; font-size: calc(var(--card-w)*0.035); color: var(--r-color); font-family: 'Special Elite'; font-weight: 900; }
+        /* カードマテリアル */
+        .mat-steam { background: radial-gradient(circle at 50% 10%, var(--r-color-bright) 0%, #0d0400 100%); border: calc(var(--card-w)*0.046) solid #4a2f1c; box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 2px 2px 4px rgba(255,255,255,0.15); }
+        .mat-fantasy { background: radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%); border: calc(var(--card-w)*0.02) solid rgba(255,255,255,0.95); border-radius: 26% 6% !important; box-shadow: 0 0 30px var(--r-color-glow); }
+        .mat-cyber { background: #000; clip-path: polygon(0 20%, 20% 0, 100% 0, 100% 80%, 80% 100%, 0 100%); border-left: calc(var(--card-w)*0.03) solid var(--r-color); box-shadow: inset 0 0 40px var(--r-color-dim); }
+        .mat-void-planet { background: radial-gradient(circle at 50% 50%, #fff4 0%, #000 100%); border-radius: 40% !important; box-shadow: 0 0 20px #fff4; }
 
-        .cyber-rain-layer { position: absolute; inset: 0; overflow: hidden; opacity: 0.7; z-index: 5; pointer-events: none; }
-        .rain-bit { position: absolute; color: var(--r-color); font-family: 'Orbitron'; font-size: calc(var(--card-w)*0.05); font-weight: 900; writing-mode: vertical-rl; animation: digital-rain 2.5s linear infinite; text-shadow: 0 0 4px var(--r-color); }
+        .card-info-top { position: absolute; top: 6%; left: 6%; padding: 3% 8%; background: #000; border-left: calc(var(--card-w)*0.04) solid var(--r-color); z-index: 50; }
+        .card-info-top span { font-size: calc(var(--card-w)*0.07); font-weight: 900; color: #fff; text-transform: uppercase; }
+        .card-footer-peak { position: absolute; bottom: 0; width: 100%; padding: 25% 0 10%; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%); text-align: center; color: #fff; z-index: 50; font-weight: 900; font-size: calc(var(--card-w)*0.14); }
 
-        .arcane-circle-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 4; pointer-events: none; overflow: hidden; border-radius: inherit; }
+        /* リザルト画面 */
+        .result-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.99); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(25px); overflow-y: auto; overflow-x: hidden; }
+        .result-title { font-family: 'Cinzel', serif; font-size: clamp(1rem, 7vw, 2.2rem); font-weight: 950; letter-spacing: 0px; color: var(--steam-gold); margin-bottom: 1.5rem; text-shadow: 0 0 25px var(--steam-gold); width: 100%; text-align: center; line-height: 1.1; overflow-wrap: break-word; max-width: 100%; }
 
-        .badge-draw2-alert { position: absolute; top: 28%; left: -6%; background: #a00000; border: calc(var(--card-w)*0.016) solid #FFD700; padding: 4% 8%; transform: translateZ(70px) rotate(-12deg); box-shadow: 2px 4px 10px rgba(0,0,0,0.8); z-index: 55; animation: alert-glow 1s infinite alternate; }
-        .badge-draw2-alert span { font-family: 'Special Elite', cursive; font-size: calc(var(--card-w)*0.11); font-weight: 900; color: #fff; text-shadow: 0 0 5px #000; white-space: nowrap; }
-
-        .badge-reverse-final { position: absolute; top: 28%; left: -6%; background: #1a012a; border: calc(var(--card-w)*0.016) solid var(--r-color); padding: 3% 7%; transform: translateZ(70px) rotate(-15deg); box-shadow: 2px 4px 10px rgba(0,0,0,0.8); z-index: 55; }
-        .badge-reverse-final span { font-size: calc(var(--card-w)*0.09); font-weight: 900; color: #fff; letter-spacing: 1px; white-space: nowrap; }
-
-        .badge-limit-wild { position: absolute; bottom: 23%; left: 0; width: 100%; text-align: center; z-index: 60; transform: translateZ(60px); }
-        .badge-limit-wild span { font-family: 'Cinzel Decorative'; font-size: calc(var(--card-w)*0.16); font-weight: 900; font-style: italic; color: #fff; text-shadow: 0 0 10px #fff; }
-
-        /* ===================================================================== */
-
-        /* === UIパーツ === */
-        .panel-omega { position: relative; z-index: 500; width: 100%; max-width: 440px; background: rgba(8,12,20,0.98); border: 1px solid var(--accent); padding: 30px 25px; clip-path: polygon(0 20px, 20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%); box-shadow: 0 0 80px rgba(64,224,208,0.2); }
-        
-        .input-cyber-container { position: relative; width: 85%; margin: 0 auto 15px; }
-        .input-cyber-bg { position: absolute; inset: -2px; background: linear-gradient(90deg, var(--accent), var(--magic-purple)); opacity: 0; filter: blur(8px); transition: opacity 0.3s; z-index: -1; }
-        .input-cyber-container:focus-within .input-cyber-bg { opacity: 0.6; }
-        .input-cyber { width: 100%; display: block; padding: 14px; background: rgba(0,0,0,0.8); border: 1px solid rgba(64,224,208,0.5); color: #fff; text-align: center; font-size: 16px; outline: none; font-family: 'Orbitron', 'Exo 2', sans-serif; font-weight: 900; letter-spacing: 2px; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); transition: 0.3s; }
-        .input-cyber:focus { background: rgba(0,20,20,0.9); }
-        .input-cyber::placeholder { color: rgba(255,255,255,0.3); font-size: 12px; letter-spacing: 4px; }
-
-        .btn-omega-singularity { position: relative; display: flex; align-items: center; justify-content: center; min-height: 52px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: none; font-weight: 900; font-size: 20px; cursor: pointer; width: 100%; animation: sweepBtn 3s linear infinite; box-shadow: 0 5px 20px rgba(212,175,55,0.4); transition: 0.3s; clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); }
-        .btn-omega-singularity::before { content: ''; position: absolute; inset: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transform: translateX(-100%); transition: 0.5s; clip-path: inherit; }
-        .btn-omega-singularity:hover::before { transform: translateX(100%); }
-        .btn-omega-singularity:hover { filter: brightness(1.2); box-shadow: 0 0 30px rgba(212,175,55,0.8); text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-        .btn-omega-singularity:disabled { filter: grayscale(1) brightness(0.5); cursor: not-allowed; opacity: 0.6; animation: none; box-shadow: none; }
-        
-        .btn-draw-area { min-height: 70px; border-top: 2.5px solid var(--magic-purple); background: rgba(0,0,0,0.95); padding: 10px 15px; z-index: 200; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); }
-
-        .btn-sub { min-height: 44px; background: rgba(64,224,208,0.1); border: 1px solid var(--accent); color: var(--accent); font-weight: 900; font-size: 15px; border-radius: 4px; transition: 0.3s; }
-        .btn-sub:hover { background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent); }
-        .btn-utility { width: 100%; padding: 11px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; font-weight: 900; font-size: 14px; border-radius: 4px; letter-spacing: 4px; transition: 0.3s; }
-        .btn-utility:hover { background: rgba(255,255,255,0.2); }
-
-        /* 待機画面スロット (最大5人対応) */
-        .slot-Omega-Final { width: 85%; margin: 0 auto 5px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-left: 4px solid var(--accent); padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 12px 100%, 0 calc(100% - 12px)); min-height: 52px; transition: 0.3s; }
-        .slot-Omega-Final:hover { background: rgba(64,224,208,0.05); border-left-width: 8px; }
-        .slot-Omega-Final.empty { opacity: 0.25; border-left-color: rgba(255,255,255,0.2); border-left-style: dashed; border-left-width: 2px; }
-        .slot-name-tag { font-family: 'Exo 2', sans-serif; font-weight: 900; font-size: 17px; letter-spacing: 1px; }
-        .slot-bot-type { font-size: 10px; color: var(--accent); opacity: 0.8; font-family: 'Orbitron'; margin-left: 8px; }
-
-        /* HUD & イラスト */
-        .opp-mega-grid { flex-shrink: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 8px 12px; background: rgba(0,0,0,0.85); border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 50; }
-        .opp-card-omega-peak { padding: 6px 12px; border-radius: 4px; background: rgba(255,255,255,0.04); border-left: 3.5px solid transparent; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; min-height: 52px; }
-        .opp-card-omega-peak.active { border-left-color: var(--accent); background: rgba(64,224,208,0.12); box-shadow: 0 0 15px rgba(64,224,208,0.25); }
-        
-        /* 手札スタックイラスト */
-        .card-stack-visual { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); height: 35px; width: 45px; display: flex; justify-content: flex-end; align-items: center; pointer-events: none; }
-        .stack-item { position: absolute; height: 32px; width: 23px; background: linear-gradient(135deg, #444, #111); border: 0.5px solid rgba(255,255,255,0.4); border-radius: 2px; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
-
-        .cycle-strip-classic { flex-shrink: 0; display: flex; justify-content: space-between; padding: 12px; background: #000; border-bottom: 2px solid var(--border); z-index: 40; }
-        .cycle-node-container { display: flex; flex-direction: column; align-items: center; flex: 1; }
-        .cycle-light { width: 100%; height: 5px; background: rgba(255,255,255,0.1); margin-top: 6px; border-radius: 2px; }
-        .cycle-light.active { background: var(--c); box-shadow: 0 0 12px var(--c); }
-        .cycle-light.next { animation: blink-light 1.5s infinite; --c: rgba(255,255,255,0.5); background: rgba(255,255,255,0.2); }
-        .cycle-label { font-size: 11px; font-weight: 900; color: rgba(255,255,255,0.3); transition: 0.3s; }
-        .cycle-label.active { color: var(--c); text-shadow: 0 0 8px var(--c); }
-        
-        .field-area-recapped { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 10; padding: 15px 0; }
-        .terminal-log-omega { flex-shrink: 0; height: 55px; margin: 0 12px 10px; padding: 8px 15px; font-size: 12px; background: rgba(0,0,0,0.85); border-left: 5px solid var(--accent); overflow-y: auto; color: #fff; font-family: monospace; z-index: 30; line-height: 1.5; }
-        .hand-area-recapped { flex-shrink: 0; display: flex; gap: 4px; padding: 14px 12px; overflow-x: auto; background: rgba(0,0,0,0.92); min-height: 165px; border-top: 1px solid rgba(255,255,255,0.2); z-index: 20; }
-        
-        /* === SEボタン === */
-        .btn-sound-toggle { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 1000; width: 44px; height: 44px; background: rgba(0,0,0,0.85); border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 15px var(--accent); transition: 0.3s; color: var(--accent); }
-        .btn-sound-toggle:hover { scale: 1.1; background: var(--accent); color: #000; box-shadow: 0 0 25px var(--accent); }
-
-        /* === 出せないカードの視認性改善 === */
-        .not-playable { opacity: 0.7 !important; filter: brightness(0.6) grayscale(50%) !important; transform: translateY(8px) scale(0.95) !important; pointer-events: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
+
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
+        const socket = io('https://crossrealm-server.onrender.com');
 
-        const SFX = { 
-            play: 'https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3', 
-            draw: 'https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3',
-            turn: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'
-        };
-
+        // === 定数 ===
         const REALMS = {
             GEAR:    { n: '歯車', color: '#8B4513', bright: '#FF8C00', glow: 'rgba(212,175,55,1)', theme: 'steam', font: 'Special Elite' },
             ARCHIVE: { n: '古文書', color: '#B22222', bright: '#FF3131', glow: 'rgba(255,49,49,1)', theme: 'steam', font: 'Special Elite' },
@@ -220,59 +167,92 @@
             RUINS:   { n: '廃墟', color: '#999999', bright: '#CCCCCC', glow: 'rgba(150,150,150,1)', theme: 'void-ruins', font: 'Audiowide' }
         };
 
-        const SORT_WEIGHT = { GEAR:1, ARCHIVE:2, FOUNTAIN:3, ICEAGE:4, MACHINE:5, BATTERY:6, PLANET:7, RUINS:8 };
-        const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
-        const NEXT_MAP = { GEAR: ['GEAR','ICEAGE'], ICEAGE: ['FOUNTAIN','BATTERY'], FOUNTAIN: ['FOUNTAIN','BATTERY'], BATTERY: ['MACHINE','ARCHIVE'], MACHINE: ['MACHINE','ARCHIVE'], ARCHIVE: ['GEAR','ICEAGE'] };
+        const NEXT_MAP = { GEAR: ['GEAR', 'ICEAGE'], ICEAGE: ['FOUNTAIN', 'BATTERY'], FOUNTAIN: ['FOUNTAIN', 'BATTERY'], BATTERY: ['MACHINE', 'ARCHIVE'], MACHINE: ['MACHINE', 'ARCHIVE'], ARCHIVE: ['GEAR', 'ICEAGE'] };
+        const SORT_WEIGHT = { GEAR: 1, ICEAGE: 2, FOUNTAIN: 3, BATTERY: 4, MACHINE: 5, ARCHIVE: 6, PLANET: 7, RUINS: 8 };
 
-        const CPU_BOTS = [
-            { name: 'C.A.I.N.', type: 'AGGRO' },
-            { name: 'O.R.A.C.L.E.', type: 'DEFENSE' },
-            { name: 'N.E.X.U.S.', type: 'FLEX' },
-            { name: 'B.A.H.A.M.U.T.', type: 'CHAOS' },
-            { name: 'G.O.L.E.M.', type: 'TANK' },
-            { name: 'S.I.R.E.N.', type: 'SPEED' },
-            { name: 'A.E.G.I.S.', type: 'BALANCE' },
-            { name: 'F.E.N.R.I.R.', type: 'HUNTER' }
-        ];
+        // === サブコンポーネント定義 ===
+        const GearSVG = ({ color }) => (
+            <svg viewBox="0 0 100 100" className="w-full h-full"><defs><linearGradient id={`grad-gear-${color}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: color, stopOpacity: 1}} /><stop offset="100%" style={{stopColor: '#4b2f1c', stopOpacity: 1}} /></linearGradient></defs><path fill={`url(#grad-gear-${color})`} d="M100 56.5v-13l-12.7-2.1c-1.1-4.5-3-8.6-5.4-12.3l7.4-10.4-9.2-9.2-10.4 7.4c-3.7-2.4-7.8-4.3-12.3-5.4L55.3 0h-13l-2.1 12.7c-4.5 1.1-8.6 3-12.3 5.4l-10.4-7.4-9.2 9.2 7.4 10.4c-2.4 3.7-4.3 7.8-5.4 12.3L0 43.5v13l12.7 2.1c1.1 4.5 3 8.6 5.4 12.3l-7.4 10.4 9.2 9.2 10.4-7.4c3.7 2.4 7.8 4.3 12.3 5.4l2.1 12.7h13l2.1-12.7c4.5-1.1 8.6-3 12.3-5.4l10.4 7.4 9.2-9.2-7.4-10.4c2.4-3.7 4.3-7.8 5.4-12.3l12.7-2.1zM50 71c-11.6 0-21-9.4-21-21s9.4-21 21-21 21 9.4 21 21-9.4 21-21 21z" /><circle cx="50" cy="50" r="12" fill="#000" /></svg>
+        );
+        const MagicCircleSVG = ({ color }) => (
+            <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible"><defs><filter id="magic-glow"><feGaussianBlur stdDeviation="2" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter></defs><g filter="url(#magic-glow)"><g style={{ animation: 'rotate-outer 10s linear infinite', transformOrigin: 'center' }}><circle cx="50" cy="50" r="48" fill="none" stroke={color} strokeWidth="1.5" strokeDasharray="10 5" /></g><g style={{ animation: 'rotate-inner 15s linear infinite', transformOrigin: 'center' }}><circle cx="50" cy="50" r="35" fill="none" stroke={color} strokeWidth="1" /><path d="M50 15 L80 70 L20 70 Z M50 85 L20 30 L80 30 Z" fill="none" stroke={color} strokeWidth="1" /><circle cx="50" cy="50" r="10" fill="none" stroke={color} strokeWidth="2" /></g></g></svg>
+        );
+        
+        const SingularityEmblem = () => (
+            <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+                <defs><filter id="emblem-glow-main"><feGaussianBlur stdDeviation="3" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter></defs>
+                <g filter="url(#emblem-glow-main)">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeDasharray="8 4" opacity="0.6" style={{animation: 'rotate-outer 15s linear infinite', transformOrigin:'center'}}/>
+                    <g style={{animation: 'rotate-inner 25s linear infinite', transformOrigin:'center'}} transform="translate(50,50) scale(0.7) translate(-50,-50)"><path fill="var(--steam-gold)" opacity="0.8" d="M100 56.5v-13l-12.7-2.1c-1.1-4.5-3-8.6-5.4-12.3l7.4-10.4-9.2-9.2-10.4 7.4c-3.7-2.4-7.8-4.3-12.3-5.4L55.3 0h-13l-2.1 12.7c-4.5 1.1-8.6 3-12.3 5.4l-10.4-7.4-9.2 9.2 7.4 10.4c-2.4 3.7-4.3 7.8-5.4 12.3L0 43.5v13l12.7 2.1c1.1 4.5 3 8.6 5.4 12.3l-7.4 10.4 9.2 9.2 10.4-7.4c3.7 2.4 7.8 4.3 12.3 5.4l2.1 12.7h13l2.1-12.7c4.5-1.1 8.6-3 12.3-5.4l10.4 7.4 9.2-9.2-7.4-10.4c2.4-3.7 4.3-7.8 5.4-12.3l12.7-2.1zM50 71c-11.6 0-21-9.4-21-21s9.4-21 21-21 21 9.4 21 21-9.4 21-21 21z" /></g>
+                    <path d="M30 30 L70 70 M70 30 L30 70" stroke="#fff" strokeWidth="4" strokeLinecap="square" opacity="0.5" />
+                    <text x="50" y="55" fill="var(--accent)" fontSize="14" fontWeight="1000" font-family="Orbitron" opacity="0.8" text-anchor="middle">X</text>
+                </g>
+            </svg>
+        );
 
         const IconRenderer = ({ r, spec, className }) => {
-            const p = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: spec ? 4 : 2, strokeLinecap: "round", className: className || "w-full h-full" };
-            const SpecialBurst = () => spec && (
-                <g className="animate-[gear-spin_10s_linear_infinite]">
-                    <circle cx="12" cy="12" r="11" strokeWidth="0.8" strokeDasharray="4 2" opacity="0.6" />
-                    {[0, 60, 120, 180, 240, 300].map(d => (
-                        <path key={d} d="M12 2 L13 5 L11 5 Z" fill="currentColor" transform={`rotate(${d} 12 12)`} />
-                    ))}
-                </g>
-            );
-
+            const p = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: spec ? 5 : 2.5, strokeLinecap: "round", className: className || "w-full h-full" };
             switch (r) {
-                case 'GEAR': return <svg {...p}><SpecialBurst/><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" /></svg>;
-                case 'ARCHIVE': return <svg {...p}><SpecialBurst/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15Z" /><path d="M9 10h6" strokeWidth="1.5" opacity={spec ? 1 : 0} /></svg>;
-                case 'FOUNTAIN': return <svg {...p}><SpecialBurst/><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4A9.7 9.7 0 0 1 12 22z" /></svg>;
-                case 'ICEAGE': return <svg {...p}><SpecialBurst/><path d="M12 2v20M2 12h20M7 7l10 10M7 17L17 7" /></svg>;
-                case 'MACHINE': 
-                    if (spec) return <svg {...p}><SpecialBurst/><path d="M12 2v20M7 7l5-5 5 5M17 17l-5 5-5-5" strokeWidth="3.5" /></svg>;
-                    return <svg {...p}><rect x="4" y="4" width="16" height="16" rx="2" ry="2" /><path d="M9 9h6v6H9z" /></svg>;
-                case 'BATTERY': return <svg {...p}><SpecialBurst/><rect width="16" height="10" x="2" y="7" rx="2" ry="2" /><path d="M22 11v2" /></svg>;
+                case 'GEAR': return <svg {...p}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" /></svg>;
+                case 'ARCHIVE': return <svg {...p}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15Z" /></svg>;
+                case 'FOUNTAIN': return <svg {...p}><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4A9.7 9.7 0 0 1 12 22z" /></svg>;
+                case 'ICEAGE': return <svg {...p}><path d="M12 2v20M2 12h20M7 7l10 10M7 17L17 7" /></svg>;
+                case 'MACHINE': return <svg {...p}><rect x="4" y="4" width="16" height="16" rx="2" ry="2" /><path d="M9 9h6v6H9z" /></svg>;
+                case 'BATTERY': return <svg {...p}><rect width="16" height="10" x="2" y="7" rx="2" ry="2" /><path d="M22 11v2" /></svg>;
                 case 'PLANET': return <svg {...p}><circle cx="12" cy="12" r="10" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>;
                 case 'RUINS': return <svg {...p}><path d="M3 21h18M5 21V10a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11M9 21v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4" /></svg>;
                 default: return null;
             }
         };
 
-        const CardStackVisual = ({ count, r }) => {
-            const maxStack = Math.min(count, 5);
+        const CycleDiagramSmall = ({ currentRealm }) => {
+            const items = [
+                {k:'GEAR', n:'歯車'}, {k:'ICEAGE', n:'氷河期'}, {k:'FOUNTAIN', n:'噴水'}, 
+                {k:'BATTERY', n:'電池'}, {k:'MACHINE', n:'機械'}, {k:'ARCHIVE', n:'古文書'}
+            ];
             return (
-                <div className="card-stack-visual">
-                    {[...Array(maxStack)].map((_, i) => (
-                        <div key={i} className="stack-item" style={{ right: `${i * 3.5}px`, bottom: `${i * 2.5}px`, zIndex: i, borderColor: i === maxStack-1 ? REALMS[r]?.bright : 'rgba(255,255,255,0.2)' }} />
-                    ))}
+                <div className="tactical-cycle-wheel">
+                    <svg viewBox="0 0 120 120" className="w-full h-full overflow-visible">
+                        <defs><marker id="arrowhead-master" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="rgba(255,255,255,0.6)" /></marker></defs>
+                        <circle cx="60" cy="60" r="48" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" strokeDasharray="3 3" />
+                        <circle cx="60" cy="60" r="13" fill="rgba(255,255,255,0.05)" stroke="#fff" strokeWidth="0.8" />
+                        <text x="60" y="63" fill="#fff" fontSize="4.5" fontWeight="1000" textAnchor="middle">WILD</text>
+                        {items.map((item, i) => {
+                            const angle = (i * 60 - 90) * (Math.PI / 180);
+                            const x = 60 + 46 * Math.cos(angle);
+                            const y = 60 + 46 * Math.sin(angle);
+                            const isCurrent = item.k === currentRealm;
+                            const startA = (i * 60 - 90 + 15) * (Math.PI / 180);
+                            const endA = (i * 60 - 90 + 45) * (Math.PI / 180);
+                            const r_arrow = 46;
+                            return (
+                                <g key={item.k} style={{ color: REALMS[item.k].color }}>
+                                    <path d={`M ${60 + r_arrow * Math.cos(startA)} ${60 + r_arrow * Math.sin(startA)} A ${r_arrow} ${r_arrow} 0 0 1 ${60 + r_arrow * Math.cos(endA)} ${60 + r_arrow * Math.sin(endA)}`} fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.2" markerEnd="url(#arrowhead-master)" />
+                                    <circle cx={x} cy={y} r={isCurrent ? 12 : 9.5} fill={isCurrent ? "currentColor" : "rgba(0,0,0,0.8)"} stroke="currentColor" strokeWidth={isCurrent ? 2.5 : 1} style={{filter: isCurrent ? `drop-shadow(0 0 10px ${REALMS[item.k].color})` : 'none'}} />
+                                    <text x={x} y={y+2.5} fill="#fff" fontSize="6.5" fontWeight="1000" textAnchor="middle" opacity={isCurrent?1:0.85}>{item.n}</text>
+                                </g>
+                            );
+                        })}
+                    </svg>
                 </div>
             );
         };
 
-        const CardView = ({ card, playable, onClick, isField, style, zIndex }) => {
+        const PlayerSlot = ({ player, isCurrent, color }) => (
+            <div className={`player-slot ${isCurrent ? 'active shadow-[0_0_15px_rgba(255,255,255,0.2)]' : ''} ${player.isEliminated ? 'eliminated border-red-500/50' : ''}`}>
+                <div className="p-info-name truncate opacity-90 font-bold">{player.name}</div>
+                <div className="p-info-count font-black text-[20px] font-['Orbitron']">{player.handCount}枚</div>
+                
+                <div className="hand-stack-visual" style={{ position: 'absolute', top: '8px', right: '28px', width: '14px', height: '20px', zIndex: 10, opacity: 0.9 }}>
+                    {[...Array(Math.min(player.handCount, 5))].map((_, i) => (
+                        <div key={i} className="absolute bg-[#111] border border-white/40 rounded-sm shadow-md" style={{ width: '100%', height: '100%', top: `${i * 2.5}px`, left: `${i * 2.5}px`, zIndex: i, borderColor: color }} />
+                    ))}
+                </div>
+                {player.isEliminated && <div className="eliminated-tag shadow-2xl">BURST</div>}
+            </div>
+        );
+
+        const CardView = ({ card, playable, onClick, isField, isSelected, isMyTurn }) => {
             if (!card?.realm) return null;
             let dr = card.realm;
             if (card.wasRuins) dr = 'RUINS'; else if (card.wasPlanet) dr = 'PLANET'; else if (card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) dr = 'FOUNTAIN';
@@ -284,335 +264,342 @@
                 if (card.realm === 'GEAR') specialLabel = "DRAW 2";
                 else if (card.realm === 'MACHINE') specialLabel = "REVERSE";
                 else if (card.realm === 'FOUNTAIN') specialLabel = "LIMIT WILD";
-                else if (card.realm === 'PLANET' || card.realm === 'RUINS') specialLabel = "WILD";
+                else specialLabel = "WILD";
             }
 
-            const cardRef = useRef(null);
-            const [isHovered, setIsHovered] = useState(false);
-
-            const activeStyle = isHovered && !isField ? { transform: 'translateY(-15px)', zIndex: 1000 } : { transform: 'translateY(0)', zIndex: zIndex };
-
             return (
-                <div 
-                    className={`card-wrapper-3d ${!playable && !isField ? 'not-playable' : ''}`} 
-                    style={{...style, ...activeStyle, transition: 'transform 0.2s, z-index 0s'}} 
-                    ref={cardRef} 
-                    onMouseEnter={() => playable && setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                    onClick={onClick}
-                >
-                    <div className={`card-3d mat-${rData.theme}`}>
-                        <div className="card-content">
-                            {rData.theme === 'steam' && (
-                                <>
-                                    <div className="steam-meter-abs"><div className={`steam-needle ${spec ? 'special-overload' : ''}`}></div><div className="steam-meter-psi">PSI</div></div>
-                                </>
-                            )}
-                            {rData.theme === 'cyber' && <div className="cyber-rain-layer">{[...Array(5)].map((_,i)=><div key={i} className="rain-bit" style={{left:`${i*20+10}%`, animationDelay:`${i*0.4}s`}}>10110</div>)}</div>}
-                            {rData.theme === 'fantasy' && (
-                                <div className="arcane-circle-layer">
-                                    <svg viewBox="0 0 200 200" className="w-[125%] h-[125%] animate-[arcane-spin_45s_linear_infinite]" style={{ color: rData.color }}>
-                                        <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="3 7"/>
-                                        <circle cx="100" cy="100" r="82" fill="none" stroke="currentColor" strokeWidth="1"/>
-                                        <path d="M100 8 L188 155 L12 155 Z" fill="none" stroke="currentColor" strokeWidth="0.8"/>
-                                        <path d="M100 192 L12 45 L188 45 Z" fill="none" stroke="currentColor" strokeWidth="0.8"/>
-                                        <circle cx="100" cy="100" r="48" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="8 4"/>
-                                    </svg>
-                                </div>
-                            )}
-                            
-                            <div className="card-info-top"><span>{dr}</span></div>
-                            <div className="card-icon-overload" style={{ color: rData.bright }}><IconRenderer r={dr} spec={spec} /></div>
-                            <div className={`card-footer-peak font-['${rData.font}']`}>{rData.n}</div>
-                            
-                            {spec && (
-                                <div className="special-badge-base">
-                                    {specialLabel.split(' ').map((word, i) => (
-                                        <div key={i}>{word}</div>
-                                    ))}
-                                </div>
-                            )}
+                <div className={`card-anchor flex-shrink-0 ${!playable && !isField ? 'not-playable' : 'playable'} ${isSelected ? 'selected' : ''} ${isMyTurn ? 'is-my-turn' : ''}`} onClick={onClick}>
+                    <div className={`card-surface mat-${rData.theme}`} 
+                         style={{ '--r-color': rData.color, '--r-color-bright': rData.bright, '--r-color-glow': rData.glow, '--r-color-dim': rData.dim || 'rgba(0,0,0,0.5)', width: 'var(--card-w)', height: 'var(--card-h)', borderRadius:'8px', overflow:'hidden', position:'relative', border: 'none' }}>
+                        <div className="card-info-top"><span>{dr}</span></div>
+                        <div className="absolute top-[58%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] z-[40]" style={{ color: rData.bright, filter: `drop-shadow(0 0 10px ${rData.glow})` }}>
+                            <IconRenderer r={dr} spec={spec} />
                         </div>
+                        <div className={`card-footer-peak font-['${rData.font}']`}>{rData.n}</div>
+                        {spec && <div className="special-badge-base">{specialLabel.split(' ').map((word, i) => <div key={i}>{word}</div>)}</div>}
                     </div>
                 </div>
             );
         };
 
-        const SparkleVFX = () => {
-            const sparks = useMemo(() => [...Array(30)].map((_, i) => ({ id: i, x: Math.random() * 100, y: Math.random() * 100, tx: (Math.random() - 0.5) * 600, ty: (Math.random() - 0.5) * 600, delay: Math.random() * 8, size: Math.random() * 5 + 2 })), []);
+        const MatrixSequentialRain = () => {
+            const canvasRef = useRef(null);
+            useEffect(() => {
+                const canvas = canvasRef.current; const ctx = canvas.getContext('2d'); let animationId;
+                const updateSize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+                updateSize();
+                const fontSize = 16; const columns = Math.floor(canvas.width / fontSize);
+                const heads = new Array(columns).fill(0).map(() => Math.floor(Math.random() * (canvas.height / fontSize)));
+                const draw = () => {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.015)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.font = `900 ${fontSize}px Orbitron`;
+                    for (let i = 0; i < columns; i++) {
+                        if (Math.random() > 0.96) {
+                            const x = i * fontSize; const y = heads[i] * fontSize;
+                            ctx.fillStyle = Math.random() > 0.5 ? '#00FF00' : '#AA00FF';
+                            ctx.fillText(Math.floor(Math.random()*2).toString(), x, y);
+                            heads[i]++; if (heads[i] * fontSize > canvas.height && Math.random() > 0.98) heads[i] = 0;
+                        }
+                    }
+                    animationId = requestAnimationFrame(draw);
+                };
+                draw();
+                window.addEventListener('resize', updateSize);
+                return () => { cancelAnimationFrame(animationId); window.removeEventListener('resize', updateSize); };
+            }, []);
+            return <canvas ref={canvasRef} className="matrix-code-canvas" />;
+        };
+
+        const AstralBackground = () => {
+            const items = useMemo(() => {
+                const arr = [];
+                for(let i=0; i<5; i++) arr.push({ id: `m${i}`, type: 'magic', color: i%2?'#00F3FF':'#1E90FF', sx: `${(Math.random()*60)-30}vw`, ex: `${(Math.random()*20)-10}vw`, delay: `${Math.random()*20}s`, dur: `${16+Math.random()*12}s`, op: 0.4, rot: `${360+Math.random()*720}deg` });
+                for(let i=0; i<4; i++) {
+                    const isLtr = Math.random() > 0.5;
+                    const sx = isLtr ? '-200px' : 'calc(100vw + 200px)';
+                    const ex = isLtr ? 'calc(100vw + 200px)' : '-200px';
+                    const sy = `${Math.random() * 80 + 10}vh`;
+                    const rot = isLtr ? `${360+Math.random()*360}deg` : `-${360+Math.random()*360}deg`;
+                    arr.push({ 
+                        id: `g${i}`, type: 'gear', color: i%2?'#8B4513':'#B22222', 
+                        sx, ex, sy, ey: sy,
+                        delay: `${Math.random()*15}s`, dur: `${30+Math.random()*20}s`, op: 0.65, rot: rot 
+                    });
+                }
+                return arr;
+            }, []);
             return (
-                <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                    <div className="scanlines"></div>
-                    {sparks.map(s => (
-                        <div key={s.id} className="absolute bg-[#FFD700] rounded-full blur-[1px]" style={{ left: `${s.x}%`, top: `${s.y}%`, width: `${s.size}px`, height: `${s.size}px`, '--tx': `${s.tx}px`, '--ty': `${s.ty}px`, animation: `spark-float 8s infinite`, animationDelay: `${s.delay}s` }} />
-                    ))}
+                <div className="astral-canvas">
+                    <MatrixSequentialRain />
+                    <div className="grid-floor" style={{position:'absolute', bottom:'-50px', width:'200%', height:'60%', left:'-50%', backgroundImage:'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize:'40px 40px', transform:'perspective(500px) rotateX(65deg)', maskImage:'radial-gradient(circle at center, black, transparent 80%)'}} />
+                    {items.map(it => {
+                        if (it.type === 'gear') {
+                            return (
+                                <div key={it.id} className="flow-gear" style={{ '--sx': it.sx, '--ex': it.ex, '--sy': it.sy, '--ey': it.ey, '--delay': it.delay, '--dur': it.dur, '--op': it.op, '--rot': it.rot, '--glow-color': it.color, width: '150px', height: '150px', animationDelay: it.delay }}>
+                                    <GearSVG color={it.color} />
+                                </div>
+                            );
+                        } else {
+                            return (
+                                <div key={it.id} className="flow-magic" style={{ '--sx': it.sx, '--ex': it.ex, '--delay': it.delay, '--dur': it.dur, '--op': it.op, '--rot': it.rot, '--glow-color': it.color, width: '130px', height: '130px', animationDelay: it.delay }}>
+                                    <MagicCircleSVG color={it.color} />
+                                </div>
+                            );
+                        }
+                    })}
                 </div>
             );
         };
 
         const App = () => {
-            const [socket, setSocket] = useState(null);
             const [gs, setGs] = useState(null);
             const [room, setRoom] = useState('');
             const [name, setName] = useState('');
             const [joined, setJoined] = useState(false);
             const [selector, setSelector] = useState(null);
-            const [isMuted, setIsMuted] = useState(false);
-            const logEndRef = useRef(null);
-            const audioRefs = useRef({});
+            const [muted, setMuted] = useState(false);
+            const [selectedCardId, setSelectedCardId] = useState(null);
+            const logContainerRef = useRef(null);
 
             useEffect(() => {
-                const s = io('https://crossrealm-server.onrender.com');
-                setSocket(s);
-                s.on('update-game', setGs);
-                audioRefs.current = {
-                    play: new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3'),
-                    draw: new Audio('https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3'),
-                    turn: new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
-                };
-                return () => s.disconnect();
+                socket.on('update-game', setGs);
+                return () => socket.off('update-game');
             }, []);
 
-            useEffect(() => { if (logEndRef.current) logEndRef.current.scrollTop = logEndRef.current.scrollHeight; }, [gs?.logs]);
+            useEffect(() => { if (logContainerRef.current) logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight; }, [gs?.logs]);
+            useEffect(() => { setSelectedCardId(null); }, [gs?.currentTurnPlayerId]);
 
-            const playSnd = (key) => { 
-                if(!isMuted && audioRefs.current[key]) { 
-                    try { 
-                        audioRefs.current[key].currentTime = 0; 
-                        audioRefs.current[key].play().catch(() => {});
-                    } catch(e){} 
-                } 
-            };
-
-            const isMyTurn = gs?.currentTurnPlayerId === socket?.id;
             const currentR = gs?.fieldCard?.realm || 'GEAR';
             const me = gs?.players.find(p => p.id === socket?.id);
-            const nextPlayable = NEXT_MAP[currentR] || [];
+            const isMyTurn = gs?.currentTurnPlayerId === socket?.id && !me?.isEliminated;
 
             const sortedHand = useMemo(() => {
                 if (!me?.hand) return [];
-                return [...me.hand].sort((a, b) => {
-                    const wa = SORT_WEIGHT[a.realm] || 99;
-                    const wb = SORT_WEIGHT[b.realm] || 99;
-                    if (wa !== wb) return wa - wb;
-                    return (b.isSpecial ? 1 : 0) - (a.isSpecial ? 1 : 0);
-                });
+                return [...me.hand].sort((a,b) => (SORT_WEIGHT[a.realm]-SORT_WEIGHT[b.realm]) || (b.isSpecial-a.isSpecial));
             }, [me?.hand]);
 
-            const canPlay = (c) => {
-                if (!isMyTurn || !gs?.fieldCard) return false;
-                if (gs.nextDrawAmount > 1) return (c.realm === 'GEAR' && c.isSpecial);
-                const h = c.realm; const f = currentR;
-                if (h === 'PLANET' || h === 'RUINS' || f === 'PLANET' || f === 'RUINS') return true;
-                if (h === 'FOUNTAIN' && c.isSpecial) return (f === 'ICEAGE' || f === 'FOUNTAIN');
-                const transition = ['ICEAGE', 'BATTERY', 'ARCHIVE'];
-                if (transition.includes(f) && f === h) return false;
-                return f === h || (nextPlayable.includes(h));
-            };
+            const playableRealms = useMemo(() => {
+                if (!gs?.fieldCard) return [];
+                const checkSim = (r) => {
+                    const h = r; const f = gs.fieldCard.realm;
+                    if (h === 'PLANET' || h === 'RUINS' || f === 'PLANET' || f === 'RUINS') return true;
+                    if (h === 'FOUNTAIN' && gs.fieldCard.isSpecial) return (f === 'ICEAGE' || f === 'FOUNTAIN');
+                    if (['ICEAGE', 'BATTERY', 'ARCHIVE'].includes(f) && f === h) return false;
+                    return f === h || (NEXT_MAP[f] && NEXT_MAP[f].includes(h));
+                };
+                return Object.keys(REALMS).filter(r => checkSim(r));
+            }, [gs?.fieldCard]);
+
+            const sortedResultPlayers = useMemo(() => {
+                if (!gs?.players) return [];
+                return [...gs.players].sort((a,b) => {
+                    if (a.isEliminated && !b.isEliminated) return 1;
+                    if (!a.isEliminated && b.isEliminated) return -1;
+                    return a.handCount - b.handCount;
+                });
+            }, [gs?.players]);
 
             const join = () => { if(room && name) { setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name }); } };
-            const backToTop = () => { setJoined(false); setGs(null); setRoom(''); };
-            const handleAddCpu = () => {
-                if(socket && room) {
-                    const randomBot = CPU_BOTS[Math.floor(Math.random() * CPU_BOTS.length)];
-                    socket.emit('add-cpu', { roomId: room, botName: randomBot.name, botType: randomBot.type });
+            const leave = () => { if (room) socket.emit('leave-room', { roomId: room.toUpperCase() }); setJoined(false); setGs(null); };
+
+            const goToTopPage = () => {
+                if (room) socket.emit('leave-room', { roomId: room.toUpperCase() });
+                window.location.reload();
+            };
+
+            const handleCardClick = (c, isPlayable) => {
+                if (!isMyTurn || !isPlayable) return;
+                const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                if (!isMobile) {
+                    if (c.realm === 'PLANET' || c.realm === 'RUINS' || (c.realm === 'FOUNTAIN' && c.isSpecial)) setSelector(c);
+                    else socket.emit('play-card', { roomId: room, card: c });
+                } else {
+                    if (selectedCardId === c.id) {
+                        if (c.realm === 'PLANET' || c.realm === 'RUINS' || (c.realm === 'FOUNTAIN' && c.isSpecial)) setSelector(c);
+                        else socket.emit('play-card', { roomId: room, card: c });
+                        setSelectedCardId(null);
+                    } else { setSelectedCardId(c.id); }
                 }
             };
 
+            const canPlayCheck = (room, card) => {
+                if (!room || !card || !room.fieldCard) return false;
+                if (room.nextDrawAmount > 1) return (card.realm === 'GEAR' && card.isSpecial);
+                const field = room.fieldCard.realm; const h = card.realm;
+                if (h === 'PLANET' || h === 'RUINS' || field === 'PLANET' || field === 'RUINS') return true;
+                if (h === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
+                if (['ICEAGE', 'BATTERY', 'ARCHIVE'].includes(field) && field === h) return false;
+                return field === h || (NEXT_MAP[field] && NEXT_MAP[field].includes(h));
+            };
+
             return (
-                <div className="screen-wrapper flex flex-col" style={{'--realm-color': REALMS[currentR]?.color}}>
-                    <div className="bg-core"><div className="layer-vortex"/><div className="layer-grid"/><div className="layer-nebula"/></div>
-                    
-                    <button className="btn-sound-toggle" onClick={() => setIsMuted(!isMuted)}>
-                        {isMuted ? (
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.586 15H4a1 1 0 01-1-1V10a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
-                        ) : (
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1V10a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
-                        )}
-                    </button>
-
-                    {!joined ? (
-                        <div className="h-full flex items-center justify-center p-6 z-10">
-                            <SparkleVFX />
-                            <div className="panel-omega w-full text-center relative">
-                                <div className="logo-stack">
-                                    <div className="logo-glow"></div>
-                                    <div className="logo-row row-cross">CROSS</div>
-                                    <div className="row-x">X</div>
-                                    <div className="logo-row row-realm">REALM</div>
-                                    <div className="sub-banner-omega"><div className="sub-text-final">ETERNAL PUNK EDITION</div></div>
-                                </div>
-                                
-                                <div className="flavor-box">
-                                    <div className="corner-tl"></div><div className="corner-br"></div>
-                                    <p className="text-[10.5px] md:text-xs leading-[2.2] font-black tracking-[2.5px] font-['Exo_2'] text-left pl-2">
-                                        <span className="text-amber-500">スチームパンク</span>、<span className="text-blue-400">幻想世界</span>、<span className="text-purple-400">サイバーパンク</span>。<br/>
-                                        <span className="text-white/70">次元の境界が崩壊し、相反する世界が交差する。</span><br/>
-                                        <span className="text-white/70">手札（アイデンティティ）を解き放ち、</span><br/>
-                                        <span className="text-accent text-[13px] tracking-[5px] drop-shadow-[0_0_5px_var(--accent)] block mt-1">特異点へ至れ。</span>
-                                    </p>
-                                </div>
-
-                                <div className="input-cyber-container">
-                                    <div className="input-cyber-bg"></div>
-                                    <input type="text" className="input-cyber" value={name} placeholder="PLAYER NAME [ プレイヤー名 ]" onChange={e=>setName(e.target.value)} maxLength={10} />
-                                </div>
-                                <div className="input-cyber-container">
-                                    <div className="input-cyber-bg"></div>
-                                    <input type="text" className="input-cyber" value={room} placeholder="SECTOR ID [ ルームID ]" onChange={e=>setRoom(e.target.value.toUpperCase())} />
-                                </div>
-
-                                <button className="btn-omega-singularity mt-6 w-[85%] mx-auto" onClick={join}>
-                                    <div className="relative z-10 flex flex-col items-center">
-                                        <span>LINK START</span>
-                                        <span className="text-[10px] text-black/60 font-black tracking-[0.4em] font-['Exo_2'] mt-[-2px]">- 接続開始 -</span>
-                                    </div>
-                                </button>
-                                
-                                <div className="mt-8 text-accent/40 text-[10px] font-black tracking-[4px] font-['Orbitron']">VERSION 31.0</div>
-                            </div>
+                <div className="screen-wrapper" style={{'--r-color': REALMS[currentR]?.color}}>
+                    <AstralBackground />
+                    <div className="ui-viewport">
+                        <div className="volume-btn-fixed" onClick={() => setMuted(!muted)}>
+                            {muted ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 opacity-40"><path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6" /></svg> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>}
                         </div>
-                    ) : (!gs || gs.status === 'waiting') ? (
-                        <div className="h-full flex flex-col items-center justify-center p-6 text-center z-10">
-                            <h2 className="text-3xl font-black mb-1.5 text-accent tracking-widest" style={{fontFamily:'Orbitron'}}>待機中...</h2>
-                            <div className="mb-4 px-5 py-1.5 border-2 border-accent/30 bg-accent/5 rounded-lg text-sm font-black tracking-[4px]">
-                                ルームID: <span className="text-white ml-2">{room}</span>
-                            </div>
-                            <div className="w-full space-y-1.5 mb-5 max-h-[50dvh] overflow-y-auto no-scrollbar">
-                                {[...Array(5)].map((_, i) => {
-                                    const p = gs?.players[i];
-                                    return (
-                                        <div key={i} className={`slot-Omega-Final ${p ? '' : 'empty'}`}>
-                                            <span className="slot-name-tag uppercase">
-                                                {p ? p.name : 'empty linkage'}
-                                                {p && p.name.includes('(AI)') && <span className="slot-bot-type">[{CPU_BOTS.find(b => b.name === p.name)?.type || 'BOT'}]</span>}
-                                            </span>
-                                            {p && i === 0 && <span className="bg-[#D4AF37] text-black text-[10px] px-2.5 py-0.5 font-black rounded shadow-lg">HOST</span>}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                            <div className="w-[85%] flex flex-col gap-3 mx-auto">
-                                {gs?.players[0]?.id === socket?.id && (
-                                    <>
-                                        <button className="btn-omega-singularity" disabled={gs?.players?.length < 2} onClick={()=>socket.emit('start-game', {roomId:room})}>
-                                            {gs?.players?.length < 2 ? '対戦相手を待機中' : 'ゲーム開始'}
-                                        </button>
-                                        <button className="btn-sub" disabled={gs?.players?.length >= 5} onClick={handleAddCpu}>ランダムCPU追加</button>
-                                    </>
-                                )}
-                                <button className="btn-utility" onClick={backToTop}>トップに戻る</button>
-                            </div>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="opp-mega-grid">
-                                {gs.players.filter(p => p.id !== socket?.id).map(p => (
-                                    <div key={p.id} className={`opp-card-omega-peak ${gs.currentTurnPlayerId === p.id ? 'active' : ''}`}>
-                                        <div className="flex flex-col">
-                                            <span className="font-black text-[11px] truncate max-w-[65px] uppercase">{p.name}</span>
-                                            <span className="text-accent font-black text-lg leading-none">{p.handCount}枚</span>
-                                        </div>
-                                        <CardStackVisual count={p.handCount} r={currentR} />
-                                    </div>
-                                ))}
-                            </div>
 
-                            <div className="cycle-strip-classic">
-                                {CYCLE_ORDER.map(r => (
-                                    <div key={r} className="cycle-node-container">
-                                        <span className={`cycle-label ${currentR===r?'active':''}`} style={{'--c':REALMS[r].bright}}>{REALMS[r].n}</span>
-                                        <div className={`cycle-light ${currentR===r?'active':''} ${nextPlayable.includes(r) && currentR!==r?'next':''}`} style={{'--c':REALMS[r].bright}} />
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="field-area-recapped">
-                                <div className={`mb-4 text-sm font-black tracking-[10px] ${isMyTurn?'text-accent animate-pulse':'text-white/20'}`}>{isMyTurn?'あなたのターン':'同期中...'}</div>
-                                <CardView card={gs.fieldCard} isField={true} zIndex={10} />
-                                <div className="mt-8 font-black text-4xl tracking-widest uppercase" style={{color: REALMS[currentR].bright, textShadow:`0 0 25px ${REALMS[currentR].color}`}}>{REALMS[currentR].n}</div>
-                            </div>
-
-                            <div ref={logEndRef} className="terminal-log-omega no-scrollbar">
-                                {gs.logs.slice(-5).map(l => <div key={l.id} className="mb-1">{l.text}</div>)}
-                            </div>
-
-                            <div className="hand-area-recapped no-scrollbar">
-                                {sortedHand.map((c, i) => {
-                                    const playable = canPlay(c);
-                                    const overlap = sortedHand.length > 5 ? `-${Math.min(32, (sortedHand.length-5)*8)}px` : '0';
-                                    return <CardView key={c.id} card={c} playable={playable} onClick={() => {
-                                        if(playable){
-                                            playSnd('play');
-                                            if(c.realm==='PLANET'||c.realm==='RUINS'||(c.realm==='FOUNTAIN'&&c.isSpecial)){
-                                                setSelector(c);
-                                            } else {
-                                                socket.emit('play-card',{roomId:room, card:c});
-                                            }
-                                        }
-                                    }} style={{ marginLeft: i === 0 ? '0' : overlap }} zIndex={i + 100} />;
-                                })}
-                            </div>
-
-                            <div className="btn-draw-area">
-                                <button className="btn-omega-singularity w-full" disabled={!isMyTurn} onClick={()=>{ playSnd('draw'); socket.emit('draw-card',{roomId:room}); }}>
-                                    <span className="relative z-10">ドロー ({gs.nextDrawAmount}枚)</span>
-                                </button>
-                            </div>
-
-                            {selector && (
-                                <div className="absolute inset-0 bg-black/95 z-[900] flex items-center justify-center p-8 backdrop-blur-xl">
-                                    <div className="panel-omega w-full">
-                                        <h3 className="text-center font-black mb-10 text-2xl tracking-widest text-white">属性選択</h3>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            {CYCLE_ORDER.map(r => (
-                                                <button key={r} className="p-5 border border-white/20 rounded-lg font-black transition-all hover:bg-white/10" style={{color: REALMS[r].bright}} onClick={()=>{ socket.emit('play-card',{roomId:room, card:selector, chosenRealm:r}); setSelector(null); }}>{REALMS[r].n}</button>
-                                            ))}
-                                        </div>
-                                        <button className="w-full mt-10 p-4 border-2 border-red-500/80 bg-red-500/10 text-red-500 font-black tracking-[10px] text-xs rounded hover:bg-red-500/30 transition-all" onClick={()=>setSelector(null)}>キャンセル</button>
+                        {!joined ? (
+                            <div className="h-full flex flex-col items-center justify-center overflow-y-auto no-scrollbar">
+                                <div className="top-logo-area">
+                                    <div className="emblem-bg-layer"><SingularityEmblem /></div>
+                                    <div className="logo-text-layer">
+                                        <div className="main-logo-text">CROSS</div>
+                                        <div className="main-logo-text" style={{fontSize:'3.2rem', marginTop:'-0.5rem'}}>REALM</div>
+                                        <div className="text-accent font-['Audiowide'] text-[0.85rem] mt-2 tracking-[6px] animate-pulse">- OMEGA SINGULARITY -</div>
                                     </div>
                                 </div>
-                            )}
-
-                            {gs.status === 'finished' && (
-                                <div className="absolute inset-0 bg-black/97 z-[1000] flex flex-col items-center justify-center p-4 text-center backdrop-blur-xl">
-                                    <div className="panel-omega w-full border-4 border-accent shadow-[0_0_80px_rgba(64,224,208,0.6)] p-6 max-h-[90vh] flex flex-col overflow-hidden">
-                                        <h2 className="text-3xl font-black mb-4 tracking-tighter text-accent" style={{fontFamily:'Cinzel'}}>ミッション終了</h2>
-                                        <div className="w-full space-y-2 mb-6 flex-1 overflow-y-auto px-1 no-scrollbar">
-                                            {gs.players.slice().sort((a,b)=>a.handCount-b.handCount).map((p,i) => (
-                                                <div key={p.id} className={`p-3 border-l-8 ${i===0?'border-accent bg-accent/20 shadow-[0_0_20px_var(--accent)] scale-[1.02]':'border-white/10 bg-white/5 opacity-80'} flex justify-between items-center rounded-r-lg transition-all`}>
-                                                    <div className="flex flex-col items-start"><span className="text-[9px] uppercase font-black text-white/60 tracking-widest">RANK #{i+1}</span><span className="font-bold text-xl uppercase leading-none">{p.name}</span></div>
-                                                    <span className="font-black text-3xl font-mono text-white">{p.handCount}</span>
+                                <div className="trinity-flavor-box">
+                                    <div className="flavor-line">
+                                        <span className="f-steam">真鍮</span><span className="text-white/80 font-black">の爆鳴、</span>
+                                        <span className="f-fantasy">星界</span><span className="text-white/80 font-black">の共鳴、</span>
+                                        <span className="f-cyber">電脳</span><span className="text-white/80 font-black">の火花。</span>
+                                    </div>
+                                    <div className="mt-2"><span className="text-white/70 font-black text-[0.8rem]">次元の境界は消失し、特異点へと収束する。</span></div>
+                                </div>
+                                <div className="space-y-4 w-full px-4">
+                                    <div className="input-wrap">
+                                        <label className="input-label-tech">PILOT IDENT</label>
+                                        <input type="text" className="input-field-nova" value={name} placeholder="INPUT_NAME..." onChange={e => setName(e.target.value)} maxLength={10} />
+                                    </div>
+                                    <div className="input-wrap">
+                                        <label className="input-label-tech">SECTOR CODE</label>
+                                        <input type="text" className="input-field-nova" value={room} placeholder="INPUT_CODE..." onChange={e => setRoom(e.target.value.toUpperCase())} />
+                                    </div>
+                                    <button className="w-full p-5 text-xl font-black bg-gradient-to-r from-amber-400 to-amber-600 text-black rounded-sm mt-1 shadow-xl active:scale-95 transition-all" onClick={join}>LINK START</button>
+                                </div>
+                                <div className="system-status-bar">
+                                    <span>SYSTEM_STATUS: <span className="status-tag">ACTIVE</span></span>
+                                    <span>VER: <span className="text-white/80 font-black ml-1">118.0_THE_END</span></span>
+                                </div>
+                            </div>
+                        ) : (!gs || gs.status === 'waiting') ? (
+                            <div className="h-full flex flex-col items-center justify-center p-4 text-center overflow-y-auto no-scrollbar">
+                                <h2 className="text-3xl font-black mb-6 tracking-[10px] font-['Orbitron'] text-white animate-pulse uppercase">Awaiting_Sync</h2>
+                                <div className="waiting-room-list w-full no-scrollbar">
+                                    {[...Array(5)].map((_, i) => {
+                                        const p = gs?.players[i];
+                                        return (
+                                            <div key={i} className={`waiting-slot-box ${p?'active shadow-[0_0_15px_rgba(64,224,208,0.2)]':'opacity-20 border-dashed'}`}>
+                                                <span className="waiting-name text-[14px] font-black">{p ? p.name : '--- VACANT ---'}</span>
+                                                {p && i === 0 && <span className="bg-white text-black text-[10px] px-3 py-1 font-black rounded shadow-lg">MASTER</span>}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <div className="w-full mt-2 px-4 flex flex-col items-center">
+                                    {gs?.players[0]?.id === socket?.id && (
+                                        <div className="flex gap-3 w-full mb-3">
+                                            <button className="flex-1 p-5 bg-black/80 border border-white/40 backdrop-blur-md text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm" disabled={gs?.players?.length >= 5} onClick={()=>{
+                                                const botNames = ['X-TREME','A.L.I.C.E','G.E.A.R','N.U.L.L'];
+                                                socket.emit('add-cpu', {roomId: room.toUpperCase(), botName: botNames[Math.floor(Math.random()*botNames.length)]});
+                                            }}>CPU追加</button>
+                                            <button className="flex-[2] p-5 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-xl rounded-sm shadow-2xl" disabled={gs?.players?.length < 2} onClick={()=>socket.emit('start-game', {roomId:room})}>ミッション開始</button>
+                                        </div>
+                                    )}
+                                    <button className="btn-cancel-sync" style={{display:'inline-block', padding:'10px 30px', background:'rgba(0,0,0,0.9)', border:'2px solid var(--accent)', color:'#fff', fontFamily:'Orbitron', fontSize:'11px', fontWeight:'900', letterSpacing:'4px', borderRadius:'30px', cursor:'pointer'}} onClick={leave}>CANCEL SYNC</button>
+                                </div>
+                            </div>
+                        ) : (gs.status === 'finished') ? (
+                            <div className="result-screen">
+                                <h2 className="result-title uppercase tracking-tighter">Mission_Complete</h2>
+                                
+                                <div className="flex flex-row items-end justify-center w-full max-w-[440px] h-[220px] gap-1 mt-4 mb-8 px-2">
+                                    {sortedResultPlayers.map((p, i) => {
+                                        const order = i === 0 ? 3 : i === 1 ? 2 : i === 2 ? 4 : i === 3 ? 1 : 5;
+                                        const height = i === 0 ? '120px' : i === 1 ? '90px' : i === 2 ? '70px' : i === 3 ? '50px' : '40px';
+                                        const color = i === 0 ? 'var(--steam-gold)' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'var(--accent)';
+                                        
+                                        return (
+                                            <div key={p.id} className="flex flex-col items-center justify-end w-[20%] relative" style={{ order }}>
+                                                {p.isEliminated && <div className="absolute top-[-20px] text-[8px] text-red-500 font-bold bg-black/90 px-1 rounded border border-red-500/50 z-10">BURST</div>}
+                                                
+                                                <div className="text-[9px] md:text-[10px] font-bold truncate w-full text-center mb-1" 
+                                                     style={{ color: p.isEliminated ? 'gray' : 'white', textDecoration: p.isEliminated ? 'line-through' : 'none' }}>
+                                                    {p.name}
                                                 </div>
-                                            ))}
+                                                <div className="text-[11px] md:text-[13px] font-black mb-2 font-['Orbitron']">{p.handCount}枚</div>
+                                                
+                                                <div className="w-full flex items-start justify-center pt-2 rounded-t-md border-t-[3px] border-x border-white/10" 
+                                                     style={{ height, background: `linear-gradient(to bottom, rgba(255,255,255,0.1), transparent)`, borderTopColor: color }}>
+                                                    <span className="font-['Orbitron'] font-black text-xl md:text-2xl mt-1 drop-shadow-md" style={{ color }}>{i + 1}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className="w-full max-w-xs flex flex-col gap-3">
+                                    <button className="w-full py-5 text-xl font-black bg-gradient-to-r from-amber-400 to-amber-600 text-black rounded-sm shadow-2xl uppercase tracking-[2px]" onClick={() => socket.emit('play-again', { roomId: room })}>同じメンバーで再戦</button>
+                                    <button className="w-full py-3 text-xs font-black bg-transparent border border-white/30 text-white hover:bg-white/10 transition-colors rounded-sm uppercase tracking-[2px]" onClick={leave}>別のパイロット / セクターでプレイ</button>
+                                    <button className="w-full py-3 text-xs font-black bg-black/50 border border-white/10 text-white/50 hover:bg-white/5 transition-colors rounded-sm uppercase tracking-[2px] mt-2" onClick={goToTopPage}>タイトル画面へ戻る</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="player-hud-grid">
+                                    {gs.players.filter(p => p.id !== socket?.id).map(p => (
+                                        <PlayerSlot key={p.id} player={p} isCurrent={gs.currentTurnPlayerId === p.id} color={gs.currentTurnPlayerId === p.id ? 'var(--accent)' : 'rgba(255,255,255,0.25)'} />
+                                    ))}
+                                </div>
+                                
+                                <div className="realm-legend-nav">
+                                    {['GEAR','ICEAGE','FOUNTAIN','BATTERY','MACHINE','ARCHIVE'].map(r => (
+                                        <div key={r} className="legend-item flex flex-col items-center">
+                                            <div className={`legend-label ${gs.fieldCard.realm === r ? 'text-white font-black scale-110' : ''} ${playableRealms.includes(r) ? 'playable' : ''}`}>{REALMS[r].n}</div>
+                                            <div className={`legend-underline ${gs.fieldCard.realm === r ? 'active' : ''} ${playableRealms.includes(r) ? 'playable-light' : ''}`} style={{ '--r-color': REALMS[r].color }} />
                                         </div>
-                                        <div className="w-full flex flex-col gap-3 shrink-0">
-                                            {gs.players[0]?.id === socket?.id ? (
-                                                <>
-                                                    <button className="btn-omega-singularity text-xl py-4" onClick={()=>socket.emit('play-again', {roomId:room})}>
-                                                        <span className="relative z-10">ゲームを続ける</span>
-                                                    </button>
-                                                    <button className="btn-sub py-3 text-sm tracking-[4px]" onClick={()=>socket.emit('play-again', {roomId:room})}>待機室に戻る</button>
-                                                </>
-                                            ) : (
-                                                <div className="text-white/80 text-[11px] py-4 font-black tracking-[6px] border-2 border-white/10 bg-white/5 rounded-lg animate-pulse">ホストの操作を待機中...</div>
-                                            )}
-                                            <button className="btn-utility py-3 border-white/40 text-white font-black" onClick={backToTop}>トップに戻る</button>
+                                    ))}
+                                </div>
+                                
+                                <div className="field-main-area">
+                                    <div className="field-status-text uppercase font-black text-[11px] mb-1">{isMyTurn?'Your Turn':me?.isEliminated?'Spectating...':'Awaiting Sync...'}</div>
+                                    <div className="relative flex items-center justify-center w-full overflow-visible">
+                                        <CardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} />
+                                        <CycleDiagramSmall currentRealm={gs.fieldCard.realm} />
+                                    </div>
+                                    <div className="field-kanji-text uppercase font-black" style={{color: REALMS[currentR].bright}}>{REALMS[currentR].n}</div>
+                                </div>
+                                
+                                <div className="tactical-log-box no-scrollbar" ref={logContainerRef}>
+                                    {gs.logs && gs.logs.length > 0 ? (
+                                        gs.logs.slice(-10).map(l => <div key={l.id} className="log-entry">≫ {l.text}</div>)
+                                    ) : (
+                                        <div className="opacity-40 italic text-xs">特異点解析中...</div>
+                                    )}
+                                </div>
+                                
+                                <div className="hand-container no-scrollbar">
+                                    {sortedHand.map((c, i) => {
+                                        const isPlayable = canPlayCheck(gs, c);
+                                        return <CardView key={c.id} card={c} playable={isPlayable} isSelected={selectedCardId === c.id} isMyTurn={isMyTurn} onClick={() => handleCardClick(c, isPlayable)} />;
+                                    })}
+                                </div>
+                                
+                                <div className="draw-action-footer">
+                                    <button className="btn-mega-draw active:scale-95 shadow-2xl" disabled={!isMyTurn} onClick={()=>socket.emit('draw-card',{roomId:room})}>ドロー ({gs.nextDrawAmount}枚)</button>
+                                </div>
+                                
+                                {selector && (
+                                    <div className="fixed inset-0 bg-black/99 z-[1000] flex items-center justify-center p-8 backdrop-blur-[50px]">
+                                        <div className="w-full max-w-sm bg-black/90 p-12 text-center rounded-3xl border-2 border-white/20">
+                                            <h3 className="font-black mb-10 text-3xl tracking-[15px] text-white uppercase text-xs">属性選択</h3>
+                                            <div className="grid grid-cols-2 gap-6">
+                                                {['GEAR','ICEAGE','FOUNTAIN','BATTERY','MACHINE','ARCHIVE'].map(r => <button key={r} className="p-6 border-2 border-white/20 font-black text-lg hover:bg-white/10 transition-all scale-110" style={{color: REALMS[r].bright}} onClick={()=>{ socket.emit('play-card',{roomId:room, card:selector, chosenRealm:r}); setSelector(null); }}>{REALMS[r].n}</button>)}
+                                            </div>
+                                            <button className="w-full mt-10 p-4 text-white/50 text-sm tracking-[10px] font-black border border-white/15 uppercase" onClick={() => setSelector(null)}>キャンセル</button>
                                         </div>
                                     </div>
-                                </div>
-                            )}
-                        </>
-                    )}
+                                )}
+                            </>
+                        )}
+                    </div>
                 </div>
             );
         };
 
-        const ErrorBoundary = ({ children }) => {
-            try { return children; } catch(e) { return <div className="p-10 text-red-500 font-black">SYSTEM ERROR: {e.message}</div>; }
-        };
-
-        ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><App /></ErrorBoundary>);
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
