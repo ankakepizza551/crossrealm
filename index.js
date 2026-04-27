@@ -9,7 +9,7 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
 const rooms = {};
-const HAND_LIMIT = 10;
+const HAND_LIMIT = 10; // 10枚でドボン
 const INITIAL_HAND = 5;
 
 function createDeck() {
@@ -48,57 +48,36 @@ function canPlay(room, card) {
     return field === h || (cycle[field] && cycle[field].includes(h));
 }
 
-// 共通のプレイヤー削除・クリーンアップ処理
 function handlePlayerExit(socket, roomId) {
   const room = rooms[roomId];
   if (!room) return;
-
   const pIndex = room.players.findIndex(p => p.id === socket.id);
   if (pIndex === -1) return;
-
   const player = room.players[pIndex];
-  room.logs = room.logs || [];
   room.logs.push({ id: Math.random(), text: `[SYS] ${player.name} が退出しました` });
-
   room.players.splice(pIndex, 1);
-
-  // 人間がいなくなれば部屋を削除
   const humans = room.players.filter(p => !p.isBot);
-  if (humans.length === 0) {
-    delete rooms[roomId];
-    return;
-  }
-
-  // プレイ中ならターン調整
+  if (humans.length === 0) { delete rooms[roomId]; return; }
   if (room.status === 'playing') {
     if (room.players.length < 2) {
       room.status = 'finished';
       room.logs.push({ id: Math.random(), text: `[SYS] プレイヤー不足により終了します` });
     } else {
-      if (pIndex < room.turnIndex) {
-        room.turnIndex--;
-      } else if (pIndex === room.turnIndex) {
-        room.turnIndex = room.turnIndex % room.players.length;
-      }
-      if (room.players[room.turnIndex]) {
-        room.currentTurnPlayerId = room.players[room.turnIndex].id;
-      }
+      if (pIndex < room.turnIndex) room.turnIndex--;
+      else if (pIndex === room.turnIndex) room.turnIndex = room.turnIndex % room.players.length;
+      if (room.players[room.turnIndex]) room.currentTurnPlayerId = room.players[room.turnIndex].id;
     }
   }
-
   io.to(roomId).emit('update-game', room);
-  if (room.status === 'playing' && room.players[room.turnIndex]?.isBot) processBotTurn(roomId);
 }
 
 function getBotAction(room, bot) {
   const playable = bot.hand.filter(card => canPlay(room, card));
   if (playable.length === 0) return { type: 'draw' };
-  
   let targetCard = playable[0];
   const pType = bot.personality || '';
   if (pType === 'AGGRO') targetCard = playable.find(c => c.isSpecial) || playable[0];
   else if (pType === 'DEFENSE') targetCard = bot.hand.length < 7 ? (playable.find(c => !c.isSpecial) || playable[0]) : playable[0];
-
   let chosenRealm = undefined;
   if (['PLANET', 'RUINS', 'FOUNTAIN'].includes(targetCard.realm) && (targetCard.realm !== 'FOUNTAIN' || targetCard.isSpecial)) {
     chosenRealm = ['GEAR', 'FOUNTAIN', 'MACHINE'][Math.floor(Math.random() * 3)];
@@ -111,18 +90,26 @@ function processBotTurn(roomId) {
   if (!room || room.status !== 'playing') return;
   const bot = room.players[room.turnIndex];
   if (!bot || !bot.isBot || bot.isActing) return;
-
   bot.isActing = true;
   setTimeout(() => {
     bot.isActing = false;
     const currentRoom = rooms[roomId];
     if (!currentRoom || currentRoom.status !== 'playing' || currentRoom.players[currentRoom.turnIndex]?.id !== bot.id) return;
     const action = getBotAction(currentRoom, bot);
-    
     if (action.type === 'draw') {
       const amount = currentRoom.nextDrawAmount || 1;
-      for (let i = 0; i < amount; i++) { if (currentRoom.deck.length === 0) currentRoom.deck = createDeck(); bot.hand.push(currentRoom.deck.pop()); }
-      currentRoom.nextDrawAmount = 1; nextTurn(currentRoom);
+      for (let i = 0; i < amount; i++) { 
+        if (currentRoom.deck.length === 0) currentRoom.deck = createDeck(); 
+        bot.hand.push(currentRoom.deck.pop()); 
+      }
+      currentRoom.nextDrawAmount = 1;
+      // 10枚ドボンチェック
+      if (bot.hand.length >= HAND_LIMIT) {
+        currentRoom.status = 'finished';
+        currentRoom.logs.push({ id: Math.random(), text: `[SYS] ${bot.name} が10枚に達し、ドボンしました！` });
+      } else {
+        nextTurn(currentRoom);
+      }
     } else {
       const { card, chosenRealm } = action;
       bot.hand = bot.hand.filter(c => c.id !== card.id);
@@ -153,10 +140,7 @@ io.on('connection', (socket) => {
     io.to(rid).emit('update-game', room);
   });
 
-  // 明示的な退出イベント
-  socket.on('leave-room', (data) => {
-    if (data.roomId) handlePlayerExit(socket, data.roomId.toUpperCase());
-  });
+  socket.on('leave-room', (data) => { if (data.roomId) handlePlayerExit(socket, data.roomId.toUpperCase()); });
 
   socket.on('add-cpu', (data) => {
     const room = rooms[data.roomId.toUpperCase()];
@@ -178,6 +162,7 @@ io.on('connection', (socket) => {
       room.fieldCard = room.deck.pop();
       room.status = 'playing';
       room.currentTurnPlayerId = room.players[room.turnIndex].id;
+      room.logs = [{ id: Math.random(), text: "ミッション開始。特異点へリンクしました。" }];
       io.to(room.id).emit('update-game', room);
       if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
     }
@@ -193,7 +178,7 @@ io.on('connection', (socket) => {
     room.fieldCard = card;
     let skip = false;
     if (card.isSpecial) {
-      if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : (room.nextDrawAmount || 0) + 2;
+      if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : (currentRoom.nextDrawAmount || 0) + 2;
       if (card.realm === 'MACHINE') { room.isReversed = !room.isReversed; if (room.players.length === 2) skip = true; }
     }
     if (player.hand.length === 0) room.status = 'finished'; else nextTurn(room, skip);
@@ -209,8 +194,15 @@ io.on('connection', (socket) => {
     const player = room.players.find(p => p.id === socket.id);
     const amount = room.nextDrawAmount || 1;
     for (let i = 0; i < amount; i++) { if (room.deck.length === 0) room.deck = createDeck(); player.hand.push(room.deck.pop()); }
-    room.nextDrawAmount = 1; player.handCount = player.hand.length;
-    nextTurn(room);
+    player.handCount = player.hand.length;
+    room.nextDrawAmount = 1;
+    // 10枚ドボンチェック
+    if (player.hand.length >= HAND_LIMIT) {
+      room.status = 'finished';
+      room.logs.push({ id: Math.random(), text: `[SYS] ${player.name} が10枚に達し、ドボンしました！` });
+    } else {
+      nextTurn(room);
+    }
     room.currentTurnPlayerId = room.players[room.turnIndex].id;
     io.to(room.id).emit('update-game', room);
     if (room.status === 'playing' && room.players[room.turnIndex].isBot) processBotTurn(room.id);
@@ -221,9 +213,7 @@ io.on('connection', (socket) => {
     if (room) { room.status = 'waiting'; io.to(room.id).emit('update-game', room); }
   });
 
-  socket.on('disconnect', () => {
-    for (const rid in rooms) handlePlayerExit(socket, rid);
-  });
+  socket.on('disconnect', () => { for (const rid in rooms) handlePlayerExit(socket, rid); });
 });
 
 server.listen(3000, () => console.log('Server running on port 3000'));
