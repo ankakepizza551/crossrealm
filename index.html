@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Cross Realm - Omega Singularity v118.0 THE END</title>
+    <title>Cross Realm - Omega Singularity v120.0 IGNITION</title>
     
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -59,9 +59,11 @@
         .main-logo-text { font-family: 'Cinzel', serif; font-weight: 950; font-size: clamp(2.5rem, 10vw, 3.6rem); line-height: 0.85; background: linear-gradient(90deg, #fff, var(--steam-gold), #fff, var(--magic-purple), #fff, var(--accent), #fff); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: logo-shine 6s linear infinite; letter-spacing: 12px; filter: drop-shadow(0 0 10px rgba(0,0,0,1)); }
         
         .trinity-flavor-box { background: rgba(0,0,0,0.92); border: 1.5px solid rgba(255,255,255,0.25); border-left: 6px solid var(--accent); padding: 1.2rem; border-radius: 4px 14px 14px 4px; margin: 0 1.5rem 1.2rem; box-shadow: 0 20px 60px rgba(0,0,0,1); text-align: center; backdrop-filter: blur(10px); flex-shrink: 0; }
-        .f-steam { font-family: 'Special Elite', cursive; color: var(--steam-gold); font-size: 1.1rem; text-shadow: 0 0 8px var(--steam-gold); }
-        .f-fantasy { font-family: 'Cinzel Decorative', cursive; color: var(--magic-purple); font-size: 1.2rem; text-shadow: 0 0 10px var(--magic-purple); }
-        .f-cyber { font-family: 'Orbitron', sans-serif; color: var(--accent); font-size: 1rem; font-weight: 950; text-shadow: 0 0 10px var(--accent); }
+        
+        /* 修正: !important を付けて絶対に色分けを反映させる */
+        .f-steam { font-family: 'Special Elite', cursive !important; color: var(--steam-gold) !important; font-size: 1.1rem; text-shadow: 0 0 8px var(--steam-gold) !important; }
+        .f-fantasy { font-family: 'Cinzel Decorative', cursive !important; color: var(--magic-purple) !important; font-size: 1.2rem; text-shadow: 0 0 10px var(--magic-purple) !important; }
+        .f-cyber { font-family: 'Orbitron', sans-serif !important; color: var(--accent) !important; font-size: 1rem; font-weight: 950; text-shadow: 0 0 10px var(--accent) !important; }
 
         .input-wrap { position: relative; width: 100%; margin-bottom: 1rem; padding: 0 2rem; display: flex; flex-direction: column; flex-shrink: 0; }
         .input-wrap::before { content: ''; position: absolute; left: 2rem; top: 0; width: 4px; height: 100%; background: var(--accent); box-shadow: 0 0 12px var(--accent); z-index: 10; }
@@ -89,8 +91,9 @@
         
         /* 手札アイコン: 枠に収まるよう右下に広がる */
         .hand-stack-visual { position: absolute; top: 8px; right: 26px; width: 14px; height: 20px; z-index: 10; opacity: 0.9; }
+        .stack-card-layer { position: absolute; width: 100%; height: 100%; background: #111; border: 1px solid rgba(255,255,255,0.4); border-radius: 1px; }
 
-        /* 凡例バー */
+        /* 凡例バーとライトアップ同期 */
         .realm-legend-nav { display: flex !important; flex-direction: row !important; justify-content: space-around !important; background: rgba(0,0,0,0.95); border-bottom: 1.5px solid rgba(255,255,255,0.15); padding: 8px 2px; flex-shrink: 0; width: 100%; height: auto; align-items: center; z-index: 10; }
         .legend-label { font-size: 11px; font-weight: 950; color: rgba(255,255,255,0.3); white-space: nowrap; margin-bottom: 4px; transition: 0.3s; }
         .legend-label.playable { animation: pulse-shimmer 1.5s infinite ease-in-out; color: var(--accent); }
@@ -112,11 +115,12 @@
         
         .card-anchor { transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; pointer-events: auto; margin-right: -10px; flex-shrink: 0; }
         @media (hover: hover) { 
-            .card-anchor.playable:hover { transform: translateY(-10px) scale(1.05); z-index: 500; filter: brightness(1.15); margin-right: -5px; margin-left: -5px; } 
+            .card-anchor:hover { transform: translateY(-10px) scale(1.05); z-index: 500; filter: brightness(1.15); margin-right: -5px; margin-left: -5px; } 
+            .card-anchor.not-playable:hover { transform: translateY(-5px) scale(1.0); opacity: 0.8 !important; filter: grayscale(30%) brightness(0.9) !important; }
         }
         
-        /* 出せないカード: 透明度0.45、ホバーアクション無効化 */
-        .card-anchor.not-playable { opacity: 0.45 !important; filter: grayscale(60%) brightness(0.65) !important; transform: scale(0.95); pointer-events: none !important; cursor: default; }
+        /* 出せないカード: 透明度0.45 */
+        .card-anchor.not-playable { opacity: 0.45 !important; filter: grayscale(60%) brightness(0.65) !important; transform: scale(0.95); cursor: default; }
         
         .card-anchor.is-my-turn.playable { pointer-events: auto; }
         .card-anchor.selected { transform: translateY(-20px) scale(1.15); z-index: 500; filter: brightness(1.25); border: 2.5px solid #fff; border-radius: 8px; margin-right: 15px; margin-left: 15px; }
@@ -135,6 +139,7 @@
         .mat-fantasy { background: radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%); border: calc(var(--card-w)*0.02) solid rgba(255,255,255,0.95); border-radius: 26% 6% !important; box-shadow: 0 0 30px var(--r-color-glow); }
         .mat-cyber { background: #000; clip-path: polygon(0 20%, 20% 0, 100% 0, 100% 80%, 80% 100%, 0 100%); border-left: calc(var(--card-w)*0.03) solid var(--r-color); box-shadow: inset 0 0 40px var(--r-color-dim); }
         .mat-void-planet { background: radial-gradient(circle at 50% 50%, #fff4 0%, #000 100%); border-radius: 40% !important; box-shadow: 0 0 20px #fff4; }
+        .mat-void-ruins { background: radial-gradient(circle at 50% 50%, #2a2a2a 0%, #000 100%); border-radius: 40% !important; }
 
         .card-info-top { position: absolute; top: 6%; left: 6%; padding: 3% 8%; background: #000; border-left: calc(var(--card-w)*0.04) solid var(--r-color); z-index: 50; }
         .card-info-top span { font-size: calc(var(--card-w)*0.07); font-weight: 900; color: #fff; text-transform: uppercase; }
@@ -215,8 +220,8 @@
                     <svg viewBox="0 0 120 120" className="w-full h-full overflow-visible">
                         <defs><marker id="arrowhead-master" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="rgba(255,255,255,0.6)" /></marker></defs>
                         <circle cx="60" cy="60" r="48" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.5" strokeDasharray="3 3" />
-                        <circle cx="60" cy="60" r="13" fill="rgba(255,255,255,0.05)" stroke="#fff" strokeWidth="0.8" />
-                        <text x="60" y="63" fill="#fff" fontSize="4.5" fontWeight="1000" textAnchor="middle">WILD</text>
+                        <circle cx="60" cy="60" r="14" fill="rgba(255,255,255,0.05)" stroke="#fff" strokeWidth="0.8" />
+                        <text x="60" y="62.5" fill="#fff" fontSize="5" fontWeight="1000" textAnchor="middle">WILD</text>
                         {items.map((item, i) => {
                             const angle = (i * 60 - 90) * (Math.PI / 180);
                             const x = 60 + 46 * Math.cos(angle);
@@ -291,7 +296,7 @@
                 const fontSize = 16; const columns = Math.floor(canvas.width / fontSize);
                 const heads = new Array(columns).fill(0).map(() => Math.floor(Math.random() * (canvas.height / fontSize)));
                 const draw = () => {
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.015)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
                     ctx.font = `900 ${fontSize}px Orbitron`;
                     for (let i = 0; i < columns; i++) {
                         if (Math.random() > 0.96) {
@@ -310,24 +315,112 @@
             return <canvas ref={canvasRef} className="matrix-code-canvas" />;
         };
 
+        // === SE再生機能 (Web Audio API: シンセ・サイバーサウンド) ===
+        let audioCtx = null;
+        const playSE = (type, muted) => {
+            if (muted) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
+                const now = audioCtx.currentTime;
+                
+                if (type === 'play') {
+                    // レーザーのようなピシュッ！という音
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(1200, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    osc2.type = 'sine';
+                    osc2.frequency.setValueAtTime(2000, now);
+                    osc2.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                    gain2.gain.setValueAtTime(0.1, now);
+                    gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc2.start(now);
+                    osc2.stop(now + 0.05);
+
+                } else if (type === 'draw') {
+                    // メカニカルなカチャッという音
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.08);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+
+                } else if (type === 'start') {
+                    // 近未来的なギュイィーンという起動音
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.linearRampToValueAtTime(800, now + 0.4);
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.15, now + 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+
+                } else if (type === 'cancel') {
+                    // 重厚なブゥンというエラー音
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(120, now);
+                    osc.frequency.setValueAtTime(90, now + 0.1);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                }
+            } catch (e) {
+                console.error("Audio play failed", e);
+            }
+        };
+
         const AstralBackground = () => {
             const items = useMemo(() => {
                 const arr = [];
                 for(let i=0; i<5; i++) arr.push({ id: `m${i}`, type: 'magic', color: i%2?'#00F3FF':'#1E90FF', sx: `${(Math.random()*60)-30}vw`, ex: `${(Math.random()*20)-10}vw`, delay: `${Math.random()*20}s`, dur: `${16+Math.random()*12}s`, op: 0.4, rot: `${360+Math.random()*720}deg` });
-                for(let i=0; i<4; i++) {
+                
+                // 歯車の数を増やし、サイズをランダム化して重厚な空間に
+                for(let i=0; i<15; i++) {
                     const isLtr = Math.random() > 0.5;
-                    const sx = isLtr ? '-200px' : 'calc(100vw + 200px)';
-                    const ex = isLtr ? 'calc(100vw + 200px)' : '-200px';
-                    const sy = `${Math.random() * 80 + 10}vh`;
-                    const rot = isLtr ? `${360+Math.random()*360}deg` : `-${360+Math.random()*360}deg`;
+                    const sx = isLtr ? '-300px' : 'calc(100vw + 300px)';
+                    const ex = isLtr ? 'calc(100vw + 300px)' : '-300px';
+                    const sy = `${Math.random() * 90}vh`;
+                    const rot = isLtr ? `${360+Math.random()*720}deg` : `-${360+Math.random()*720}deg`;
+                    const size = 80 + Math.random() * 120; // 80px ~ 200px
                     arr.push({ 
-                        id: `g${i}`, type: 'gear', color: i%2?'#8B4513':'#B22222', 
-                        sx, ex, sy, ey: sy,
-                        delay: `${Math.random()*15}s`, dur: `${30+Math.random()*20}s`, op: 0.65, rot: rot 
+                        id: `g${i}`, type: 'gear', color: i%3===0 ? '#8B4513' : (i%3===1 ? '#B22222' : '#555555'), 
+                        sx, ex, sy, ey: sy, size: `${size}px`,
+                        delay: `${Math.random()*20}s`, dur: `${20+Math.random()*30}s`, op: 0.3 + Math.random()*0.4, rot: rot 
                     });
                 }
                 return arr;
             }, []);
+            
             return (
                 <div className="astral-canvas">
                     <MatrixSequentialRain />
@@ -335,7 +428,7 @@
                     {items.map(it => {
                         if (it.type === 'gear') {
                             return (
-                                <div key={it.id} className="flow-gear" style={{ '--sx': it.sx, '--ex': it.ex, '--sy': it.sy, '--ey': it.ey, '--delay': it.delay, '--dur': it.dur, '--op': it.op, '--rot': it.rot, '--glow-color': it.color, width: '150px', height: '150px', animationDelay: it.delay }}>
+                                <div key={it.id} className="flow-gear" style={{ '--sx': it.sx, '--ex': it.ex, '--sy': it.sy, '--ey': it.ey, '--delay': it.delay, '--dur': it.dur, '--op': it.op, '--rot': it.rot, '--glow-color': it.color, width: it.size, height: it.size, animationDelay: it.delay }}>
                                     <GearSVG color={it.color} />
                                 </div>
                             );
@@ -399,16 +492,18 @@
                 });
             }, [gs?.players]);
 
-            const join = () => { if(room && name) { setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name }); } };
-            const leave = () => { if (room) socket.emit('leave-room', { roomId: room.toUpperCase() }); setJoined(false); setGs(null); };
+            const join = () => { if(room && name) { playSE('start', muted); setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name }); } };
+            const leave = () => { if (room) { playSE('cancel', muted); socket.emit('leave-room', { roomId: room.toUpperCase() }); setJoined(false); setGs(null); } };
 
             const goToTopPage = () => {
+                playSE('cancel', muted);
                 if (room) socket.emit('leave-room', { roomId: room.toUpperCase() });
                 window.location.reload();
             };
 
             const handleCardClick = (c, isPlayable) => {
                 if (!isMyTurn || !isPlayable) return;
+                playSE('play', muted);
                 const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
                 if (!isMobile) {
                     if (c.realm === 'PLANET' || c.realm === 'RUINS' || (c.realm === 'FOUNTAIN' && c.isSpecial)) setSelector(c);
@@ -471,7 +566,7 @@
                                 </div>
                                 <div className="system-status-bar">
                                     <span>SYSTEM_STATUS: <span className="status-tag">ACTIVE</span></span>
-                                    <span>VER: <span className="text-white/80 font-black ml-1">118.0_THE_END</span></span>
+                                    <span>VER: <span className="text-white/80 font-black ml-1">120.0_IGNITION</span></span>
                                 </div>
                             </div>
                         ) : (!gs || gs.status === 'waiting') ? (
@@ -492,10 +587,11 @@
                                     {gs?.players[0]?.id === socket?.id && (
                                         <div className="flex gap-3 w-full mb-3">
                                             <button className="flex-1 p-5 bg-black/80 border border-white/40 backdrop-blur-md text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm" disabled={gs?.players?.length >= 5} onClick={()=>{
+                                                playSE('play', muted);
                                                 const botNames = ['X-TREME','A.L.I.C.E','G.E.A.R','N.U.L.L'];
                                                 socket.emit('add-cpu', {roomId: room.toUpperCase(), botName: botNames[Math.floor(Math.random()*botNames.length)]});
                                             }}>CPU追加</button>
-                                            <button className="flex-[2] p-5 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-xl rounded-sm shadow-2xl" disabled={gs?.players?.length < 2} onClick={()=>socket.emit('start-game', {roomId:room})}>ミッション開始</button>
+                                            <button className="flex-[2] p-5 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-xl rounded-sm shadow-2xl" disabled={gs?.players?.length < 2} onClick={()=>{ playSE('start', muted); socket.emit('start-game', {roomId:room}); }}>ミッション開始</button>
                                         </div>
                                     )}
                                     <button className="btn-cancel-sync" style={{display:'inline-block', padding:'10px 30px', background:'rgba(0,0,0,0.9)', border:'2px solid var(--accent)', color:'#fff', fontFamily:'Orbitron', fontSize:'11px', fontWeight:'900', letterSpacing:'4px', borderRadius:'30px', cursor:'pointer'}} onClick={leave}>CANCEL SYNC</button>
@@ -531,7 +627,7 @@
                                 </div>
 
                                 <div className="w-full max-w-xs flex flex-col gap-3">
-                                    <button className="w-full py-5 text-xl font-black bg-gradient-to-r from-amber-400 to-amber-600 text-black rounded-sm shadow-2xl uppercase tracking-[2px]" onClick={() => socket.emit('play-again', { roomId: room })}>同じメンバーで再戦</button>
+                                    <button className="w-full py-5 text-xl font-black bg-gradient-to-r from-amber-400 to-amber-600 text-black rounded-sm shadow-2xl uppercase tracking-[2px]" onClick={() => { playSE('start', muted); socket.emit('play-again', { roomId: room }); }}>同じメンバーで再戦</button>
                                     <button className="w-full py-3 text-xs font-black bg-transparent border border-white/30 text-white hover:bg-white/10 transition-colors rounded-sm uppercase tracking-[2px]" onClick={leave}>別のパイロット / セクターでプレイ</button>
                                     <button className="w-full py-3 text-xs font-black bg-black/50 border border-white/10 text-white/50 hover:bg-white/5 transition-colors rounded-sm uppercase tracking-[2px] mt-2" onClick={goToTopPage}>タイトル画面へ戻る</button>
                                 </div>
@@ -578,7 +674,7 @@
                                 </div>
                                 
                                 <div className="draw-action-footer">
-                                    <button className="btn-mega-draw active:scale-95 shadow-2xl" disabled={!isMyTurn} onClick={()=>socket.emit('draw-card',{roomId:room})}>ドロー ({gs.nextDrawAmount}枚)</button>
+                                    <button className="btn-mega-draw active:scale-95 shadow-2xl" disabled={!isMyTurn} onClick={()=>{ playSE('draw', muted); socket.emit('draw-card',{roomId:room}); }}>ドロー ({gs.nextDrawAmount}枚)</button>
                                 </div>
                                 
                                 {selector && (
@@ -586,9 +682,9 @@
                                         <div className="w-full max-w-sm bg-black/90 p-12 text-center rounded-3xl border-2 border-white/20">
                                             <h3 className="font-black mb-10 text-3xl tracking-[15px] text-white uppercase text-xs">属性選択</h3>
                                             <div className="grid grid-cols-2 gap-6">
-                                                {['GEAR','ICEAGE','FOUNTAIN','BATTERY','MACHINE','ARCHIVE'].map(r => <button key={r} className="p-6 border-2 border-white/20 font-black text-lg hover:bg-white/10 transition-all scale-110" style={{color: REALMS[r].bright}} onClick={()=>{ socket.emit('play-card',{roomId:room, card:selector, chosenRealm:r}); setSelector(null); }}>{REALMS[r].n}</button>)}
+                                                {['GEAR','ICEAGE','FOUNTAIN','BATTERY','MACHINE','ARCHIVE'].map(r => <button key={r} className="p-6 border-2 border-white/20 font-black text-lg hover:bg-white/10 transition-all scale-110" style={{color: REALMS[r].bright}} onClick={()=>{ playSE('play', muted); socket.emit('play-card',{roomId:room, card:selector, chosenRealm:r}); setSelector(null); }}>{REALMS[r].n}</button>)}
                                             </div>
-                                            <button className="w-full mt-10 p-4 text-white/50 text-sm tracking-[10px] font-black border border-white/15 uppercase" onClick={() => setSelector(null)}>キャンセル</button>
+                                            <button className="w-full mt-10 p-4 text-white/50 text-sm tracking-[10px] font-black border border-white/15 uppercase" onClick={() => { playSE('cancel', muted); setSelector(null); }}>キャンセル</button>
                                         </div>
                                     </div>
                                 )}
