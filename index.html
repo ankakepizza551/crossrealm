@@ -97,7 +97,15 @@
         /* === UIパネル === */
         .panel-omega { position: relative; z-index: 500; width: 100%; max-width: 440px; background: rgba(8,12,20,0.98); border: 2px solid var(--accent); padding: 40px 30px; clip-path: polygon(0 40px, 40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%); box-shadow: 0 0 120px rgba(64,224,208,0.4); }
         .btn-omega-singularity { display: flex; align-items: center; justify-content: center; min-height: 55px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1.5px solid #FFF8DC; border-radius: 8px; font-weight: 900; font-size: 20px; cursor: pointer; width: 100%; animation: sweepBtn 3s linear infinite; }
-        
+        .btn-sub { min-height: 45px; background: rgba(64,224,208,0.1); border: 1px solid var(--accent); color: var(--accent); font-weight: 900; font-size: 14px; border-radius: 4px; transition: 0.3s; }
+        .btn-sub:hover { background: var(--accent); color: #000; }
+
+        /* === 待機画面用 4スロットデザイン === */
+        .slot-omega-v3 { background: rgba(255,255,255,0.03); border-left: 5px solid rgba(255,255,255,0.1); padding: 18px 25px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-radius: 2px; }
+        .slot-omega-v3.active { border-left-color: var(--accent); background: rgba(64,224,208,0.05); }
+        .slot-omega-v3.empty { opacity: 0.2; border-left-style: dashed; }
+        .slot-name { font-weight: 900; font-size: 20px; letter-spacing: 2px; }
+
         .cycle-strip-classic { flex-shrink: 0; display: flex; justify-content: space-between; padding: 10px 8px; background: #000; border-bottom: 2px solid var(--border); }
         .cycle-label { font-size: 10px; font-weight: 900; color: rgba(255,255,255,0.2); transition: 0.3s; }
         .cycle-label.active { color: var(--c); text-shadow: 0 0 10px var(--c); transform: scale(1.1); }
@@ -112,7 +120,6 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
 
-        // 音声設定
         const SFX = { 
             turn: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3', 
             play: 'https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3', 
@@ -171,7 +178,6 @@
                             {rData.theme === 'steam' && <div className="steam-gauge-mega"><div className="steam-hand" /></div>}
                             {rData.theme === 'cyber' && <div className="cyber-matrix-layer">{[...Array(5)].map((_,i)=><div key={i} className="matrix-unit" style={{left:`${i*20+10}%`, animationDelay:`${i*0.5}s`}}>101</div>)}</div>}
                             {rData.theme === 'fantasy' && <div className="arcane-circle-layer"><svg viewBox="0 0 100 100" className="w-4/5 h-4/5 opacity-40 animate-spin" style={{animationDuration:'15s'}}><circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="2 4"/></svg></div>}
-                            
                             <div className="card-label-tag"><span>{dr}</span></div>
                             <div className="card-icon-Omega" style={{ color: rData.bright }}><IconRenderer r={dr} spec={spec} /></div>
                             <div className="card-footer-Omega" style={{ fontFamily: rData.font }}><span>{rData.n}</span></div>
@@ -240,19 +246,25 @@
                     <div className="screen-wrapper flex flex-col items-center justify-center p-6 text-center">
                         <div className="bg-core"><div className="layer-vortex"/></div>
                         <h2 className="text-3xl font-black mb-10 text-accent tracking-tighter" style={{fontFamily:'Orbitron'}}>待機中...</h2>
-                        <div className="w-full space-y-3 mb-10 max-h-[40vh] overflow-y-auto no-scrollbar">
-                            {gs?.players.map((p, i) => (
-                                <div key={p.id} className="p-5 bg-white/5 border-l-8 border-accent flex justify-between items-center rounded-sm">
-                                    <span className="font-black text-xl">{p.name}</span>
-                                    {i === 0 ? <span className="bg-[#D4AF37] text-black text-xs px-3 py-1 font-black rounded shadow-lg">HOST</span> : <span className="text-xs text-accent animate-pulse">接続中</span>}
-                                </div>
-                            ))}
+                        <div className="w-full space-y-2 mb-10">
+                            {[...Array(4)].map((_, i) => {
+                                const p = gs?.players[i];
+                                return (
+                                    <div key={i} className={`slot-omega-v3 ${p ? 'active' : 'empty'}`}>
+                                        <span className="slot-name">{p ? p.name : '空きスロット'}</span>
+                                        {p && i === 0 && <span className="bg-[#D4AF37] text-black text-[10px] px-3 py-1 font-black rounded shadow-lg">HOST</span>}
+                                    </div>
+                                );
+                            })}
                         </div>
                         <div className="w-full space-y-4">
                             {gs?.players[0]?.id === socket?.id && (
-                                <button className="btn-omega-singularity" onClick={()=>socket.emit('start-game', {roomId:room})}>ゲーム開始</button>
+                                <div className="flex flex-col gap-3">
+                                    <button className="btn-omega-singularity" onClick={()=>socket.emit('start-game', {roomId:room})}>ゲーム開始</button>
+                                    <button className="btn-sub" onClick={()=>socket.emit('add-cpu', {roomId:room})}>CPUを追加する</button>
+                                </div>
                             )}
-                            <button className="w-full text-white/40 text-[10px] font-black tracking-[8px] hover:text-white transition-colors" onClick={backToTop}>トップページに戻る</button>
+                            <button className="w-full text-white/40 text-[10px] font-black tracking-[8px] hover:text-white transition-colors py-4" onClick={backToTop}>トップページに戻る</button>
                         </div>
                     </div>
                 );
@@ -302,26 +314,26 @@
 
                     {gs.status === 'finished' && (
                         <div className="absolute inset-0 bg-black/98 z-[1000] flex flex-col items-center justify-center p-6 text-center">
-                            <h2 className="text-3xl font-black mb-6 tracking-tighter text-accent" style={{fontFamily:'Cinzel'}}>ミッション終了</h2>
-                            <div className="w-full space-y-3 mb-8 max-h-[35vh] overflow-y-auto px-2 no-scrollbar">
+                            <h2 className="text-3xl font-black mb-4 tracking-tighter text-accent" style={{fontFamily:'Cinzel'}}>ミッション終了</h2>
+                            <div className="w-full space-y-2 mb-6 max-h-[30vh] overflow-y-auto px-2 no-scrollbar">
                                 {gs.players.slice().sort((a,b)=>a.handCount-b.handCount).map((p,i) => (
-                                    <div key={p.id} className={`p-4 border-l-4 ${i===0?'border-accent bg-accent/10 shadow-[0_0_20px_var(--accent)]':'border-white/10 bg-white/5 opacity-40'} flex justify-between items-center rounded-sm`}>
-                                        <div className="flex flex-col items-start"><span className="text-[8px] uppercase font-black text-white/50">RANK #{i+1}</span><span className="font-bold text-lg">{p.name}</span></div>
-                                        <span className="font-black text-2xl">{p.handCount}</span>
+                                    <div key={p.id} className={`p-3 border-l-4 ${i===0?'border-accent bg-accent/10 shadow-[0_0_15px_var(--accent)]':'border-white/10 bg-white/5 opacity-40'} flex justify-between items-center rounded-sm`}>
+                                        <div className="flex flex-col items-start"><span className="text-[8px] uppercase font-black text-white/50">RANK #{i+1}</span><span className="font-bold text-base">{p.name}</span></div>
+                                        <span className="font-black text-xl">{p.handCount}</span>
                                     </div>
                                 ))}
                             </div>
                             
-                            <div className="w-full max-w-sm flex flex-col gap-3">
+                            <div className="w-full max-w-sm flex flex-col gap-2">
                                 {gs.players[0]?.id === socket?.id ? (
                                     <>
                                         <button className="btn-omega-singularity" onClick={()=>socket.emit('play-again', {roomId:room})}>ゲームを続ける</button>
-                                        <button className="w-full py-3 border border-accent/30 text-accent text-xs font-black tracking-[4px] rounded-lg bg-accent/5 hover:bg-accent/10 transition-colors" onClick={()=>socket.emit('play-again', {roomId:room})}>待機画面に戻る</button>
+                                        <button className="btn-sub py-4 text-xs tracking-[4px]" onClick={()=>socket.emit('play-again', {roomId:room})}>待機画面に戻る</button>
                                     </>
                                 ) : (
-                                    <div className="text-white/40 text-[10px] py-2 font-black tracking-[4px] border border-white/5 rounded-lg">ホストの操作を待機中...</div>
+                                    <div className="text-white/40 text-[10px] py-4 font-black tracking-[4px] border border-white/5 rounded-lg">ホストの操作を待機中...</div>
                                 )}
-                                <button className="w-full py-3 border border-white/10 text-white/40 text-[10px] font-black tracking-[6px] rounded-lg hover:bg-white/5 transition-colors" onClick={backToTop}>トップページに戻る</button>
+                                <button className="w-full py-3 text-white/40 text-[10px] font-black tracking-[6px] hover:text-white transition-colors" onClick={backToTop}>トップページに戻る</button>
                             </div>
                         </div>
                     )}
