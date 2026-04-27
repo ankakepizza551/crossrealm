@@ -98,7 +98,6 @@
         .mat-void-planet { background: radial-gradient(circle at 50% 50%, #fff7 0%, #000 100%); border: none; animation: liquid-morph 5s infinite alternate ease-in-out; box-shadow: 0 0 35px #fff7; }
         .mat-void-ruins { background: radial-gradient(circle at 50% 50%, #444 0%, #000 100%); border: none; animation: liquid-morph 8s infinite alternate-reverse ease-in-out; box-shadow: 0 0 35px #666; }
 
-        /* カード装飾群 */
         .card-label-tag { position: absolute; top: 8px; left: 8px; padding: 2px 6px; background: #000; border-left: 4px solid var(--r-color); transform: translateZ(40px); z-index: 100; }
         .card-label-tag span { font-size: 8px; font-weight: 900; color: #fff; letter-spacing: 1px; font-family: 'Exo 2', sans-serif;}
         .card-icon-Omega { position: absolute; top: 58%; left: 50%; width: 45px; height: 45px; transform: translate(-50%, -50%) translateZ(60px); filter: drop-shadow(0 0 15px var(--r-color)); z-index: 95; }
@@ -118,7 +117,6 @@
         
         .rivet-omega { position: absolute; width: 3px; height: 3px; background: #8B6B23; border-radius: 50%; box-shadow: inset 1px 1px 1px #FFF8DC, 1px 1px 3px #000; }
 
-        /* === 究極パネル (中央固定) === */
         .panel-omega { position: relative; z-index: 500; width: 100%; max-width: 440px; background: rgba(8,12,20,0.98); border: 2px solid var(--accent); padding: 45px 30px; clip-path: polygon(0 40px, 40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%); box-shadow: 0 0 120px rgba(64,224,208,0.4); }
         .panel-omega input { width: 100%; padding: 22px; background: rgba(0,0,0,0.9); border: 1.5px solid rgba(64,224,208,0.4); border-bottom: 4px solid var(--accent); color: #fff; text-align: center; font-size: 24px; outline: none; margin-bottom: 30px; font-family: 'Exo 2', sans-serif; font-weight: 900; }
         .btn-omega-singularity { display: flex; align-items: center; justify-content: center; min-height: clamp(55px, 8vh, 70px); background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1.5px solid #FFF8DC; border-radius: 8px; font-weight: 900; font-size: clamp(18px, 4vw, 26px); cursor: pointer; width: 100%; position: relative; overflow: hidden; animation: sweepBtn 3s linear infinite; box-shadow: 0 10px 40px rgba(212,175,55,0.6); font-family: 'Exo 2', sans-serif;}
@@ -127,7 +125,6 @@
         .slot-name-tag { font-family: 'Exo 2', sans-serif; font-weight: 900; font-size: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
         .slot-Omega-Final.empty { border: 1.5px dashed rgba(255,255,255,0.3); opacity: 0.35; }
 
-        /* === ゲームUIレイアウト最適化 === */
         .game-ui-container { display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; }
         .hud-header-bar { flex-shrink: 0; background: linear-gradient(90deg, transparent, rgba(0,60,60,0.98), transparent); padding: 12px; border-bottom: 3.5px solid var(--accent); text-align: center; font-family: 'Orbitron', monospace; font-weight: 900; color: var(--accent); letter-spacing: 6px; font-size: 14px; position: relative; z-index: 20; }
         
@@ -394,6 +391,12 @@
                 else socket.emit('play-card', { roomId: room.toUpperCase(), card: c, chosenRealm: isW ? 'GEAR' : undefined });
             };
 
+            // === 新規追加: トップページに戻る処理 ===
+            const backToTop = () => {
+                // 完全な接続リセットのためリロードを行う
+                window.location.reload();
+            };
+
             return (
                 <div className="screen-wrapper" style={{ '--realm-color': REALMS[currentR]?.color || '#000' }}>
                     <div className="bg-core">
@@ -428,7 +431,7 @@
                         <div className="h-full flex items-center justify-center relative z-10 w-full px-4">
                             <div className="panel-omega" style={{borderColor: 'var(--magic-purple)', maxWidth: '480px'}}>
                                 <div className="text-center mb-10"><div className="text-4xl text-steam-gold font-bold tracking-widest steam-glow" style={{fontFamily:'Cinzel'}}>ROOM: {room || gs.roomId}</div></div>
-                                <div className="space-y-3 mb-12">
+                                <div className="space-y-3 mb-8">
                                     {[...Array(4)].map((_, i) => {
                                         const p = gs?.players?.[i];
                                         return (
@@ -437,18 +440,23 @@
                                                     <div className={`w-12 h-12 flex-shrink-0 rounded-full ${p ? 'bg-accent/20 text-accent border border-accent/60 shadow-[0_0_20px_var(--accent)]' : 'bg-white/5 text-white/5 border border-white/10'} flex items-center justify-center font-bold text-2xl`}>{p ? '👤' : ''}</div>
                                                     <span className="slot-name-tag">{p ? p.name : '空きスロット'}</span>
                                                 </div>
-                                                {/* 修正箇所：HOSTバッジの色を確実にゴールドに！ */}
                                                 {p && i === 0 && <div className="bg-[#D4AF37] flex-shrink-0 text-black text-[12px] px-4 py-1 font-black rounded-sm shadow-xl">HOST</div>}
                                             </div>
                                         );
                                     })}
                                 </div>
-                                {gs?.players?.[0]?.id === socket?.id && (
-                                    <div className="flex gap-4">
-                                        <button onClick={()=>socket.emit('add-cpu',{roomId:room})} className="flex-1 p-4 border border-magic-purple text-[#e2b0ff] font-bold rounded-lg text-lg bg-magic-purple/20">CPU追加</button>
-                                        <button onClick={()=>socket.emit('start-game',{roomId:room})} className="flex-1 btn-omega-singularity" disabled={gs?.players?.length < 2}>開始</button>
-                                    </div>
-                                )}
+                                {/* === 待機画面のボタン群 === */}
+                                <div className="flex flex-col gap-3 mt-4">
+                                    {gs?.players?.[0]?.id === socket?.id && (
+                                        <div className="flex gap-4">
+                                            <button onClick={()=>socket.emit('add-cpu',{roomId:room})} className="flex-1 p-4 border border-magic-purple text-[#e2b0ff] font-bold rounded-lg text-lg bg-magic-purple/20">CPU追加</button>
+                                            <button onClick={()=>socket.emit('start-game',{roomId:room})} className="flex-1 btn-omega-singularity" disabled={gs?.players?.length < 2}>開始</button>
+                                        </div>
+                                    )}
+                                    <button onClick={backToTop} className="w-full p-4 border border-white/20 text-white/60 font-bold rounded-lg hover:bg-white/10 transition-all uppercase tracking-widest text-sm">
+                                        トップページに戻る
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ) : gs?.fieldCard && (
@@ -537,31 +545,36 @@
                         </div>
                     )}
                     
-                    {/* === ミッション終了（リザルト）画面 === */}
+                    {/* === リザルト画面 === */}
                     {gs?.status === 'finished' && (
                         <div className="absolute inset-0 flex items-center justify-center p-4 z-[250000] bg-black/90 backdrop-blur-sm">
                             <div className="panel-omega" style={{borderColor: 'var(--steam-gold)', padding: '40px 20px', width: '100%', maxWidth: '400px'}}>
                                 <h2 className="text-3xl md:text-4xl font-black text-center mb-8 text-[#D4AF37] steam-glow" style={{fontFamily: "'Exo 2', sans-serif"}}>{gs.players.slice().sort((a,b) => a.handCount - b.handCount)[0]?.name} 勝利！</h2>
-                                <div className="space-y-3 mb-10 max-h-[50vh] overflow-y-auto pr-2">
+                                <div className="space-y-3 mb-10 max-h-[40vh] overflow-y-auto pr-2">
                                     {gs.players.slice().sort((a,b) => a.handCount - b.handCount).map((p, i) => (
                                         <div key={p.id} className={`p-4 rounded-xl border flex items-center transition-all ${p.handCount === 0 ? 'border-accent bg-accent/20 scale-[1.02] shadow-[0_0_15px_var(--accent)]' : p.handCount > 10 ? 'border-red-500 bg-red-500/20' : 'border-white/10 opacity-70'}`}>
                                             <span className="font-black text-xl mr-4 italic text-slate-400" style={{fontFamily: "'Exo 2', sans-serif"}}>{i+1}位</span>
                                             <div className="flex-1 overflow-hidden">
                                                 <div className="font-black text-lg tracking-wider uppercase truncate">{p.name}</div>
-                                                {/* 修正箇所：手札0枚の時の「ミッションクリア」の文字を削除してスッキリと！ */}
                                                 {p.handCount > 10 && <div className="text-[10px] text-red-500 tracking-widest font-black mt-1">システムオーバーロード</div>}
                                             </div>
                                             <span className={`font-black text-2xl ml-3 ${p.handCount > 10 ? 'text-red-500' : 'text-accent'}`} style={{fontFamily:'Orbitron'}}>{p.handCount}</span>
                                         </div>
                                     ))}
                                 </div>
-                                {gs.players[0]?.id === socket?.id ? (
-                                    <button onClick={() => socket.emit('play-again', {roomId: room})} className="btn-omega-singularity w-full text-xl">
-                                        もう一度プレイ
+                                {/* === リザルト画面のボタン群 === */}
+                                <div className="flex flex-col gap-3">
+                                    {gs.players[0]?.id === socket?.id ? (
+                                        <button onClick={() => socket.emit('play-again', {roomId: room})} className="btn-omega-singularity w-full text-xl py-4">
+                                            待機画面に戻る
+                                        </button>
+                                    ) : (
+                                        <div className="text-center text-slate-400 font-bold tracking-widest text-sm py-4">ホストの再戦操作を待機中...</div>
+                                    )}
+                                    <button onClick={backToTop} className="w-full p-4 border border-white/20 text-white/60 font-bold rounded-lg hover:bg-white/10 transition-all uppercase tracking-widest text-sm mt-2">
+                                        トップページに戻る
                                     </button>
-                                ) : (
-                                    <div className="text-center text-slate-400 font-bold tracking-widest text-sm py-4">ホストの再戦操作を待機中...</div>
-                                )}
+                                </div>
                             </div>
                         </div>
                     )}
