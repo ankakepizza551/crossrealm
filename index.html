@@ -17,7 +17,7 @@
         :root { 
             --accent: #40E0D0; --steam-gold: #D4AF37; --magic-purple: #8A2BE2; --danger: #FF4500; 
             --bg: #010103; 
-            /* 比率を 1:1.4 で完全固定 */
+            /* カード比率を 1:1.4 で完全固定 */
             --card-w: clamp(75px, 20vw, 85px); 
             --card-h: calc(var(--card-w) * 1.4); 
             --border: rgba(212, 175, 15, 0.45);
@@ -54,7 +54,7 @@
         /* ロゴ (完全復元) */
         .logo-stack { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 100; margin-bottom: 15px; width: 100%; }
         .logo-row { font-family: 'Cinzel', serif; font-weight: 900; line-height: 0.8; text-transform: uppercase; background: linear-gradient(to bottom, #FFF8DC 0%, #FFD700 40%, #D4AF37 60%, #8B6B23 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 25px rgba(212,175,55,0.7)); white-space: nowrap; }
-        .row-cross { font-size: clamp(35px, 11vw, 70px); letter-spacing: 12px; }
+        .row-cross { font-size: clamp(35px, 11vw, 65px); letter-spacing: 12px; }
         .row-realm { font-size: clamp(35px, 11vw, 65px); letter-spacing: 12px; }
         .row-x { font-family: 'Orbitron', sans-serif; font-size: clamp(60px, 16vw, 100px); color: var(--accent); -webkit-text-fill-color: var(--accent); text-shadow: 0 0 40px var(--accent), 0 0 80px var(--accent); margin: -10px 0; font-weight: 900; }
         .sub-banner-omega { margin-top: 15px; padding: 6px 20px; position: relative; overflow: hidden; background: rgba(0,0,0,0.95); border: 2px solid var(--accent); box-shadow: 0 0 30px var(--accent); display: flex; justify-content: center; align-items: center; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); }
@@ -74,12 +74,12 @@
         .mat-cyber { background: #000; border: none; clip-path: polygon(0 15%, 15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%); box-shadow: inset 0 0 40px var(--r-color-dim); border-left: 5.5px solid var(--r-color); }
         .mat-void { background: #000; border: 1px solid rgba(255,255,255,0.3); animation: liquid-morph 5s infinite alternate ease-in-out; box-shadow: 0 0 35px #fff3; }
 
-        /* 特殊バッジ & ラベル */
+        /* 特殊バッジ & ラベル (復元) */
         .special-badge-Omega { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; background: linear-gradient(135deg, #FF0000, #8B0000); border: 1.5px solid #FFF; border-radius: 50%; display: flex; align-items: center; justify-content: center; transform: translateZ(50px); box-shadow: 0 0 15px #FF0000, inset 0 0 5px #000; z-index: 150; }
-        .special-badge-Omega span { font-family: 'Cinzel', serif; font-weight: 900; font-size: 13px; color: #FFF; line-height: 1; }
+        .special-badge-Omega span { font-family: 'Cinzel', serif; font-weight: 900; font-size: 12px; color: #FFF; line-height: 1; }
         .special-text-tag { position: absolute; top: 35px; right: -5px; background: #FF0000; color: #fff; font-size: 7.5px; font-weight: 900; padding: 2px 6px; transform: rotate(90deg) translateZ(45px); letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 
-        /* ギミック */
+        /* ギミック演出 */
         .steam-gauge-mega { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; background: #2a1508; border: 2px solid #5d3a1a; border-radius: 50%; transform: translateZ(50px); z-index: 140; }
         .steam-hand { position: absolute; top: 50%; left: 50%; width: 1.5px; height: 12px; background: #f33; transform-origin: bottom center; transform: translate(-50%, -100%) rotate(-45deg); animation: gear-spin 5s infinite alternate; }
         .cyber-matrix-layer { position: absolute; inset: 0; overflow: hidden; opacity: 0.8; z-index: 30; }
@@ -92,7 +92,7 @@
         .card-icon-Omega { position: absolute; top: 58%; left: 50%; width: 45px; height: 45px; transform: translate(-50%, -50%) translateZ(60px); filter: drop-shadow(0 0 15px var(--r-color)); z-index: 95; }
         .card-footer-Omega { position: absolute; bottom: 0; width: 100%; padding: 10px 0 6px; background: linear-gradient(to top, rgba(0,0,0,1) 0%, transparent 100%); text-align: center; color: #fff; z-index: 100; transform: translateZ(40px); text-shadow: 0 0 12px var(--r-color); font-weight: 900; font-size: 13px; letter-spacing: 2.5px; }
         
-        /* UI */
+        /* UIパーツ */
         .panel-omega { position: relative; z-index: 500; width: 100%; max-width: 440px; background: rgba(8,12,20,0.98); border: 2px solid var(--accent); padding: 25px; clip-path: polygon(0 30px, 30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%); box-shadow: 0 0 100px rgba(64,224,208,0.3); }
         .input-cyber { width: 100%; padding: 15px; background: rgba(0,0,0,0.9); border: 1.5px solid rgba(64,224,208,0.3); border-bottom: 4px solid var(--accent); color: #fff; text-align: center; font-size: 20px; outline: none; margin-bottom: 10px; font-family: 'Exo 2', sans-serif; font-weight: 900; letter-spacing: 2px; }
         .btn-omega-singularity { display: flex; align-items: center; justify-content: center; min-height: 55px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1.5px solid #FFF8DC; border-radius: 8px; font-weight: 900; font-size: 22px; cursor: pointer; width: 100%; animation: sweepBtn 3s linear infinite; box-shadow: 0 8px 30px rgba(212,175,55,0.5); transition: 0.3s; }
@@ -114,11 +114,10 @@
         .opp-card-omega-peak { padding: 6px 12px; border-radius: 4px; background: rgba(255,255,255,0.04); border-left: 4px solid transparent; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; min-height: 55px; }
         .opp-card-omega-peak.active { border-left-color: var(--accent); background: rgba(64,224,208,0.12); box-shadow: 0 0 15px rgba(64,224,208,0.25); }
         
-        /* 手札枚数に応じたイラストスタック */
         .card-stack-visual { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); height: 35px; width: 45px; display: flex; justify-content: flex-end; align-items: center; pointer-events: none; }
         .stack-item { position: absolute; height: 32px; width: 23px; background: linear-gradient(135deg, #444, #111); border: 0.5px solid rgba(255,255,255,0.4); border-radius: 2px; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
 
-        .cycle-strip-classic { flex-shrink: 0; display: flex; justify-content: space-between; padding: 12px; background: #000; border-bottom: 2px solid var(--border); z-index: 40; }
+        .cycle-strip-classic { flex-shrink: 0; display: flex; justify-content: space-between; padding: 10px; background: #000; border-bottom: 2px solid var(--border); z-index: 40; }
         .cycle-node-container { display: flex; flex-direction: column; align-items: center; flex: 1; }
         .cycle-light { width: 100%; height: 5px; background: rgba(255,255,255,0.1); margin-top: 6px; border-radius: 2px; }
         .cycle-light.active { background: var(--c); box-shadow: 0 0 12px var(--c); }
@@ -127,13 +126,14 @@
         .cycle-label.active { color: var(--c); text-shadow: 0 0 8px var(--c); }
         
         .field-area-recapped { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 10; padding: 15px 0; }
-        .terminal-log-omega { flex-shrink: 0; height: 55px; margin: 0 12px 10px; padding: 8px 15px; font-size: 12px; background: rgba(0,0,0,0.85); border-left: 5px solid var(--accent); overflow-y: auto; color: #fff; font-family: monospace; z-index: 30; line-height: 1.5; }
+        .terminal-log-omega { flex-shrink: 0; height: 55px; margin: 0 12px 6px; padding: 6px 15px; font-size: 12px; background: rgba(0,0,0,0.85); border-left: 5px solid var(--accent); overflow-y: auto; color: #fff; font-family: monospace; z-index: 30; line-height: 1.4; }
         .hand-area-recapped { flex-shrink: 0; display: flex; gap: 4px; padding: 14px 12px; overflow-x: auto; background: rgba(0,0,0,0.92); min-height: 165px; border-top: 1px solid rgba(255,255,255,0.2); z-index: 20; }
         
         .btn-sound-toggle { position: absolute; left: 12px; top: 48%; z-index: 1000; width: 44px; height: 44px; background: rgba(0,0,0,0.85); border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 20px var(--accent); transition: 0.3s; color: var(--accent); }
         .btn-sound-toggle:hover { scale: 1.1; background: var(--accent); color: #000; }
 
-        .not-playable { opacity: 0.25 !important; filter: grayscale(100%) brightness(0.3) !important; transform: translateY(12px) scale(0.9) !important; pointer-events: none; }
+        /* 出せないカードをより暗く、透明度を下げる */
+        .not-playable { opacity: 0.1 !important; filter: grayscale(100%) brightness(0.15) !important; transform: translateY(15px) scale(0.9) !important; pointer-events: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -198,7 +198,7 @@
             const rData = REALMS[dr] || REALMS.GEAR;
             
             let specialLabel = "SPECIAL";
-            if (card.realm === 'GEAR' && spec) specialLabel = "ドロー2";
+            if (card.realm === 'GEAR' && spec) specialLabel = "DRAW 2";
             if (card.realm === 'MACHINE' && spec) specialLabel = "REVERSE";
             if (card.realm === 'FOUNTAIN' && spec) specialLabel = "LIMIT WILD";
             if (card.realm === 'PLANET' || card.realm === 'RUINS') specialLabel = "WILD";
@@ -336,7 +336,7 @@
                         </div>
                     ) : (!gs || gs.status === 'waiting') ? (
                         <div className="h-full flex flex-col items-center justify-center p-6 text-center z-10">
-                            <h2 className="text-3xl font-black mb-2 text-accent tracking-widest" style={{fontFamily:'Orbitron'}}>待機中...</h2>
+                            <h2 className="text-3xl font-black mb-1.5 text-accent tracking-widest" style={{fontFamily:'Orbitron'}}>待機中...</h2>
                             <div className="mb-4 px-5 py-1.5 border-2 border-accent/30 bg-accent/5 rounded-lg text-sm font-black tracking-[4px]">
                                 ルームID: <span className="text-white ml-2">{room}</span>
                             </div>
@@ -426,27 +426,27 @@
                             )}
 
                             {gs.status === 'finished' && (
-                                <div className="absolute inset-0 bg-black/96 z-[1000] flex flex-col items-center justify-center p-6 text-center backdrop-blur-lg">
-                                    <div className="panel-omega w-full border-4 border-accent shadow-[0_0_80px_rgba(64,224,208,0.5)]">
-                                        <h2 className="text-4xl font-black mb-8 tracking-tighter text-accent" style={{fontFamily:'Cinzel'}}>ミッション終了</h2>
-                                        <div className="w-full space-y-3 mb-8 max-h-[35vh] overflow-y-auto px-2 no-scrollbar">
+                                <div className="absolute inset-0 bg-black/97 z-[1000] flex flex-col items-center justify-center p-4 text-center backdrop-blur-xl">
+                                    <div className="panel-omega w-full border-4 border-accent shadow-[0_0_80px_rgba(64,224,208,0.6)] p-6 max-h-[90vh] flex flex-col overflow-hidden">
+                                        <h2 className="text-3xl font-black mb-4 tracking-tighter text-accent" style={{fontFamily:'Cinzel'}}>ミッション終了</h2>
+                                        <div className="w-full space-y-2 mb-6 flex-1 overflow-y-auto px-1 no-scrollbar">
                                             {gs.players.slice().sort((a,b)=>a.handCount-b.handCount).map((p,i) => (
-                                                <div key={p.id} className={`p-4 border-l-8 ${i===0?'border-accent bg-accent/20 shadow-[0_0_30px_var(--accent)] scale-[1.05]':'border-white/10 bg-white/5 opacity-80'} flex justify-between items-center rounded-r-lg transition-all`}>
-                                                    <div className="flex flex-col items-start"><span className="text-[10px] uppercase font-black text-white/60 tracking-widest">RANK #{i+1}</span><span className="font-bold text-2xl uppercase">{p.name}</span></div>
+                                                <div key={p.id} className={`p-3 border-l-8 ${i===0?'border-accent bg-accent/20 shadow-[0_0_20px_var(--accent)] scale-[1.02]':'border-white/10 bg-white/5 opacity-80'} flex justify-between items-center rounded-r-lg transition-all`}>
+                                                    <div className="flex flex-col items-start"><span className="text-[9px] uppercase font-black text-white/60 tracking-widest">RANK #{i+1}</span><span className="font-bold text-xl uppercase leading-none">{p.name}</span></div>
                                                     <span className="font-black text-3xl font-mono text-white">{p.handCount}</span>
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="w-full flex flex-col gap-4">
+                                        <div className="w-full flex flex-col gap-3 shrink-0">
                                             {gs.players[0]?.id === socket?.id ? (
                                                 <>
-                                                    <button className="btn-omega-singularity" onClick={()=>socket.emit('play-again', {roomId:room})}>ゲームを続ける</button>
-                                                    <button className="btn-sub py-4 text-base tracking-[4px]" onClick={()=>socket.emit('play-again', {roomId:room})}>待機室に戻る</button>
+                                                    <button className="btn-omega-singularity text-xl py-4" onClick={()=>socket.emit('play-again', {roomId:room})}>ゲームを続ける</button>
+                                                    <button className="btn-sub py-3 text-sm tracking-[4px]" onClick={()=>socket.emit('play-again', {roomId:room})}>待機室に戻る</button>
                                                 </>
                                             ) : (
-                                                <div className="text-white/80 text-[12px] py-5 font-black tracking-[6px] border-2 border-white/10 bg-white/5 rounded-lg animate-pulse">ホストの操作を待機中...</div>
+                                                <div className="text-white/80 text-[11px] py-4 font-black tracking-[6px] border-2 border-white/10 bg-white/5 rounded-lg animate-pulse">ホストの操作を待機中...</div>
                                             )}
-                                            <button className="btn-utility py-4 border-white/40 text-white font-black" onClick={backToTop}>トップに戻る</button>
+                                            <button className="btn-utility py-3 border-white/40 text-white font-black" onClick={backToTop}>トップに戻る</button>
                                         </div>
                                     </div>
                                 </div>
