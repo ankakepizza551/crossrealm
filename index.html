@@ -26,7 +26,6 @@
         :root { 
             --accent: #40E0D0; --steam-gold: #D4AF37; --magic-purple: #8A2BE2; --danger: #FF4500; 
             --bg: #010103; 
-            /* カード比率を 1:1.4 で完全固定。スマホでの視認性を計算した最適サイズ */
             --card-w: clamp(75px, 20.5vw, 86px); 
             --card-h: calc(var(--card-w) * 1.4); 
             --border: rgba(212, 175, 15, 0.45);
@@ -44,33 +43,48 @@
             background: var(--bg);
         }
 
-        /* === UI アニメーション === */
+        /* === 究極の画面エフェクト === */
+        .scanlines {
+            position: absolute; inset: 0; z-index: 9999; pointer-events: none;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px; opacity: 0.6;
+        }
+
+        /* アニメーション */
         @keyframes sweepBtn { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
         @keyframes vortex-pulse { 0% { transform: rotate(0deg) scale(1.5); opacity: 0.15; } 50% { transform: rotate(180deg) scale(2.5); opacity: 0.4; } 100% { transform: rotate(360deg) scale(1.5); opacity: 0.15; } }
         @keyframes spark-float { 0% { transform: translateY(0) rotate(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(var(--ty)) translateX(var(--tx)) rotate(360deg); opacity: 0; } }
         @keyframes blink-light { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; box-shadow: 0 0 12px var(--c); background: var(--c); } }
+        @keyframes glitch { 0% { transform: translate(0) } 20% { transform: translate(-2px, 2px) } 40% { transform: translate(-2px, -2px) } 60% { transform: translate(2px, 2px) } 80% { transform: translate(2px, -2px) } 100% { transform: translate(0) } }
 
-        /* === 背景レイヤー === */
+        /* 背景レイヤー */
         .bg-core { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
         .layer-vortex { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent, rgba(138,43,226,0.2), transparent 40%, rgba(64,224,208,0.15), transparent); animation: vortex-pulse 30s linear infinite; filter: blur(90px); }
-        .layer-grid { position: absolute; inset: -50%; background-image: linear-gradient(rgba(64, 224, 208, 0.1) 2.5px, transparent 2.5px), linear-gradient(90deg, rgba(64, 224, 208, 0.1) 2.5px, transparent 2.5px); background-size: 100px 100px; transform: perspective(1000px) rotateX(75deg); animation: grid-scroll 15s linear infinite; mask-image: radial-gradient(circle at center, black, transparent 90%); }
-        @keyframes grid-scroll { 0% { background-position: 0 0; } 100% { background-position: 0 100px; } }
+        .layer-grid { position: absolute; inset: -50%; background-image: linear-gradient(rgba(64, 224, 208, 0.15) 2.5px, transparent 2.5px), linear-gradient(90deg, rgba(64, 224, 208, 0.15) 2.5px, transparent 2.5px); background-size: 80px 80px; transform: perspective(1000px) rotateX(75deg); animation: grid-scroll 15s linear infinite; mask-image: radial-gradient(circle at center, black, transparent 80%); }
+        @keyframes grid-scroll { 0% { background-position: 0 0; } 100% { background-position: 0 80px; } }
         .layer-nebula { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, var(--realm-color), transparent 75%); opacity: 0.4; transition: 3s ease; mix-blend-mode: color-dodge; }
 
-        /* === ロゴ領域 === */
-        .logo-stack { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 100; margin-bottom: 20px; width: 100%; }
-        .logo-row { font-family: 'Cinzel', serif; font-weight: 900; line-height: 0.8; text-transform: uppercase; background: linear-gradient(to bottom, #FFF8DC 0%, #FFD700 40%, #D4AF37 60%, #8B6B23 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 25px rgba(212,175,55,0.7)); white-space: nowrap; }
-        .row-cross { font-size: clamp(35px, 11vw, 65px); letter-spacing: 12px; }
-        .row-realm { font-size: clamp(35px, 11vw, 65px); letter-spacing: 12px; }
-        .row-x { font-family: 'Orbitron', sans-serif; font-size: clamp(60px, 16vw, 100px); color: var(--accent); -webkit-text-fill-color: var(--accent); text-shadow: 0 0 40px var(--accent), 0 0 80px var(--accent); margin: -10px 0; font-weight: 900; }
-        .sub-banner-omega { margin-top: 15px; padding: 6px 20px; position: relative; overflow: hidden; background: rgba(0,0,0,0.95); border: 2px solid var(--accent); box-shadow: 0 0 30px var(--accent); display: flex; justify-content: center; align-items: center; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); }
-        .sub-text-final { font-family: 'Audiowide', sans-serif; font-size: clamp(8px, 2.2vw, 11px); letter-spacing: 4px; color: #fff; position: relative; z-index: 2; text-shadow: 0 0 10px #0ff; white-space: nowrap; text-transform: uppercase; }
+        /* === ロゴ領域 (盛った) === */
+        .logo-stack { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 100; margin-bottom: 10px; width: 100%; }
+        .logo-glow { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); width: 80%; height: 60%; background: var(--accent); filter: blur(60px); opacity: 0.2; pointer-events: none; z-index: -1; }
+        .logo-row { font-family: 'Cinzel', serif; font-weight: 900; line-height: 0.85; text-transform: uppercase; background: linear-gradient(to bottom, #FFF8DC 0%, #FFD700 40%, #D4AF37 60%, #8B6B23 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 25px rgba(212,175,55,0.7)); white-space: nowrap; }
+        .row-cross { font-size: clamp(35px, 11vw, 65px); letter-spacing: 14px; }
+        .row-realm { font-size: clamp(35px, 11vw, 65px); letter-spacing: 14px; }
+        .row-x { font-family: 'Orbitron', sans-serif; font-size: clamp(60px, 16vw, 100px); color: var(--accent); -webkit-text-fill-color: var(--accent); text-shadow: 0 0 40px var(--accent), 0 0 80px var(--accent); margin: -15px 0; font-weight: 900; animation: blink-light 4s infinite alternate; }
+        .sub-banner-omega { margin-top: 15px; padding: 6px 20px; position: relative; overflow: hidden; background: rgba(0,0,0,0.95); border: 1px solid var(--accent); box-shadow: 0 0 30px rgba(64,224,208,0.5); display: flex; justify-content: center; align-items: center; clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); }
+        .sub-text-final { font-family: 'Audiowide', sans-serif; font-size: clamp(8px, 2.2vw, 11px); letter-spacing: 5px; color: #fff; position: relative; z-index: 2; text-shadow: 0 0 10px var(--accent); white-space: nowrap; text-transform: uppercase; }
+
+        /* === フレーバーテキスト領域 === */
+        .flavor-box { position: relative; padding: 15px; background: linear-gradient(90deg, rgba(64,224,208,0.1) 0%, rgba(0,0,0,0.8) 50%, rgba(64,224,208,0.1) 100%); border-top: 1px solid rgba(64,224,208,0.3); border-bottom: 1px solid rgba(64,224,208,0.3); margin-bottom: 25px; }
+        .flavor-box::before { content: ''; position: absolute; left: 0; top: 0; width: 3px; height: 100%; background: var(--accent); box-shadow: 0 0 15px var(--accent); }
+        .flavor-box::after { content: ''; position: absolute; right: 0; top: 0; width: 3px; height: 100%; background: var(--accent); box-shadow: 0 0 15px var(--accent); }
+        .corner-br { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+        .corner-tl { position: absolute; top: 0; left: 0; width: 10px; height: 10px; border-top: 2px solid var(--accent); border-left: 2px solid var(--accent); }
 
         /* =====================================================================
            === 究極カードデザイン (Showcase完全準拠 + 黄金比スケール対応) ===
            ===================================================================== */
         
-        /* ギミックアニメーション */
         @keyframes gear-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes digital-rain { 0% { transform: translateY(-100%); opacity: 0; } 20% { opacity: 0.6; } 80% { opacity: 0.6; } 100% { transform: translateY(180%); opacity: 0; } }
         @keyframes liquid-morph { 0% { border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%; } 100% { border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%; } }
@@ -83,7 +97,6 @@
         .card-3d { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1); border-radius: calc(var(--card-w)*0.02); }
         .card-content { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; overflow: hidden; border-radius: inherit; }
 
-        /* --- マテリアル背景 --- */
         .mat-steam { background: radial-gradient(circle at 50% 10%, var(--r-color-bright) 0%, #0d0400 100%); border: calc(var(--card-w)*0.046) solid #4a2f1c; box-shadow: 0 10px 20px #000, inset 2px 2px 4px rgba(255,255,255,0.15), inset -2px -2px 4px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.9); }
         .mat-steam::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 0% 0%, transparent 58%, rgba(255,255,255,0.05) 60%, transparent 63%), radial-gradient(circle at 100% 100%, transparent 38%, rgba(255,255,255,0.03) 40%, transparent 44%), radial-gradient(circle at 50% 50%, transparent 70%, rgba(255,255,255,0.02) 72%, transparent 75%); background-size: 40% 40%; opacity: 0.8; z-index: 1; }
         
@@ -94,7 +107,6 @@
         .mat-void-planet { background: radial-gradient(circle at 50% 50%, #fff4 0%, #000 100%); box-shadow: 0 0 25px #fff7, inset 0 0 40px #fff2; animation: liquid-morph 5s infinite alternate ease-in-out; border-radius: 40% !important; }
         .mat-void-ruins { background: radial-gradient(circle at 50% 50%, #2a2a2a 0%, #000 100%); box-shadow: 0 0 20px #444, inset 0 0 40px #111; animation: liquid-morph 8s infinite alternate-reverse ease-in-out; border-radius: 40% !important; }
 
-        /* --- 情報・文字レイヤー --- */
         .card-info-top { position: absolute; top: 8%; left: 8%; padding: 4% 9%; background: #000; border-left: calc(var(--card-w)*0.04) solid var(--r-color); transform: translateZ(40px); z-index: 50; box-shadow: 0 4px 10px #000; border-radius: 2px; }
         .card-info-top span { font-size: calc(var(--card-w)*0.065); font-weight: 900; letter-spacing: 1px; color: #fff; }
         .mat-void-planet .card-info-top { background: #fff; border-left-color: #fff; box-shadow: 0 0 10px #fff; }
@@ -104,7 +116,6 @@
         
         .card-footer-peak { position: absolute; bottom: 0; width: 100%; padding: 25% 0 10%; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 40%, transparent 100%); text-align: center; color: #fff; z-index: 50; transform: translateZ(35px); text-shadow: 0 0 8px var(--r-color), 0 0 4px #000; letter-spacing: 2px; font-weight: 900; font-size: calc(var(--card-w)*0.13); }
 
-        /* --- レルム専用ギミック --- */
         .steam-meter-abs { position: absolute; top: 8%; right: 6%; width: 20%; height: 20%; background: #2a1508; border: calc(var(--card-w)*0.016) solid #5d3a1a; border-radius: 50%; transform: translateZ(45px); z-index: 46; box-shadow: inset 0 0 5px #000; }
         .steam-needle { position: absolute; top: 50%; left: 50%; width: 1px; height: 45%; background: #f33; transform-origin: bottom center; transform: translate(-50%, -100%) rotate(-45deg); animation: needle-move 5s infinite ease-in-out; }
         .special-overload .steam-needle { animation: needle-panic 0.1s infinite linear; }
@@ -115,7 +126,6 @@
 
         .arcane-circle-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 4; pointer-events: none; overflow: hidden; border-radius: inherit; }
 
-        /* --- 特殊バッジ (被り回避のため top: 28% に変更) --- */
         .badge-draw2-alert { position: absolute; top: 28%; left: -6%; background: #a00000; border: calc(var(--card-w)*0.016) solid #FFD700; padding: 4% 8%; transform: translateZ(70px) rotate(-12deg); box-shadow: 2px 4px 10px rgba(0,0,0,0.8); z-index: 55; animation: alert-glow 1s infinite alternate; }
         .badge-draw2-alert span { font-family: 'Special Elite', cursive; font-size: calc(var(--card-w)*0.11); font-weight: 900; color: #fff; text-shadow: 0 0 5px #000; white-space: nowrap; }
 
@@ -128,19 +138,32 @@
         /* ===================================================================== */
 
         /* === UIパーツ === */
-        .panel-omega { position: relative; z-index: 500; width: 100%; max-width: 440px; background: rgba(8,12,20,0.98); border: 2px solid var(--accent); padding: 25px; clip-path: polygon(0 30px, 30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%); box-shadow: 0 0 120px rgba(64,224,208,0.4); }
-        .input-cyber { width: 85%; margin: 0 auto 12px; display: block; padding: 15px; background: rgba(0,0,0,0.9); border: 1.5px solid rgba(64,224,208,0.3); border-bottom: 4px solid var(--accent); color: #fff; text-align: center; font-size: 19px; outline: none; font-family: 'Exo 2', sans-serif; font-weight: 900; letter-spacing: 1.5px; }
-        .btn-omega-singularity { display: flex; align-items: center; justify-content: center; min-height: 52px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1.5px solid #FFF8DC; border-radius: 8px; font-weight: 900; font-size: 21px; cursor: pointer; width: 100%; animation: sweepBtn 3s linear infinite; box-shadow: 0 8px 30px rgba(212,175,55,0.5); transition: 0.3s; }
-        .btn-omega-singularity:disabled { filter: grayscale(1) brightness(0.5); cursor: not-allowed; opacity: 0.6; animation: none; box-shadow: none; border-color: #333; color: #333; }
+        .panel-omega { position: relative; z-index: 500; width: 100%; max-width: 440px; background: rgba(8,12,20,0.98); border: 1px solid var(--accent); padding: 30px 25px; clip-path: polygon(0 20px, 20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%); box-shadow: 0 0 80px rgba(64,224,208,0.2); }
+        
+        .input-cyber-container { position: relative; width: 85%; margin: 0 auto 15px; }
+        .input-cyber-bg { position: absolute; inset: -2px; background: linear-gradient(90deg, var(--accent), var(--magic-purple)); opacity: 0; filter: blur(8px); transition: opacity 0.3s; z-index: -1; }
+        .input-cyber-container:focus-within .input-cyber-bg { opacity: 0.6; }
+        .input-cyber { width: 100%; display: block; padding: 14px; background: rgba(0,0,0,0.8); border: 1px solid rgba(64,224,208,0.5); color: #fff; text-align: center; font-size: 16px; outline: none; font-family: 'Orbitron', 'Exo 2', sans-serif; font-weight: 900; letter-spacing: 2px; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); transition: 0.3s; }
+        .input-cyber:focus { background: rgba(0,20,20,0.9); }
+        .input-cyber::placeholder { color: rgba(255,255,255,0.3); font-size: 12px; letter-spacing: 4px; }
+
+        .btn-omega-singularity { position: relative; display: flex; align-items: center; justify-content: center; min-height: 52px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: none; font-weight: 900; font-size: 20px; cursor: pointer; width: 100%; animation: sweepBtn 3s linear infinite; box-shadow: 0 5px 20px rgba(212,175,55,0.4); transition: 0.3s; clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); }
+        .btn-omega-singularity::before { content: ''; position: absolute; inset: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transform: translateX(-100%); transition: 0.5s; clip-path: inherit; }
+        .btn-omega-singularity:hover::before { transform: translateX(100%); }
+        .btn-omega-singularity:hover { filter: brightness(1.2); box-shadow: 0 0 30px rgba(212,175,55,0.8); text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+        .btn-omega-singularity:disabled { filter: grayscale(1) brightness(0.5); cursor: not-allowed; opacity: 0.6; animation: none; box-shadow: none; }
         
         .btn-draw-area { min-height: 70px; border-top: 2.5px solid var(--magic-purple); background: rgba(0,0,0,0.95); padding: 10px 15px; z-index: 200; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); }
 
         .btn-sub { min-height: 44px; background: rgba(64,224,208,0.1); border: 1px solid var(--accent); color: var(--accent); font-weight: 900; font-size: 15px; border-radius: 4px; transition: 0.3s; }
-        .btn-utility { width: 100%; padding: 11px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; font-weight: 900; font-size: 14px; border-radius: 4px; letter-spacing: 4px; }
+        .btn-sub:hover { background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent); }
+        .btn-utility { width: 100%; padding: 11px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; font-weight: 900; font-size: 14px; border-radius: 4px; letter-spacing: 4px; transition: 0.3s; }
+        .btn-utility:hover { background: rgba(255,255,255,0.2); }
 
         /* 待機画面スロット (最大5人対応) */
-        .slot-Omega-Final { width: 85%; margin: 0 auto 5px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-left: 5px solid var(--accent); padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 12px 100%, 0 calc(100% - 12px)); min-height: 52px; }
-        .slot-Omega-Final.empty { opacity: 0.25; border-left-color: rgba(255,255,255,0.2); border-left-style: dashed; }
+        .slot-Omega-Final { width: 85%; margin: 0 auto 5px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-left: 4px solid var(--accent); padding: 10px 18px; display: flex; align-items: center; justify-content: space-between; clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 12px 100%, 0 calc(100% - 12px)); min-height: 52px; transition: 0.3s; }
+        .slot-Omega-Final:hover { background: rgba(64,224,208,0.05); border-left-width: 8px; }
+        .slot-Omega-Final.empty { opacity: 0.25; border-left-color: rgba(255,255,255,0.2); border-left-style: dashed; border-left-width: 2px; }
         .slot-name-tag { font-family: 'Exo 2', sans-serif; font-weight: 900; font-size: 17px; letter-spacing: 1px; }
         .slot-bot-type { font-size: 10px; color: var(--accent); opacity: 0.8; font-family: 'Orbitron'; margin-left: 8px; }
 
@@ -166,8 +189,8 @@
         .hand-area-recapped { flex-shrink: 0; display: flex; gap: 4px; padding: 14px 12px; overflow-x: auto; background: rgba(0,0,0,0.92); min-height: 165px; border-top: 1px solid rgba(255,255,255,0.2); z-index: 20; }
         
         /* === SEボタン === */
-        .btn-sound-toggle { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 1000; width: 44px; height: 44px; background: rgba(0,0,0,0.85); border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 20px var(--accent); transition: 0.3s; color: var(--accent); }
-        .btn-sound-toggle:hover { scale: 1.1; background: var(--accent); color: #000; }
+        .btn-sound-toggle { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 1000; width: 44px; height: 44px; background: rgba(0,0,0,0.85); border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 15px var(--accent); transition: 0.3s; color: var(--accent); }
+        .btn-sound-toggle:hover { scale: 1.1; background: var(--accent); color: #000; box-shadow: 0 0 25px var(--accent); }
 
         /* === 出せないカードの視認性改善 === */
         .not-playable { opacity: 0.7 !important; filter: brightness(0.6) grayscale(50%) !important; transform: translateY(8px) scale(0.95) !important; pointer-events: none; }
@@ -201,7 +224,6 @@
         const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
         const NEXT_MAP = { GEAR: ['GEAR','ICEAGE'], ICEAGE: ['FOUNTAIN','BATTERY'], FOUNTAIN: ['FOUNTAIN','BATTERY'], BATTERY: ['MACHINE','ARCHIVE'], MACHINE: ['MACHINE','ARCHIVE'], ARCHIVE: ['GEAR','ICEAGE'] };
 
-        // === 新要素：ランダムCPUのバリエーション ===
         const CPU_BOTS = [
             { name: 'C.A.I.N.', type: 'AGGRO' },
             { name: 'O.R.A.C.L.E.', type: 'DEFENSE' },
@@ -281,14 +303,9 @@
                 >
                     <div className={`card-3d mat-${rData.theme}`}>
                         <div className="card-content">
-                            
-                            {/* ギミック装飾 */}
                             {rData.theme === 'steam' && (
                                 <>
-                                    <div className="steam-meter-abs">
-                                        <div className={`steam-needle ${spec ? 'special-overload' : ''}`}></div>
-                                        <div className="steam-meter-psi">PSI</div>
-                                    </div>
+                                    <div className="steam-meter-abs"><div className={`steam-needle ${spec ? 'special-overload' : ''}`}></div><div className="steam-meter-psi">PSI</div></div>
                                 </>
                             )}
                             {rData.theme === 'cyber' && <div className="cyber-rain-layer">{[...Array(5)].map((_,i)=><div key={i} className="rain-bit" style={{left:`${i*20+10}%`, animationDelay:`${i*0.4}s`}}>10110</div>)}</div>}
@@ -308,7 +325,6 @@
                             <div className="card-icon-overload" style={{ color: rData.bright }}><IconRenderer r={dr} spec={spec} /></div>
                             <div className={`card-footer-peak font-['${rData.font}']`}>{rData.n}</div>
                             
-                            {/* 特殊ラベル (被り回避のため top: 28% に調整) */}
                             {spec && (
                                 <div className="special-badge-base">
                                     {specialLabel.split(' ').map((word, i) => (
@@ -316,7 +332,6 @@
                                     ))}
                                 </div>
                             )}
-
                         </div>
                     </div>
                 </div>
@@ -327,6 +342,7 @@
             const sparks = useMemo(() => [...Array(30)].map((_, i) => ({ id: i, x: Math.random() * 100, y: Math.random() * 100, tx: (Math.random() - 0.5) * 600, ty: (Math.random() - 0.5) * 600, delay: Math.random() * 8, size: Math.random() * 5 + 2 })), []);
             return (
                 <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                    <div className="scanlines"></div>
                     {sparks.map(s => (
                         <div key={s.id} className="absolute bg-[#FFD700] rounded-full blur-[1px]" style={{ left: `${s.x}%`, top: `${s.y}%`, width: `${s.size}px`, height: `${s.size}px`, '--tx': `${s.tx}px`, '--ty': `${s.ty}px`, animation: `spark-float 8s infinite`, animationDelay: `${s.delay}s` }} />
                     ))}
@@ -343,22 +359,17 @@
             const [selector, setSelector] = useState(null);
             const [isMuted, setIsMuted] = useState(false);
             const logEndRef = useRef(null);
-            
-            // SE安定再生用キャッシュ
             const audioRefs = useRef({});
 
             useEffect(() => {
                 const s = io('https://crossrealm-server.onrender.com');
                 setSocket(s);
                 s.on('update-game', setGs);
-                
-                // 音声インスタンスの生成とプリロード
                 audioRefs.current = {
                     play: new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3'),
                     draw: new Audio('https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3'),
                     turn: new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
                 };
-                
                 return () => s.disconnect();
             }, []);
 
@@ -368,7 +379,7 @@
                 if(!isMuted && audioRefs.current[key]) { 
                     try { 
                         audioRefs.current[key].currentTime = 0; 
-                        audioRefs.current[key].play().catch(() => {}); // iOS等の自動再生ブロック対策
+                        audioRefs.current[key].play().catch(() => {});
                     } catch(e){} 
                 } 
             };
@@ -401,12 +412,9 @@
 
             const join = () => { if(room && name) { setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name }); } };
             const backToTop = () => { setJoined(false); setGs(null); setRoom(''); };
-
-            // ランダムCPU追加関数
             const handleAddCpu = () => {
                 if(socket && room) {
                     const randomBot = CPU_BOTS[Math.floor(Math.random() * CPU_BOTS.length)];
-                    // サーバー側が名前やタイプの指定に対応していれば反映されます。
                     socket.emit('add-cpu', { roomId: room, botName: randomBot.name, botType: randomBot.type });
                 }
             };
@@ -426,18 +434,42 @@
                     {!joined ? (
                         <div className="h-full flex items-center justify-center p-6 z-10">
                             <SparkleVFX />
-                            <div className="panel-omega w-full text-center">
+                            <div className="panel-omega w-full text-center relative">
                                 <div className="logo-stack">
+                                    <div className="logo-glow"></div>
                                     <div className="logo-row row-cross">CROSS</div>
                                     <div className="row-x">X</div>
                                     <div className="logo-row row-realm">REALM</div>
                                     <div className="sub-banner-omega"><div className="sub-text-final">ETERNAL PUNK EDITION</div></div>
                                 </div>
-                                <div className="mt-8 space-y-4">
-                                    <input type="text" className="input-cyber" value={name} placeholder="プレイヤー名" onChange={e=>setName(e.target.value)} maxLength={10} />
-                                    <input type="text" className="input-cyber" value={room} placeholder="ルームID" onChange={e=>setRoom(e.target.value.toUpperCase())} />
-                                    <button className="btn-omega-singularity mt-4 w-[85%] mx-auto" onClick={join}>接続開始</button>
+                                
+                                <div className="flavor-box">
+                                    <div className="corner-tl"></div><div className="corner-br"></div>
+                                    <p className="text-[10.5px] md:text-xs leading-[2.2] font-black tracking-[2.5px] font-['Exo_2'] text-left pl-2">
+                                        <span className="text-amber-500">スチームパンク</span>、<span className="text-blue-400">幻想世界</span>、<span className="text-purple-400">サイバーパンク</span>。<br/>
+                                        <span className="text-white/70">次元の境界が崩壊し、相反する世界が交差する。</span><br/>
+                                        <span className="text-white/70">手札（アイデンティティ）を解き放ち、</span><br/>
+                                        <span className="text-accent text-[13px] tracking-[5px] drop-shadow-[0_0_5px_var(--accent)] block mt-1">特異点へ至れ。</span>
+                                    </p>
                                 </div>
+
+                                <div className="input-cyber-container">
+                                    <div className="input-cyber-bg"></div>
+                                    <input type="text" className="input-cyber" value={name} placeholder="PLAYER NAME [ プレイヤー名 ]" onChange={e=>setName(e.target.value)} maxLength={10} />
+                                </div>
+                                <div className="input-cyber-container">
+                                    <div className="input-cyber-bg"></div>
+                                    <input type="text" className="input-cyber" value={room} placeholder="SECTOR ID [ ルームID ]" onChange={e=>setRoom(e.target.value.toUpperCase())} />
+                                </div>
+
+                                <button className="btn-omega-singularity mt-6 w-[85%] mx-auto" onClick={join}>
+                                    <div className="relative z-10 flex flex-col items-center">
+                                        <span>LINK START</span>
+                                        <span className="text-[10px] text-black/60 font-black tracking-[0.4em] font-['Exo_2'] mt-[-2px]">- 接続開始 -</span>
+                                    </div>
+                                </button>
+                                
+                                <div className="mt-8 text-accent/40 text-[10px] font-black tracking-[4px] font-['Orbitron']">VERSION 31.0</div>
                             </div>
                         </div>
                     ) : (!gs || gs.status === 'waiting') ? (
@@ -447,14 +479,12 @@
                                 ルームID: <span className="text-white ml-2">{room}</span>
                             </div>
                             <div className="w-full space-y-1.5 mb-5 max-h-[50dvh] overflow-y-auto no-scrollbar">
-                                {/* 最大5人対戦用にスロットを[...Array(5)]に拡張 */}
                                 {[...Array(5)].map((_, i) => {
                                     const p = gs?.players[i];
                                     return (
                                         <div key={i} className={`slot-Omega-Final ${p ? '' : 'empty'}`}>
                                             <span className="slot-name-tag uppercase">
                                                 {p ? p.name : 'empty linkage'}
-                                                {/* CPUの場合はタイプを表示するような演出 */}
                                                 {p && p.name.includes('(AI)') && <span className="slot-bot-type">[{CPU_BOTS.find(b => b.name === p.name)?.type || 'BOT'}]</span>}
                                             </span>
                                             {p && i === 0 && <span className="bg-[#D4AF37] text-black text-[10px] px-2.5 py-0.5 font-black rounded shadow-lg">HOST</span>}
@@ -477,7 +507,6 @@
                     ) : (
                         <>
                             <div className="opp-mega-grid">
-                                {/* 自分自身（socket?.id）を非表示にするフィルター */}
                                 {gs.players.filter(p => p.id !== socket?.id).map(p => (
                                     <div key={p.id} className={`opp-card-omega-peak ${gs.currentTurnPlayerId === p.id ? 'active' : ''}`}>
                                         <div className="flex flex-col">
@@ -527,7 +556,7 @@
 
                             <div className="btn-draw-area">
                                 <button className="btn-omega-singularity w-full" disabled={!isMyTurn} onClick={()=>{ playSnd('draw'); socket.emit('draw-card',{roomId:room}); }}>
-                                    ドロー ({gs.nextDrawAmount}枚)
+                                    <span className="relative z-10">ドロー ({gs.nextDrawAmount}枚)</span>
                                 </button>
                             </div>
 
@@ -560,7 +589,9 @@
                                         <div className="w-full flex flex-col gap-3 shrink-0">
                                             {gs.players[0]?.id === socket?.id ? (
                                                 <>
-                                                    <button className="btn-omega-singularity text-xl py-4" onClick={()=>socket.emit('play-again', {roomId:room})}>ゲームを続ける</button>
+                                                    <button className="btn-omega-singularity text-xl py-4" onClick={()=>socket.emit('play-again', {roomId:room})}>
+                                                        <span className="relative z-10">ゲームを続ける</span>
+                                                    </button>
                                                     <button className="btn-sub py-3 text-sm tracking-[4px]" onClick={()=>socket.emit('play-again', {roomId:room})}>待機室に戻る</button>
                                                 </>
                                             ) : (
