@@ -36,25 +36,22 @@
             box-shadow: 0 0 150px rgba(138, 43, 226, 0.5); background: var(--bg);
         }
 
-        /* === 究極アニメーション === */
+        /* === アニメーション === */
         @keyframes gear-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes digital-rain { 0% { transform: translateY(-100%); opacity: 0; } 50% { opacity: 0.8; } 100% { transform: translateY(280%); opacity: 0; } }
         @keyframes liquid-morph { 0% { border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%; } 100% { border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%; } }
         @keyframes arcane-shimmer { 0% { transform: rotate(0deg) scale(1); opacity: 0.3; } 50% { transform: rotate(180deg) scale(1.1); opacity: 0.6; } 100% { transform: rotate(360deg) scale(1); opacity: 0.3; } }
         @keyframes sweepBtn { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
         @keyframes vortex-pulse { 0% { transform: rotate(0deg) scale(1.5); opacity: 0.15; } 50% { transform: rotate(180deg) scale(2.5); opacity: 0.4; } 100% { transform: rotate(360deg) scale(1.5); opacity: 0.15; } }
-        @keyframes mana-flow { 0% { transform: translateY(0) scale(1); opacity: 0.8; } 100% { transform: translateY(-150px) scale(0); opacity: 0; } }
 
-        /* === ド派手背景コア === */
+        /* === 背景レイヤー === */
         .bg-core { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
         .layer-vortex { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent, rgba(138,43,226,0.3), transparent 40%, rgba(64,224,208,0.25), transparent); animation: vortex-pulse 20s linear infinite; filter: blur(100px); mix-blend-mode: screen; }
         .layer-grid { position: absolute; inset: -50%; background-image: linear-gradient(rgba(64, 224, 208, 0.2) 2px, transparent 2px), linear-gradient(90deg, rgba(64, 224, 208, 0.2) 2px, transparent 2px); background-size: 100px 100px; transform: perspective(800px) rotateX(75deg); animation: grid-scroll 6s linear infinite; mask-image: radial-gradient(circle at center, black, transparent 95%); }
         @keyframes grid-scroll { 0% { background-position: 0 0; } 100% { background-position: 0 100px; } }
         .layer-nebula { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, var(--realm-color), transparent 75%); opacity: 0.5; transition: 3s ease; mix-blend-mode: color-dodge; }
-        .particle-mega { position: absolute; background: white; border-radius: 50%; opacity: 0; animation: float-mega var(--d) ease-in infinite; mix-blend-mode: screen; filter: blur(0.5px); }
-        @keyframes float-mega { 0% { transform: translateY(115vh) translateX(0) scale(0.2); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-15vh) translateX(var(--x)) scale(3); opacity: 0; } }
 
-        /* === 3行ロゴ & サブタイトル === */
+        /* === ロゴ領域 === */
         .logo-stack { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 100; margin-bottom: 30px; width: 100%; max-width: 95%; margin-left: auto; margin-right: auto; }
         .logo-row { font-family: 'Cinzel', serif; font-weight: 900; line-height: 0.82; text-transform: uppercase; background: linear-gradient(to bottom, #FFF8DC 0%, #FFD700 40%, #D4AF37 60%, #8B6B23 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px rgba(212,175,55,0.6)); white-space: nowrap; text-align: center; }
         .row-cross { font-size: clamp(30px, 11vw, 65px); letter-spacing: 12px; }
@@ -66,275 +63,121 @@
         @keyframes sub-bar-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
         .sub-text-final { font-family: 'Audiowide', sans-serif; font-size: clamp(8px, 2.5vw, 11px); letter-spacing: clamp(1px, 1.5vw, 4px); color: #fff; position: relative; z-index: 2; text-shadow: 0 0 8px #0ff; white-space: nowrap; text-transform: uppercase; }
 
-        /* === 3Dカードマテリアル === */
+        /* === 3Dカードデザイン === */
         .card-wrapper-3d { width: var(--card-w); height: var(--card-h); perspective: 1000px; position: relative; }
-        
         .card-3d { 
-            width: 100%; height: 100%; position: relative; 
-            transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
-            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1); 
-            cursor: pointer; border-radius: 6px; 
+            width: 100%; height: 100%; position: relative; transform-style: preserve-3d;
+            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1); cursor: pointer; border-radius: 6px; 
         }
-        
-        .card-content { 
-            position: absolute; inset: 0; pointer-events: none; 
-            overflow: hidden; border-radius: inherit; 
-            transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
-            transform: translateZ(0); -webkit-transform: translateZ(0); 
-        }
+        .card-content { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: inherit; transform-style: preserve-3d; }
 
         .mat-steam { background: radial-gradient(circle at 50% 10%, #FF8C00 0%, #0a0402 100%); border: 3.5px solid #4a2f1c; box-shadow: 0 10px 40px #000, inset 0 0 20px #000; }
-        
         .mat-fantasy { 
             background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.85) 100%), 
                         radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%) !important; 
-            border: 2px solid rgba(255,255,255,0.95) !important; 
-            border-radius: 45% 15% !important;
-            box-shadow: 0 0 35px var(--r-color-glow), inset 0 0 15px rgba(255,255,255,0.2) !important; 
+            border: 3px solid rgba(255,255,255,0.95) !important; 
+            border-radius: 35% 10% !important; box-shadow: 0 0 35px var(--r-color-glow), inset 0 0 15px rgba(255,255,255,0.2) !important; 
             backdrop-filter: blur(15px) !important;
         }
-        
         .mat-cyber { background: #000; border: none; clip-path: polygon(0 15%, 15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%); box-shadow: inset 0 0 50px var(--r-color-dim); border-left: 5.5px solid var(--r-color); }
         .mat-void-planet { background: radial-gradient(circle at 50% 50%, #fff7 0%, #000 100%); border: none; animation: liquid-morph 5s infinite alternate ease-in-out; box-shadow: 0 0 35px #fff7; }
         .mat-void-ruins { background: radial-gradient(circle at 50% 50%, #444 0%, #000 100%); border: none; animation: liquid-morph 8s infinite alternate-reverse ease-in-out; box-shadow: 0 0 35px #666; }
 
-        /* カード装飾群 */
         .card-label-tag { position: absolute; top: 8px; left: 8px; padding: 2px 6px; background: #000; border-left: 4px solid var(--r-color); transform: translateZ(40px); z-index: 100; }
         .card-label-tag span { font-size: 8px; font-weight: 900; color: #fff; letter-spacing: 1px; font-family: 'Exo 2', sans-serif;}
         .card-icon-Omega { position: absolute; top: 58%; left: 50%; width: 45px; height: 45px; transform: translate(-50%, -50%) translateZ(60px); filter: drop-shadow(0 0 15px var(--r-color)); z-index: 95; }
         .card-footer-Omega { position: absolute; bottom: 0; width: 100%; padding: 10px 0 6px; background: linear-gradient(to top, rgba(0,0,0,1) 0%, transparent 100%); text-align: center; color: #fff; z-index: 100; transform: translateZ(40px); text-shadow: 0 0 12px var(--r-color); font-weight: 900; font-size: 12px; letter-spacing: 2px; }
-        .badge-mega { position: absolute; top: 30px; left: -12px; background: #a00000; border: 2px solid #FFD700; padding: 4px 10px; transform: translateZ(80px) rotate(-12deg); box-shadow: 8px 8px 20px #000; z-index: 200; font-family: 'Special Elite', monospace; font-size: 10px; font-weight: 900; color: #fff; }
         
-        .steam-gauge-mega { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; background: #2a1508; border: 2px solid #5d3a1a; border-radius: 50%; transform: translateZ(50px); z-index: 160; box-shadow: inset 0 0 10px #000; }
+        .steam-gauge-mega { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; background: #2a1508; border: 2px solid #5d3a1a; border-radius: 50%; transform: translateZ(50px); z-index: 160; }
         .steam-hand { position: absolute; top: 50%; left: 50%; width: 1.5px; height: 12px; background: #f33; transform-origin: bottom center; transform: translate(-50%, -100%) rotate(-45deg); animation: gear-spin 5s infinite alternate; }
         .cyber-matrix-layer { position: absolute; inset: 0; overflow: hidden; opacity: 0.8; z-index: 30; }
         .matrix-unit { position: absolute; color: var(--r-color); font-family: 'Orbitron', monospace; font-size: 6px; writing-mode: vertical-rl; animation: digital-rain 2.8s linear infinite; }
-        
-        .arcane-circle-layer { 
-            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; 
-            z-index: 80; pointer-events: none; overflow: hidden; border-radius: inherit;
-            -webkit-mask-image: -webkit-radial-gradient(white, black);
-        }
-        
-        .rivet-omega { position: absolute; width: 3px; height: 3px; background: #8B6B23; border-radius: 50%; box-shadow: inset 1px 1px 1px #FFF8DC, 1px 1px 3px #000; }
+        .arcane-circle-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 80; pointer-events: none; overflow: hidden; border-radius: inherit; }
 
-        /* === 究極パネル (中央固定) === */
-        .panel-omega { position: relative; z-index: 500; width: 100%; max-width: 440px; background: rgba(8,12,20,0.98); border: 2px solid var(--accent); padding: 45px 30px; clip-path: polygon(0 40px, 40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%); box-shadow: 0 0 120px rgba(64,224,208,0.4); }
-        .panel-omega input { width: 100%; padding: 22px; background: rgba(0,0,0,0.9); border: 1.5px solid rgba(64,224,208,0.4); border-bottom: 4px solid var(--accent); color: #fff; text-align: center; font-size: 24px; outline: none; margin-bottom: 30px; font-family: 'Exo 2', sans-serif; font-weight: 900; }
-        .btn-omega-singularity { display: flex; align-items: center; justify-content: center; min-height: clamp(55px, 8vh, 70px); background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1.5px solid #FFF8DC; border-radius: 8px; font-weight: 900; font-size: clamp(18px, 4vw, 26px); cursor: pointer; width: 100%; position: relative; overflow: hidden; animation: sweepBtn 3s linear infinite; box-shadow: 0 10px 40px rgba(212,175,55,0.6); font-family: 'Exo 2', sans-serif;}
-
-        .slot-Omega-Final { background: linear-gradient(90deg, rgba(64,224,208,0.18), rgba(138,43,226,0.22)); border: 1px solid rgba(255,255,255,0.2); border-left: 8px solid var(--accent); padding: 24px 30px; display: flex; align-items: center; justify-content: space-between; clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px)); margin-bottom: 12px; width: 100%; min-height: 85px; }
-        .slot-name-tag { font-family: 'Exo 2', sans-serif; font-weight: 900; font-size: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
-        .slot-Omega-Final.empty { border: 1.5px dashed rgba(255,255,255,0.3); opacity: 0.35; }
-
-        /* === ゲームUIレイアウト最適化 === */
-        .game-ui-container { display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; }
-        .hud-header-bar { flex-shrink: 0; background: linear-gradient(90deg, transparent, rgba(0,60,60,0.98), transparent); padding: 12px; border-bottom: 3.5px solid var(--accent); text-align: center; font-family: 'Orbitron', monospace; font-weight: 900; color: var(--accent); letter-spacing: 6px; font-size: 14px; position: relative; z-index: 20; }
+        /* === UIパネル === */
+        .panel-omega { position: relative; z-index: 500; width: 100%; max-width: 440px; background: rgba(8,12,20,0.98); border: 2px solid var(--accent); padding: 40px 30px; clip-path: polygon(0 40px, 40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%); box-shadow: 0 0 120px rgba(64,224,208,0.4); }
+        .btn-omega-singularity { display: flex; align-items: center; justify-content: center; min-height: 55px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1.5px solid #FFF8DC; border-radius: 8px; font-weight: 900; font-size: 20px; cursor: pointer; width: 100%; animation: sweepBtn 3s linear infinite; }
         
-        .opp-mega-grid { flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px 15px; background: rgba(0,0,0,0.8); border-bottom: 1px solid var(--border); z-index: 15; }
-        .opp-card-omega-peak { padding: 10px 12px; border-radius: 8px; background: linear-gradient(145deg, rgba(40,40,60,1), rgba(5,5,5,1)); border-left: 4px solid rgba(255,255,255,0.15); box-shadow: inset 0 0 30px #000; display: flex; flex-direction: column; }
-        .opp-card-omega-peak.active { border-left-color: var(--accent); background: rgba(64,224,208,0.3); box-shadow: 0 0 50px rgba(64,224,208,0.5); }
+        .cycle-strip-classic { flex-shrink: 0; display: flex; justify-content: space-between; padding: 10px 8px; background: #000; border-bottom: 2px solid var(--border); }
+        .cycle-label { font-size: 10px; font-weight: 900; color: rgba(255,255,255,0.2); transition: 0.3s; }
+        .cycle-label.active { color: var(--c); text-shadow: 0 0 10px var(--c); transform: scale(1.1); }
         
-        .cycle-strip-classic { flex-shrink: 0; display: flex; justify-content: space-between; padding: 8px 6px; background: rgba(0,0,0,1); border-bottom: 2px solid var(--border); z-index: 10; }
-        .cycle-node-container { flex: 1; display: flex; flex-direction: column; align-items: center; margin: 0 4px; }
-        .cycle-node-omega { width: 100%; height: 3px; background: rgba(255,255,255,0.15); transition: 0.5s; border-radius: 2px; }
-        .cycle-node-omega.active { height: 6px; background: var(--c); box-shadow: 0 0 20px var(--c); }
-        .cycle-label { font-size: clamp(8px, 2.2vw, 11px); font-weight: 900; margin-top: 4px; text-align: center; white-space: nowrap; color: rgba(255,255,255,0.4); transition: 0.3s; letter-spacing: -0.5px; }
-        .cycle-label.active { color: var(--c); text-shadow: 0 0 8px var(--c); }
-        
-        @keyframes blink-node { 0%, 100% { opacity: 0.3; box-shadow: none; background: rgba(255,255,255,0.2); } 50% { opacity: 1; box-shadow: 0 0 15px var(--c); background: var(--c); } }
-        @keyframes blink-text { 0%, 100% { color: rgba(255,255,255,0.4); text-shadow: none; } 50% { color: var(--c); text-shadow: 0 0 8px var(--c); } }
-        .cycle-node-omega.next-blink { animation: blink-node 1.5s infinite ease-in-out; }
-        .cycle-label.next-blink-text { animation: blink-text 1.5s infinite ease-in-out; }
-
-        .field-core-omega { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; position: relative; z-index: 5; padding: 5px 0; }
-        .magic-ring-core { position: absolute; width: clamp(140px, 35vh, 220px); height: clamp(140px, 35vh, 220px); border: 4px dashed rgba(64,224,208,0.3); border-radius: 50%; animation: gear-spin 25s linear infinite; }
-        .magic-ring-core::after { content: ''; position: absolute; inset: 10%; border: 2.5px solid rgba(138,43,226,0.25); border-radius: 50%; animation: gear-spin 15s linear infinite reverse; }
-        
-        .info-panel-mega { border: 2px solid var(--steam-gold); padding: 6px 12px; border-radius: 12px; width: clamp(140px, 35vw, 180px); text-align: center; background: rgba(5, 5, 8, 0.98); backdrop-filter: blur(30px); z-index: 20; box-shadow: 0 0 50px rgba(212,175,55,0.4); }
-        
-        .terminal-log-omega { flex-shrink: 0; height: clamp(35px, 5vh, 50px); margin: 0 10px 5px; padding: 4px 15px; font-size: 10px; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); border-left: 5px solid var(--accent); overflow-y: auto; font-family: 'Orbitron', monospace; color: #fff; box-shadow: inset 0 0 30px rgba(0,0,0,0.8); z-index: 10; }
-        
-        .hand-Omega-Peak { flex-shrink: 0; display: flex; justify-content: center; align-items: flex-end; height: calc(var(--card-h) + 20px); padding-bottom: 10px; background: linear-gradient(to top, rgba(0,0,0,1) 60%, transparent 100%); z-index: 20; }
-        
-        .action-area-Final { flex-shrink: 0; padding: 10px 10px max(10px, env(safe-area-inset-bottom)); border-top: 4px solid var(--magic-purple); background: #000; display: flex; flex-direction: column; align-items: center; z-index: 30; }
-        
-        .mute-btn-peak-omega { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; background: rgba(0,0,0,0.85); border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1000; color: var(--accent); box-shadow: 0 0 15px var(--accent); transition: 0.4s; }
-        .mini-back-final { width: var(--opp-card-w); height: var(--opp-card-h); background: linear-gradient(135deg, #6a1a8a, #000); border: 1.5px solid var(--steam-gold); border-radius: 2px; position: absolute; top: 2px; box-shadow: -5px 0 15px rgba(0,0,0,1); }
-        .not-playable { opacity: 0.35 !important; filter: grayscale(100%) brightness(0.5) !important; transform: translateY(15px) scale(0.9) !important; z-index: 1 !important; pointer-events: none; }
-
-        .btn-omega-singularity:disabled { background: linear-gradient(90deg, #111, #222); color: #444; border-color: #333; box-shadow: none; animation: none; filter: grayscale(1); opacity: 0.6; cursor: not-allowed; }
+        .not-playable { opacity: 0.35 !important; filter: grayscale(100%) brightness(0.5) !important; transform: translateY(15px) scale(0.9) !important; pointer-events: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
-    <script>
-        // === オーディオコア ===
-        const SFX_MAP = { turn: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3', play: 'https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3', draw: 'https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3', alert: 'https://assets.mixkit.co/active_storage/sfx/2862/2862-preview.mp3' };
-        window.sfxPool = {}; 
-        for(let k in SFX_MAP) { 
-            window.sfxPool[k] = new Audio(SFX_MAP[k]); 
-            window.sfxPool[k].preload = 'auto'; 
-        }
-        window.isMutedGlobal = false;
-
-        window.safePlay = (k) => { 
-            if (window.isMutedGlobal) return; 
-            try { 
-                const sound = window.sfxPool[k].cloneNode();
-                sound.volume = 0.5;
-                sound.play().catch(e => {}); 
-            } catch(e){} 
-        };
-
-        window.unlockAudio = () => { 
-            for(let k in window.sfxPool) { 
-                window.sfxPool[k].volume = 0; 
-                window.sfxPool[k].play().then(()=> { 
-                    window.sfxPool[k].pause(); 
-                }).catch(()=>{}); 
-            } 
-        };
-    </script>
     <div id="root"></div>
+
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
 
-        class ErrorBoundary extends React.Component {
-            constructor(props) { super(props); this.state = { hasError: false, errorInfo: null }; }
-            static getDerivedStateFromError(error) { return { hasError: true, errorInfo: error }; }
-            render() {
-                if (this.state.hasError) return <div style={{color:'red', padding:'20px', background:'#000', height:'100vh'}}><h3>システムエラー</h3><p>{this.state.errorInfo?.toString()}</p></div>;
-                return this.props.children;
-            }
-        }
+        // 音声設定
+        const SFX = { 
+            turn: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3', 
+            play: 'https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3', 
+            draw: 'https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3' 
+        };
+        const playSnd = (key) => { try { new Audio(SFX[key]).play(); } catch(e){} };
 
         const REALMS = {
-            GEAR:    { n: '歯車', color: '#8B4513', bright: '#FF8C00', glow: 'rgba(212,175,55,1)', dim: 'rgba(139,69,19,0.3)', theme: 'steam', font: 'Special Elite', desc: 'セットA：維持。' },
-            ARCHIVE: { n: '古文書', color: '#B22222', bright: '#FF3131', glow: 'rgba(255,49,49,1)', dim: 'rgba(178,34,34,0.3)', theme: 'steam', font: 'Special Elite', desc: 'セットC→A：遷移。' },
-            FOUNTAIN:{ n: '噴水', color: '#1E90FF', bright: '#00BFFF', glow: 'rgba(30,144,255,1)', dim: 'rgba(30,144,255,0.3)', theme: 'fantasy', font: 'Cinzel Decorative', desc: 'セットB：維持。' },
-            ICEAGE:  { n: '氷河期', color: '#00F3FF', bright: '#ADFCFF', glow: 'rgba(0,243,255,1)', dim: 'rgba(0,243,255,0.3)', theme: 'fantasy', font: 'Cinzel Decorative', desc: 'セットA→B：遷移。' },
-            MACHINE: { n: '機械', color: '#9D00FF', bright: '#E2B0FF', glow: 'rgba(157,0,255,1)', dim: 'rgba(157,0,255,0.4)', theme: 'cyber', font: 'Orbitron', desc: 'セットC：維持。' },
-            BATTERY: { n: '電池', color: '#32CD32', bright: '#ADFF2F', glow: 'rgba(50,205,50,1)', dim: 'rgba(50,205,50,0.4)', theme: 'cyber', font: 'Orbitron', desc: 'セットB→C：遷移。' },
-            PLANET:  { n: '惑星', color: '#FFFFFF', bright: '#FFFFFF', glow: 'rgba(255,255,255,1)', dim: 'rgba(255,255,255,0.3)', theme: 'void-planet', font: 'Audiowide', desc: '星々の加護。' },
-            RUINS:   { n: '廃墟', color: '#999999', bright: '#CCCCCC', glow: 'rgba(150,150,150,1)', dim: 'rgba(60,60,60,0.6)', theme: 'void-ruins', font: 'Audiowide', desc: '遺跡の記憶。' }
+            GEAR:    { n: '歯車', color: '#8B4513', bright: '#FF8C00', glow: 'rgba(212,175,55,1)', theme: 'steam', font: 'Special Elite' },
+            ARCHIVE: { n: '古文書', color: '#B22222', bright: '#FF3131', glow: 'rgba(255,49,49,1)', theme: 'steam', font: 'Special Elite' },
+            FOUNTAIN:{ n: '噴水', color: '#1E90FF', bright: '#00BFFF', glow: 'rgba(30,144,255,1)', theme: 'fantasy', font: 'Cinzel Decorative' },
+            ICEAGE:  { n: '氷河期', color: '#00F3FF', bright: '#ADFCFF', glow: 'rgba(0,243,255,1)', theme: 'fantasy', font: 'Cinzel Decorative' },
+            MACHINE: { n: '機械', color: '#9D00FF', bright: '#E2B0FF', glow: 'rgba(157,0,255,1)', dim: 'rgba(157,0,255,0.4)', theme: 'cyber', font: 'Orbitron' },
+            BATTERY: { n: '電池', color: '#32CD32', bright: '#ADFF2F', glow: 'rgba(50,205,50,1)', dim: 'rgba(50,205,50,0.4)', theme: 'cyber', font: 'Orbitron' },
+            PLANET:  { n: '惑星', color: '#FFFFFF', bright: '#FFFFFF', glow: 'rgba(255,255,255,1)', theme: 'void-planet', font: 'Audiowide' },
+            RUINS:   { n: '廃墟', color: '#999999', bright: '#CCCCCC', glow: 'rgba(150,150,150,1)', theme: 'void-ruins', font: 'Audiowide' }
         };
+
         const CYCLE_ORDER = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
-        
-        const NEXT_REALMS_MAP = {
-            GEAR: ['GEAR', 'ICEAGE'],
-            ICEAGE: ['FOUNTAIN', 'BATTERY'],
-            FOUNTAIN: ['FOUNTAIN', 'BATTERY'],
-            BATTERY: ['MACHINE', 'ARCHIVE'],
-            MACHINE: ['MACHINE', 'ARCHIVE'],
-            ARCHIVE: ['GEAR', 'ICEAGE']
-        };
 
         const IconRenderer = ({ r, spec }) => {
-            const sw = spec ? 4.2 : 2.1;
-            const p = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: sw, strokeLinecap: "round", strokeLinejoin: "round", className: "w-full h-full" };
-
-            const SpecialBurst = () => spec && (
-                <g style={{animation: 'gear-spin 10s linear infinite', transformOrigin: 'center'}}>
-                    <circle cx="12" cy="12" r="11" strokeWidth="0.8" strokeDasharray="4 2" opacity="0.6" />
-                    {[0, 60, 120, 180, 240, 300].map(d => (
-                        <path key={d} d="M12 2 L13 5 L11 5 Z" fill="currentColor" transform={`rotate(${d} 12 12)`} />
-                    ))}
-                </g>
-            );
-
+            const p = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: spec ? 4 : 2, strokeLinecap: "round", className: "w-full h-full" };
             switch (r) {
-                case 'GEAR': return <svg {...p}><SpecialBurst/><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" /></svg>;
-                case 'ARCHIVE': return <svg {...p}><SpecialBurst/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15Z" /><path d="M9 10h6" strokeWidth="1.5" opacity={spec ? 1 : 0} /></svg>;
-                case 'FOUNTAIN': return <svg {...p}><SpecialBurst/><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4A9.7 9.7 0 0 1 12 22z" /></svg>;
-                case 'ICEAGE': return <svg {...p}><SpecialBurst/><path d="M12 2v20M2 12h20M7 7l10 10M7 17L17 7" /></svg>;
-                case 'MACHINE': 
-                    if (spec) return <svg {...p}><SpecialBurst/><path d="M12 2v20M7 7l5-5 5 5M17 17l-5 5-5-5" strokeWidth="3.5" /></svg>;
-                    return <svg {...p}><rect x="4" y="4" width="16" height="16" rx="2" ry="2" /><path d="M9 9h6v6H9z" /></svg>;
-                case 'BATTERY': return <svg {...p}><SpecialBurst/><rect width="16" height="10" x="2" y="7" rx="2" ry="2" /><path d="M22 11v2" /></svg>;
-                case 'PLANET': return <svg {...p}><circle cx="12" cy="12" r="10" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>;
-                case 'RUINS': return <svg {...p}><path d="M3 21h18M5 21V10a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11M9 21v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4" /></svg>;
+                case 'GEAR': return <svg {...p}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83l-2.83 2.83a2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1.51-1H1a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h.09a1.65 1.65 0 0 0 1.51-1a1.65 1.65 0 0 0-.33-1.82" /></svg>;
+                case 'ARCHIVE': return <svg {...p}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15Z" /></svg>;
+                case 'FOUNTAIN': return <svg {...p}><path d="M12 22a9.7 9.7 0 0 1-7.1-3 7 7 0 0 1-1.4-8.4l6.8-9.4a2 2 0 0 1 3.4 0l6.8 9.4a7 7 0 0 1-1.4 8.4" /></svg>;
+                case 'ICEAGE': return <svg {...p}><path d="M12 2v20M2 12h20M7 7l10 10M7 17L17 7" /></svg>;
+                case 'MACHINE': return <svg {...p}><rect x="4" y="4" width="16" height="16" rx="2" ry="2" /><path d="M9 9h6v6H9z" /></svg>;
+                case 'BATTERY': return <svg {...p}><rect width="16" height="10" x="2" y="7" rx="2" ry="2" /><path d="M22 11v2" /></svg>;
+                case 'PLANET': return <svg {...p}><circle cx="12" cy="12" r="10" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10" /></svg>;
+                case 'RUINS': return <svg {...p}><path d="M3 21h18M5 21V10a2 2 0 0 1 2-2h10" /></svg>;
                 default: return null;
             }
         };
 
-        const CardView = ({ card, playable, onClick, isField, style, index = 0 }) => {
-            if (!card?.realm) return null;
-            let dr = card.realm;
-            if (card.wasRuins) dr = 'RUINS'; else if (card.wasPlanet) dr = 'PLANET'; else if (card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) dr = 'FOUNTAIN';
-            const spec = card.isSpecial || card.wasFountain;
+        const CardView = ({ card, playable, onClick, isField, style }) => {
+            const dr = card.realm;
+            const spec = card.isSpecial;
             const rData = REALMS[dr] || REALMS.GEAR;
             const cardRef = useRef(null);
             const [tilt, setTilt] = useState({ transform: 'rotateX(0deg) rotateY(0deg)', '--mx': '50%', '--my': '50%' });
-            const [hov, setHov] = useState(false);
 
             const handleMove = (e) => {
                 if (!playable && !isField) return;
-                const r = cardRef.current.getBoundingClientRect();
-                const rx = ((e.clientY - r.top - r.height/2) / (r.height/2)) * -26;
-                const ry = ((e.clientX - r.left - r.width/2) / (r.width/2)) * 26;
-                setTilt({ transform: `rotateX(${rx}deg) rotateY(${ry}deg)`, '--mx': `${((e.clientX - r.left)/r.width)*100}%`, '--my': `${((e.clientY - r.top)/r.height)*100}%`, transition: 'none' });
+                const rect = cardRef.current.getBoundingClientRect();
+                const rx = ((e.clientY - rect.top - rect.height/2) / (rect.height/2)) * -25;
+                const ry = ((e.clientX - rect.left - rect.width/2) / (rect.width/2)) * 25;
+                setTilt({ transform: `rotateX(${rx}deg) rotateY(${ry}deg)`, '--mx': `${((e.clientX - rect.left)/rect.width)*100}%`, '--my': `${((e.clientY - rect.top)/rect.height)*100}%`, transition: 'none' });
             };
-            const reset = () => { setHov(false); setTilt({ transform: 'rotateX(0deg) rotateY(0deg)', '--mx': '50%', '--my': '50%', transition: '0.8s cubic-bezier(0.23, 1, 0.32, 1)' }); };
+            const reset = () => setTilt({ transform: 'rotateX(0deg) rotateY(0deg)', '--mx': '50%', '--my': '50%', transition: '0.6s' });
 
             return (
-                <div className={`card-wrapper-3d ${hov ? 'z-[4000]' : ''} ${!playable && !isField ? 'not-playable' : ''}`} style={style} onMouseMove={handleMove} onMouseLeave={reset} onMouseEnter={() => playable && !isField && setHov(true)} onClick={() => playable && !isField && onClick()} ref={cardRef}>
-                    <div className={`card-3d mat-${rData.theme}`} style={{'--r-color': rData.color, '--r-color-glow': rData.glow, '--r-color-dim': rData.dim, '--r-color-bright': rData.bright, transform: `${(hov && !isField) ? 'translateY(-28px) scale(1.2)' : ''} ${tilt.transform}`}}>
+                <div className={`card-wrapper-3d ${!playable && !isField ? 'not-playable' : ''}`} style={style} ref={cardRef} onMouseMove={handleMove} onMouseLeave={reset} onClick={onClick}>
+                    <div className={`card-3d mat-${rData.theme}`} style={{'--r-color': rData.color, '--r-color-glow': rData.glow, '--r-color-dim': rData.dim || 'rgba(0,0,0,0.5)', ...tilt}}>
                         <div className="card-content">
-                            {rData.theme === 'steam' && (
-                                <>
-                                    <div className="steam-gauge-mega"><div className="steam-hand"></div></div>
-                                    <div className="rivet-omega top-2 left-2"/><div className="rivet-omega top-2 right-2"/><div className="rivet-omega bottom-2 left-2"/><div className="rivet-omega bottom-2 right-2"/>
-                                </>
-                            )}
+                            {rData.theme === 'steam' && <div className="steam-gauge-mega"><div className="steam-hand" /></div>}
+                            {rData.theme === 'cyber' && <div className="cyber-matrix-layer">{[...Array(5)].map((_,i)=><div key={i} className="matrix-unit" style={{left:`${i*20+10}%`, animationDelay:`${i*0.5}s`}}>101</div>)}</div>}
+                            {rData.theme === 'fantasy' && <div className="arcane-circle-layer"><svg viewBox="0 0 100 100" className="w-4/5 h-4/5 opacity-40 animate-spin" style={{animationDuration:'15s'}}><circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="2 4"/></svg></div>}
                             
-                            {rData.theme === 'fantasy' && (
-                                <div className="arcane-circle-layer">
-                                    <svg viewBox="0 0 200 200" style={{color: rData.color, width: '160%', height: '160%', animation: 'arcane-shimmer 20s linear infinite', opacity: 0.85}}>
-                                        <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="3 7"/>
-                                        <circle cx="100" cy="100" r="82" fill="none" stroke="currentColor" strokeWidth="1"/>
-                                        <path d="M100 8 L188 155 L12 155 Z" fill="none" stroke="currentColor" strokeWidth="0.8"/>
-                                        <path d="M100 192 L12 45 L188 45 Z" fill="none" stroke="currentColor" strokeWidth="0.8"/>
-                                        <circle cx="100" cy="100" r="48" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="8 4"/>
-                                        {[0, 60, 120, 180, 240, 300].map(d => (
-                                            <text key={d} x="100" y="32" transform={`rotate(${d} 100 100)`} fill="currentColor" fontSize="12" fontWeight="bold" opacity="0.8">❈</text>
-                                        ))}
-                                    </svg>
-                                    {[...Array(6)].map((_, i) => (
-                                        <div key={i} className="absolute w-1 h-1 rounded-full" style={{ left: `${Math.random()*100}%`, bottom: '-10%', background: rData.color, boxShadow: `0 0 10px ${rData.color}`, animation: `mana-flow ${3+Math.random()*2}s infinite`, animationDelay: `${Math.random()*3}s` }} />
-                                    ))}
-                                </div>
-                            )}
-
-                            {rData.theme === 'cyber' && <div className="cyber-matrix-layer">{[...Array(6)].map((_,i)=><div key={i} className="matrix-unit" style={{left:`${i*15+5}%`, animationDelay:`${i*0.4}s`}}>101101</div>)}</div>}
-
                             <div className="card-label-tag"><span>{dr}</span></div>
-                            
-                            {spec && dr === 'GEAR' && <div className="badge-mega"><span>DRAW +2</span></div>}
-                            {spec && dr === 'MACHINE' && <div className="badge-mega" style={{background:'#1a012a', borderLeftColor:rData.color}}><span>REVERSE</span></div>}
-                            {spec && dr === 'FOUNTAIN' && <div className="badge-mega" style={{background:'#100520', borderLeftColor:rData.color, color: '#0ff', textShadow: '0 0 5px #0ff'}}><span>LIMIT WILD</span></div>}
-
-                            <div className="card-icon-Omega" style={{ 
-                                color: rData.color, 
-                                filter: (dr === 'PLANET' || dr === 'RUINS') ? 'drop-shadow(0 0 10px #fff)' : 'none' 
-                            }}>
-                                <IconRenderer r={dr} spec={spec} />
-                            </div>
-                            
+                            <div className="card-icon-Omega" style={{ color: rData.bright }}><IconRenderer r={dr} spec={spec} /></div>
                             <div className="card-footer-Omega" style={{ fontFamily: rData.font }}><span>{rData.n}</span></div>
+                            {spec && <div className="absolute top-2 right-2 bg-red-600 text-white text-[8px] font-black px-1 rounded shadow-lg z-[200]">特殊</div>}
                         </div>
-                        <div className="absolute inset-0 pointer-events-none mix-blend-overlay opacity-90" style={{ background: `radial-gradient(circle at var(--mx) var(--my), #fff 0%, transparent 60%)` }}></div>
                     </div>
-                </div>
-            );
-        };
-
-        const SparkleVFX = () => {
-            const sparks = useMemo(() => [...Array(25)].map((_, i) => ({ id: i, x: Math.random() * 100, y: Math.random() * 100, tx: (Math.random() - 0.5) * 500, ty: (Math.random() - 0.5) * 500, delay: Math.random() * 5, size: Math.random() * 4 + 1 })), []);
-            return (
-                <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                    {sparks.map(s => (
-                        <div key={s.id} className="absolute bg-[#FFD700] rounded-full blur-[0.5px]" style={{ left: `${s.x}%`, top: `${s.y}%`, width: `${s.size}px`, height: `${s.size}px`, '--tx': `${s.tx}px`, '--ty': `${s.ty}px`, animation: `spark-float 6s infinite`, animationDelay: `${s.delay}s` }} />
-                    ))}
                 </div>
             );
         };
@@ -346,230 +189,147 @@
             const [name, setName] = useState('');
             const [joined, setJoined] = useState(false);
             const [selector, setSelector] = useState(null);
-            const [bgR, setBgR] = useState('GEAR');
-            const [mute, setMute] = useState(false);
-            const logEndRef = useRef(null);
 
             useEffect(() => {
-                const s = io('https://crossrealm-server.onrender.com'); setSocket(s);
+                const s = io('https://crossrealm-server.onrender.com');
+                setSocket(s);
                 s.on('update-game', setGs);
                 return () => s.disconnect();
             }, []);
 
-            useEffect(() => { if (logEndRef.current) logEndRef.current.scrollTop = logEndRef.current.scrollHeight; }, [gs?.logs]);
-
-            const toggleMute = () => { const n = !mute; setMute(n); window.isMutedGlobal = n; };
-            const isMyTurn = gs?.currentTurnPlayerId === socket?.id && gs?.status === 'playing';
-
-            useEffect(() => {
-                if (isMyTurn) {
-                    window.safePlay('turn');
-                }
-            }, [isMyTurn]);
-
-            const currentR = (gs?.status === 'playing' && gs?.fieldCard) ? gs.fieldCard.realm : bgR;
-            const nextPlayableRealms = NEXT_REALMS_MAP[currentR] || [];
-
-            const sortedHand = useMemo(() => {
-                const me = gs?.players?.find(p => p.id === socket?.id);
-                return (me?.hand || []).slice().sort((a,b) => CYCLE_ORDER.indexOf(a.realm) - CYCLE_ORDER.indexOf(b.realm));
-            }, [gs, socket]);
+            const isMyTurn = gs?.currentTurnPlayerId === socket?.id;
+            const currentR = gs?.fieldCard?.realm || 'GEAR';
+            const me = gs?.players.find(p => p.id === socket?.id);
 
             const canPlay = (c) => {
-                if (!isMyTurn || !c || !gs?.fieldCard) return false;
-                if (gs?.nextDrawAmount > 1) return (c.realm === 'GEAR' && c.isSpecial);
+                if (!isMyTurn || !gs?.fieldCard) return false;
+                if (gs.nextDrawAmount > 1) return (c.realm === 'GEAR' && c.isSpecial);
                 const h = c.realm; const f = currentR;
                 if (h === 'PLANET' || h === 'RUINS' || f === 'PLANET' || f === 'RUINS') return true;
                 if (h === 'FOUNTAIN' && c.isSpecial) return (f === 'ICEAGE' || f === 'FOUNTAIN');
-                
-                if (['ICEAGE', 'BATTERY', 'ARCHIVE'].includes(f) && f === h) return false;
-                return f === h || (nextPlayableRealms.includes(h));
+                const transition = ['ICEAGE', 'BATTERY', 'ARCHIVE'];
+                if (transition.includes(f) && f === h) return false;
+                const nextMap = { GEAR:['GEAR','ICEAGE'], ICEAGE:['FOUNTAIN','BATTERY'], FOUNTAIN:['FOUNTAIN','BATTERY'], BATTERY:['MACHINE','ARCHIVE'], MACHINE:['MACHINE','ARCHIVE'], ARCHIVE:['GEAR','ICEAGE'] };
+                return f === h || (nextMap[f] && nextMap[f].includes(h));
             };
 
-            const handlePlay = (c) => {
-                if (!canPlay(c)) return;
-                window.safePlay('play');
-                const isW = (c.realm === 'PLANET' || c.realm === 'RUINS' || (c.realm === 'FOUNTAIN' && c.isSpecial));
-                if (isW && sortedHand.length > 1) setSelector(c);
-                else socket.emit('play-card', { roomId: room.toUpperCase(), card: c, chosenRealm: isW ? 'GEAR' : undefined });
-            };
+            const join = () => { if(room && name) { setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name }); } };
+            const backToTop = () => { setJoined(false); setGs(null); setRoom(''); };
+
+            if (!joined) {
+                return (
+                    <div className="screen-wrapper flex items-center justify-center p-6">
+                        <div className="bg-core"><div className="layer-vortex"/><div className="layer-grid"/></div>
+                        <div className="panel-omega w-full text-center z-10">
+                            <div className="logo-stack">
+                                <div className="logo-row row-cross">CROSS</div>
+                                <div className="row-x">X</div>
+                                <div className="logo-row row-realm">REALM</div>
+                                <div className="sub-banner-omega"><div className="sub-text-final">ETERNAL PUNK EDITION</div></div>
+                            </div>
+                            <input className="w-full bg-black/60 border border-accent p-4 mb-4 text-center font-bold text-white outline-none" placeholder="プレイヤー名" value={name} onChange={e=>setName(e.target.value)} maxLength={10} />
+                            <input className="w-full bg-black/60 border border-accent p-4 mb-8 text-center font-bold text-white outline-none uppercase" placeholder="ルームID" value={room} onChange={e=>setRoom(e.target.value)} />
+                            <button className="btn-omega-singularity" onClick={join}>接続開始</button>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (!gs || gs.status === 'waiting') {
+                return (
+                    <div className="screen-wrapper flex flex-col items-center justify-center p-6 text-center">
+                        <div className="bg-core"><div className="layer-vortex"/></div>
+                        <h2 className="text-3xl font-black mb-10 text-accent tracking-tighter" style={{fontFamily:'Orbitron'}}>待機中...</h2>
+                        <div className="w-full space-y-3 mb-10 max-h-[40vh] overflow-y-auto no-scrollbar">
+                            {gs?.players.map((p, i) => (
+                                <div key={p.id} className="p-5 bg-white/5 border-l-8 border-accent flex justify-between items-center rounded-sm">
+                                    <span className="font-black text-xl">{p.name}</span>
+                                    {i === 0 ? <span className="bg-[#D4AF37] text-black text-xs px-3 py-1 font-black rounded shadow-lg">HOST</span> : <span className="text-xs text-accent animate-pulse">接続中</span>}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="w-full space-y-4">
+                            {gs?.players[0]?.id === socket?.id && (
+                                <button className="btn-omega-singularity" onClick={()=>socket.emit('start-game', {roomId:room})}>ゲーム開始</button>
+                            )}
+                            <button className="w-full text-white/40 text-[10px] font-black tracking-[8px] hover:text-white transition-colors" onClick={backToTop}>トップページに戻る</button>
+                        </div>
+                    </div>
+                );
+            }
 
             return (
-                <div className="screen-wrapper" style={{ '--realm-color': REALMS[currentR]?.color || '#000' }}>
-                    <div className="bg-core">
-                        <div className="layer-vortex" />
-                        <div className="layer-grid" />
-                        <div className="layer-nebula" />
-                        {[...Array(40)].map((_, i) => (
-                            <div key={i} className="particle-mega" style={{ left: `${Math.random() * 100}%`, width: `${Math.random()*6+1}px`, height: `${Math.random()*6+1}px`, '--d': `${2 + Math.random() * 5}s`, '--x': `${(Math.random() - 0.5) * 200}px`, background: i % 2 === 0 ? 'var(--accent)' : 'var(--steam-gold)', animationDelay: `${Math.random() * 6}s` }} />
-                        ))}
-                    </div>
+                <div className="screen-wrapper flex flex-col" style={{'--realm-color': REALMS[currentR]?.color}}>
+                    <div className="bg-core"><div className="layer-vortex"/><div className="layer-grid"/><div className="layer-nebula"/></div>
                     
-                    {!joined ? (
-                        <div className="h-full flex items-center justify-center relative z-10 w-full px-4">
-                            <div className="panel-omega">
-                                <SparkleVFX />
-                                <div className="logo-stack">
-                                    <div className="logo-row row-cross">CROSS</div>
-                                    <div className="row-x">X</div>
-                                    <div className="logo-row row-realm">REALM</div>
-                                    <div className="sub-banner-omega">
-                                        <div className="sub-text-final">ETERNAL PUNK EDITION</div>
-                                    </div>
+                    <div className="cycle-strip-classic">
+                        {CYCLE_ORDER.map(r => <span key={r} className={`cycle-label ${currentR===r?'active':''}`} style={{'--c':REALMS[r].bright}}>{REALMS[r].n}</span>)}
+                    </div>
+
+                    <div className="flex-1 flex flex-col items-center justify-center py-4 relative z-10">
+                        <div className={`mb-6 text-[10px] font-black tracking-[12px] ${isMyTurn?'text-accent animate-pulse':'text-white/20'}`}>{isMyTurn?'あなたのターン':'待機中...'}</div>
+                        <CardView card={gs.fieldCard} isField={true} />
+                        <div className="mt-8 font-black text-3xl tracking-widest uppercase" style={{color: REALMS[currentR].bright, textShadow:`0 0 25px ${REALMS[currentR].color}`}}>{REALMS[currentR].n}</div>
+                    </div>
+
+                    <div className="p-4 flex gap-2 overflow-x-auto bg-black/80 z-20 no-scrollbar">
+                        {me?.hand.map((c, i) => {
+                            const playable = canPlay(c);
+                            const overlap = me.hand.length > 5 ? `-${Math.min(35, (me.hand.length-5)*10)}px` : '0';
+                            return <CardView key={c.id} card={c} playable={playable} onClick={() => playable && (c.realm==='PLANET'||c.realm==='RUINS'||(c.realm==='FOUNTAIN'&&c.isSpecial)?setSelector(c):socket.emit('play-card',{roomId:room, card:c}))} style={{ marginLeft: i === 0 ? '0' : overlap }} />;
+                        })}
+                    </div>
+
+                    <div className="p-5 bg-black border-t-2 border-magic-purple z-20">
+                        <button className="btn-omega-singularity" disabled={!isMyTurn} onClick={()=>{ playSnd('draw'); socket.emit('draw-card',{roomId:room}); }}>
+                            {gs.nextDrawAmount > 1 ? `ドロー +${gs.nextDrawAmount}` : 'ドロー'}
+                        </button>
+                    </div>
+
+                    {selector && (
+                        <div className="absolute inset-0 bg-black/95 z-[900] flex items-center justify-center p-8 backdrop-blur-xl">
+                            <div className="panel-omega w-full">
+                                <h3 className="text-center font-black mb-10 text-2xl tracking-widest text-white">属性選択</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {CYCLE_ORDER.map(r => (
+                                        <button key={r} className="p-5 border border-white/20 rounded-lg font-black transition-all hover:bg-white/10" style={{color: REALMS[r].bright}} onClick={()=>{ socket.emit('play-card',{roomId:room, card:selector, chosenRealm:r}); setSelector(null); }}>{REALMS[r].n}</button>
+                                    ))}
                                 </div>
-                                <div className="relative z-[600] mt-4 w-full">
-                                    <input type="text" value={name} placeholder="プレイヤー名" onChange={e=>setName(e.target.value)} maxLength={10} />
-                                    <input type="text" value={room} placeholder="ルームID" onChange={e=>setRoom(e.target.value.toUpperCase())} />
-                                    <button onClick={()=>{ window.unlockAudio(); setJoined(true); socket.emit('join-room',{roomId:room, playerName:name}); }} className="btn-omega-singularity">接続開始</button>
-                                </div>
+                                <button className="w-full mt-10 text-[10px] opacity-40 font-black tracking-[10px]" onClick={()=>setSelector(null)}>キャンセル</button>
                             </div>
                         </div>
-                    ) : (gs?.status === 'waiting') ? (
-                        <div className="h-full flex items-center justify-center relative z-10 w-full px-4">
-                            <div className="panel-omega" style={{borderColor: 'var(--magic-purple)', maxWidth: '480px'}}>
-                                <div className="text-center mb-10"><div className="text-4xl text-steam-gold font-bold tracking-widest steam-glow" style={{fontFamily:'Cinzel'}}>ROOM: {room || gs.roomId}</div></div>
-                                <div className="space-y-3 mb-12">
-                                    {[...Array(4)].map((_, i) => {
-                                        const p = gs?.players?.[i];
-                                        return (
-                                            <div key={i} className={`slot-Omega-Final ${!p ? 'empty' : ''}`}>
-                                                <div className="flex items-center gap-5 overflow-hidden">
-                                                    <div className={`w-12 h-12 flex-shrink-0 rounded-full ${p ? 'bg-accent/20 text-accent border border-accent/60 shadow-[0_0_20px_var(--accent)]' : 'bg-white/5 text-white/5 border border-white/10'} flex items-center justify-center font-bold text-2xl`}>{p ? '👤' : ''}</div>
-                                                    <span className="slot-name-tag">{p ? p.name : '空きスロット'}</span>
-                                                </div>
-                                                {/* 修正箇所：HOSTバッジの色を確実にゴールドに！ */}
-                                                {p && i === 0 && <div className="bg-[#D4AF37] flex-shrink-0 text-black text-[12px] px-4 py-1 font-black rounded-sm shadow-xl">HOST</div>}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                                {gs?.players?.[0]?.id === socket?.id && (
-                                    <div className="flex gap-4">
-                                        <button onClick={()=>socket.emit('add-cpu',{roomId:room})} className="flex-1 p-4 border border-magic-purple text-[#e2b0ff] font-bold rounded-lg text-lg bg-magic-purple/20">CPU追加</button>
-                                        <button onClick={()=>socket.emit('start-game',{roomId:room})} className="flex-1 btn-omega-singularity" disabled={gs?.players?.length < 2}>開始</button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ) : gs?.fieldCard && (
-                        <div className="game-ui-container">
-                            <div className="hud-header-bar">
-                                <span>DIRECTION: {gs?.isReversed ? '⟲ REVERSE' : '⟳ NORMAL'}</span>
-                                <div onClick={toggleMute} className="mute-btn-peak-omega">{mute ? '🔇' : '🔊'}</div>
-                            </div>
-                            <div className="opp-mega-grid">
-                                {gs?.players?.map(p => (
-                                    <div key={p.id} className={`opp-card-omega-peak ${gs?.currentTurnPlayerId === p.id ? 'active' : ''}`}>
-                                        <div className="flex justify-between items-center text-xs mb-2">
-                                            <div className="font-bold truncate max-w-[80%]">{p.id === socket?.id ? '⭐' : '👤'} {p.name}</div>
-                                            <div className="text-accent font-black text-sm">{p.handCount}</div>
-                                        </div>
-                                        <div className="relative h-[34px] w-full">
-                                            {[...Array(Math.min(p.handCount, 4))].map((_, i) => <div key={i} className="mini-back-final" style={{left: `${i*8}px`, zIndex: i}} />)}
-                                        </div>
+                    )}
+
+                    {gs.status === 'finished' && (
+                        <div className="absolute inset-0 bg-black/98 z-[1000] flex flex-col items-center justify-center p-6 text-center">
+                            <h2 className="text-3xl font-black mb-6 tracking-tighter text-accent" style={{fontFamily:'Cinzel'}}>ミッション終了</h2>
+                            <div className="w-full space-y-3 mb-8 max-h-[35vh] overflow-y-auto px-2 no-scrollbar">
+                                {gs.players.slice().sort((a,b)=>a.handCount-b.handCount).map((p,i) => (
+                                    <div key={p.id} className={`p-4 border-l-4 ${i===0?'border-accent bg-accent/10 shadow-[0_0_20px_var(--accent)]':'border-white/10 bg-white/5 opacity-40'} flex justify-between items-center rounded-sm`}>
+                                        <div className="flex flex-col items-start"><span className="text-[8px] uppercase font-black text-white/50">RANK #{i+1}</span><span className="font-bold text-lg">{p.name}</span></div>
+                                        <span className="font-black text-2xl">{p.handCount}</span>
                                     </div>
                                 ))}
                             </div>
                             
-                            <div className="cycle-strip-classic">
-                                {CYCLE_ORDER.map(r => {
-                                    const isActive = currentR === r;
-                                    const isNext = nextPlayableRealms.includes(r);
-                                    
-                                    return (
-                                        <div key={r} className="cycle-node-container" style={{'--c': REALMS[r].color}}>
-                                            <div className={`cycle-node-omega ${isActive ? 'active' : ''} ${isNext && !isActive ? 'next-blink' : ''}`} 
-                                                 style={{background: isActive ? 'var(--c)' : 'rgba(255,255,255,0.15)'}}/>
-                                            <div className={`cycle-label ${isActive ? 'active' : ''} ${isNext && !isActive ? 'next-blink-text' : ''}`}>
-                                                {REALMS[r].n}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            <div className="field-core-omega">
-                                <div className={`text-[11px] font-black tracking-[8px] uppercase z-20 ${isMyTurn ? 'text-accent animate-pulse drop-shadow-[0_0_8px_var(--accent)]' : 'text-slate-500'}`}>{isMyTurn ? 'YOUR TURN' : 'WAITING...'}</div>
-                                <div className="relative my-2" style={{ width: 'var(--card-w)', height: 'var(--card-h)' }}>
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none">
-                                        <div className="magic-ring-core" />
-                                    </div>
-                                    <div className="relative z-10 w-full h-full flex items-center justify-center">
-                                        <CardView card={gs?.fieldCard} isField={true} style={{width: '100%', height: '100%'}} />
-                                    </div>
-                                </div>
-                                <div className="info-panel-mega relative z-20">
-                                    <div style={{fontFamily:'Cinzel', fontSize: 'clamp(14px, 4vw, 20px)', fontWeight: 900, color: REALMS[currentR]?.color, textShadow: `0 0 20px ${REALMS[currentR]?.color}`}}>{REALMS[currentR]?.n}</div>
-                                    <div className="text-[10px] opacity-80 mt-1 leading-none font-black tracking-widest">{REALMS[currentR]?.desc}</div>
-                                </div>
-                            </div>
-
-                            <div ref={logEndRef} className="terminal-log-omega">{gs?.logs?.slice(-10).map((l) => (<div key={l.id} className={`mb-1 ${l.text.includes('PLAY') ? 'text-accent font-bold' : ''}`}>{l.text}</div>))}</div>
-                            
-                            <div className="hand-Omega-Peak">{(() => {
-                                const cnt = sortedHand.length; 
-                                const ov = Math.min(75, window.innerWidth * 0.8 / Math.max(cnt, 1));
-                                return sortedHand.map((c, i) => (<CardView key={c.id || i} card={c} playable={canPlay(c)} onClick={() => handlePlay(c)} index={i} style={{ marginLeft: i === 0 ? 0 : `-${90 - ov}px` }} />));
-                            })()}</div>
-                            
-                            <div className="action-area-Final">
-                                <button className="btn-omega-singularity" disabled={!isMyTurn} onClick={() => { window.safePlay('draw'); socket.emit('draw-card',{roomId:room}); }}>
-                                    {gs?.nextDrawAmount > 1 ? `${gs.nextDrawAmount}枚引く` : 'ドロー'}
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                    
-                    {selector && (
-                        <div className="absolute inset-0 flex items-center justify-center p-4 z-[200000] backdrop-filter blur(50px) bg-black/90">
-                            <div className="panel-omega" style={{borderColor: 'var(--steam-gold)', padding: '40px 20px'}}>
-                                <h3 className="text-2xl md:text-3xl font-black text-center mb-8 text-steam-gold steam-glow" style={{fontFamily:'Cinzel'}}>属性を選択</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    {CYCLE_ORDER.map(r => (
-                                        <button key={r} className="p-3 md:p-4 border border-white/20 rounded-lg flex items-center justify-center gap-2 md:gap-4 hover:bg-white/10" style={{color: REALMS[r].color}} onClick={() => { socket.emit('play-card', {roomId: room, card:selector, chosenRealm:r}); setSelector(null); }}>
-                                            <div className="w-6 h-6 md:w-8 md:h-8 flex-shrink-0"><IconRenderer r={r} spec={false}/></div>
-                                            <span className="font-black text-lg md:text-xl whitespace-nowrap">{REALMS[r].n}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                                <button onClick={()=>setSelector(null)} className="w-full mt-8 text-white/40 text-sm py-2 tracking-[10px] font-black uppercase">Cancel</button>
-                            </div>
-                        </div>
-                    )}
-                    
-                    {/* === ミッション終了（リザルト）画面 === */}
-                    {gs?.status === 'finished' && (
-                        <div className="absolute inset-0 flex items-center justify-center p-4 z-[250000] bg-black/90 backdrop-blur-sm">
-                            <div className="panel-omega" style={{borderColor: 'var(--steam-gold)', padding: '40px 20px', width: '100%', maxWidth: '400px'}}>
-                                <h2 className="text-3xl md:text-4xl font-black text-center mb-8 text-[#D4AF37] steam-glow" style={{fontFamily: "'Exo 2', sans-serif"}}>{gs.players.slice().sort((a,b) => a.handCount - b.handCount)[0]?.name} 勝利！</h2>
-                                <div className="space-y-3 mb-10 max-h-[50vh] overflow-y-auto pr-2">
-                                    {gs.players.slice().sort((a,b) => a.handCount - b.handCount).map((p, i) => (
-                                        <div key={p.id} className={`p-4 rounded-xl border flex items-center transition-all ${p.handCount === 0 ? 'border-accent bg-accent/20 scale-[1.02] shadow-[0_0_15px_var(--accent)]' : p.handCount > 10 ? 'border-red-500 bg-red-500/20' : 'border-white/10 opacity-70'}`}>
-                                            <span className="font-black text-xl mr-4 italic text-slate-400" style={{fontFamily: "'Exo 2', sans-serif"}}>{i+1}位</span>
-                                            <div className="flex-1 overflow-hidden">
-                                                <div className="font-black text-lg tracking-wider uppercase truncate">{p.name}</div>
-                                                {/* 修正箇所：手札0枚の時の「ミッションクリア」の文字を削除してスッキリと！ */}
-                                                {p.handCount > 10 && <div className="text-[10px] text-red-500 tracking-widest font-black mt-1">システムオーバーロード</div>}
-                                            </div>
-                                            <span className={`font-black text-2xl ml-3 ${p.handCount > 10 ? 'text-red-500' : 'text-accent'}`} style={{fontFamily:'Orbitron'}}>{p.handCount}</span>
-                                        </div>
-                                    ))}
-                                </div>
+                            <div className="w-full max-w-sm flex flex-col gap-3">
                                 {gs.players[0]?.id === socket?.id ? (
-                                    <button onClick={() => socket.emit('play-again', {roomId: room})} className="btn-omega-singularity w-full text-xl">
-                                        もう一度プレイ
-                                    </button>
+                                    <>
+                                        <button className="btn-omega-singularity" onClick={()=>socket.emit('play-again', {roomId:room})}>ゲームを続ける</button>
+                                        <button className="w-full py-3 border border-accent/30 text-accent text-xs font-black tracking-[4px] rounded-lg bg-accent/5 hover:bg-accent/10 transition-colors" onClick={()=>socket.emit('play-again', {roomId:room})}>待機画面に戻る</button>
+                                    </>
                                 ) : (
-                                    <div className="text-center text-slate-400 font-bold tracking-widest text-sm py-4">ホストの再戦操作を待機中...</div>
+                                    <div className="text-white/40 text-[10px] py-2 font-black tracking-[4px] border border-white/5 rounded-lg">ホストの操作を待機中...</div>
                                 )}
+                                <button className="w-full py-3 border border-white/10 text-white/40 text-[10px] font-black tracking-[6px] rounded-lg hover:bg-white/5 transition-colors" onClick={backToTop}>トップページに戻る</button>
                             </div>
                         </div>
                     )}
                 </div>
             );
         };
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<ErrorBoundary><App /></ErrorBoundary>);
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
