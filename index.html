@@ -40,6 +40,7 @@
         @keyframes gear-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes digital-rain { 0% { transform: translateY(-100%); opacity: 0; } 50% { opacity: 0.8; } 100% { transform: translateY(280%); opacity: 0; } }
         @keyframes liquid-morph { 0% { border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%; } 100% { border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%; } }
+        @keyframes arcane-shimmer { 0% { transform: rotate(0deg) scale(1); opacity: 0.3; } 50% { transform: rotate(180deg) scale(1.1); opacity: 0.6; } 100% { transform: rotate(360deg) scale(1); opacity: 0.3; } }
         @keyframes sweepBtn { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
         @keyframes vortex-pulse { 0% { transform: rotate(0deg) scale(1.5); opacity: 0.15; } 50% { transform: rotate(180deg) scale(2.5); opacity: 0.4; } 100% { transform: rotate(360deg) scale(1.5); opacity: 0.15; } }
         @keyframes blink-light { 0%, 100% { opacity: 0.3; box-shadow: none; } 50% { opacity: 1; box-shadow: 0 0 10px var(--c); background: var(--c); } }
@@ -50,6 +51,8 @@
         .layer-grid { position: absolute; inset: -50%; background-image: linear-gradient(rgba(64, 224, 208, 0.2) 2px, transparent 2px), linear-gradient(90deg, rgba(64, 224, 208, 0.2) 2px, transparent 2px); background-size: 100px 100px; transform: perspective(800px) rotateX(75deg); animation: grid-scroll 6s linear infinite; mask-image: radial-gradient(circle at center, black, transparent 95%); }
         @keyframes grid-scroll { 0% { background-position: 0 0; } 100% { background-position: 0 100px; } }
         .layer-nebula { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, var(--realm-color), transparent 75%); opacity: 0.5; transition: 3s ease; mix-blend-mode: color-dodge; }
+        .particle-mega { position: absolute; background: white; border-radius: 50%; opacity: 0; animation: float-mega var(--d) ease-in infinite; mix-blend-mode: screen; filter: blur(0.5px); }
+        @keyframes float-mega { 0% { transform: translateY(115vh) translateX(0) scale(0.2); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-15vh) translateX(var(--x)) scale(3); opacity: 0; } }
 
         /* === ロゴ領域 === */
         .logo-stack { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 100; margin-bottom: 30px; width: 100%; max-width: 95%; margin-left: auto; margin-right: auto; }
@@ -62,7 +65,7 @@
         .sub-banner-omega::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(64,224,208,0.3), transparent); background-size: 200% 100%; animation: sub-bar-shimmer 3s linear infinite; }
         .sub-text-final { font-family: 'Audiowide', sans-serif; font-size: clamp(8px, 2.5vw, 11px); letter-spacing: clamp(1px, 1.5vw, 4px); color: #fff; position: relative; z-index: 2; text-shadow: 0 0 8px #0ff; white-space: nowrap; text-transform: uppercase; }
 
-        /* === カードマテリアル === */
+        /* === 3Dカードマテリアル === */
         .card-wrapper-3d { width: var(--card-w); height: var(--card-h); perspective: 1000px; position: relative; }
         .card-3d { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1); cursor: pointer; border-radius: 6px; }
         .card-content { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; overflow: hidden; border-radius: inherit; }
@@ -118,14 +121,19 @@
         .cycle-label.active { color: var(--c); text-shadow: 0 0 8px var(--c); }
         
         .field-area-recapped { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 10; padding: 10px 0; }
-        .terminal-log-omega { flex-shrink: 0; height: 40px; margin: 0 12px 6px; padding: 4px 12px; font-size: 9px; background: rgba(0,0,0,0.7); border-left: 4px solid var(--accent); overflow-y: auto; color: #fff; font-family: monospace; z-index: 30; }
+        .terminal-log-omega { flex-shrink: 0; height: 40px; margin: 0 12px 6px; padding: 4px 12px; font-size: 10px; background: rgba(0,0,0,0.7); border-left: 4px solid var(--accent); overflow-y: auto; color: #fff; font-family: monospace; z-index: 30; }
         .hand-area-recapped { flex-shrink: 0; display: flex; gap: 4px; padding: 10px; overflow-x: auto; background: rgba(0,0,0,0.85); min-height: 140px; border-top: 1px solid rgba(255,255,255,0.1); z-index: 20; }
         
-        .btn-sound-toggle { position: absolute; top: 15px; right: 15px; z-index: 1000; width: 40px; height: 40px; background: rgba(0,0,0,0.6); border: 1.5px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 15px var(--accent); transition: 0.3s; }
+        /* SEボタンの配置修正 */
+        .btn-sound-toggle { position: absolute; top: 12px; left: 12px; z-index: 1000; width: 40px; height: 40px; background: rgba(0,0,0,0.8); border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 15px var(--accent); transition: 0.3s; color: var(--accent); }
         .btn-sound-toggle:hover { background: var(--accent); color: #000; }
 
         .not-playable { opacity: 0.35 !important; filter: grayscale(100%) brightness(0.5) !important; transform: translateY(15px) scale(0.9) !important; pointer-events: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* ボタン非活性時のスタイル */
+        .btn-omega-singularity:disabled { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; animation: none; box-shadow: none; background: #333; color: #777; border-color: #555; }
+        .btn-sub:disabled { opacity: 0.3; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -193,7 +201,7 @@
                     <div className={`card-3d mat-${rData.theme}`} style={{'--r-color': rData.color, '--r-color-glow': rData.glow, '--r-color-dim': rData.dim || 'rgba(0,0,0,0.5)', ...tilt}}>
                         <div className="card-content">
                             {rData.theme === 'steam' && <div className="steam-gauge-mega"><div className="steam-hand" /></div>}
-                            {rData.theme === 'cyber' && <div className="cyber-matrix-layer">{[...Array(5)].map((_,i)=><div key={i} className="matrix-unit" style={{left:`${i*20+10}%`, animationDelay:`${i*0.5}s`}}>101</div>)}</div>}
+                            {rData.theme === 'cyber' && <div className="cyber-matrix-layer">{[...Array(5)].map((_,i)=><div key={i} className="matrix-unit" style={{left:`${i*20+10}%`, animationDelay:`${i*0.4}s`}}>101</div>)}</div>}
                             {rData.theme === 'fantasy' && <div className="arcane-circle-layer"><svg viewBox="0 0 100 100" className="w-4/5 h-4/5 opacity-40 animate-spin" style={{animationDuration:'15s'}}><circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="2 4"/></svg></div>}
                             <div className="card-label-tag"><span>{dr}</span></div>
                             <div className="card-icon-Omega" style={{ color: rData.bright }}><IconRenderer r={dr} spec={spec} /></div>
@@ -201,6 +209,17 @@
                             {spec && <div className="absolute top-2 right-2 bg-red-600 text-white text-[8px] font-black px-1 rounded shadow-lg z-[200]">特殊</div>}
                         </div>
                     </div>
+                </div>
+            );
+        };
+
+        const SparkleVFX = () => {
+            const sparks = useMemo(() => [...Array(25)].map((_, i) => ({ id: i, x: Math.random() * 100, y: Math.random() * 100, tx: (Math.random() - 0.5) * 500, ty: (Math.random() - 0.5) * 500, delay: Math.random() * 5, size: Math.random() * 4 + 1 })), []);
+            return (
+                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                    {sparks.map(s => (
+                        <div key={s.id} className="absolute bg-[#FFD700] rounded-full blur-[0.5px]" style={{ left: `${s.x}%`, top: `${s.y}%`, width: `${s.size}px`, height: `${s.size}px`, '--tx': `${s.tx}px`, '--ty': `${s.ty}px`, animation: `spark-float 6s infinite`, animationDelay: `${s.delay}s` }} />
+                    ))}
                 </div>
             );
         };
@@ -270,6 +289,7 @@
                     {!joined ? (
                         <div className="h-full flex items-center justify-center p-6 z-10">
                             <div className="panel-omega w-full text-center">
+                                <SparkleVFX />
                                 <div className="logo-stack">
                                     <div className="logo-row row-cross">CROSS</div>
                                     <div className="row-x">X</div>
@@ -298,7 +318,7 @@
                             <div className="w-full flex flex-col gap-4">
                                 {gs?.players[0]?.id === socket?.id && (
                                     <>
-                                        <button className="btn-omega-singularity" onClick={()=>socket.emit('start-game', {roomId:room})}>ゲーム開始</button>
+                                        <button className="btn-omega-singularity" disabled={gs?.players?.length < 2} onClick={()=>socket.emit('start-game', {roomId:room})}>ゲーム開始</button>
                                         <button className="btn-sub" onClick={()=>socket.emit('add-cpu', {roomId:room})}>CPUを追加する</button>
                                     </>
                                 )}
@@ -358,17 +378,17 @@
                                                 <button key={r} className="p-5 border border-white/20 rounded-lg font-black transition-all hover:bg-white/10" style={{color: REALMS[r].bright}} onClick={()=>{ socket.emit('play-card',{roomId:room, card:selector, chosenRealm:r}); setSelector(null); }}>{REALMS[r].n}</button>
                                             ))}
                                         </div>
-                                        <button className="w-full mt-10 p-4 border-2 border-red-500/50 bg-red-500/10 text-red-500 font-black tracking-[10px] text-xs rounded hover:bg-red-500/20" onClick={()=>setSelector(null)}>キャンセル</button>
+                                        <button className="w-full mt-10 p-4 border-2 border-red-500/80 bg-red-500/20 text-red-500 font-black tracking-[10px] text-xs rounded hover:bg-red-500/30 transition-all" onClick={()=>setSelector(null)}>キャンセル</button>
                                     </div>
                                 </div>
                             )}
 
                             {gs.status === 'finished' && (
-                                <div className="absolute inset-0 bg-black/98 z-[1000] flex flex-col items-center justify-center p-6 text-center">
+                                <div className="absolute inset-0 bg-black/95 z-[1000] flex flex-col items-center justify-center p-6 text-center backdrop-blur-md">
                                     <h2 className="text-3xl font-black mb-4 tracking-tighter text-accent" style={{fontFamily:'Cinzel'}}>ミッション終了</h2>
                                     <div className="w-full space-y-2 mb-6 max-h-[35vh] overflow-y-auto px-2 no-scrollbar">
                                         {gs.players.slice().sort((a,b)=>a.handCount-b.handCount).map((p,i) => (
-                                            <div key={p.id} className={`p-3 border-l-4 ${i===0?'border-accent bg-accent/10 shadow-[0_0_15px_var(--accent)]':'border-white/10 bg-white/5 opacity-40'} flex justify-between items-center rounded-sm`}>
+                                            <div key={p.id} className={`p-3 border-l-4 ${i===0?'border-accent bg-accent/20 shadow-[0_0_25px_var(--accent)] scale-[1.02]':'border-white/10 bg-white/5 opacity-80'} flex justify-between items-center rounded-sm transition-all`}>
                                                 <div className="flex flex-col items-start"><span className="text-[8px] uppercase font-black text-white/50">RANK #{i+1}</span><span className="font-bold text-base">{p.name}</span></div>
                                                 <span className="font-black text-xl">{p.handCount}</span>
                                             </div>
@@ -381,9 +401,9 @@
                                                 <button className="btn-sub py-4 text-xs tracking-[4px]" onClick={()=>socket.emit('play-again', {roomId:room})}>待機画面に戻る</button>
                                             </>
                                         ) : (
-                                            <div className="text-white/40 text-[10px] py-4 font-black tracking-[4px] border border-white/5 rounded-lg">ホストの操作を待機中...</div>
+                                            <div className="text-white/60 text-[10px] py-4 font-black tracking-[4px] border border-white/10 bg-white/5 rounded-lg">ホストの操作を待機中...</div>
                                         )}
-                                        <button className="btn-utility" onClick={backToTop}>トップに戻る</button>
+                                        <button className="btn-utility py-4 border-white/30 text-white font-bold" onClick={backToTop}>トップに戻る</button>
                                     </div>
                                 </div>
                             )}
