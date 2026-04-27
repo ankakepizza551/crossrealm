@@ -18,7 +18,7 @@
             --accent: #40E0D0; --steam-gold: #D4AF37; --magic-purple: #8A2BE2; --danger: #FF4500; 
             --bg: #010103; 
             /* 比率を 1:1.4 で完全固定 */
-            --card-w: clamp(76px, 20.5vw, 86px); 
+            --card-w: clamp(75px, 20.5vw, 86px); 
             --card-h: calc(var(--card-w) * 1.4); 
             --border: rgba(212, 175, 15, 0.45);
         }
@@ -35,7 +35,7 @@
             background: var(--bg);
         }
 
-        /* === アニメーション === */
+        /* アニメーション */
         @keyframes gear-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes digital-rain { 0% { transform: translateY(-100%); opacity: 0; } 50% { opacity: 0.8; } 100% { transform: translateY(280%); opacity: 0; } }
         @keyframes liquid-morph { 0% { border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%; } 100% { border-radius: 60% 40% 40% 60% / 60% 60% 40% 40%; } }
@@ -44,7 +44,7 @@
         @keyframes spark-float { 0% { transform: translateY(0) rotate(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(var(--ty)) translateX(var(--tx)) rotate(360deg); opacity: 0; } }
         @keyframes blink-light { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; box-shadow: 0 0 12px var(--c); background: var(--c); } }
 
-        /* 背景レイヤー */
+        /* 背景 */
         .bg-core { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
         .layer-vortex { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent, rgba(138,43,226,0.2), transparent 40%, rgba(64,224,208,0.15), transparent); animation: vortex-pulse 30s linear infinite; filter: blur(90px); }
         .layer-grid { position: absolute; inset: -50%; background-image: linear-gradient(rgba(64, 224, 208, 0.1) 2.5px, transparent 2.5px), linear-gradient(90deg, rgba(64, 224, 208, 0.1) 2.5px, transparent 2.5px); background-size: 100px 100px; transform: perspective(1000px) rotateX(75deg); animation: grid-scroll 15s linear infinite; mask-image: radial-gradient(circle at center, black, transparent 90%); }
@@ -57,7 +57,7 @@
         .row-cross { font-size: clamp(35px, 11vw, 65px); letter-spacing: 12px; }
         .row-realm { font-size: clamp(35px, 11vw, 65px); letter-spacing: 12px; }
         .row-x { font-family: 'Orbitron', sans-serif; font-size: clamp(60px, 16vw, 100px); color: var(--accent); -webkit-text-fill-color: var(--accent); text-shadow: 0 0 40px var(--accent), 0 0 80px var(--accent); margin: -10px 0; font-weight: 900; }
-        .sub-banner-omega { margin-top: 20px; padding: 6px 20px; position: relative; overflow: hidden; background: rgba(0,0,0,0.95); border: 2px solid var(--accent); box-shadow: 0 0 30px var(--accent); display: flex; justify-content: center; align-items: center; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); }
+        .sub-banner-omega { margin-top: 15px; padding: 6px 20px; position: relative; overflow: hidden; background: rgba(0,0,0,0.95); border: 2px solid var(--accent); box-shadow: 0 0 30px var(--accent); display: flex; justify-content: center; align-items: center; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); }
         .sub-text-final { font-family: 'Audiowide', sans-serif; font-size: clamp(8px, 2.2vw, 11px); letter-spacing: 4px; color: #fff; position: relative; z-index: 2; text-shadow: 0 0 10px #0ff; white-space: nowrap; text-transform: uppercase; }
 
         /* カード (1:1.4 完全固定) */
@@ -77,7 +77,7 @@
         /* 特殊ラベル (復元) */
         .special-badge-Omega { position: absolute; bottom: 6px; left: 6px; width: 22px; height: 22px; background: linear-gradient(135deg, #FF0000, #8B0000); border: 1.5px solid #FFF; border-radius: 50%; display: flex; align-items: center; justify-content: center; transform: translateZ(50px); box-shadow: 0 0 15px #FF0000, inset 0 0 5px #000; z-index: 150; }
         .special-badge-Omega span { font-family: 'Cinzel', serif; font-weight: 900; font-size: 12px; color: #FFF; line-height: 1; }
-        .special-text-tag { position: absolute; bottom: 8px; left: 32px; background: rgba(255,0,0,0.9); border: 1px solid rgba(255,255,255,0.5); color: #fff; font-size: 7px; font-weight: 900; padding: 2px 5px; transform: translateZ(45px); letter-spacing: 0.5px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); border-radius: 3px; white-space: nowrap; }
+        .special-text-tag { position: absolute; bottom: 8px; left: 32px; background: rgba(255,0,0,0.9); border: 1px solid rgba(255,255,255,0.5); color: #fff; font-size: 7.5px; font-weight: 900; padding: 2px 5px; transform: translateZ(45px); letter-spacing: 0.5px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); border-radius: 3px; white-space: nowrap; }
 
         /* ギミック演出 */
         .steam-gauge-mega { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; background: #2a1508; border: 2px solid #5d3a1a; border-radius: 50%; transform: translateZ(50px); z-index: 140; }
@@ -92,26 +92,27 @@
         .card-icon-Omega { position: absolute; top: 58%; left: 50%; width: 45px; height: 45px; transform: translate(-50%, -50%) translateZ(60px); filter: drop-shadow(0 0 15px var(--r-color)); z-index: 95; }
         .card-footer-Omega { position: absolute; bottom: 0; width: 100%; padding: 10px 0 6px; background: linear-gradient(to top, rgba(0,0,0,1) 0%, transparent 100%); text-align: center; color: #fff; z-index: 100; transform: translateZ(40px); text-shadow: 0 0 12px var(--r-color); font-weight: 900; font-size: 13px; letter-spacing: 2.5px; }
         
-        /* UIパーツ */
+        /* UI */
         .panel-omega { position: relative; z-index: 500; width: 100%; max-width: 440px; background: rgba(8,12,20,0.98); border: 2px solid var(--accent); padding: 25px; clip-path: polygon(0 30px, 30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%); box-shadow: 0 0 120px rgba(64,224,208,0.4); }
-        .input-cyber { width: 100%; padding: 16px; background: rgba(0,0,0,0.9); border: 1.5px solid rgba(64,224,208,0.3); border-bottom: 4px solid var(--accent); color: #fff; text-align: center; font-size: 20px; outline: none; margin-bottom: 12px; font-family: 'Exo 2', sans-serif; font-weight: 900; letter-spacing: 2px; }
-        .btn-omega-singularity { display: flex; align-items: center; justify-content: center; min-height: 52px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1.5px solid #FFF8DC; border-radius: 8px; font-weight: 900; font-size: 22px; cursor: pointer; width: 100%; animation: sweepBtn 3s linear infinite; box-shadow: 0 8px 30px rgba(212,175,55,0.5); transition: 0.3s; }
+        /* 入力欄を少し狭くして被り防止 */
+        .input-cyber { width: 88%; margin: 0 auto 12px; display: block; padding: 15px; background: rgba(0,0,0,0.9); border: 1.5px solid rgba(64,224,208,0.3); border-bottom: 4px solid var(--accent); color: #fff; text-align: center; font-size: 19px; outline: none; font-family: 'Exo 2', sans-serif; font-weight: 900; letter-spacing: 1.5px; }
+        .btn-omega-singularity { display: flex; align-items: center; justify-content: center; min-height: 52px; background: linear-gradient(90deg, #B8860B, #FFDF73, #D4AF37, #B8860B); background-size: 200% auto; color: #000; border: 1.5px solid #FFF8DC; border-radius: 8px; font-weight: 900; font-size: 21px; cursor: pointer; width: 100%; animation: sweepBtn 3s linear infinite; box-shadow: 0 8px 30px rgba(212,175,55,0.5); transition: 0.3s; }
         .btn-omega-singularity:disabled { filter: grayscale(1) brightness(0.4); cursor: not-allowed; opacity: 0.5; animation: none; box-shadow: none; border-color: #333; }
         
         /* ドローボタンエリア */
         .btn-draw-area { min-height: 70px; border-top: 2.5px solid var(--magic-purple); background: rgba(0,0,0,0.95); padding: 10px 15px; z-index: 200; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); }
 
-        .btn-sub { min-height: 45px; background: rgba(64,224,208,0.1); border: 1px solid var(--accent); color: var(--accent); font-weight: 900; font-size: 15px; border-radius: 4px; transition: 0.3s; }
-        .btn-utility { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; font-weight: 900; font-size: 14px; border-radius: 4px; letter-spacing: 4px; }
+        .btn-sub { min-height: 44px; background: rgba(64,224,208,0.1); border: 1px solid var(--accent); color: var(--accent); font-weight: 900; font-size: 15px; border-radius: 4px; transition: 0.3s; }
+        .btn-utility { width: 100%; padding: 11px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; font-weight: 900; font-size: 14px; border-radius: 4px; letter-spacing: 4px; }
 
-        /* 待機画面スロット */
-        .slot-Omega-Final { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-left: 5px solid var(--accent); padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 12px 100%, 0 calc(100% - 12px)); margin-bottom: 6px; min-height: 58px; }
+        /* 待機画面スロット (左右を狭くして被り防止) */
+        .slot-Omega-Final { width: 92%; margin: 0 auto 6px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-left: 5px solid var(--accent); padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 12px 100%, 0 calc(100% - 12px)); min-height: 58px; }
         .slot-Omega-Final.empty { opacity: 0.2; border-left-color: rgba(255,255,255,0.2); border-left-style: dashed; }
-        .slot-name-tag { font-family: 'Exo 2', sans-serif; font-weight: 900; font-size: 20px; letter-spacing: 1.5px; }
+        .slot-name-tag { font-family: 'Exo 2', sans-serif; font-weight: 900; font-size: 19px; letter-spacing: 1.5px; }
 
         /* HUD & イラスト */
         .opp-mega-grid { flex-shrink: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 8px 12px; background: rgba(0,0,0,0.85); border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 50; }
-        .opp-card-omega-peak { padding: 8px 12px; border-radius: 4px; background: rgba(255,255,255,0.04); border-left: 3.5px solid transparent; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; min-height: 50px; }
+        .opp-card-omega-peak { padding: 8px 12px; border-radius: 4px; background: rgba(255,255,255,0.04); border-left: 3.5px solid transparent; display: flex; justify-content: space-between; align-items: center; position: relative; overflow: hidden; min-height: 52px; }
         .opp-card-omega-peak.active { border-left-color: var(--accent); background: rgba(64,224,208,0.12); box-shadow: 0 0 15px rgba(64,224,208,0.25); }
         .opp-mini-illust { position: absolute; right: 0px; top: 0px; bottom: 0px; width: 45px; opacity: 0.2; pointer-events: none; display: flex; align-items: center; justify-content: center; }
 
@@ -131,11 +132,11 @@
         .terminal-log-omega { flex-shrink: 0; height: 55px; margin: 0 12px 10px; padding: 8px 15px; font-size: 12px; background: rgba(0,0,0,0.85); border-left: 5px solid var(--accent); overflow-y: auto; color: #fff; font-family: monospace; z-index: 30; line-height: 1.5; }
         .hand-area-recapped { flex-shrink: 0; display: flex; gap: 4px; padding: 14px 12px; overflow-x: auto; background: rgba(0,0,0,0.92); min-height: 165px; border-top: 1px solid rgba(255,255,255,0.2); z-index: 20; }
         
-        .btn-sound-toggle { position: absolute; left: 12px; top: 46%; z-index: 1000; width: 45px; height: 42px; background: rgba(0,0,0,0.85); border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 20px var(--accent); transition: 0.3s; color: var(--accent); }
+        .btn-sound-toggle { position: absolute; left: 12px; top: 46%; z-index: 1000; width: 45px; height: 44px; background: rgba(0,0,0,0.85); border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 20px var(--accent); transition: 0.3s; color: var(--accent); }
         .btn-sound-toggle:hover { scale: 1.1; background: var(--accent); color: #000; }
 
-        /* 出せないカードを認識可能に調整 */
-        .not-playable { opacity: 0.45 !important; filter: grayscale(100%) brightness(0.6) !important; transform: translateY(12px) scale(0.9) !important; pointer-events: none; }
+        /* 出せないカードを認識可能に調整 (戦略把握用) */
+        .not-playable { opacity: 0.55 !important; filter: grayscale(80%) brightness(0.7) !important; transform: translateY(12px) scale(0.9) !important; pointer-events: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
