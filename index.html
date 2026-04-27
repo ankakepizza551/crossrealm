@@ -124,7 +124,7 @@
         .btn-sound-toggle { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 1000; width: 44px; height: 44px; background: rgba(0,0,0,0.85); border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 20px var(--accent); transition: 0.3s; color: var(--accent); }
         .btn-sound-toggle:hover { scale: 1.1; background: var(--accent); color: #000; }
 
-        .not-playable { opacity: 0.7 !important; filter: brightness(0.6) grayscale(50%) !important; transform: translateY(8px) scale(0.95) !important; pointer-events: none; }
+        .not-playable { opacity: 0.6 !important; filter: brightness(0.6) grayscale(50%) !important; transform: translateY(8px) scale(0.95) !important; pointer-events: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -133,12 +133,6 @@
 
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
-
-        const SFX = { 
-            play: 'https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3', 
-            draw: 'https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3',
-            turn: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'
-        };
 
         const REALMS = {
             GEAR:    { n: '歯車', color: '#8B4513', bright: '#FF8C00', glow: 'rgba(212,175,55,1)', theme: 'steam', font: 'Special Elite' },
@@ -249,17 +243,35 @@
             const [selector, setSelector] = useState(null);
             const [isMuted, setIsMuted] = useState(false);
             const logEndRef = useRef(null);
+            
+            // SE安定再生用キャッシュ
+            const audioRefs = useRef({});
 
             useEffect(() => {
                 const s = io('https://crossrealm-server.onrender.com');
                 setSocket(s);
                 s.on('update-game', setGs);
+                
+                // 音声インスタンスの生成とプリロード
+                audioRefs.current = {
+                    play: new Audio('https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3'),
+                    draw: new Audio('https://assets.mixkit.co/active_storage/sfx/2049/2049-preview.mp3'),
+                    turn: new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
+                };
+                
                 return () => s.disconnect();
             }, []);
 
             useEffect(() => { if (logEndRef.current) logEndRef.current.scrollTop = logEndRef.current.scrollHeight; }, [gs?.logs]);
 
-            const playSnd = (key) => { if(!isMuted) { try { new Audio(SFX[key]).play(); } catch(e){} } };
+            const playSnd = (key) => { 
+                if(!isMuted && audioRefs.current[key]) { 
+                    try { 
+                        audioRefs.current[key].currentTime = 0; 
+                        audioRefs.current[key].play().catch(() => {}); // iOS等の自動再生ブロック対策
+                    } catch(e){} 
+                } 
+            };
 
             const isMyTurn = gs?.currentTurnPlayerId === socket?.id;
             const currentR = gs?.fieldCard?.realm || 'GEAR';
@@ -385,7 +397,16 @@
                                 {sortedHand.map((c, i) => {
                                     const playable = canPlay(c);
                                     const overlap = sortedHand.length > 5 ? `-${Math.min(32, (sortedHand.length-5)*8)}px` : '0';
-                                    return <CardView key={c.id} card={c} playable={playable} onClick={() => playable && (c.realm==='PLANET'||c.realm==='RUINS'||(c.realm==='FOUNTAIN'&&c.isSpecial)?setSelector(c):socket.emit('play-card',{roomId:room, card:c}))} style={{ marginLeft: i === 0 ? '0' : overlap }} zIndex={i + 100} />;
+                                    return <CardView key={c.id} card={c} playable={playable} onClick={() => {
+                                        if(playable){
+                                            playSnd('play');
+                                            if(c.realm==='PLANET'||c.realm==='RUINS'||(c.realm==='FOUNTAIN'&&c.isSpecial)){
+                                                setSelector(c);
+                                            } else {
+                                                socket.emit('play-card',{roomId:room, card:c});
+                                            }
+                                        }
+                                    }} style={{ marginLeft: i === 0 ? '0' : overlap }} zIndex={i + 100} />;
                                 })}
                             </div>
 
