@@ -6,6 +6,8 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Cross Realm - Omega Singularity v133.0 REFINED LAYOUT</title>
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon.png">
 
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -1689,7 +1691,7 @@
                             </div>
                         ) : (!gs || gs.status === 'waiting') ? (
                             <div className="h-full flex flex-col items-center justify-center p-4 text-center overflow-y-auto no-scrollbar">
-                                <h2 className="text-3xl font-black mb-6 tracking-[10px] font-['Orbitron'] text-white animate-pulse uppercase">Awaiting_Sync</h2>
+                                <h2 className="text-[clamp(1.2rem,6.5vw,1.875rem)] font-black mb-6 tracking-[clamp(4px,2vw,10px)] font-['Orbitron'] text-white animate-pulse uppercase w-full text-center">Awaiting_Sync</h2>
                                 <div className="w-full overflow-y-auto max-h-[48vh] p-1 mx-5 mb-3 shrink-0 no-scrollbar">
                                     {[...Array(5)].map((_, i) => {
                                         const p = gs?.players[i];
