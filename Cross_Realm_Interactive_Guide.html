@@ -1098,7 +1098,14 @@
                                         <span className="text-[var(--danger)] font-black text-xl mr-3 mt-0.5">⚠️</span>
                                         <div className="text-base">
                                             <span className="text-[var(--danger)] font-black text-lg">システムオーバーロード（バースト）</span><br />
-                                            手札が <span className="text-[var(--danger)] font-black text-xl mx-1 underline decoration-red-500/50">11枚以上</span> になった瞬間、限界突破となり脱落（敗北）します。
+                                            手札が <span className="text-[var(--danger)] font-black text-xl mx-1 underline decoration-red-500/50">11枚以上</span> になった瞬間、ペナルティとして <span className="text-[var(--danger)] font-black">-10pt</span> され脱落します。
+                                        </div>
+                                    </li>
+                                    <li className="flex items-start bg-blue-900/20 p-4 rounded-lg border border-blue-500/30 mt-4">
+                                        <span className="text-blue-400 font-black text-xl mr-3 mt-0.5">🏆</span>
+                                        <div className="text-base">
+                                            <span className="text-blue-300 font-black text-lg">シリーズ・チャンピオンシップ</span><br />
+                                            全5回のマッチを戦い、合計スコアが最も高いプレイヤーが最終的な覇者となります。
                                         </div>
                                     </li>
                                 </ul>
@@ -1201,14 +1208,14 @@
                                         <div className="pointer-events-none"><CardView realmKey="PLANET" /></div>
                                         <div className="flex-1">
                                             <h3 className="text-xl font-black text-[#FFFFFF] mb-2 tracking-widest pointer-events-none">🪐 惑星 [PURE WILD]</h3>
-                                            <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none">いつでも出せる純粋なワイルド。好きな属性に変更できます。</p>
+                                            <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none">いつでも出せる純粋なワイルド。これで「あがり」を決めると獲得スコアが <span className="text-[var(--accent)]">1.5倍</span> になります。</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-6 bg-black/40 p-4 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 hover:border-white/30 transition-all transform hover:-translate-y-1" onClick={() => triggerSpecial('RUINS')}>
                                         <div className="pointer-events-none"><CardView realmKey="RUINS" /></div>
                                         <div className="flex-1">
                                             <h3 className="text-xl font-black text-[#CCCCCC] mb-2 tracking-widest pointer-events-none">🏛️ 廃墟 [PURE WILD]</h3>
-                                            <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none">惑星と同様、いつでも出せる純粋なワイルドです。</p>
+                                            <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none">惑星と同様、いつでも出せます。惑星と同じく1.5倍の「WILDボーナス」が適用されます。</p>
                                         </div>
                                     </div>
                                 </div>
@@ -1247,9 +1254,23 @@
                                     </ul>
                                 </div>
                             </div>
+                        </div>                        {/* System Architecture Section */}
+                        <div className="guide-section mb-16">
+                            <h2 className="section-title text-[var(--accent)]">System Architecture</h2>
+                            <div className="bg-black/50 p-6 rounded-xl border border-white/10 text-left max-w-2xl mx-auto shadow-2xl backdrop-blur-md">
+                                <p className="text-white/80 text-sm mb-4 font-bold leading-relaxed">
+                                    本プロジェクトは v133.0 より、メンテナンス性向上のため **Vite + React** によるモジュール構造へ移行しました。
+                                </p>
+                                <ul className="space-y-3 text-white/70 font-bold text-xs list-disc pl-5">
+                                    <li><span className="text-white">Backend</span>: Node.js / Express / Socket.io</li>
+                                    <li><span className="text-white">Frontend</span>: React / Vite / Vanilla CSS</li>
+                                    <li><span className="text-white">Design</span>: Image-less, Pure CSS & SVG UI</li>
+                                </ul>
+                                <div className="mt-6 pt-4 border-t border-white/10 text-[10px] text-white/40 font-['Orbitron'] tracking-widest text-center">
+                                    CROSS REALM - OMEGA SINGULARITY - TECHNICAL_DOC_SYNC_COMPLETE
+                                </div>
+                            </div>
                         </div>
-
-
 
                     </div>
                 </div>
