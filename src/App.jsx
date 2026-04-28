@@ -3,10 +3,11 @@ import io from 'socket.io-client';
 import './index.css';
 
 // const socket = io('https://crossrealm-server.onrender.com');
+// const socket = io('https://crossrealm-server.onrender.com');
 const socket = io(
-    (window.location.port === '5173' || window.location.port === '5174') 
+    (window.location.hostname === 'localhost' && window.location.port !== '3000') 
     ? 'http://localhost:3000' 
-    : undefined // Production (same domain)
+    : undefined // Production or running server locally on 3000
 );
 
         const REALMS = {
