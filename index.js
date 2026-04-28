@@ -218,7 +218,25 @@ io.on('connection', (socket) => {
     }
     
     const room = rooms[rid];
-    if (room.status !== 'waiting' || room.players.length >= 5) return;
+    if (room.status !== 'waiting' && room.status !== 'playing') return;
+
+    // 同名のプレイヤーがいるかチェック（再接続対応）
+    const existingPlayer = room.players.find(p => p.name === (data.playerName || 'Pilot').substring(0, 10));
+    
+    if (existingPlayer) {
+        console.log(`[SYSTEM] Reconnecting Player: ${existingPlayer.name} (ID: ${existingPlayer.id} -> ${socket.id})`);
+        existingPlayer.id = socket.id;
+        socket.join(rid);
+        io.to(rid).emit('update-game', room);
+        
+        // もしその人のターンだったら、AIかどうかチェックして進行させる（念のため）
+        if (room.status === 'playing' && room.players[room.turnIndex].id === socket.id && room.players[room.turnIndex].isBot) {
+            processBotTurn(rid);
+        }
+        return;
+    }
+
+    if (room.players.length >= 5) return;
     
     const newPlayer = { id: socket.id, name: (data.playerName || 'Pilot').substring(0, 10), hand: [], handCount: 0, isBot: false, isEliminated: false, score: 0 };
     room.players.push(newPlayer);

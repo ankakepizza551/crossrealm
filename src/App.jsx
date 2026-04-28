@@ -501,6 +501,7 @@ const socket = io(
                                 <div className="w-full overflow-y-auto max-h-[48vh] p-1 mx-5 mb-3 shrink-0 no-scrollbar">
                                     {[...Array(5)].map((_, i) => {
                                         const p = gs?.players[i];
+                                        const isMe = p && (p.id === socket?.id || p.name === name);
                                         return (
                                             <div key={i} className={`bg-[#140a28]/85 border px-5 py-2.5 rounded-md mb-1.5 flex justify-between items-center min-h-[56px] shadow-[0_8px_25px_rgba(0,0,0,0.8)] backdrop-blur-md ${p ? 'border-l-8 border-l-accent border-accent/80 bg-[#0a1e28]/85 shadow-[0_0_15px_rgba(64,224,208,0.2)]' : 'border-white/30 opacity-20 border-dashed'}`}>
                                                 <span className="font-black text-sm tracking-wide uppercase">{p ? p.name : '--- VACANT ---'}</span>
@@ -510,7 +511,7 @@ const socket = io(
                                     })}
                                 </div>
                                 <div className="w-full mt-2 px-4 flex flex-col items-center">
-                                    {gs?.players[0]?.id && socket?.id && gs.players[0].id === socket.id && (
+                                    {(gs?.players[0]?.id === socket?.id || gs?.players[0]?.name === name) && (
                                         <div className="flex gap-3 w-full mb-3">
                                             <button className="flex-1 p-5 bg-black/80 border border-white/40 backdrop-blur-md text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm" disabled={gs?.players?.length >= 5} onClick={() => {
                                                 playSE('play', muted);
@@ -566,14 +567,14 @@ const socket = io(
                             <>
                                 {/* === 1. 被りを防ぐ専用のシステムヘッダーバー === */}
                                 <div className="flex justify-between items-center px-4 py-2 bg-[#05010a]/90 border-b border-accent/20 shrink-0 z-50">
-                                    <div className="text-[11px] font-black text-accent font-['Orbitron'] tracking-[4px]">SECTOR: {room} <span className="ml-2 text-white/80">| M-{gs.matchCount}/{gs.maxMatches}</span> <span className="ml-2 text-[var(--steam-gold)]">★ {me?.score} pts</span></div>
-                                    <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80 backdrop-blur-sm cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.4)] transition-all" onClick={() => setMuted(!muted)}>
+                                    <div className="text-[11px] font-black text-accent font-['Orbitron'] tracking-[2px] sm:tracking-[4px] truncate flex-1">SECTOR: {room} <span className="ml-2 text-white/80">| M-{gs.matchCount}/{gs.maxMatches}</span> <span className="ml-2 text-[var(--steam-gold)]">★ {me?.score || 0} pts</span></div>
+                                    <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80 backdrop-blur-sm cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.4)] transition-all ml-2" onClick={() => setMuted(!muted)}>
                                         {muted ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 opacity-40"><path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6" /></svg> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>}
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-1.5 p-2 bg-[#0a0f23]/90 border-b-2 border-white/15 shrink-0 backdrop-blur-md">
-                                    {gs.players.filter(p => p.id !== socket?.id).map(p => (
+                                    {gs.players.filter(p => p.id !== socket?.id && p.name !== name).map(p => (
                                         <div key={p.id} className={`bg-white/5 border border-white/15 rounded-md p-2 relative h-16 flex flex-col justify-center ${gs.currentTurnPlayerId === p.id ? 'border-accent bg-accent/10 shadow-[inset_0_0_15px_rgba(64,224,208,0.2)]' : ''} ${p.isEliminated ? 'grayscale brightness-50 border-danger' : ''} ${(p.handCount >= 8 && !p.isEliminated) ? 'burst-warning' : ''}`}>
                                             <div className="text-[10px] font-black uppercase text-white/60 mb-0.5 tracking-wider w-[85%] truncate">{p.name}</div>
                                             <div className="absolute top-1 right-2 text-[10px] font-black text-[var(--steam-gold)]">★ {p.score}</div>
