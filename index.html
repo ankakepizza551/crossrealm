@@ -1,216 +1,1228 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Cross Realm - Omega Singularity v133.0 REFINED LAYOUT</title>
-    
+
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Cinzel:wght@400;700;900&family=Audiowide&family=Cinzel+Decorative:wght@700&family=Orbitron:wght@700;900&family=Special+Elite&display=swap" rel="stylesheet">
-    
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Cinzel:wght@400;700;900&family=Audiowide&family=Cinzel+Decorative:wght@700&family=Orbitron:wght@700;900&family=Special+Elite&display=swap"
+        rel="stylesheet">
+
     <style>
-        :root { 
-            --accent: #40E0D0; --steam-gold: #D4AF37; --magic-purple: #8A2BE2; --danger: #FF4500; 
-            --bg-deep: #05010a; 
-            --card-w: clamp(54px, 16vw, 78px); 
-            --card-h: calc(var(--card-w) * 1.4); 
+        :root {
+            --accent: #40E0D0;
+            --steam-gold: #D4AF37;
+            --magic-purple: #8A2BE2;
+            --danger: #FF4500;
+            --bg-deep: #05010a;
+            --card-w: clamp(54px, 16vw, 78px);
+            --card-h: calc(var(--card-w) * 1.4);
         }
-        body { 
-            margin: 0; background: var(--bg-deep); color: white; font-family: 'Exo 2', sans-serif; 
-            display: flex; justify-content: center; align-items: center; 
-            height: 100vh; height: 100dvh; overflow: hidden; 
+
+        body {
+            margin: 0;
+            background: var(--bg-deep);
+            color: white;
+            font-family: 'Exo 2', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
         }
 
         /* === 共通アニメーション === */
-        @keyframes flow-border-nova { 0% { border-color: var(--steam-gold); box-shadow: 0 0 15px var(--steam-gold); } 33% { border-color: var(--magic-purple); box-shadow: 0 0 15px var(--magic-purple); } 66% { border-color: var(--accent); box-shadow: 0 0 15px var(--accent); } 100% { border-color: var(--steam-gold); box-shadow: 0 0 15px var(--steam-gold); } }
-        @keyframes logo-shine { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
-        @keyframes draw-pulse { 0%, 100% { filter: brightness(1); box-shadow: 0 0 15px var(--steam-gold); } 50% { filter: brightness(1.3); box-shadow: 0 0 30px var(--steam-gold); } }
-        @keyframes rotate-inner { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes rotate-outer { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
-        @keyframes pulse-shimmer { 0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 2px rgba(255,255,255,0.5)); transform: scale(1); } 50% { opacity: 1; filter: drop-shadow(0 0 8px #fff) brightness(1.5); transform: scale(1.1); color: #fff; } }
+        @keyframes flow-border-nova {
+            0% {
+                border-color: var(--steam-gold);
+                box-shadow: 0 0 15px var(--steam-gold);
+            }
+
+            33% {
+                border-color: var(--magic-purple);
+                box-shadow: 0 0 15px var(--magic-purple);
+            }
+
+            66% {
+                border-color: var(--accent);
+                box-shadow: 0 0 15px var(--accent);
+            }
+
+            100% {
+                border-color: var(--steam-gold);
+                box-shadow: 0 0 15px var(--steam-gold);
+            }
+        }
+
+        @keyframes logo-shine {
+            0% {
+                background-position: -200% center;
+            }
+
+            100% {
+                background-position: 200% center;
+            }
+        }
+
+        @keyframes draw-pulse {
+
+            0%,
+            100% {
+                filter: brightness(1);
+                box-shadow: 0 0 15px var(--steam-gold);
+            }
+
+            50% {
+                filter: brightness(1.3);
+                box-shadow: 0 0 30px var(--steam-gold);
+            }
+        }
+
+        @keyframes rotate-inner {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes rotate-outer {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(-360deg);
+            }
+        }
+
+        @keyframes pulse-shimmer {
+
+            0%,
+            100% {
+                opacity: 0.6;
+                filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                filter: drop-shadow(0 0 8px #fff) brightness(1.5);
+                transform: scale(1.1);
+                color: #fff;
+            }
+        }
 
         /* === 究極のカードエフェクトアニメーション === */
         @keyframes steam-rise-heavy {
-            0% { transform: translateY(30%) translateX(var(--drift-start)) scale(0.5) rotate(0deg); opacity: 0; filter: blur(4px); }
-            15% { opacity: 0.85; filter: blur(6px); }
-            100% { transform: translateY(-130%) translateX(var(--drift-end)) scale(4) rotate(var(--rot)); opacity: 0; filter: blur(15px); }
+            0% {
+                transform: translateY(30%) translateX(var(--drift-start)) scale(0.5) rotate(0deg);
+                opacity: 0;
+                filter: blur(4px);
+            }
+
+            15% {
+                opacity: 0.85;
+                filter: blur(6px);
+            }
+
+            100% {
+                transform: translateY(-130%) translateX(var(--drift-end)) scale(4) rotate(var(--rot));
+                opacity: 0;
+                filter: blur(15px);
+            }
         }
-        @keyframes ripple-expand { 0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
+
+        @keyframes ripple-expand {
+            0% {
+                transform: translate(-50%, -50%) scale(0.1);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(2.5);
+                opacity: 0;
+            }
+        }
+
         @keyframes cyber-glitch-color {
-            0%, 94%, 100% { filter: none; transform: translate(0); }
-            95% { filter: drop-shadow(-3px 0 #ff00ea) drop-shadow(3px 0 #00ffff); transform: translate(2px, -0.5px); }
-            97% { filter: drop-shadow(2px 0 #ff0000) drop-shadow(-2px 0 #00ff00); transform: translate(-2px, 0.5px); }
-            99% { filter: brightness(1.8); }
+
+            0%,
+            94%,
+            100% {
+                filter: none;
+                transform: translate(0);
+            }
+
+            95% {
+                filter: drop-shadow(-3px 0 #ff00ea) drop-shadow(3px 0 #00ffff);
+                transform: translate(2px, -0.5px);
+            }
+
+            97% {
+                filter: drop-shadow(2px 0 #ff0000) drop-shadow(-2px 0 #00ff00);
+                transform: translate(-2px, 0.5px);
+            }
+
+            99% {
+                filter: brightness(1.8);
+            }
         }
-        @keyframes cyber-scanline { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
-        @keyframes void-pulse-wave { 0%, 100% { transform: scale(1); opacity: 0.2; filter: blur(5px); } 50% { transform: scale(1.4); opacity: 0.5; filter: blur(12px); } }
+
+        @keyframes cyber-scanline {
+            from {
+                transform: translateY(-100%);
+            }
+
+            to {
+                transform: translateY(100%);
+            }
+        }
+
+        @keyframes void-pulse-wave {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.2;
+                filter: blur(5px);
+            }
+
+            50% {
+                transform: scale(1.4);
+                opacity: 0.5;
+                filter: blur(12px);
+            }
+        }
 
         /* === ゲームフィールのためのインパクト・アニメーション === */
         @keyframes screen-shake {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            20% { transform: translate(-4px, -3px) rotate(-1deg); }
-            40% { transform: translate(4px, 2px) rotate(1deg); }
-            60% { transform: translate(-2px, 4px) rotate(-1deg); }
-            80% { transform: translate(3px, -2px) rotate(1deg); }
-        }
-        .shake-active { animation: screen-shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes flash-bang { 0% { background-color: rgba(255,255,255,0.9); } 100% { background-color: transparent; } }
-        .flash-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 9999; animation: flash-bang 0.6s ease-out forwards; }
-        @keyframes cutin-slide {
-            0% { transform: skewX(-15deg) translateX(-100%); opacity: 0; }
-            10% { transform: skewX(-15deg) translateX(0); opacity: 1; }
-            85% { transform: skewX(-15deg) translateX(0); opacity: 1; }
-            100% { transform: skewX(-15deg) translateX(100%); opacity: 0; }
-        }
-        .cutin-container { position: fixed; top: 40%; left: -10%; width: 120%; z-index: 9000; pointer-events: none; display: flex; justify-content: center; align-items: center; }
-        .cutin-bar { background: rgba(0,0,0,0.85); border-top: 4px solid var(--c); border-bottom: 4px solid var(--c); padding: 15px 0; width: 100%; animation: cutin-slide 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 40px var(--c); backdrop-filter: blur(10px); }
-        .cutin-text { font-family: 'Orbitron', sans-serif; font-size: clamp(2.5rem, 10vw, 4rem); font-weight: 1000; color: var(--c); text-shadow: 0 0 20px var(--c), 0 0 10px #fff; letter-spacing: 12px; transform: skewX(15deg); text-transform: uppercase; }
 
-        .screen-wrapper { 
-            width: 100vw; height: 100vh; height: 100dvh; max-width: 480px; 
-            position: relative; overflow: hidden; display: flex; flex-direction: column; 
-            background: transparent; border: 4px solid var(--accent); animation: flow-border-nova 10s infinite ease-in-out;
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            20% {
+                transform: translate(-4px, -3px) rotate(-1deg);
+            }
+
+            40% {
+                transform: translate(4px, 2px) rotate(1deg);
+            }
+
+            60% {
+                transform: translate(-2px, 4px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(3px, -2px) rotate(1deg);
+            }
+        }
+
+        .shake-active {
+            animation: screen-shake 0.3s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        @keyframes flash-bang {
+            0% {
+                background-color: rgba(255, 255, 255, 0.9);
+            }
+
+            100% {
+                background-color: transparent;
+            }
+        }
+
+        .flash-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
+            animation: flash-bang 0.6s ease-out forwards;
+        }
+
+        @keyframes cutin-slide {
+            0% {
+                transform: skewX(-15deg) translateX(-100%);
+                opacity: 0;
+            }
+
+            10% {
+                transform: skewX(-15deg) translateX(0);
+                opacity: 1;
+            }
+
+            85% {
+                transform: skewX(-15deg) translateX(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: skewX(-15deg) translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .cutin-container {
+            position: fixed;
+            top: 40%;
+            left: -10%;
+            width: 120%;
+            z-index: 9000;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cutin-bar {
+            background: rgba(0, 0, 0, 0.85);
+            border-top: 4px solid var(--c);
+            border-bottom: 4px solid var(--c);
+            padding: 15px 0;
+            width: 100%;
+            animation: cutin-slide 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 40px var(--c);
+            backdrop-filter: blur(10px);
+        }
+
+        .cutin-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.5rem, 10vw, 4rem);
+            font-weight: 1000;
+            color: var(--c);
+            text-shadow: 0 0 20px var(--c), 0 0 10px #fff;
+            letter-spacing: 12px;
+            transform: skewX(15deg);
+            text-transform: uppercase;
+        }
+
+        .screen-wrapper {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            max-width: 480px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: transparent;
+            border: 4px solid var(--accent);
+            animation: flow-border-nova 10s infinite ease-in-out;
         }
 
         /* === 背景 === */
-        @keyframes gear-roll { 0% { transform: translate(var(--sx), var(--sy)) rotate(0deg); opacity: 0; } 5% { opacity: var(--op); } 95% { opacity: var(--op); } 100% { transform: translate(var(--ex), var(--ey)) rotate(var(--rot)); opacity: 0; } }
-        @keyframes magic-mega-zoom { 0% { transform: translate(var(--sx), -30vh) scale(0.3) rotate(0deg); opacity: 0; } 20% { opacity: var(--op); } 80% { opacity: var(--op); } 100% { transform: translate(var(--ex), 120vh) scale(3.5) rotate(var(--rot)); opacity: 0; } }
+        @keyframes gear-roll {
+            0% {
+                transform: translate(var(--sx), var(--sy)) rotate(0deg);
+                opacity: 0;
+            }
 
-        .astral-canvas { 
-            position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; 
-            background: radial-gradient(circle at 20% 30%, rgba(138, 43, 226, 0.25) 0%, transparent 60%), 
-                        radial-gradient(circle at 80% 70%, rgba(64, 224, 208, 0.2) 0%, transparent 60%), var(--bg-deep); 
+            5% {
+                opacity: var(--op);
+            }
+
+            95% {
+                opacity: var(--op);
+            }
+
+            100% {
+                transform: translate(var(--ex), var(--ey)) rotate(var(--rot));
+                opacity: 0;
+            }
         }
-        .matrix-code-canvas { position: absolute; inset: 0; z-index: 2; opacity: 0.6; pointer-events: none; mix-blend-mode: screen; }
-        
-        .flow-gear { position: absolute; top: 0; left: 0; animation-name: gear-roll; animation-timing-function: linear; animation-iteration-count: infinite; opacity: 0; z-index: 3; filter: drop-shadow(0 0 10px var(--glow-color)) drop-shadow(0 0 5px var(--glow-color)); }
-        .flow-magic { position: absolute; top: 0; left: 0; animation-name: magic-mega-zoom; animation-timing-function: ease-in-out; animation-iteration-count: infinite; opacity: 0; z-index: 3; filter: drop-shadow(0 0 25px var(--glow-color)); }
 
-        .ui-viewport { position: relative; z-index: 100; width: 100%; height: 100%; display: flex; flex-direction: column; pointer-events: auto; overflow-y: auto; overflow-x: hidden; }
-        
+        @keyframes magic-mega-zoom {
+            0% {
+                transform: translate(var(--sx), -30vh) scale(0.3) rotate(0deg);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: var(--op);
+            }
+
+            80% {
+                opacity: var(--op);
+            }
+
+            100% {
+                transform: translate(var(--ex), 120vh) scale(3.5) rotate(var(--rot));
+                opacity: 0;
+            }
+        }
+
+        .astral-canvas {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+            background: radial-gradient(circle at 20% 30%, rgba(138, 43, 226, 0.25) 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, rgba(64, 224, 208, 0.2) 0%, transparent 60%), var(--bg-deep);
+        }
+
+        .matrix-code-canvas {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            opacity: 0.6;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        .flow-gear {
+            position: absolute;
+            top: 0;
+            left: 0;
+            animation-name: gear-roll;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            opacity: 0;
+            z-index: 3;
+            filter: drop-shadow(0 0 10px var(--glow-color)) drop-shadow(0 0 5px var(--glow-color));
+        }
+
+        .flow-magic {
+            position: absolute;
+            top: 0;
+            left: 0;
+            animation-name: magic-mega-zoom;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+            opacity: 0;
+            z-index: 3;
+            filter: drop-shadow(0 0 25px var(--glow-color));
+        }
+
+        .ui-viewport {
+            position: relative;
+            z-index: 100;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            pointer-events: auto;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
         /* === トップ・待機画面用の絶対配置ボタン === */
-        .system-ctrl-absolute { position: absolute; top: 12px; right: 12px; z-index: 950; display: flex; gap: 8px; }
-        .volume-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--accent); display: flex; justify-content: center; align-items: center; color: var(--accent); background: rgba(20,10,40,0.85); backdrop-filter: blur(10px); cursor: pointer; box-shadow: 0 0 10px rgba(64,224,208,0.3); transition: 0.3s; }
+        .system-ctrl-absolute {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 950;
+            display: flex;
+            gap: 8px;
+        }
+
+        .volume-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--accent);
+            background: rgba(20, 10, 40, 0.85);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(64, 224, 208, 0.3);
+            transition: 0.3s;
+        }
 
         /* === 対戦画面用の専用ヘッダー (被り回避の要) === */
-        .playing-system-header { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; background: rgba(5, 1, 10, 0.95); border-bottom: 1.5px solid rgba(64,224,208,0.2); flex-shrink: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .playing-system-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 12px;
+            background: rgba(5, 1, 10, 0.95);
+            border-bottom: 1.5px solid rgba(64, 224, 208, 0.2);
+            flex-shrink: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
 
         /* === トップ画面 === */
-        .top-logo-area { position: relative; width: 100%; height: 260px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1rem; }
-        .emblem-bg-layer { position: absolute; top: 50%; left: 50%; width: 240px; height: 240px; z-index: 1; transform: translate(-50%, -50%); pointer-events: none; opacity: 0.9; }
-        .logo-text-layer { position: relative; z-index: 10; text-align: center; }
-        .main-logo-text { font-family: 'Cinzel', serif; font-weight: 950; font-size: clamp(2.5rem, 10vw, 3.6rem); line-height: 0.85; background: linear-gradient(90deg, #fff, var(--steam-gold), #fff, var(--magic-purple), #fff, var(--accent), #fff); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: logo-shine 6s linear infinite; letter-spacing: 12px; filter: drop-shadow(0 0 10px rgba(0,0,0,1)); }
-        
-        .trinity-flavor-box { background: rgba(20,10,40,0.85); border: 1.5px solid rgba(255,255,255,0.25); border-left: 6px solid var(--accent); padding: 1.2rem; border-radius: 4px 14px 14px 4px; margin: 0 1.5rem 1.2rem; box-shadow: 0 20px 60px rgba(0,0,0,1); text-align: center; backdrop-filter: blur(10px); flex-shrink: 0; }
-        .f-steam { font-family: 'Special Elite', cursive !important; color: var(--steam-gold) !important; font-size: 1.1rem; text-shadow: 0 0 8px var(--steam-gold) !important; }
-        .f-fantasy { font-family: 'Cinzel Decorative', cursive !important; color: var(--magic-purple) !important; font-size: 1.2rem; text-shadow: 0 0 10px var(--magic-purple) !important; }
-        .f-cyber { font-family: 'Orbitron', sans-serif !important; color: var(--accent) !important; font-size: 1rem; font-weight: 950; text-shadow: 0 0 10px var(--accent) !important; }
-
-        .input-group { width: 100%; padding: 0 2rem; display: flex; flex-direction: column; gap: 1.2rem; flex-shrink: 0; }
-        .input-unit { position: relative; width: 100%; display: flex; flex-direction: column; }
-        .input-unit::before { content: ''; position: absolute; left: 0; top: 0; width: 4px; height: 100%; background: var(--accent); box-shadow: 0 0 15px var(--accent); border-radius: 2px; }
-        .input-label-tech { font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 950; color: var(--accent); letter-spacing: 3px; margin-bottom: 8px; padding-left: 18px; text-transform: uppercase; text-shadow: 0 0 10px rgba(64,224,208,0.5); }
-        .input-field-nova { 
-            width: 100%; padding: 14px 20px 14px 22px; margin-left: 6px;
-            background: rgba(10,15,35,0.95) !important; border: 1px solid rgba(64,224,208,0.3); color: #fff !important; font-weight: 900; font-size: 1.2rem; outline: none; border-radius: 4px; box-shadow: inset 0 0 20px rgba(0,0,0,1); transition: 0.3s; appearance: none;
+        .top-logo-area {
+            position: relative;
+            width: 100%;
+            height: 260px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1rem;
         }
-        .input-field-nova:focus { border-color: var(--accent); background: rgba(20,30,50,0.98) !important; box-shadow: 0 0 20px rgba(64,224,208,0.2), inset 0 0 15px rgba(0,0,0,1); }
 
-        .system-status-bar { margin-top: auto; padding: 14px 24px; border-top: 2px solid rgba(255,255,255,0.15); font-family: 'Orbitron', sans-serif; font-size: 11px; color: rgba(255,255,255,0.7); display: flex; justify-content: space-between; align-items: center; background: rgba(10,5,25,0.9); width: 100%; flex-shrink: 0; }
-        .status-tag { color: #fff; background: var(--accent); padding: 2px 8px; border-radius: 2px; font-weight: 900; animation: pulse-shimmer 1.5s infinite; }
+        .emblem-bg-layer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 240px;
+            height: 240px;
+            z-index: 1;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            opacity: 0.9;
+        }
+
+        .logo-text-layer {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .main-logo-text {
+            font-family: 'Cinzel', serif;
+            font-weight: 950;
+            font-size: clamp(2.5rem, 10vw, 3.6rem);
+            line-height: 0.85;
+            background: linear-gradient(90deg, #fff, var(--steam-gold), #fff, var(--magic-purple), #fff, var(--accent), #fff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: logo-shine 6s linear infinite;
+            letter-spacing: 12px;
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 1));
+        }
+
+        .trinity-flavor-box {
+            background: rgba(20, 10, 40, 0.85);
+            border: 1.5px solid rgba(255, 255, 255, 0.25);
+            border-left: 6px solid var(--accent);
+            padding: 1.2rem;
+            border-radius: 4px 14px 14px 4px;
+            margin: 0 1.5rem 1.2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 1);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+        }
+
+        .f-steam {
+            font-family: 'Special Elite', cursive !important;
+            color: var(--steam-gold) !important;
+            font-size: 1.1rem;
+            text-shadow: 0 0 8px var(--steam-gold) !important;
+        }
+
+        .f-fantasy {
+            font-family: 'Cinzel Decorative', cursive !important;
+            color: var(--magic-purple) !important;
+            font-size: 1.2rem;
+            text-shadow: 0 0 10px var(--magic-purple) !important;
+        }
+
+        .f-cyber {
+            font-family: 'Orbitron', sans-serif !important;
+            color: var(--accent) !important;
+            font-size: 1rem;
+            font-weight: 950;
+            text-shadow: 0 0 10px var(--accent) !important;
+        }
+
+        .input-group {
+            width: 100%;
+            padding: 0 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .input-unit {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-unit::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+            border-radius: 2px;
+        }
+
+        .input-label-tech {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 950;
+            color: var(--accent);
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+            padding-left: 18px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(64, 224, 208, 0.5);
+        }
+
+        .input-field-nova {
+            width: 100%;
+            padding: 14px 20px 14px 22px;
+            margin-left: 6px;
+            background: rgba(10, 15, 35, 0.95) !important;
+            border: 1px solid rgba(64, 224, 208, 0.3);
+            color: #fff !important;
+            font-weight: 900;
+            font-size: 1.2rem;
+            outline: none;
+            border-radius: 4px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 1);
+            transition: 0.3s;
+            appearance: none;
+        }
+
+        .input-field-nova:focus {
+            border-color: var(--accent);
+            background: rgba(20, 30, 50, 0.98) !important;
+            box-shadow: 0 0 20px rgba(64, 224, 208, 0.2), inset 0 0 15px rgba(0, 0, 0, 1);
+        }
+
+        .system-status-bar {
+            margin-top: auto;
+            padding: 14px 24px;
+            border-top: 2px solid rgba(255, 255, 255, 0.15);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 5, 25, 0.9);
+            width: 100%;
+            flex-shrink: 0;
+        }
+
+        .status-tag {
+            color: #fff;
+            background: var(--accent);
+            padding: 2px 8px;
+            border-radius: 2px;
+            font-weight: 900;
+            animation: pulse-shimmer 1.5s infinite;
+        }
 
         /* 待機画面 */
-        .waiting-room-list { overflow-y: auto; max-height: 48vh; padding: 4px; margin: 0 1.2rem 10px 80px; flex-shrink: 0; } 
-        .waiting-slot-box { background: rgba(20,10,40,0.85); border: 1px solid rgba(255,255,255,0.3); padding: 10px 20px; border-radius: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; min-height: 56px; box-shadow: 0 8px 25px rgba(0,0,0,0.8); backdrop-filter: blur(8px); }
-        .waiting-slot-box.active { border-left: 8px solid var(--accent); border-color: rgba(64,224,208,0.8); background: rgba(10,30,40,0.85); }
-        .waiting-name { font-weight: 950; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; }
+        .waiting-room-list {
+            overflow-y: auto;
+            max-height: 48vh;
+            padding: 4px;
+            margin: 0 1.2rem 10px 80px;
+            flex-shrink: 0;
+        }
+
+        .waiting-slot-box {
+            background: rgba(20, 10, 40, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 56px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+        }
+
+        .waiting-slot-box.active {
+            border-left: 8px solid var(--accent);
+            border-color: rgba(64, 224, 208, 0.8);
+            background: rgba(10, 30, 40, 0.85);
+        }
+
+        .waiting-name {
+            font-weight: 950;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
 
         /* === HUD === */
-        .player-hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 10px 12px 6px; background: rgba(10,15,35,0.92); border-bottom: 2.5px solid rgba(255,255,255,0.15); flex-shrink: 0; backdrop-filter: blur(15px); }
-        .player-slot { background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 14px; position: relative; height: 68px; display: flex; flex-direction: column; justify-content: center; }
-        .player-slot.active { border-color: var(--accent); background: rgba(64,224,208,0.1); box-shadow: inset 0 0 15px rgba(64,224,208,0.2); }
-        .player-slot.eliminated { filter: grayscale(100%) brightness(0.4); border-color: var(--danger); overflow: hidden; }
-        .p-info-name { font-size: 10px; font-weight: 1000; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 2px; letter-spacing: 1px; width: 65%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .p-info-count { font-size: 26px; font-weight: 1000; color: #fff; font-family: 'Orbitron'; line-height: 1; }
-        .eliminated-tag { position: absolute; inset: 0; background: rgba(255,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 1000; color: var(--danger); letter-spacing: 4px; transform: rotate(-5deg); text-shadow: 0 0 10px #000; z-index: 20; }
-        
+        .player-hud-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            padding: 10px 12px 6px;
+            background: rgba(10, 15, 35, 0.92);
+            border-bottom: 2.5px solid rgba(255, 255, 255, 0.15);
+            flex-shrink: 0;
+            backdrop-filter: blur(15px);
+        }
+
+        .player-slot {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 8px 14px;
+            position: relative;
+            height: 68px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .player-slot.active {
+            border-color: var(--accent);
+            background: rgba(64, 224, 208, 0.1);
+            box-shadow: inset 0 0 15px rgba(64, 224, 208, 0.2);
+        }
+
+        .player-slot.eliminated {
+            filter: grayscale(100%) brightness(0.4);
+            border-color: var(--danger);
+            overflow: hidden;
+        }
+
+        .p-info-name {
+            font-size: 10px;
+            font-weight: 1000;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 2px;
+            letter-spacing: 1px;
+            width: 65%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .p-info-count {
+            font-size: 26px;
+            font-weight: 1000;
+            color: #fff;
+            font-family: 'Orbitron';
+            line-height: 1;
+        }
+
+        .eliminated-tag {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 1000;
+            color: var(--danger);
+            letter-spacing: 4px;
+            transform: rotate(-5deg);
+            text-shadow: 0 0 10px #000;
+            z-index: 20;
+        }
+
         /* 相手手札アイコン配置 (右側中央寄りに調整) */
-        .hand-stack-visual { position: absolute; top: 50%; right: 20px; transform: translateY(-50%); width: 14px; height: 20px; z-index: 10; opacity: 0.95; }
-        .stack-card-layer { position: absolute; width: 100%; height: 100%; background: #111; border: 1.2px solid rgba(255,255,255,0.8); border-radius: 1px; box-shadow: 1px 1px 3px rgba(0,0,0,1); }
+        .hand-stack-visual {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 20px;
+            z-index: 10;
+            opacity: 0.95;
+        }
+
+        .stack-card-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            border: 1.2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 1px;
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
+        }
 
         /* 凡例バー */
-        .realm-legend-nav { display: flex !important; flex-direction: row !important; justify-content: space-around !important; background: rgba(15,5,30,0.95); border-bottom: 1.5px solid rgba(255,255,255,0.2); padding: 10px 4px; flex-shrink: 0; width: 100%; align-items: center; z-index: 10; backdrop-filter: blur(10px); }
-        .legend-label { font-size: 11px; font-weight: 1000; color: rgba(255,255,255,0.3); white-space: nowrap; margin-bottom: 4px; text-transform: uppercase; font-family: 'Orbitron'; transition: 0.3s; }
-        .legend-label.playable { animation: pulse-shimmer 1.5s infinite ease-in-out; color: var(--accent); }
-        .legend-underline { width: 80%; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.05); transition: 0.3s; }
-        .legend-underline.playable-light { box-shadow: 0 0 8px var(--r-color); background: rgba(255,255,255,0.3); }
-        .legend-underline.active { background: var(--r-color) !important; box-shadow: 0 0 10px var(--r-color), 0 0 5px #fff; }
-        
+        .realm-legend-nav {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-around !important;
+            background: rgba(15, 5, 30, 0.95);
+            border-bottom: 1.5px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 4px;
+            flex-shrink: 0;
+            width: 100%;
+            align-items: center;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .legend-label {
+            font-size: 11px;
+            font-weight: 1000;
+            color: rgba(255, 255, 255, 0.3);
+            white-space: nowrap;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            font-family: 'Orbitron';
+            transition: 0.3s;
+        }
+
+        .legend-label.playable {
+            animation: pulse-shimmer 1.5s infinite ease-in-out;
+            color: var(--accent);
+        }
+
+        .legend-underline {
+            width: 80%;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: 0.3s;
+        }
+
+        .legend-underline.playable-light {
+            box-shadow: 0 0 8px var(--r-color);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .legend-underline.active {
+            background: var(--r-color) !important;
+            box-shadow: 0 0 10px var(--r-color), 0 0 5px #fff;
+        }
+
         /* === フィールド === */
-        .field-main-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly; position: relative; width: 100%; padding: 4px 0; min-height: 120px; flex-shrink: 1; z-index: 5; }
-        
+        .field-main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            position: relative;
+            width: 100%;
+            padding: 4px 0;
+            min-height: 120px;
+            flex-shrink: 1;
+            z-index: 5;
+        }
+
         /* ターン表示 (被り回避のためマージン調整とスケーリング) */
-        .field-status-text { z-index: 50; padding: 4px 20px; border-radius: 20px; background: rgba(0,0,0,0.85); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px); white-space: nowrap; box-shadow: 0 4px 15px rgba(0,0,0,0.8); margin: 4px 0; align-self: center; font-size: clamp(10px, 2.5vh, 12px); }
-        
+        .field-status-text {
+            z-index: 50;
+            padding: 4px 20px;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+            margin: 4px 0;
+            align-self: center;
+            font-size: clamp(10px, 2.5vh, 12px);
+        }
+
         /* サイクル図 (右端固定かつ画面幅に応じて縮小) */
-        .tactical-cycle-wheel { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: clamp(100px, 26vw, 140px); height: clamp(100px, 26vw, 140px); opacity: 0.85; pointer-events: none; z-index: 100; overflow: visible; }
-        
-        .field-kanji-text { font-size: clamp(32px, 6vh, 52px); font-weight: 1000; letter-spacing: 16px; margin-top: 4px; text-shadow: 0 0 40px var(--r-color); font-family: 'Cinzel Decorative', serif; z-index: 10; position: relative; line-height: 1; }
+        .tactical-cycle-wheel {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: clamp(100px, 26vw, 140px);
+            height: clamp(100px, 26vw, 140px);
+            opacity: 0.85;
+            pointer-events: none;
+            z-index: 100;
+            overflow: visible;
+        }
+
+        .field-kanji-text {
+            font-size: clamp(32px, 6vh, 52px);
+            font-weight: 1000;
+            letter-spacing: 16px;
+            margin-top: 4px;
+            text-shadow: 0 0 40px var(--r-color);
+            font-family: 'Cinzel Decorative', serif;
+            z-index: 10;
+            position: relative;
+            line-height: 1;
+        }
 
         /* ログ (高さを少し削ってスペース確保) */
-        .tactical-log-box { width: 94%; margin: 2px auto 4px; background: rgba(15,5,30,0.85); border: 1.5px solid rgba(255,255,255,0.2); border-left: 5px solid var(--accent); height: 48px; border-radius: 4px; padding: 4px 12px; overflow-y: auto; flex-shrink: 0; box-shadow: 0 10px 30px rgba(0,0,0,1); backdrop-filter: blur(5px); }
-        .log-entry { font-size: 11px; font-weight: 800; color: rgba(255,255,255,1); margin-bottom: 2px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .tactical-log-box {
+            width: 94%;
+            margin: 2px auto 4px;
+            background: rgba(15, 5, 30, 0.85);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            border-left: 5px solid var(--accent);
+            height: 48px;
+            border-radius: 4px;
+            padding: 4px 12px;
+            overflow-y: auto;
+            flex-shrink: 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 1);
+            backdrop-filter: blur(5px);
+        }
+
+        .log-entry {
+            font-size: 11px;
+            font-weight: 800;
+            color: rgba(255, 255, 255, 1);
+            margin-bottom: 2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
         /* === 手札エリア === */
-        .hand-container { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; justify-content: center !important; align-items: flex-end !important; width: 100%; padding: 15px 10px 10px; overflow-x: auto; background: linear-gradient(to bottom, rgba(30,10,50,0.8), rgba(5,1,10,1)); border-top: 2.5px solid rgba(64,224,208,0.25); min-height: 110px; flex-shrink: 0; }
-        .card-anchor { transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; margin-right: -12px; flex-shrink: 0; position: relative; }
-        .card-anchor.playable:hover { transform: translateY(-10px); z-index: 20; }
-        .card-anchor.not-playable { opacity: 0.4 !important; filter: grayscale(80%) brightness(0.6) !important; transform: scale(0.9); cursor: default; pointer-events: none !important; }
-        .card-anchor.selected { transform: translateY(-25px) !important; z-index: 50 !important; }
-        .card-anchor.selected .card-surface { box-shadow: 0 0 40px var(--r-color-bright); border: 2px solid #fff; }
+        .hand-container {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            justify-content: center !important;
+            align-items: flex-end !important;
+            width: 100%;
+            padding: 15px 10px 10px;
+            overflow-x: auto;
+            background: linear-gradient(to bottom, rgba(30, 10, 50, 0.8), rgba(5, 1, 10, 1));
+            border-top: 2.5px solid rgba(64, 224, 208, 0.25);
+            min-height: 110px;
+            flex-shrink: 0;
+        }
+
+        .card-anchor {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            margin-right: -12px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .card-anchor.playable:hover {
+            transform: translateY(-10px);
+            z-index: 20;
+        }
+
+        .card-anchor.not-playable {
+            opacity: 0.4 !important;
+            filter: grayscale(80%) brightness(0.6) !important;
+            transform: scale(0.9);
+            cursor: default;
+            pointer-events: none !important;
+        }
+
+        .card-anchor.selected {
+            transform: translateY(-25px) !important;
+            z-index: 50 !important;
+        }
+
+        .card-anchor.selected .card-surface {
+            box-shadow: 0 0 40px var(--r-color-bright);
+            border: 2px solid #fff;
+        }
 
         /* === 究極のカード装飾・エフェクト統合 === */
-        .card-content { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: inherit; }
-        
-        .mat-steam { background: radial-gradient(circle at 50% 0%, var(--r-color-bright) 0%, #1a0f05 100%); border: calc(var(--card-w)*0.065) solid #3d2616; border-radius: 8px; box-shadow: 0 15px 40px #000; overflow: hidden; }
-        .steam-rivet { position: absolute; width: 5px; height: 5px; background: #2a1a10; border-radius: 50%; box-shadow: inset 1px 1px 2px #fff3, 1px 1px 4px #000; z-index: 10; }
-        .r-tl { top: 4px; left: 4px; } .r-tr { top: 4px; right: 4px; } .r-bl { bottom: 4px; left: 4px; } .r-br { bottom: 4px; right: 4px; }
-        .steam-particle { position: absolute; bottom: -20px; left: var(--l); width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.3) 50%, transparent 70%); border-radius: 50%; animation: steam-rise-heavy var(--d) infinite ease-in; animation-delay: var(--delay); mix-blend-mode: screen; }
-        .steam-core-glow { position: absolute; bottom: -5px; left: 0; width: 100%; height: 20px; background: linear-gradient(to top, rgba(255,255,255,0.25), transparent); filter: blur(8px); z-index: 2; }
-        
-        .mat-fantasy { background: radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%); border: calc(var(--card-w)*0.02) solid rgba(255,255,255,0.9); border-radius: 35% 10% !important; box-shadow: 0 0 40px var(--r-color-glow); overflow: hidden; }
-        .ripple { position: absolute; top: 50%; left: 50%; width: 180px; height: 180px; border: 4px solid rgba(255,255,255,0.6); border-radius: 50%; animation: ripple-expand 4s infinite cubic-bezier(0.165, 0.84, 0.44, 1); animation-delay: var(--delay); opacity: 0; }
-        .magic-circle-bg { position: absolute; top: 55%; left: 50%; width: 140px; height: 140px; transform: translate(-50%, -50%); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; z-index: 1; animation: rotate-inner 25s linear infinite; }
+        .card-content {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            border-radius: inherit;
+        }
 
-        .mat-cyber { background: #000; border: none; clip-path: polygon(0 15%, 15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%); box-shadow: inset 0 0 80px var(--r-color-dim); border-left: calc(var(--card-w)*0.06) solid var(--r-color); animation: cyber-glitch-color 4s infinite; overflow: hidden; }
-        .cyber-fx-scanline { position: absolute; inset: 0; pointer-events: none; z-index: 5; background: linear-gradient(to bottom, transparent 0%, rgba(64,224,208,0.12) 50%, transparent 100%); background-size: 100% 50px; animation: cyber-scanline 1.6s linear infinite; }
-        .cyber-circuit { position: absolute; inset: 0; background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0); background-size: 12px 12px; }
+        .mat-steam {
+            background: radial-gradient(circle at 50% 0%, var(--r-color-bright) 0%, #1a0f05 100%);
+            border: calc(var(--card-w)*0.065) solid #3d2616;
+            border-radius: 8px;
+            box-shadow: 0 15px 40px #000;
+            overflow: hidden;
+        }
 
-        .mat-void-planet, .mat-void-ruins { background: radial-gradient(circle at 50% 50%, #111 0%, #000 100%); border-radius: 50% !important; box-shadow: 0 0 30px #fff2; overflow: hidden; border: none; }
-        .void-fluctuation { position: absolute; inset: 0; background: repeating-radial-gradient(circle at 50% 50%, transparent 0, transparent 10px, rgba(255,255,255,0.04) 11px, rgba(255,255,255,0.04) 12px); animation: void-pulse-wave 8s infinite ease-in-out; }
-        .void-singularity-ring { position: absolute; top: 50%; left: 50%; width: 100px; height: 100px; transform: translate(-50%, -50%); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 50%; }
+        .steam-rivet {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: #2a1a10;
+            border-radius: 50%;
+            box-shadow: inset 1px 1px 2px #fff3, 1px 1px 4px #000;
+            z-index: 10;
+        }
 
-        .card-info-top { position: absolute; top: 6%; left: 6%; padding: 3% 8%; background: #000; border-left: calc(var(--card-w)*0.04) solid var(--r-color); z-index: 50; border-radius: 1px; }
-        .card-info-top span { font-size: calc(var(--card-w)*0.068); font-weight: 950; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
-        .card-footer-peak { position: absolute; bottom: 0; width: 100%; padding: 25% 0 12%; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%); text-align: center; color: #fff; z-index: 50; font-weight: 900; font-size: calc(var(--card-w)*0.16); text-shadow: 0 0 15px var(--r-color); }
-        .special-badge-base { position: absolute; left: -8px; top: 38%; background: linear-gradient(90deg, #e60000, #800000); border: 1.5px solid #FFF; color: #FFF; font-size: 8px; font-weight: 1000; padding: 4px 8px; text-align: center; border-radius: 3px 8px 8px 3px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); z-index: 200; line-height: 1.1; text-transform: uppercase; letter-spacing: 0.5px; transform: rotate(-4deg); }
+        .r-tl {
+            top: 4px;
+            left: 4px;
+        }
 
-        .draw-action-footer { width: 100%; padding: 0 12px 10px; flex-shrink: 0; }
-        .btn-mega-draw { width: 100%; height: 56px; background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%); color: #000; font-weight: 1000; font-size: 20px; letter-spacing: 8px; clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px); cursor: pointer; transition: 0.3s; box-shadow: 0 0 25px rgba(212,175,55,0.4); }
-        .btn-mega-draw:not(:disabled) { animation: draw-pulse 3s infinite ease-in-out; }
-        .btn-mega-draw:disabled { background: #1a1a1a; color: #444; filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; clip-path: none; border: 1px solid #333; animation: none; box-shadow: none; }
+        .r-tr {
+            top: 4px;
+            right: 4px;
+        }
 
-        .result-screen { position: absolute; inset: 0; background: rgba(5,1,10,0.95); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(25px); overflow-y: auto; overflow-x: hidden; }
-        .result-title { font-family: 'Cinzel', serif; font-size: clamp(1rem, 7vw, 2.2rem); font-weight: 950; letter-spacing: 0px; color: var(--steam-gold); margin-bottom: 1.5rem; text-shadow: 0 0 25px var(--steam-gold); width: 100%; text-align: center; line-height: 1.1; overflow-wrap: break-word; max-width: 100%; }
+        .r-bl {
+            bottom: 4px;
+            left: 4px;
+        }
 
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .r-br {
+            bottom: 4px;
+            right: 4px;
+        }
+
+        .steam-particle {
+            position: absolute;
+            bottom: -20px;
+            left: var(--l);
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
+            border-radius: 50%;
+            animation: steam-rise-heavy var(--d) infinite ease-in;
+            animation-delay: var(--delay);
+            mix-blend-mode: screen;
+        }
+
+        .steam-core-glow {
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(to top, rgba(255, 255, 255, 0.25), transparent);
+            filter: blur(8px);
+            z-index: 2;
+        }
+
+        .mat-fantasy {
+            background: radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%);
+            border: calc(var(--card-w)*0.02) solid rgba(255, 255, 255, 0.9);
+            border-radius: 35% 10% !important;
+            box-shadow: 0 0 40px var(--r-color-glow);
+            overflow: hidden;
+        }
+
+        .ripple {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 180px;
+            height: 180px;
+            border: 4px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: ripple-expand 4s infinite cubic-bezier(0.165, 0.84, 0.44, 1);
+            animation-delay: var(--delay);
+            opacity: 0;
+        }
+
+        .magic-circle-bg {
+            position: absolute;
+            top: 55%;
+            left: 50%;
+            width: 140px;
+            height: 140px;
+            transform: translate(-50%, -50%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            z-index: 1;
+            animation: rotate-inner 25s linear infinite;
+        }
+
+        .mat-cyber {
+            background: #000;
+            border: none;
+            clip-path: polygon(0 15%, 15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%);
+            box-shadow: inset 0 0 80px var(--r-color-dim);
+            border-left: calc(var(--card-w)*0.06) solid var(--r-color);
+            animation: cyber-glitch-color 4s infinite;
+            overflow: hidden;
+        }
+
+        .cyber-fx-scanline {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 5;
+            background: linear-gradient(to bottom, transparent 0%, rgba(64, 224, 208, 0.12) 50%, transparent 100%);
+            background-size: 100% 50px;
+            animation: cyber-scanline 1.6s linear infinite;
+        }
+
+        .cyber-circuit {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.06) 1px, transparent 0);
+            background-size: 12px 12px;
+        }
+
+        .mat-void-planet,
+        .mat-void-ruins {
+            background: radial-gradient(circle at 50% 50%, #111 0%, #000 100%);
+            border-radius: 50% !important;
+            box-shadow: 0 0 30px #fff2;
+            overflow: hidden;
+            border: none;
+        }
+
+        .void-fluctuation {
+            position: absolute;
+            inset: 0;
+            background: repeating-radial-gradient(circle at 50% 50%, transparent 0, transparent 10px, rgba(255, 255, 255, 0.04) 11px, rgba(255, 255, 255, 0.04) 12px);
+            animation: void-pulse-wave 8s infinite ease-in-out;
+        }
+
+        .void-singularity-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100px;
+            height: 100px;
+            transform: translate(-50%, -50%);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .card-info-top {
+            position: absolute;
+            top: 6%;
+            left: 6%;
+            padding: 3% 8%;
+            background: #000;
+            border-left: calc(var(--card-w)*0.04) solid var(--r-color);
+            z-index: 50;
+            border-radius: 1px;
+        }
+
+        .card-info-top span {
+            font-size: calc(var(--card-w)*0.068);
+            font-weight: 950;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card-footer-peak {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            padding: 25% 0 12%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
+            text-align: center;
+            color: #fff;
+            z-index: 50;
+            font-weight: 900;
+            font-size: calc(var(--card-w)*0.16);
+            text-shadow: 0 0 15px var(--r-color);
+        }
+
+        .special-badge-base {
+            position: absolute;
+            left: -8px;
+            top: 38%;
+            background: linear-gradient(90deg, #e60000, #800000);
+            border: 1.5px solid #FFF;
+            color: #FFF;
+            font-size: 8px;
+            font-weight: 1000;
+            padding: 4px 8px;
+            text-align: center;
+            border-radius: 3px 8px 8px 3px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.8);
+            z-index: 200;
+            line-height: 1.1;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transform: rotate(-4deg);
+        }
+
+        .draw-action-footer {
+            width: 100%;
+            padding: 0 12px 10px;
+            flex-shrink: 0;
+        }
+
+        .btn-mega-draw {
+            width: 100%;
+            height: 56px;
+            background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%);
+            color: #000;
+            font-weight: 1000;
+            font-size: 20px;
+            letter-spacing: 8px;
+            clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn-mega-draw:not(:disabled) {
+            animation: draw-pulse 3s infinite ease-in-out;
+        }
+
+        .btn-mega-draw:disabled {
+            background: #1a1a1a;
+            color: #444;
+            filter: grayscale(100%);
+            opacity: 0.5;
+            cursor: not-allowed;
+            clip-path: none;
+            border: 1px solid #333;
+            animation: none;
+            box-shadow: none;
+        }
+
+        .result-screen {
+            position: absolute;
+            inset: 0;
+            background: rgba(5, 1, 10, 0.95);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            backdrop-filter: blur(25px);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .result-title {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1rem, 7vw, 2.2rem);
+            font-weight: 950;
+            letter-spacing: 0px;
+            color: var(--steam-gold);
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 25px var(--steam-gold);
+            width: 100%;
+            text-align: center;
+            line-height: 1.1;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
     </style>
 </head>
+
 <body>
 
     <div id="root"></div>
@@ -220,17 +1232,17 @@
         const socket = io('https://crossrealm-server.onrender.com');
 
         const REALMS = {
-            GEAR:    { n: '歯車', color: '#FF8C00', bright: '#FFD700', glow: 'rgba(255,140,0,1)', theme: 'steam', font: 'Special Elite' },
+            GEAR: { n: '歯車', color: '#FF8C00', bright: '#FFD700', glow: 'rgba(255,140,0,1)', theme: 'steam', font: 'Special Elite' },
             ARCHIVE: { n: '古文書', color: '#FF3131', bright: '#FF6347', glow: 'rgba(255,49,49,1)', theme: 'steam', font: 'Special Elite' },
-            FOUNTAIN:{ n: '噴水', color: '#1E90FF', bright: '#87CEFA', glow: 'rgba(30,144,255,1)', theme: 'fantasy', font: 'Cinzel Decorative' },
-            ICEAGE:  { n: '氷河期', color: '#00F3FF', bright: '#ADFCFF', glow: 'rgba(0,243,255,1)', theme: 'fantasy', font: 'Cinzel Decorative' },
+            FOUNTAIN: { n: '噴水', color: '#1E90FF', bright: '#87CEFA', glow: 'rgba(30,144,255,1)', theme: 'fantasy', font: 'Cinzel Decorative' },
+            ICEAGE: { n: '氷河期', color: '#00F3FF', bright: '#ADFCFF', glow: 'rgba(0,243,255,1)', theme: 'fantasy', font: 'Cinzel Decorative' },
             MACHINE: { n: '機械', color: '#E2B0FF', bright: '#DDA0DD', glow: 'rgba(226,176,255,1)', dim: 'rgba(226,176,255,0.4)', theme: 'cyber', font: 'Orbitron' },
             BATTERY: { n: '電池', color: '#ADFF2F', bright: '#7FFF00', glow: 'rgba(173,255,47,1)', dim: 'rgba(173,255,47,0.4)', theme: 'cyber', font: 'Orbitron' },
-            PLANET:  { n: '惑星', color: '#FFFFFF', bright: '#F0F8FF', glow: 'rgba(255,255,255,1)', theme: 'void-planet', font: 'Audiowide' },
-            RUINS:   { n: '廃墟', color: '#CCCCCC', bright: '#D3D3D3', glow: 'rgba(204,204,204,1)', theme: 'void-ruins', font: 'Audiowide' }
+            PLANET: { n: '惑星', color: '#FFFFFF', bright: '#F0F8FF', glow: 'rgba(255,255,255,1)', theme: 'void-planet', font: 'Audiowide' },
+            RUINS: { n: '廃墟', color: '#CCCCCC', bright: '#D3D3D3', glow: 'rgba(204,204,204,1)', theme: 'void-ruins', font: 'Audiowide' }
         };
 
-        const NEXT_MAP = { GEAR: ['GEAR','ICEAGE'], ICEAGE: ['FOUNTAIN','BATTERY'], FOUNTAIN: ['FOUNTAIN','BATTERY'], BATTERY: ['MACHINE','ARCHIVE'], MACHINE: ['MACHINE','ARCHIVE'], ARCHIVE: ['GEAR','ICEAGE'] };
+        const NEXT_MAP = { GEAR: ['GEAR', 'ICEAGE'], ICEAGE: ['FOUNTAIN', 'BATTERY'], FOUNTAIN: ['FOUNTAIN', 'BATTERY'], BATTERY: ['MACHINE', 'ARCHIVE'], MACHINE: ['MACHINE', 'ARCHIVE'], ARCHIVE: ['GEAR', 'ICEAGE'] };
         const SORT_WEIGHT = { GEAR: 1, ICEAGE: 2, FOUNTAIN: 3, BATTERY: 4, MACHINE: 5, ARCHIVE: 6, PLANET: 7, RUINS: 8 };
 
         // === SE再生機能 ===
@@ -266,40 +1278,40 @@
                     g.gain.setValueAtTime(0.15, now); g.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
                     o.start(now); o.stop(now + 0.25);
                 }
-            } catch (e) {}
+            } catch (e) { }
         };
 
         // === 究極のエンブレム ===
         const ComplexEmblem = ({ isLogo = false }) => (
             <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
                 <defs>
-                    <filter id="emblem-glow"><feGaussianBlur stdDeviation="3" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter>
-                    <filter id="core-glow"><feGaussianBlur stdDeviation="6" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter>
+                    <filter id="emblem-glow"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
+                    <filter id="core-glow"><feGaussianBlur stdDeviation="6" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
                 </defs>
                 <g filter="url(#emblem-glow)">
-                    <circle cx="50" cy="50" r="48" fill="none" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="4 8 12 4" opacity="0.6" style={{animation: 'rotate-outer 20s linear infinite', transformOrigin: 'center'}} />
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="var(--accent)" strokeWidth="0.3" strokeDasharray="2 2" opacity="0.4" style={{animation: 'rotate-inner 15s linear infinite', transformOrigin: 'center'}} />
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="var(--magic-purple)" strokeWidth="1" strokeDasharray="1 4" opacity="0.8" style={{animation: 'rotate-inner 30s linear infinite', transformOrigin: 'center'}} />
+                    <circle cx="50" cy="50" r="48" fill="none" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="4 8 12 4" opacity="0.6" style={{ animation: 'rotate-outer 20s linear infinite', transformOrigin: 'center' }} />
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="var(--accent)" strokeWidth="0.3" strokeDasharray="2 2" opacity="0.4" style={{ animation: 'rotate-inner 15s linear infinite', transformOrigin: 'center' }} />
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="var(--magic-purple)" strokeWidth="1" strokeDasharray="1 4" opacity="0.8" style={{ animation: 'rotate-inner 30s linear infinite', transformOrigin: 'center' }} />
                     {isLogo && (
-                        <g style={{animation: 'rotate-outer 40s linear infinite', transformOrigin: 'center'}}>
+                        <g style={{ animation: 'rotate-outer 40s linear infinite', transformOrigin: 'center' }}>
                             <polygon points="50,12 55,32 75,32 60,45 65,65 50,53 35,65 40,45 25,32 45,32" fill="none" stroke="var(--magic-purple)" strokeWidth="0.5" opacity="0.6" />
                         </g>
                     )}
-                    <path d="M50 16 L79.4 33 L79.4 67 L50 84 L20.6 67 L20.6 33 Z" fill="none" stroke="var(--steam-gold)" strokeWidth="1.5" opacity="0.5" style={{animation: 'rotate-inner 45s linear infinite', transformOrigin: 'center'}} />
-                    <path d="M50 20 L76 35 L76 65 L50 80 L24 65 L24 35 Z" fill="none" stroke="var(--steam-gold)" strokeWidth="0.5" opacity="0.3" style={{animation: 'rotate-outer 55s linear infinite', transformOrigin: 'center'}} />
-                    {isLogo && <g style={{animation: 'rotate-inner 45s linear infinite', transformOrigin: 'center'}}>{[...Array(6)].map((_, i) => <circle key={i} cx="50" cy="16" r="1.5" fill="var(--steam-gold)" opacity="0.9" transform={`rotate(${i * 60} 50 50)`} />)}</g>}
-                    <circle cx="50" cy="50" r="12" fill="var(--danger)" opacity="0.15" filter="url(#core-glow)" style={{animation: 'pulse-shimmer 3s infinite'}} />
+                    <path d="M50 16 L79.4 33 L79.4 67 L50 84 L20.6 67 L20.6 33 Z" fill="none" stroke="var(--steam-gold)" strokeWidth="1.5" opacity="0.5" style={{ animation: 'rotate-inner 45s linear infinite', transformOrigin: 'center' }} />
+                    <path d="M50 20 L76 35 L76 65 L50 80 L24 65 L24 35 Z" fill="none" stroke="var(--steam-gold)" strokeWidth="0.5" opacity="0.3" style={{ animation: 'rotate-outer 55s linear infinite', transformOrigin: 'center' }} />
+                    {isLogo && <g style={{ animation: 'rotate-inner 45s linear infinite', transformOrigin: 'center' }}>{[...Array(6)].map((_, i) => <circle key={i} cx="50" cy="16" r="1.5" fill="var(--steam-gold)" opacity="0.9" transform={`rotate(${i * 60} 50 50)`} />)}</g>}
+                    <circle cx="50" cy="50" r="12" fill="var(--danger)" opacity="0.15" filter="url(#core-glow)" style={{ animation: 'pulse-shimmer 3s infinite' }} />
                     <path d="M36 36 L64 64 M64 36 L36 64" stroke="#fff" strokeWidth="4" strokeLinecap="square" opacity="0.9" />
                     <path d="M30 30 L70 70 M70 30 L30 70" stroke="var(--accent)" strokeWidth="1" strokeLinecap="square" opacity="0.5" />
-                    <text x="50" y="54" fill="var(--accent)" fontSize="10" fontWeight="1000" font-family="Orbitron" textAnchor="middle" style={{animation: 'pulse-shimmer 2s infinite'}}>X</text>
+                    <text x="50" y="54" fill="var(--accent)" fontSize="10" fontWeight="1000" font-family="Orbitron" textAnchor="middle" style={{ animation: 'pulse-shimmer 2s infinite' }}>X</text>
                 </g>
             </svg>
         );
 
         const CycleDiagramSmall = ({ currentRealm }) => {
             const items = [
-                {k:'GEAR', n:'歯車'}, {k:'ICEAGE', n:'氷河期'}, {k:'FOUNTAIN', n:'噴水'}, 
-                {k:'BATTERY', n:'電池'}, {k:'MACHINE', n:'機械'}, {k:'ARCHIVE', n:'古文書'}
+                { k: 'GEAR', n: '歯車' }, { k: 'ICEAGE', n: '氷河期' }, { k: 'FOUNTAIN', n: '噴水' },
+                { k: 'BATTERY', n: '電池' }, { k: 'MACHINE', n: '機械' }, { k: 'ARCHIVE', n: '古文書' }
             ];
             return (
                 <div className="tactical-cycle-wheel">
@@ -319,8 +1331,8 @@
                             return (
                                 <g key={item.k} style={{ color: REALMS[item.k].color }}>
                                     <path d={`M ${60 + r_arrow * Math.cos(startA)} ${60 + r_arrow * Math.sin(startA)} A ${r_arrow} ${r_arrow} 0 0 1 ${60 + r_arrow * Math.cos(endA)} ${60 + r_arrow * Math.sin(endA)}`} fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.2" markerEnd="url(#arrowhead-master)" />
-                                    <circle cx={x} cy={y} r={isCurrent ? 12 : 9.5} fill={isCurrent ? "currentColor" : "rgba(0,0,0,0.8)"} stroke="currentColor" strokeWidth={isCurrent ? 2.5 : 1} style={{filter: isCurrent ? `drop-shadow(0 0 10px ${REALMS[item.k].color})` : 'none'}} />
-                                    <text x={x} y={y+2.5} fill="#fff" fontSize="6.5" fontWeight="1000" textAnchor="middle" opacity={isCurrent?1:0.85}>{item.n}</text>
+                                    <circle cx={x} cy={y} r={isCurrent ? 12 : 9.5} fill={isCurrent ? "currentColor" : "rgba(0,0,0,0.8)"} stroke="currentColor" strokeWidth={isCurrent ? 2.5 : 1} style={{ filter: isCurrent ? `drop-shadow(0 0 10px ${REALMS[item.k].color})` : 'none' }} />
+                                    <text x={x} y={y + 2.5} fill="#fff" fontSize="6.5" fontWeight="1000" textAnchor="middle" opacity={isCurrent ? 1 : 0.85}>{item.n}</text>
                                 </g>
                             );
                         })}
@@ -348,7 +1360,7 @@
             <div className={`player-slot ${isCurrent ? 'active shadow-[0_0_15px_rgba(64,224,208,0.2)]' : ''} ${player.isEliminated ? 'eliminated border-red-500/50' : ''}`}>
                 <div className="p-info-name truncate opacity-90 font-bold">{player.name}</div>
                 <div className="p-info-count font-black text-[20px] font-['Orbitron']">{player.handCount}枚</div>
-                
+
                 {/* 手札アイコンをスロットの右端中央に配置して被りを防止 */}
                 <div className="hand-stack-visual" style={{ position: 'absolute', top: '50%', right: '16px', transform: 'translateY(-50%)', width: '14px', height: '20px', zIndex: 10, opacity: 0.9 }}>
                     {[...Array(Math.min(player.handCount, 5))].map((_, i) => (
@@ -389,7 +1401,7 @@
             if (card.wasRuins) dr = 'RUINS'; else if (card.wasPlanet) dr = 'PLANET'; else if (card.wasFountain || (card.realm === 'FOUNTAIN' && card.isSpecial)) dr = 'FOUNTAIN';
             const spec = card.isSpecial || card.wasFountain;
             const rData = REALMS[dr] || REALMS.GEAR;
-            
+
             let specialLabel = "";
             if (spec) {
                 if (card.realm === 'GEAR') specialLabel = "DRAW 2";
@@ -400,8 +1412,8 @@
 
             return (
                 <div className={`card-anchor flex-shrink-0 ${!playable && !isField ? 'not-playable' : 'playable'} ${isSelected ? 'selected' : ''} ${isMyTurn ? 'is-my-turn' : ''}`} onClick={onClick}>
-                    <div className={`card-surface mat-${rData.theme}`} 
-                         style={{ '--r-color': rData.color, '--r-color-bright': rData.bright, '--r-color-glow': rData.glow, '--r-color-dim': rData.dim || 'rgba(0,0,0,0.5)', width: 'var(--card-w)', height: 'var(--card-h)', borderRadius:'8px', overflow:'hidden', position:'relative', border: 'none' }}>
+                    <div className={`card-surface mat-${rData.theme}`}
+                        style={{ '--r-color': rData.color, '--r-color-bright': rData.bright, '--r-color-glow': rData.glow, '--r-color-dim': rData.dim || 'rgba(0,0,0,0.5)', width: 'var(--card-w)', height: 'var(--card-h)', borderRadius: '8px', overflow: 'hidden', position: 'relative', border: 'none' }}>
                         <CardOrnaments theme={rData.theme} />
                         <div className="card-content">
                             <div className="card-info-top"><span>{dr}</span></div>
@@ -417,7 +1429,7 @@
         };
 
         const GearSVG = ({ color }) => (
-            <svg viewBox="0 0 100 100" className="w-full h-full"><defs><linearGradient id={`grad-gear-${color}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: color, stopOpacity: 1}} /><stop offset="100%" style={{stopColor: '#4b2f1c', stopOpacity: 1}} /></linearGradient></defs><path fill={`url(#grad-gear-${color})`} d="M100 56.5v-13l-12.7-2.1c-1.1-4.5-3-8.6-5.4-12.3l7.4-10.4-9.2-9.2-10.4 7.4c-3.7-2.4-7.8-4.3-12.3-5.4L55.3 0h-13l-2.1 12.7c-4.5 1.1-8.6 3-12.3 5.4l-10.4-7.4-9.2 9.2 7.4 10.4c-2.4 3.7-4.3 7.8-5.4 12.3L0 43.5v13l12.7 2.1c1.1 4.5 3 8.6 5.4 12.3l-7.4 10.4 9.2 9.2 10.4-7.4c3.7 2.4 7.8 4.3 12.3 5.4l2.1 12.7h13l2.1-12.7c4.5-1.1 8.6-3 12.3-5.4l10.4 7.4 9.2-9.2-7.4-10.4c2.4-3.7 4.3-7.8 5.4-12.3l12.7-2.1zM50 71c-11.6 0-21-9.4-21-21s9.4-21 21-21 21 9.4 21 21-9.4 21-21 21z" /><circle cx="50" cy="50" r="12" fill="#000" /></svg>
+            <svg viewBox="0 0 100 100" className="w-full h-full"><defs><linearGradient id={`grad-gear-${color}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{ stopColor: color, stopOpacity: 1 }} /><stop offset="100%" style={{ stopColor: '#4b2f1c', stopOpacity: 1 }} /></linearGradient></defs><path fill={`url(#grad-gear-${color})`} d="M100 56.5v-13l-12.7-2.1c-1.1-4.5-3-8.6-5.4-12.3l7.4-10.4-9.2-9.2-10.4 7.4c-3.7-2.4-7.8-4.3-12.3-5.4L55.3 0h-13l-2.1 12.7c-4.5 1.1-8.6 3-12.3 5.4l-10.4-7.4-9.2 9.2 7.4 10.4c-2.4 3.7-4.3 7.8-5.4 12.3L0 43.5v13l12.7 2.1c1.1 4.5 3 8.6 5.4 12.3l-7.4 10.4 9.2 9.2 10.4-7.4c3.7 2.4 7.8 4.3 12.3 5.4l2.1 12.7h13l2.1-12.7c4.5-1.1 8.6-3 12.3-5.4l10.4 7.4 9.2-9.2-7.4-10.4c2.4-3.7 4.3-7.8 5.4-12.3l12.7-2.1zM50 71c-11.6 0-21-9.4-21-21s9.4-21 21-21 21 9.4 21 21-9.4 21-21 21z" /><circle cx="50" cy="50" r="12" fill="#000" /></svg>
         );
         const MagicCircleSVG = ({ color }) => (
             <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible"><defs><filter id="magic-glow"><feGaussianBlur stdDeviation="2" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter></defs><g filter="url(#magic-glow)"><g style={{ animation: 'rotate-outer 10s linear infinite', transformOrigin: 'center' }}><circle cx="50" cy="50" r="48" fill="none" stroke={color} strokeWidth="1.5" strokeDasharray="10 5" /></g><g style={{ animation: 'rotate-inner 15s linear infinite', transformOrigin: 'center' }}><circle cx="50" cy="50" r="35" fill="none" stroke={color} strokeWidth="1" /><path d="M50 15 L80 70 L20 70 Z M50 85 L20 30 L80 30 Z" fill="none" stroke={color} strokeWidth="1" /><circle cx="50" cy="50" r="10" fill="none" stroke={color} strokeWidth="2" /></g></g></svg>
@@ -426,18 +1438,18 @@
         const AstralBackground = () => {
             const items = useMemo(() => {
                 const arr = [];
-                for(let i=0; i<5; i++) arr.push({ id: `m${i}`, type: 'magic', color: i%2?'#00F3FF':'#1E90FF', sx: `${(Math.random()*60)-30}vw`, ex: `${(Math.random()*20)-10}vw`, delay: `${Math.random()*20}s`, dur: `${16+Math.random()*12}s`, op: 0.4, rot: `${360+Math.random()*720}deg` });
-                for(let i=0; i<15; i++) {
+                for (let i = 0; i < 5; i++) arr.push({ id: `m${i}`, type: 'magic', color: i % 2 ? '#00F3FF' : '#1E90FF', sx: `${(Math.random() * 60) - 30}vw`, ex: `${(Math.random() * 20) - 10}vw`, delay: `${Math.random() * 20}s`, dur: `${16 + Math.random() * 12}s`, op: 0.4, rot: `${360 + Math.random() * 720}deg` });
+                for (let i = 0; i < 15; i++) {
                     const isLtr = Math.random() > 0.5;
                     const sx = isLtr ? '-300px' : 'calc(100vw + 300px)';
                     const ex = isLtr ? 'calc(100vw + 300px)' : '-300px';
                     const sy = `${Math.random() * 90}vh`;
-                    const rot = isLtr ? `${360+Math.random()*720}deg` : `-${360+Math.random()*720}deg`;
+                    const rot = isLtr ? `${360 + Math.random() * 720}deg` : `-${360 + Math.random() * 720}deg`;
                     const size = 80 + Math.random() * 120;
-                    arr.push({ 
-                        id: `g${i}`, type: 'gear', color: i%3===0 ? '#8B4513' : (i%3===1 ? '#B22222' : '#555555'), 
+                    arr.push({
+                        id: `g${i}`, type: 'gear', color: i % 3 === 0 ? '#8B4513' : (i % 3 === 1 ? '#B22222' : '#555555'),
                         sx, ex, sy, ey: sy, size: `${size}px`,
-                        delay: `${Math.random()*20}s`, dur: `${20+Math.random()*30}s`, op: 0.3 + Math.random()*0.4, rot: rot 
+                        delay: `${Math.random() * 20}s`, dur: `${20 + Math.random() * 30}s`, op: 0.3 + Math.random() * 0.4, rot: rot
                     });
                 }
                 return arr;
@@ -453,21 +1465,21 @@
                 const draw = () => {
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
                     ctx.font = '900 16px Orbitron';
-                    for(let i=0; i<cols; i++) {
-                        if(Math.random() > 0.96) {
-                            ctx.fillStyle = rainColors[Math.floor(Math.random()*rainColors.length)];
-                            ctx.fillText(Math.floor(Math.random()*2).toString(), i*16, heads[i]*16);
-                            heads[i]++; if(heads[i]*16 > canvas.height && Math.random() > 0.9) heads[i] = 0;
+                    for (let i = 0; i < cols; i++) {
+                        if (Math.random() > 0.96) {
+                            ctx.fillStyle = rainColors[Math.floor(Math.random() * rainColors.length)];
+                            ctx.fillText(Math.floor(Math.random() * 2).toString(), i * 16, heads[i] * 16);
+                            heads[i]++; if (heads[i] * 16 > canvas.height && Math.random() > 0.9) heads[i] = 0;
                         }
                     }
                 };
                 const int = setInterval(draw, 33); return () => clearInterval(int);
             }, []);
-            
+
             return (
                 <div className="astral-canvas">
                     <canvas id="matrixCanvas" className="matrix-code-canvas" />
-                    <div className="grid-floor" style={{position:'absolute', bottom:'-50px', width:'200%', height:'60%', left:'-50%', backgroundImage:'linear-gradient(rgba(64,224,208,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(138,43,226,0.15) 1px, transparent 1px)', backgroundSize:'40px 40px', transform:'perspective(500px) rotateX(65deg)', maskImage:'radial-gradient(circle at center, black, transparent 80%)'}} />
+                    <div className="grid-floor" style={{ position: 'absolute', bottom: '-50px', width: '200%', height: '60%', left: '-50%', backgroundImage: 'linear-gradient(rgba(64,224,208,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(138,43,226,0.15) 1px, transparent 1px)', backgroundSize: '40px 40px', transform: 'perspective(500px) rotateX(65deg)', maskImage: 'radial-gradient(circle at center, black, transparent 80%)' }} />
                     {items.map(it => {
                         if (it.type === 'gear') {
                             return (
@@ -496,7 +1508,7 @@
             const [muted, setMuted] = useState(false);
             const [selectedCardId, setSelectedCardId] = useState(null);
             const [isDisconnected, setIsDisconnected] = useState(false);
-            
+
             const [shake, setShake] = useState(false);
             const [flash, setFlash] = useState(false);
             const [cutin, setCutin] = useState(null);
@@ -508,7 +1520,7 @@
                 socket.on('update-game', setGs);
                 socket.on('disconnect', () => setIsDisconnected(true));
                 socket.on('connect', () => setIsDisconnected(false));
-                
+
                 const initAudio = () => {
                     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -517,7 +1529,7 @@
                 };
                 document.addEventListener('click', initAudio);
                 document.addEventListener('touchstart', initAudio);
-                
+
                 return () => {
                     socket.off('update-game'); socket.off('disconnect'); socket.off('connect');
                     document.removeEventListener('click', initAudio); document.removeEventListener('touchstart', initAudio);
@@ -530,7 +1542,7 @@
                         const c = gs.fieldCard;
                         let dr = c.realm;
                         if (c.wasRuins) dr = 'RUINS'; else if (c.wasPlanet) dr = 'PLANET'; else if (c.wasFountain || (c.realm === 'FOUNTAIN' && c.isSpecial)) dr = 'FOUNTAIN';
-                        
+
                         if (c.isSpecial || dr === 'PLANET' || dr === 'RUINS') {
                             setFlash(true); setTimeout(() => setFlash(false), 600);
                             let text = "WILD";
@@ -556,7 +1568,7 @@
 
             const sortedHand = useMemo(() => {
                 if (!me?.hand) return [];
-                return [...me.hand].sort((a,b) => (SORT_WEIGHT[a.realm]-SORT_WEIGHT[b.realm]) || (b.isSpecial-a.isSpecial));
+                return [...me.hand].sort((a, b) => (SORT_WEIGHT[a.realm] - SORT_WEIGHT[b.realm]) || (b.isSpecial - a.isSpecial));
             }, [me?.hand]);
 
             const playableRealms = useMemo(() => {
@@ -573,14 +1585,14 @@
 
             const sortedResultPlayers = useMemo(() => {
                 if (!gs?.players) return [];
-                return [...gs.players].sort((a,b) => {
+                return [...gs.players].sort((a, b) => {
                     if (a.isEliminated && !b.isEliminated) return 1;
                     if (!a.isEliminated && b.isEliminated) return -1;
                     return a.handCount - b.handCount;
                 });
             }, [gs?.players]);
 
-            const join = () => { if(room && name) { playSE('start', muted); setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name }); } };
+            const join = () => { if (room && name) { playSE('start', muted); setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name }); } };
             const leave = () => { if (room) { playSE('cancel', muted); socket.emit('leave-room', { roomId: room.toUpperCase() }); setJoined(false); setGs(null); } };
             const goToTopPage = () => { playSE('cancel', muted); if (room) socket.emit('leave-room', { roomId: room.toUpperCase() }); window.location.reload(); };
 
@@ -595,7 +1607,6 @@
                     if (selectedCardId === c.id) {
                         if (c.realm === 'PLANET' || c.realm === 'RUINS' || (c.realm === 'FOUNTAIN' && c.isSpecial)) setSelector(c);
                         else socket.emit('play-card', { roomId: room, card: c });
-                        setSelectedCardId(null);
                     } else { setSelectedCardId(c.id); }
                 }
             };
@@ -611,23 +1622,23 @@
             };
 
             return (
-                <div className={`screen-wrapper ${shake ? 'shake-active' : ''}`} style={{'--r-color': REALMS[currentR]?.color}}>
+                <div className={`screen-wrapper ${shake ? 'shake-active' : ''}`} style={{ '--r-color': REALMS[currentR]?.color }}>
                     {flash && <div className="flash-overlay" />}
                     {cutin && (
                         <div className="cutin-container">
-                            <div className="cutin-bar" style={{'--c': cutin.color}}>
+                            <div className="cutin-bar" style={{ '--c': cutin.color }}>
                                 <div className="cutin-text">{cutin.text}</div>
                             </div>
                         </div>
                     )}
-                    
+
                     <AstralBackground />
-                    
+
                     {isDisconnected && joined && (
                         <div className="fixed inset-0 bg-black/95 z-[9999] flex flex-col items-center justify-center p-8 backdrop-blur-md">
                             <h3 className="font-black text-danger text-3xl tracking-widest mb-4 animate-pulse font-['Orbitron']">CONNECTION LOST</h3>
                             <p className="text-white/80 text-sm text-center mb-8 font-bold leading-relaxed">
-                                サーバーとの通信が切断されたため<br/>部屋が消滅しました。<br/><br/>
+                                サーバーとの通信が切断されたため<br />部屋が消滅しました。<br /><br />
                                 <span className="text-xs text-white/50">※スマホのスリープや別アプリへの切り替えが原因の可能性があります。</span>
                             </p>
                             <button className="w-full max-w-xs p-5 font-black bg-gradient-to-r from-red-600 to-red-900 text-white rounded-sm shadow-2xl tracking-[4px]" onClick={() => window.location.reload()}>タイトルへ戻る</button>
@@ -650,7 +1661,7 @@
                                     <div className="emblem-bg-layer"><ComplexEmblem isLogo={true} /></div>
                                     <div className="logo-text-layer">
                                         <div className="main-logo-text">CROSS</div>
-                                        <div className="main-logo-text" style={{fontSize:'3.2rem', marginTop:'-0.5rem'}}>REALM</div>
+                                        <div className="main-logo-text" style={{ fontSize: '3.2rem', marginTop: '-0.5rem' }}>REALM</div>
                                         <div className="text-accent font-['Audiowide'] text-[0.85rem] mt-2 tracking-[6px] animate-pulse">- OMEGA SINGULARITY -</div>
                                     </div>
                                 </div>
@@ -683,7 +1694,7 @@
                                     {[...Array(5)].map((_, i) => {
                                         const p = gs?.players[i];
                                         return (
-                                            <div key={i} className={`bg-[#140a28]/85 border px-5 py-2.5 rounded-md mb-1.5 flex justify-between items-center min-h-[56px] shadow-[0_8px_25px_rgba(0,0,0,0.8)] backdrop-blur-md ${p?'border-l-8 border-l-accent border-accent/80 bg-[#0a1e28]/85 shadow-[0_0_15px_rgba(64,224,208,0.2)]':'border-white/30 opacity-20 border-dashed'}`}>
+                                            <div key={i} className={`bg-[#140a28]/85 border px-5 py-2.5 rounded-md mb-1.5 flex justify-between items-center min-h-[56px] shadow-[0_8px_25px_rgba(0,0,0,0.8)] backdrop-blur-md ${p ? 'border-l-8 border-l-accent border-accent/80 bg-[#0a1e28]/85 shadow-[0_0_15px_rgba(64,224,208,0.2)]' : 'border-white/30 opacity-20 border-dashed'}`}>
                                                 <span className="font-black text-sm tracking-wide uppercase">{p ? p.name : '--- VACANT ---'}</span>
                                                 {p && i === 0 && <span className="bg-white text-black text-[10px] px-3 py-1 font-black rounded shadow-lg">MASTER</span>}
                                             </div>
@@ -693,12 +1704,12 @@
                                 <div className="w-full mt-2 px-4 flex flex-col items-center">
                                     {gs?.players[0]?.id === socket?.id && (
                                         <div className="flex gap-3 w-full mb-3">
-                                            <button className="flex-1 p-5 bg-black/80 border border-white/40 backdrop-blur-md text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm" disabled={gs?.players?.length >= 5} onClick={()=>{
+                                            <button className="flex-1 p-5 bg-black/80 border border-white/40 backdrop-blur-md text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm" disabled={gs?.players?.length >= 5} onClick={() => {
                                                 playSE('play', muted);
-                                                const botNames = ['X-TREME','A.L.I.C.E','G.E.A.R','N.U.L.L'];
-                                                socket.emit('add-cpu', {roomId: room.toUpperCase(), botName: botNames[Math.floor(Math.random()*botNames.length)]});
+                                                const botNames = ['X-TREME', 'A.L.I.C.E', 'G.E.A.R', 'N.U.L.L'];
+                                                socket.emit('add-cpu', { roomId: room.toUpperCase(), botName: botNames[Math.floor(Math.random() * botNames.length)] });
                                             }}>CPU追加</button>
-                                            <button className="flex-[2] p-5 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-xl rounded-sm shadow-2xl" disabled={gs?.players?.length < 2} onClick={()=>{ playSE('start', muted); socket.emit('start-game', {roomId:room}); }}>ミッション開始</button>
+                                            <button className="flex-[2] p-5 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-xl rounded-sm shadow-2xl" disabled={gs?.players?.length < 2} onClick={() => { playSE('start', muted); socket.emit('start-game', { roomId: room }); }}>ミッション開始</button>
                                         </div>
                                     )}
                                     <button className="inline-block py-2.5 px-8 bg-black/90 border-2 border-accent text-white font-['Orbitron'] text-[11px] font-black tracking-[4px] rounded-full cursor-pointer" onClick={leave}>CANCEL SYNC</button>
@@ -707,13 +1718,13 @@
                         ) : (gs.status === 'finished') ? (
                             <div className="result-screen">
                                 <h2 className="result-title uppercase tracking-tighter">Mission_Complete</h2>
-                                
+
                                 <div className="flex flex-row items-end justify-center w-full max-w-[440px] h-[220px] gap-1 mt-4 mb-8 px-2">
                                     {sortedResultPlayers.map((p, i) => {
                                         const order = i === 0 ? 3 : i === 1 ? 2 : i === 2 ? 4 : i === 3 ? 1 : 5;
                                         const height = i === 0 ? '120px' : i === 1 ? '90px' : i === 2 ? '70px' : i === 3 ? '50px' : '40px';
                                         const color = i === 0 ? 'var(--steam-gold)' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'var(--accent)';
-                                        
+
                                         return (
                                             <div key={p.id} className="flex flex-col items-center justify-end w-[20%] relative" style={{ order }}>
                                                 {p.isEliminated && <div className="absolute top-[-20px] text-[8px] text-red-500 font-bold bg-black/90 px-1 rounded border border-red-500/50 z-10">BURST</div>}
@@ -758,30 +1769,30 @@
                                         </div>
                                     ))}
                                 </div>
-                                
+
                                 <div className="realm-legend-nav">
-                                    {['GEAR','ICEAGE','FOUNTAIN','BATTERY','MACHINE','ARCHIVE'].map(r => (
+                                    {['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'].map(r => (
                                         <div key={r} className="legend-item flex flex-col items-center">
                                             <div className={`legend-label ${gs.fieldCard.realm === r ? 'text-white font-black scale-110' : ''} ${playableRealms.includes(r) ? 'playable' : ''}`}>{REALMS[r].n}</div>
                                             <div className={`legend-underline ${gs.fieldCard.realm === r ? 'active' : ''} ${playableRealms.includes(r) ? 'playable-light' : ''}`} style={{ '--r-color': REALMS[r].color }} />
                                         </div>
                                     ))}
                                 </div>
-                                
+
                                 <div className="field-main-area">
                                     {/* === 修復: インラインクラスを減らし、CSS側でマージンとサイズを自動調整 === */}
                                     <div className="field-status-text uppercase font-black" style={{ color: isMyTurn ? 'var(--accent)' : 'inherit', textShadow: isMyTurn ? '0 0 10px var(--accent)' : 'none' }}>
                                         {isMyTurn ? '>>> YOUR TURN <<<' : me?.isEliminated ? 'Spectating...' : 'Opponent Turn'}
                                     </div>
-                                    
+
                                     <div className="relative flex items-center justify-center w-full overflow-visible z-10">
                                         <CardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} />
                                         <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-30"><ComplexEmblem isLogo={false} /></div>
                                         <CycleDiagramSmall currentRealm={currentR} />
                                     </div>
-                                    <div className="field-kanji-text uppercase font-black" style={{color: REALMS[currentR].bright}}>{REALMS[currentR].n}</div>
+                                    <div className="field-kanji-text uppercase font-black" style={{ color: REALMS[currentR].bright }}>{REALMS[currentR].n}</div>
                                 </div>
-                                
+
                                 <div className="tactical-log-box no-scrollbar" ref={logContainerRef}>
                                     {gs.logs && gs.logs.length > 0 ? (
                                         gs.logs.slice(-10).map(l => <div key={l.id} className="text-[11px] font-black text-white mb-0.5 border-b border-white/5">≫ {l.text}</div>)
@@ -789,24 +1800,24 @@
                                         <div className="opacity-40 italic text-xs font-bold mt-1">ANALYZING...</div>
                                     )}
                                 </div>
-                                
+
                                 <div className="flex flex-row flex-nowrap justify-center items-end w-full pt-5 pb-4 px-2 overflow-x-auto bg-gradient-to-b from-[#1e0a32]/80 to-[#05010a] border-t-[2.5px] border-accent/20 min-h-[135px] shrink-0 no-scrollbar">
                                     {sortedHand.map((c, i) => {
                                         const isPlayable = canPlayCheck(gs, c);
                                         return <CardView key={c.id} card={c} playable={isPlayable} isSelected={selectedCardId === c.id} isMyTurn={isMyTurn} onClick={() => handleCardClick(c, isPlayable)} />;
                                     })}
                                 </div>
-                                
+
                                 <div className="w-full px-4 pb-4 shrink-0">
-                                    <button className="w-full h-16 bg-gradient-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl tracking-[8px] cursor-pointer transition-all shadow-[0_0_25px_rgba(212,175,55,0.4)] active:scale-95 disabled:bg-[#1a1a1a] disabled:bg-none disabled:text-[#444] disabled:grayscale disabled:opacity-50 disabled:cursor-not-allowed disabled:border disabled:border-[#333] disabled:shadow-none" style={{ clipPath: isMyTurn ? 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)' : 'none' }} disabled={!isMyTurn} onClick={()=>{ playSE('draw', muted); socket.emit('draw-card',{roomId:room}); }}>ドロー ({gs.nextDrawAmount}枚)</button>
+                                    <button className="w-full h-16 bg-gradient-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl tracking-[8px] cursor-pointer transition-all shadow-[0_0_25px_rgba(212,175,55,0.4)] active:scale-95 disabled:bg-[#1a1a1a] disabled:bg-none disabled:text-[#444] disabled:grayscale disabled:opacity-50 disabled:cursor-not-allowed disabled:border disabled:border-[#333] disabled:shadow-none" style={{ clipPath: isMyTurn ? 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)' : 'none' }} disabled={!isMyTurn} onClick={() => { playSE('draw', muted); socket.emit('draw-card', { roomId: room }); }}>ドロー ({gs.nextDrawAmount}枚)</button>
                                 </div>
-                                
+
                                 {selector && (
                                     <div className="fixed inset-0 bg-black/95 z-[1000] flex items-center justify-center p-8 backdrop-blur-sm">
                                         <div className="w-full max-w-sm bg-black/90 p-12 text-center rounded-3xl border-4" style={{ borderColor: 'var(--accent)', animation: 'pulse-shimmer 2s infinite' }}>
                                             <h3 className="font-black mb-10 text-3xl tracking-[15px] text-white uppercase text-xs">属性選択</h3>
                                             <div className="grid grid-cols-2 gap-6">
-                                                {['GEAR','ICEAGE','FOUNTAIN','BATTERY','MACHINE','ARCHIVE'].map(r => <button key={r} className="p-6 border-2 border-white/20 font-black text-lg hover:bg-white/10 transition-all scale-110" style={{color: REALMS[r].bright}} onClick={()=>{ playSE('play', muted); socket.emit('play-card',{roomId:room, card:selector, chosenRealm:r}); setSelector(null); }}>{REALMS[r].n}</button>)}
+                                                {['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'].map(r => <button key={r} className="p-6 border-2 border-white/20 font-black text-lg hover:bg-white/10 transition-all scale-110" style={{ color: REALMS[r].bright }} onClick={() => { playSE('play', muted); socket.emit('play-card', { roomId: room, card: selector, chosenRealm: r }); setSelector(null); }}>{REALMS[r].n}</button>)}
                                             </div>
                                             <button className="w-full mt-10 p-4 text-white/50 text-sm tracking-[10px] font-black border border-white/15 uppercase" onClick={() => { playSE('cancel', muted); setSelector(null); }}>キャンセル</button>
                                         </div>
@@ -822,4 +1833,5 @@
         ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
+
 </html>
