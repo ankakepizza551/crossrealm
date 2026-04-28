@@ -25,7 +25,26 @@
 場に出ているカードの「属性（レルム）」によって、次に出せるカードが厳密に制限されます。
 属性は大きく3つのグループ（A, B, C）に分かれており、「維持」と「遷移」を繰り返してゲームが進行します。
 
-### グループと遷移
+### 属性の循環サイクル
+
+```mermaid
+flowchart TD
+    GEAR(("⚙️ 歯車\n(スチーム)")) -->|遷移| ICEAGE(["❄️ 氷河期\n(ゲート)"])
+    ICEAGE -->|遷移| FOUNTAIN(("⛲ 噴水\n(ファンタジー)"))
+    FOUNTAIN -->|遷移| BATTERY(["🔋 電池\n(ゲート)"])
+    BATTERY -->|遷移| MACHINE(("🤖 機械\n(サイバー)"))
+    MACHINE -->|遷移| ARCHIVE(["📖 古文書\n(ゲート)"])
+    ARCHIVE -->|遷移| GEAR
+    
+    style GEAR fill:#FF8C00,stroke:#FFD700,stroke-width:3px,color:#fff
+    style ICEAGE fill:#1E90FF,stroke:#00F3FF,stroke-width:2px,color:#fff
+    style FOUNTAIN fill:#8A2BE2,stroke:#E2B0FF,stroke-width:3px,color:#fff
+    style BATTERY fill:#40E0D0,stroke:#ADFF2F,stroke-width:2px,color:#fff
+    style MACHINE fill:#000000,stroke:#FF4500,stroke-width:3px,color:#fff
+    style ARCHIVE fill:#8B4513,stroke:#FF3131,stroke-width:2px,color:#fff
+```
+
+### グループと遷移の役割
 
 | グループ | 場の属性 | 次に出せる属性 | 役割（世界観） |
 | :--- | :--- | :--- | :--- |
