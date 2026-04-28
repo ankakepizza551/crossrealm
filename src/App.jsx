@@ -287,6 +287,7 @@ const socket = io(
             const [muted, setMuted] = useState(false);
             const [selectedCardId, setSelectedCardId] = useState(null);
             const [isDisconnected, setIsDisconnected] = useState(false);
+            const [isConnected, setIsConnected] = useState(socket.connected);
 
             const [shake, setShake] = useState(false);
             const [flash, setFlash] = useState(false);
@@ -300,6 +301,7 @@ const socket = io(
                 
                 socket.on('connect', () => {
                     console.log("[SOCKET] Connected! ID:", socket.id);
+                    setIsConnected(true);
                     setIsDisconnected(false);
                 });
 
@@ -314,6 +316,7 @@ const socket = io(
 
                 socket.on('disconnect', (reason) => {
                     console.warn("[SOCKET] Disconnected:", reason);
+                    setIsConnected(false);
                     setIsDisconnected(true);
                 });
 
@@ -476,12 +479,12 @@ const socket = io(
                                         <label className="font-['Orbitron'] text-[11px] font-black text-accent tracking-[3px] mb-2 pl-4 uppercase text-shadow-[0_0_10px_rgba(64,224,208,0.5)]">SECTOR CODE</label>
                                         <input type="text" className="w-full p-4 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-xl outline-none rounded shadow-[inset_0_0_20px_#000] focus:border-accent focus:bg-[#141e32]/98 focus:shadow-[0_0_20px_rgba(64,224,208,0.2),inset_0_0_15px_#000] transition-colors" value={room} placeholder="SECTOR_UNIT..." onChange={e => setRoom(e.target.value.toUpperCase())} />
                                     </div>
-                                    <button className={`w-full mt-2 p-5 text-xl font-black rounded-sm shadow-xl active:scale-95 transition-transform ${(!socket.connected || isDisconnected) ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-black'}`} onClick={join} disabled={!socket.connected || isDisconnected}>
-                                        {(!socket.connected || isDisconnected) ? 'CONNECTING...' : 'LINK START'}
+                                    <button className={`w-full mt-2 p-5 text-xl font-black rounded-sm shadow-xl active:scale-95 transition-transform ${(!isConnected) ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-black'}`} onClick={join} disabled={!isConnected}>
+                                        {(!isConnected) ? 'CONNECTING...' : 'LINK START'}
                                     </button>
                                 </div>
                                 <div className="mt-auto w-full p-4 border-t-2 border-white/15 font-['Orbitron'] text-[11px] text-white/70 flex justify-between items-center bg-[#0a0519]/90 shrink-0">
-                                    <span>SYSTEM_STATUS: <span className={`px-2 py-0.5 rounded-sm font-black ${(!socket.connected || isDisconnected) ? 'bg-red-600' : 'bg-accent animate-[pulse-shimmer_1.5s_infinite]'} text-white`}>{(!socket.connected || isDisconnected) ? 'OFFLINE' : 'ONLINE'}</span></span>
+                                    <span>SYSTEM_STATUS: <span className={`px-2 py-0.5 rounded-sm font-black ${(!isConnected) ? 'bg-red-600' : 'bg-accent animate-[pulse-shimmer_1.5s_infinite]'} text-white`}>{(!isConnected) ? 'OFFLINE' : 'ONLINE'}</span></span>
                                     <span>VER: <span className="text-white/80 font-black ml-1">133.0_REFINED</span></span>
                                 </div>
                             </div>
