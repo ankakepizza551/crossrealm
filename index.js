@@ -10,6 +10,11 @@ app.use(cors());
 // 静的ファイルの提供 (ビルド済みのフロントエンド)
 app.use(express.static(path.join(__dirname, 'dist')));
 
+// どこにアクセスしても index.html を返す (SPA用設定)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
