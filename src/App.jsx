@@ -461,7 +461,14 @@ const socket = io(window.location.hostname === 'localhost' ? 'http://localhost:3
                                     <span>VER: <span className="text-white/80 font-black ml-1">133.0_REFINED</span></span>
                                 </div>
                             </div>
-                        ) : (!gs || gs.status === 'waiting') ? (
+                        ) : (joined && !gs) ? (
+                            <div className="h-full flex flex-col items-center justify-center p-4 text-center">
+                                <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mb-6 shadow-[0_0_20px_rgba(64,224,208,0.4)]"></div>
+                                <h2 className="text-accent font-black tracking-[6px] animate-pulse font-['Orbitron']">ESTABLISHING LINK...</h2>
+                                <p className="text-white/40 text-[10px] mt-4 font-bold uppercase tracking-[2px]">Waiting for server response</p>
+                                <button className="mt-12 py-2 px-8 bg-white/5 border border-white/10 text-white/30 text-[10px] font-black rounded-full hover:bg-white/10 transition-colors" onClick={() => window.location.reload()}>ABORT & RETRY</button>
+                            </div>
+                        ) : (gs?.status === 'waiting') ? (
                             <div className="h-full flex flex-col items-center justify-center p-4 text-center overflow-y-auto no-scrollbar">
                                 <h2 className="text-[clamp(1.2rem,6.5vw,1.875rem)] font-black mb-6 tracking-[clamp(4px,2vw,10px)] font-['Orbitron'] text-white animate-pulse uppercase w-full text-center">Awaiting_Sync</h2>
                                 <div className="w-full overflow-y-auto max-h-[48vh] p-1 mx-5 mb-3 shrink-0 no-scrollbar">
