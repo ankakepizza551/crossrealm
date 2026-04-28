@@ -208,12 +208,23 @@ function getBotAction(room, bot) {
 
 io.on('connection', (socket) => {
   socket.on('join-room', (data) => {
+    if (!data || !data.roomId) return;
     const rid = data.roomId.toUpperCase();
-    if (!rooms[rid]) rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], currentTurnPlayerId: null, matchCount: 1, maxMatches: 5, isSeriesFinished: false };
+    console.log(`[SYSTEM] Join Request: Room=${rid}, Player=${data.playerName}`);
+    
+    if (!rooms[rid]) {
+        rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], currentTurnPlayerId: null, matchCount: 1, maxMatches: 5, isSeriesFinished: false };
+        console.log(`[SYSTEM] New Room Created: ${rid}`);
+    }
+    
     const room = rooms[rid];
     if (room.status !== 'waiting' || room.players.length >= 5) return;
-    room.players.push({ id: socket.id, name: (data.playerName || 'Pilot').substring(0, 10), hand: [], handCount: 0, isBot: false, isEliminated: false, score: 0 });
+    
+    const newPlayer = { id: socket.id, name: (data.playerName || 'Pilot').substring(0, 10), hand: [], handCount: 0, isBot: false, isEliminated: false, score: 0 };
+    room.players.push(newPlayer);
     socket.join(rid);
+    
+    console.log(`[SYSTEM] Player ${newPlayer.name} joined ${rid}. Total players: ${room.players.length}`);
     io.to(rid).emit('update-game', room);
   });
 
