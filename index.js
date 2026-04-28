@@ -251,6 +251,8 @@ function getBotAction(room, bot) {
   return { type: 'play', card: targetCard, chosenRealm };
 }
 
+const BOT_NAMES = ['Astra', 'Nova', 'Echo', 'Vector', 'Zion', 'Kael', 'Luna', 'Cyrus', 'Iris', 'Xenon'];
+
 io.on('connection', (socket) => {
   socket.on('join-room', (data) => {
     if (!data || !data.roomId) return;
@@ -297,7 +299,23 @@ io.on('connection', (socket) => {
   socket.on('add-cpu', (data) => {
     const room = rooms[data.roomId.toUpperCase()];
     if (room && room.status === 'waiting' && room.players.length < 5) {
-      room.players.push({ id: 'CPU_' + Math.random().toString(36).substr(2, 5), name: data.botName + ' (AI)', hand: [], handCount: 0, isBot: true, isEliminated: false, score: 0 });
+      // 被っていない名前をプールから選ぶ
+      const usedNames = room.players.map(p => p.name.replace(' (AI)', ''));
+      const availableNames = BOT_NAMES.filter(name => !usedNames.includes(name));
+      
+      const botBaseName = availableNames.length > 0 
+        ? availableNames[Math.floor(Math.random() * availableNames.length)] 
+        : (data.botName || 'CPU');
+
+      room.players.push({ 
+        id: 'CPU_' + Math.random().toString(36).substr(2, 5), 
+        name: botBaseName + ' (AI)', 
+        hand: [], 
+        handCount: 0, 
+        isBot: true, 
+        isEliminated: false, 
+        score: 0 
+      });
       io.to(room.id).emit('update-game', room);
     }
   });
