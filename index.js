@@ -29,6 +29,44 @@ const INITIAL_HAND = 5;
 
 const REALM_NAME_JA = { GEAR: '歯車', ICEAGE: '氷河期', FOUNTAIN: '噴水', BATTERY: '電池', MACHINE: '機械', ARCHIVE: '古文書', PLANET: '惑星', RUINS: '廃墟' };
 
+// --- 究極の予防回収: 公序良俗NGワード・フィルタリング（真・極限版） ---
+const NG_WORDS = [
+  // 性的・卑猥表現
+  'ちんぽ', 'ちんこ', 'まんこ', 'おめこ', 'せっくす', '中出し', 'ぶっかけ', 'フェラ', 'クンニ', 'アナル', '潮吹き', 'パコ', '生ハメ', 'デリヘル', 'ソープ', '援交', 'パパ活',
+  // 差別・ヘイト
+  'シナ人', '支那', 'チョン', 'エタ', '非人', 'ガイジ', '池沼', 'めくら', 'ツンボ', 'ホモ', 'オカマ', 'レズ', '土方', 'ドカタ', 'nigger', 'faggot',
+  // 犯罪・暴力・自傷
+  '殺す', '死ね', 'レイプ', '強姦', 'ミンチ', 'リスカ', '自殺', '覚醒剤', 'シャブ', '大麻', '爆破', 'サリン', 'テロ', '闇バイト',
+  // 政治・歴史
+  '天安門', '六四', '習近平', '南京大虐殺', '慰安婦', 'ナチス', 'ヒトラー', 'ハケンクロイツ'
+];
+
+function filterName(name) {
+  if (!name) return 'Pilot';
+
+  // 1. Unicode正規化 (結合文字対策など)
+  let n = name.normalize('NFKC');
+
+  // 2. 制御文字・ゼロ幅文字・不可視文字の除去 (バイパスハック対策)
+  n = n.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200D\u202E\uFEFF]/g, '');
+
+  // 3. グリフ近似の正規化 (見た目が似ている漢字をカタカナに変換して判定)
+  const glyphMap = { '千': 'チ', '工': 'エ', '口': 'ロ', '丁': 'テ', '力': 'カ', '二': 'ニ' };
+  let normalizedForCheck = n;
+  for (const [key, val] of Object.entries(glyphMap)) {
+    normalizedForCheck = normalizedForCheck.replace(new RegExp(key, 'g'), val);
+  }
+
+  // 4. チェック (小文字化して判定)
+  const checkStr = normalizedForCheck.toLowerCase();
+  const hasNG = NG_WORDS.some(word => checkStr.includes(word));
+
+  // 10文字制限を適用
+  const finalName = n.substring(0, 10).trim();
+
+  return (hasNG || finalName.length === 0) ? 'Pilot' : finalName;
+}
+
 function createDeck() {
   const deck = [];
   const mains = ['GEAR', 'MACHINE', 'FOUNTAIN'];
@@ -227,8 +265,11 @@ io.on('connection', (socket) => {
     const room = rooms[rid];
     if (room.status !== 'waiting' && room.status !== 'playing') return;
 
+    // NGワードフィルタを適用
+    const sanitizedName = filterName(data.playerName);
+
     // 同名のプレイヤーがいるかチェック（再接続対応）
-    const existingPlayer = room.players.find(p => p.name === (data.playerName || 'Pilot').substring(0, 10));
+    const existingPlayer = room.players.find(p => p.name === sanitizedName);
 
     if (existingPlayer) {
       console.log(`[SYSTEM] Reconnecting Player: ${existingPlayer.name} (ID: ${existingPlayer.id} -> ${socket.id})`);
@@ -245,7 +286,7 @@ io.on('connection', (socket) => {
 
     if (room.players.length >= 5) return;
 
-    const newPlayer = { id: socket.id, name: (data.playerName || 'Pilot').substring(0, 10), hand: [], handCount: 0, isBot: false, isEliminated: false, score: 0 };
+    const newPlayer = { id: socket.id, name: sanitizedName, hand: [], handCount: 0, isBot: false, isEliminated: false, score: 0 };
     room.players.push(newPlayer);
     socket.join(rid);
 
