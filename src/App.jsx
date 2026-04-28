@@ -3,7 +3,11 @@ import io from 'socket.io-client';
 import './index.css';
 
 // const socket = io('https://crossrealm-server.onrender.com');
-const socket = io(window.location.hostname === 'localhost' ? 'http://localhost:3000' : '/'); // 本番・開発の両対応
+const socket = io(
+    (window.location.port === '5173' || window.location.port === '5174') 
+    ? 'http://localhost:3000' 
+    : undefined // Production (same domain)
+);
 
         const REALMS = {
             GEAR: { n: '歯車', color: '#FF8C00', bright: '#FFD700', glow: 'rgba(255,140,0,1)', theme: 'steam', font: 'Special Elite' },
