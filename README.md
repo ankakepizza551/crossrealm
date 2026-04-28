@@ -29,11 +29,11 @@
 
 ```mermaid
 flowchart TD
-    GEAR(("⚙️ 歯車")) -->|遷移| ICEAGE(("❄️ 氷河期"))
-    ICEAGE -->|遷移| FOUNTAIN(("⛲ 噴水"))
-    FOUNTAIN -->|遷移| BATTERY(("🔋 電池"))
-    BATTERY -->|遷移| MACHINE(("🤖 機械"))
-    MACHINE -->|遷移| ARCHIVE(("📖 古文書"))
+    GEAR(("⚙️<br>歯車")) -->|遷移| ICEAGE(("❄️<br>氷河期"))
+    ICEAGE -->|遷移| FOUNTAIN(("⛲<br>噴水"))
+    FOUNTAIN -->|遷移| BATTERY(("🔋<br>電池"))
+    BATTERY -->|遷移| MACHINE(("🤖<br>機械"))
+    MACHINE -->|遷移| ARCHIVE(("📖<br>古文書"))
     ARCHIVE -->|遷移| GEAR
     
     style GEAR fill:#FF8C00,stroke:#FFD700,stroke-width:3px,color:#fff
