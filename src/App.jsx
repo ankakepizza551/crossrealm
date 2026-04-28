@@ -291,9 +291,26 @@ const socket = io(window.location.hostname === 'localhost' ? 'http://localhost:3
             const logContainerRef = useRef(null);
 
             useEffect(() => {
-                socket.on('update-game', setGs);
-                socket.on('disconnect', () => setIsDisconnected(true));
-                socket.on('connect', () => setIsDisconnected(false));
+                console.log("[SOCKET] Initializing listeners...");
+                
+                socket.on('connect', () => {
+                    console.log("[SOCKET] Connected! ID:", socket.id);
+                    setIsDisconnected(false);
+                });
+
+                socket.on('connect_error', (err) => {
+                    console.error("[SOCKET] Connection Error:", err.message);
+                });
+
+                socket.on('update-game', (data) => {
+                    console.log("[SOCKET] Game Update Received", data);
+                    setGs(data);
+                });
+
+                socket.on('disconnect', (reason) => {
+                    console.warn("[SOCKET] Disconnected:", reason);
+                    setIsDisconnected(true);
+                });
 
                 const initAudio = () => {
                     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -454,19 +471,21 @@ const socket = io(window.location.hostname === 'localhost' ? 'http://localhost:3
                                         <label className="font-['Orbitron'] text-[11px] font-black text-accent tracking-[3px] mb-2 pl-4 uppercase text-shadow-[0_0_10px_rgba(64,224,208,0.5)]">SECTOR CODE</label>
                                         <input type="text" className="w-full p-4 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-xl outline-none rounded shadow-[inset_0_0_20px_#000] focus:border-accent focus:bg-[#141e32]/98 focus:shadow-[0_0_20px_rgba(64,224,208,0.2),inset_0_0_15px_#000] transition-colors" value={room} placeholder="SECTOR_UNIT..." onChange={e => setRoom(e.target.value.toUpperCase())} />
                                     </div>
-                                    <button className="w-full mt-2 p-5 text-xl font-black bg-gradient-to-r from-amber-400 to-amber-600 text-black rounded-sm shadow-xl active:scale-95 transition-transform" onClick={join}>LINK START</button>
+                                    <button className={`w-full mt-2 p-5 text-xl font-black rounded-sm shadow-xl active:scale-95 transition-transform ${(!socket.connected || isDisconnected) ? 'bg-gray-600 opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-black'}`} onClick={join} disabled={!socket.connected || isDisconnected}>
+                                        {(!socket.connected || isDisconnected) ? 'CONNECTING...' : 'LINK START'}
+                                    </button>
                                 </div>
                                 <div className="mt-auto w-full p-4 border-t-2 border-white/15 font-['Orbitron'] text-[11px] text-white/70 flex justify-between items-center bg-[#0a0519]/90 shrink-0">
-                                    <span>SYSTEM_STATUS: <span className="text-white bg-accent px-2 py-0.5 rounded-sm font-black animate-[pulse-shimmer_1.5s_infinite]">ACTIVE</span></span>
+                                    <span>SYSTEM_STATUS: <span className={`px-2 py-0.5 rounded-sm font-black ${(!socket.connected || isDisconnected) ? 'bg-red-600' : 'bg-accent animate-[pulse-shimmer_1.5s_infinite]'} text-white`}>{(!socket.connected || isDisconnected) ? 'OFFLINE' : 'ONLINE'}</span></span>
                                     <span>VER: <span className="text-white/80 font-black ml-1">133.0_REFINED</span></span>
                                 </div>
                             </div>
                         ) : (joined && !gs) ? (
                             <div className="h-full flex flex-col items-center justify-center p-4 text-center">
-                                <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mb-6 shadow-[0_0_20px_rgba(64,224,208,0.4)]"></div>
-                                <h2 className="text-accent font-black tracking-[6px] animate-pulse font-['Orbitron']">ESTABLISHING LINK...</h2>
-                                <p className="text-white/40 text-[10px] mt-4 font-bold uppercase tracking-[2px]">Waiting for server response</p>
-                                <button className="mt-12 py-2 px-8 bg-white/5 border border-white/10 text-white/30 text-[10px] font-black rounded-full hover:bg-white/10 transition-colors" onClick={() => window.location.reload()}>ABORT & RETRY</button>
+                                <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mb-8 shadow-[0_0_20px_rgba(64,224,208,0.4)]"></div>
+                                <h2 className="text-accent font-black tracking-[8px] animate-pulse font-['Orbitron'] mb-2">ESTABLISHING LINK...</h2>
+                                <p className="text-white/40 text-[10px] font-bold uppercase tracking-[2px]">Syncing with sector {room}</p>
+                                <button className="mt-12 py-2.5 px-8 bg-white/5 border border-white/10 text-white/30 text-[10px] font-black rounded-full hover:bg-white/10 transition-colors uppercase tracking-[4px]" onClick={() => window.location.reload()}>Abort Link</button>
                             </div>
                         ) : (gs?.status === 'waiting') ? (
                             <div className="h-full flex flex-col items-center justify-center p-4 text-center overflow-y-auto no-scrollbar">
@@ -483,7 +502,7 @@ const socket = io(window.location.hostname === 'localhost' ? 'http://localhost:3
                                     })}
                                 </div>
                                 <div className="w-full mt-2 px-4 flex flex-col items-center">
-                                    {gs?.players[0]?.id === socket?.id && (
+                                    {gs?.players[0]?.id && socket?.id && gs.players[0].id === socket.id && (
                                         <div className="flex gap-3 w-full mb-3">
                                             <button className="flex-1 p-5 bg-black/80 border border-white/40 backdrop-blur-md text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm" disabled={gs?.players?.length >= 5} onClick={() => {
                                                 playSE('play', muted);
