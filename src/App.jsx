@@ -815,8 +815,6 @@ const App = () => {
                                 <div className="draw-stack-alert-text">NEXT DRAW: {gs.nextDrawAmount}</div>
                             )}
 
-                            {/* 中央の戦術サークル (出せる属性を渡して強調表示) */}
-                            <CycleDiagramSmall currentRealm={gs.fieldCard.realm} playableRealms={playableRealms} />
 
                             <div className="flex flex-col items-center justify-center relative w-full h-full">
                                 {/* 巨大化したフィールドカード */}
