@@ -941,10 +941,9 @@ body {
     transform: translate(-50%, -50%);
     width: clamp(280px, 65vw, 380px);
     height: clamp(280px, 65vw, 380px);
-    opacity: 0.7;
+    opacity: 0.95;
     pointer-events: none;
     z-index: 2;
-    /* カード(z-index: 10)の後ろに配置 */
     overflow: visible;
     filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.5));
 }

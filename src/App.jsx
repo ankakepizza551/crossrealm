@@ -795,17 +795,14 @@ const App = () => {
                         </div>
 
                         <div className="field-main-area">
-                            <div className="absolute top-[48%] w-full h-[500px] flex items-center justify-center pointer-events-none z-0">
-                                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] pointer-events-none opacity-40">
-                                    <CycleDiagramSmall currentRealm={gs.currentRealm} playableRealms={playableRealms} hoveredCard={hoveredCard} />
+                            <CycleDiagramSmall currentRealm={gs.currentRealm} playableRealms={playableRealms} hoveredCard={hoveredCard} />
+
+                            {vfxOverlay && (
+                                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none z-50 flex items-center justify-center">
+                                    <div className="absolute w-full h-full rounded-full border-[8px] animate-ping opacity-0" style={{ borderColor: vfxOverlay.color, animationDuration: '0.8s' }} />
+                                    <div className="absolute w-40 h-40 rounded-full blur-[20px] opacity-0 animate-pulse" style={{ backgroundColor: vfxOverlay.color, animationDuration: '0.4s' }} />
                                 </div>
-                                {vfxOverlay && (
-                                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none z-50 flex items-center justify-center">
-                                        <div className="absolute w-full h-full rounded-full border-[8px] animate-ping opacity-0" style={{ borderColor: vfxOverlay.color, animationDuration: '0.8s' }} />
-                                        <div className="absolute w-40 h-40 rounded-full blur-[20px] opacity-0 animate-pulse" style={{ backgroundColor: vfxOverlay.color, animationDuration: '0.4s' }} />
-                                    </div>
-                                )}
-                            </div>
+                            )}
 
                             <div className="field-status-text uppercase font-black" style={{ color: isMyTurn ? 'var(--accent)' : 'inherit', textShadow: isMyTurn ? '0 0 10px var(--accent)' : 'none' }}>
                                 {isMyTurn ? '>>> YOUR TURN <<<' : me?.isEliminated ? 'Spectating...' : 'Opponent Turn'}
