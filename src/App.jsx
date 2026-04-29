@@ -5,10 +5,11 @@ import './index.css';
 // const socket = io('https://crossrealm-server.onrender.com');
 // const socket = io('https://crossrealm-server.onrender.com');
 const socket = io(
-    (window.location.hostname === 'localhost' && window.location.port !== '3000')
-        ? 'http://localhost:3000'
-        : undefined // Production or running server locally on 3000
+    (window.location.port !== '3000' && window.location.hostname !== 'cross-realm.onrender.com')
+        ? `http://${window.location.hostname}:3000`
+        : undefined
 );
+
 
 const REALMS = {
     GEAR: { n: '歯車', color: '#FF8C00', bright: '#FFD700', glow: 'rgba(255,140,0,1)', theme: 'steam', font: 'Special Elite' },
@@ -87,14 +88,14 @@ const ComplexEmblem = ({ isLogo = false }) => (
     </svg>
 );
 
-const CycleDiagramSmall = ({ currentRealm, playableRealms = [], hoveredCard, bgAnim }) => {
+const CycleDiagramSmall = ({ currentRealm, playableRealms = [], hoveredCard, bgAnim, isReversed }) => {
     const items = [
         { k: 'GEAR', n: '歯車' }, { k: 'ICEAGE', n: '氷河期' }, { k: 'FOUNTAIN', n: '噴水' },
         { k: 'BATTERY', n: '電池' }, { k: 'MACHINE', n: '機械' }, { k: 'ARCHIVE', n: '古文書' }
     ];
 
     const rx = 130;
-    const ry = 95;
+    const ry = 90;
 
     const renderNodeShape = (k, isCurrent, isPlayable, isHoveredNode) => {
         const baseSize = isCurrent ? 16 : 13;
@@ -134,7 +135,7 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], hoveredCard, bgA
                     {(k === 'ICEAGE' || k === 'FOUNTAIN') && <circle r={baseSize * 1.15} {...props} />}
                     {(k === 'BATTERY' || k === 'MACHINE') && <polygon points="-0.7,-1.05 0.7,-1.05 1.05,-0.7 1.05,0.7 0.7,1.05 -0.7,1.05 -1.05,0.7 -1.05,-0.7" transform={`scale(${baseSize})`} {...props} />}
                 </g>
-                <g transform="scale(0.55)" opacity={isDimmed ? "0.4" : "1"} style={{ color: isCurrent ? '#000' : '#fff' }}>
+                <g transform="scale(0.65)" opacity={isDimmed ? "0.4" : "1"} style={{ color: isCurrent ? '#000' : '#fff' }}>
                     <IconRenderer r={k} spec={false} x="-12" y="-15" width="24" height="24" />
                 </g>
             </g>
@@ -166,30 +167,34 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], hoveredCard, bgA
                         else if (hr === 'FOUNTAIN' && hoveredCard.isSpecial) isHoveredNode = (item.k === 'ICEAGE' || item.k === 'FOUNTAIN');
                         else isHoveredNode = (hr === item.k);
                     }
-                    const startA = (i * 60 - 90 + 12) * (Math.PI / 180);
-                    const endA = (i * 60 - 90 + 48) * (Math.PI / 180);
+                    const startA = (i * 60 - 90 + (isReversed ? 48 : 12)) * (Math.PI / 180);
+                    const endA = (i * 60 - 90 + (isReversed ? 12 : 48)) * (Math.PI / 180);
                     return (
                         <g key={item.k}>
                             <path
-                                d={`M ${160 + rx * Math.cos(startA)} ${120 + ry * Math.sin(startA)} A ${rx} ${ry} 0 0 1 ${160 + rx * Math.cos(endA)} ${120 + ry * Math.sin(endA)}`}
+                                d={`M ${160 + rx * Math.cos(startA)} ${120 + ry * Math.sin(startA)} A ${rx} ${ry} 0 0 ${isReversed ? 0 : 1} ${160 + rx * Math.cos(endA)} ${120 + ry * Math.sin(endA)}`}
                                 fill="none"
                                 stroke={isCurrent ? "rgba(255,255,255,0.6)" : (isHoveredNode ? "var(--accent)" : "rgba(255,255,255,0.15)")}
                                 strokeWidth={isCurrent ? 1.5 : (isHoveredNode ? 1.2 : 0.8)}
                                 markerEnd="url(#arrowhead-master)"
                                 className="transition-all duration-500 ease-out"
-                            />
-                            <g transform={`translate(${x}, ${y})`} className="transition-all duration-500 ease-out">
+                            />                            <g transform={`translate(${x}, ${y})`} className="transition-all duration-500 ease-out">
                                 {renderNodeShape(item.k, isCurrent, isPlayable, isHoveredNode)}
                                 <text
                                     className="transition-all duration-500 ease-out"
-                                    y={isCurrent ? "30" : "26"}
+                                    y={isCurrent ? "32" : "28"}
                                     fill={isCurrent ? "#fff" : (isHoveredNode ? "var(--accent)" : (isPlayable ? "#fff" : "rgba(255,255,255,0.5)"))}
-                                    fontSize={isCurrent ? "11" : "9"}
+                                    fontSize={isCurrent ? "13" : "10"}
                                     fontWeight="1000"
                                     textAnchor="middle"
                                     dominantBaseline="middle"
-                                    fontFamily="Orbitron"
-                                    style={{ textShadow: isCurrent ? `0 0 10px ${REALMS[item.k].color}` : (isHoveredNode ? `0 0 8px var(--accent)` : 'none') }}
+                                    fontFamily="'Noto Sans JP', sans-serif"
+                                    style={{ 
+                                        textShadow: `0 0 6px rgba(0,0,0,1), 0 0 12px rgba(0,0,0,0.8)${isCurrent ? `, 0 0 10px ${REALMS[item.k].color}` : (isHoveredNode ? `, 0 0 8px var(--accent)` : '')}`,
+                                        paintOrder: 'stroke fill',
+                                        stroke: 'rgba(0,0,0,0.6)',
+                                        strokeWidth: '3px'
+                                    }}
                                 >
                                     {item.n}
                                 </text>
@@ -648,7 +653,7 @@ const App = () => {
     };
 
     return (
-        <div className={`screen-wrapper ${shake ? 'shake-active' : ''}`} style={{ '--r-color': REALMS[currentR]?.color }}>
+        <div className={`screen-wrapper ${shake ? 'shake-active' : ''} ${isMyTurn ? 'my-turn-glow' : ''}`} style={{ '--r-color': REALMS[currentR]?.color }}>
             {flash && <div className="flash-overlay" />}
             {cutin && (
                 <div className="cutin-container">
@@ -817,8 +822,26 @@ const App = () => {
                                 {muted ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 opacity-40"><path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6" /></svg> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>}
                             </div>
                         </div>
+                        <div className={`turn-status-banner ${isMyTurn ? 'my-turn' : ''}`}>
+                            <div className="banner-content">
+                                <span className={`banner-direction ${gs.isReversed ? 'text-danger' : 'text-accent'}`}>{gs.isReversed ? '↺' : '↻'}</span>
+                                <div className="banner-divider"></div>
+                                <span className="banner-text">
+                                    {isMyTurn ? 'YOUR TURN' : `${gs.players[gs.turnIndex]?.name}'S TURN`}
+                                </span>
+                                <div className="banner-divider"></div>
+                                <div className="banner-badges">
+                                    {Object.keys(REALMS).filter(r => r !== 'PLANET' && r !== 'RUINS').map(r => (
+                                        <div key={r} className={`realm-badge ${playableRealms.includes(r) ? 'active' : ''} ${gs.currentRealm === r ? 'current' : ''}`} style={{ '--r-color': REALMS[r].color }} title={REALMS[r].n}>
+                                            <IconRenderer r={r} spec={false} />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
 
-                        <div className="grid grid-cols-2 gap-1.5 p-2 bg-[#0a0f23]/90 border-b-2 border-white/15 shrink-0 backdrop-blur-md">
+                        <div className="grid grid-cols-2 gap-2 p-2 bg-[#0a0f23]/90 border-b-2 border-white/15 shrink-0 backdrop-blur-md">
+
                             {gs.players.filter(p => p.id !== socket?.id && p.name !== name).slice(0, 2).map(p => (
                                 <div key={p.id} className={`bg-white/5 border border-white/15 rounded-md p-2 relative h-16 flex flex-col justify-center ${gs.currentTurnPlayerId === p.id ? 'current-turn-glow-active' : ''} ${p.isEliminated ? 'grayscale brightness-50 border-danger' : ''} ${(p.handCount >= 8 && !p.isEliminated) ? 'burst-warning' : ''}`}>
                                     <div className="text-[10px] font-black uppercase text-white/60 mb-0.5 tracking-wider w-[85%] truncate">{p.name}</div>
@@ -838,52 +861,45 @@ const App = () => {
                                 </div>
                             ))}
                         </div>
+
                         <div className="field-main-area">
-                            <CycleDiagramSmall currentRealm={gs.currentRealm} playableRealms={playableRealms} hoveredCard={hoveredCard} bgAnim={bgAnim} />
+                            <div className="tactical-field-viewport">
+                                <CycleDiagramSmall currentRealm={gs.currentRealm} playableRealms={playableRealms} hoveredCard={hoveredCard} bgAnim={bgAnim} isReversed={gs.isReversed} />
 
-                            {vfxOverlay && (
-                                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none z-50 flex items-center justify-center">
-                                    <div className="absolute w-full h-full rounded-full border-[8px] animate-ping opacity-0" style={{ borderColor: vfxOverlay.color, animationDuration: '0.8s' }} />
-                                    <div className="absolute w-40 h-40 rounded-full blur-[20px] opacity-0 animate-pulse" style={{ backgroundColor: vfxOverlay.color, animationDuration: '0.4s' }} />
-                                </div>
-                            )}
+                                {vfxOverlay && (
+                                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none z-50 flex items-center justify-center">
+                                        <div className="absolute w-full h-full rounded-full border-[8px] animate-ping opacity-0" style={{ borderColor: vfxOverlay.color, animationDuration: '0.8s' }} />
+                                        <div className="absolute w-40 h-40 rounded-full blur-[20px] opacity-0 animate-pulse" style={{ backgroundColor: vfxOverlay.color, animationDuration: '0.4s' }} />
+                                    </div>
+                                )}
 
-                            <div className="field-status-text uppercase font-black" style={{ color: isMyTurn ? 'var(--accent)' : 'inherit', textShadow: isMyTurn ? '0 0 10px var(--accent)' : 'none' }}>
-                                <span className={`mr-2 ${gs.isReversed ? 'text-danger' : 'text-accent'}`}>{gs.isReversed ? '↺' : '↻'}</span>
-                                {isMyTurn ? '>>> 自分のターン <<<' : me?.isEliminated ? '観戦中...' : '相手のターン'}
-                            </div>
-
-                            {gs.nextDrawAmount > 1 && (
-                                <div className="draw-stack-alert-text">次ドロー: {gs.nextDrawAmount}枚</div>
-                            )}
-
-                            <div className="flex flex-col items-center justify-center relative w-full h-full">
-
-                                <div className="flex items-center justify-center gap-12 sm:gap-20">
-                                    {/* 山札スタック */}
-                                    <div className="relative w-16 h-24 sm:w-20 sm:h-28 opacity-90 transition-all hover:scale-110 cursor-help group" title="残り山札">
-                                        {[...Array(Math.min(5, Math.ceil((gs.deck?.length || 0) / 10)))].map((_, i) => (
-                                            <div key={i} className="absolute inset-0 bg-[#111] border border-white/40 rounded-sm shadow-md" style={{ transform: `translate(${-i * 3}px, ${-i * 3}px)`, zIndex: -i }}>
-                                                {i === 0 && (
-                                                    <div className="w-full h-full p-2 flex flex-col items-center justify-center bg-gradient-to-br from-[#1a1a2e] to-black">
-                                                        <div className="w-full h-full opacity-30 text-accent"><IconRenderer r="BACK" /></div>
-                                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                            <div className="text-[10px] font-black text-white/50 mb-0.5 tracking-tighter">DECK</div>
-                                                            <div className="text-xl font-black text-white font-['Orbitron']">{gs.deck?.length || 0}</div>
+                                <div className="central-cards-overlay">
+                                    <div className="flex items-center justify-center gap-4 sm:gap-6">
+                                        <div className="relative w-14 h-20 sm:w-16 sm:h-24 opacity-90 transition-all hover:scale-110 cursor-help group" title="残り山札">
+                                            {[...Array(Math.min(5, Math.ceil((gs.deck?.length || 0) / 10)))].map((_, i) => (
+                                                <div key={i} className="absolute inset-0 bg-[#111] border border-white/40 rounded-sm shadow-md" style={{ transform: `translate(${-i * 3}px, ${-i * 3}px)`, zIndex: -i }}>
+                                                    {i === 0 && (
+                                                        <div className="w-full h-full p-2 flex flex-col items-center justify-center bg-gradient-to-br from-[#1a1a2e] to-black">
+                                                            <div className="w-full h-full opacity-30 text-accent"><IconRenderer r="BACK" /></div>
+                                                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                                <div className="text-[10px] font-black text-white/50 mb-0.5 tracking-tighter">DECK</div>
+                                                                <div className="text-xl font-black text-white font-['Orbitron']">{gs.deck?.length || 0}</div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="field-card-scale relative z-10 card-play-vfx" key={gs.fieldCard.id}>
+                                            <CardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} />
+                                        </div>
                                     </div>
 
-                                    {/* 巨大化したフィールドカード */}
-                                    <div className="field-card-scale relative z-10 card-play-vfx" key={gs.fieldCard.id}>
-                                        <CardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} />
-                                    </div>
+                                    {gs.nextDrawAmount > 1 && (
+                                        <div className="draw-stack-alert-text">次ドロー: {gs.nextDrawAmount}枚</div>
+                                    )}
                                 </div>
 
-                                {/* 属性名を背景に配置 */}
                                 <div className="field-kanji-text" style={{ color: REALMS[gs.fieldCard.realm].color }}>
                                     {REALMS[gs.fieldCard.realm].n}
                                 </div>
@@ -913,11 +929,18 @@ const App = () => {
 
                         <div className="tactical-log-box no-scrollbar" ref={logContainerRef}>
                             {gs.logs && gs.logs.length > 0 ? (
-                                gs.logs.slice(-10).map(l => <div key={l.id} className="text-[11px] font-black text-white mb-0.5 border-b border-white/5">≫ {l.text}</div>)
+                                gs.logs.slice(-10).map(l => {
+                                    let typeClass = 'log-type-play';
+                                    if (l.text.includes('ドロー')) typeClass = 'log-type-draw';
+                                    if (l.text.includes('特殊') || l.text.includes('ワイルド')) typeClass = 'log-type-special';
+                                    if (l.text.includes('脱落') || l.text.includes('バースト')) typeClass = 'log-type-danger';
+                                    return <div key={l.id} className={`text-[11px] font-black mb-0.5 border-b border-white/5 ${typeClass}`}>≫ {l.text}</div>;
+                                })
                             ) : (
                                 <div className="opacity-40 italic text-xs font-bold mt-1">ANALYZING...</div>
                             )}
                         </div>
+
 
                         <div className={`flex flex-row flex-nowrap justify-start items-end w-full pt-5 pb-4 px-2 overflow-x-auto bg-gradient-to-b from-[#1e0a32]/80 to-[#05010a] border-t-[2.5px] border-accent/20 min-h-[135px] shrink-0 no-scrollbar transition-all duration-500 ${isMyTurn ? 'my-turn-hand-fx' : ''} ${(me?.handCount >= 8 && !me?.isEliminated) ? 'burst-warning' : ''}`}>
                             {sortedHand.map((c, i) => {

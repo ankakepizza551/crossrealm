@@ -619,6 +619,23 @@
             letter-spacing: 1px;
         }
 
+        .card-info-bottom {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            padding: 20% 0 8%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
+            text-align: center;
+            z-index: 50;
+        }
+
+        .card-info-bottom span {
+            font-size: calc(var(--card-w)*0.13);
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 10px var(--r-color);
+        }
+
         .card-footer-peak {
             position: absolute;
             bottom: 0;
@@ -721,6 +738,113 @@
             text-transform: uppercase;
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
         }
+
+        /* === 新規追加: ナビゲーション・装飾 === */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(5, 1, 10, 0.85);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-link {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            cursor: pointer;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+        }
+
+        .nav-link:hover {
+            color: var(--accent);
+            background: rgba(64, 224, 208, 0.1);
+        }
+
+        .realm-transition-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 900;
+            font-size: 0.75rem;
+            transition: all 0.3s;
+        }
+
+        .realm-transition-badge:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            background: var(--accent);
+            color: black;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 0 20px rgba(64, 224, 208, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .reveal-section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .reveal-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .interactive-node {
+            cursor: pointer;
+            transition: all 0.4s;
+        }
+
+        .interactive-node:hover {
+            transform: translate(-50%, -50%) scale(1.15) !important;
+            z-index: 100;
+        }
+
+        .path-active {
+            stroke: var(--accent) !important;
+            stroke-width: 4 !important;
+            opacity: 1 !important;
+            filter: drop-shadow(0 0 8px var(--accent)) !important;
+        }
+
     </style>
 </head>
 
@@ -903,12 +1027,14 @@
                         <IconRenderer r={realmKey} spec={isSpecial} />
                     </div>
 
-                    <div className="card-footer-peak" style={{ fontFamily: r.font }}>{realmKey}</div>
+                    <div className="card-info-bottom"><span>{r.n}</span></div>
                 </div>
             );
         };
 
         const CycleDiagramLarge = () => {
+
+            const [hovered, setHovered] = useState(null);
             const items = [
                 { k: 'GEAR', x: 50, y: 15 },
                 { k: 'ICEAGE', x: 80, y: 32 },
@@ -918,37 +1044,74 @@
                 { k: 'ARCHIVE', x: 20, y: 32 }
             ];
 
+            const transitions = {
+                GEAR: ['GEAR', 'ICEAGE'],
+                ICEAGE: ['FOUNTAIN', 'BATTERY'],
+                FOUNTAIN: ['FOUNTAIN', 'BATTERY'],
+                BATTERY: ['MACHINE', 'ARCHIVE'],
+                MACHINE: ['MACHINE', 'ARCHIVE'],
+                ARCHIVE: ['GEAR', 'ICEAGE']
+            };
+
+            const isPathActive = (from, to) => {
+                if (!hovered) return false;
+                if (hovered === from) return transitions[from].includes(to);
+                return false;
+            };
+
             return (
-                <div className="relative w-full max-w-[400px] aspect-square mx-auto my-8">
+                <div className="relative w-full max-w-[400px] aspect-square mx-auto my-12 group">
                     {/* SVG Connections with Arrows */}
                     <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
                         <defs>
                             <marker id="arrowhead-large" markerWidth="6" markerHeight="6" refX="5" refY="3" orientation="auto">
-                                <polygon points="0 0, 6 3, 0 6" fill="var(--accent)" opacity="0.8" />
+                                <polygon points="0 0, 6 3, 0 6" fill="currentColor" />
                             </marker>
                             <filter id="glow-line"><feGaussianBlur stdDeviation="1" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
                         </defs>
-                        {/* Outer Main Cycle */}
-                        <path d="M 50 15 L 80 32 L 80 68 L 50 85 L 20 68 L 20 32 Z" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-                        {/* Dynamic Flow Arrows */}
-                        <path d="M 50 15 Q 65 18 80 32" fill="none" stroke="var(--accent)" strokeWidth="2" markerEnd="url(#arrowhead-large)" opacity="0.4" filter="url(#glow-line)" />
-                        <path d="M 80 32 Q 85 50 80 68" fill="none" stroke="var(--accent)" strokeWidth="2" markerEnd="url(#arrowhead-large)" opacity="0.4" filter="url(#glow-line)" />
-                        <path d="M 80 68 Q 65 82 50 85" fill="none" stroke="var(--accent)" strokeWidth="2" markerEnd="url(#arrowhead-large)" opacity="0.4" filter="url(#glow-line)" />
-                        <path d="M 50 85 Q 35 82 20 68" fill="none" stroke="var(--accent)" strokeWidth="2" markerEnd="url(#arrowhead-large)" opacity="0.4" filter="url(#glow-line)" />
-                        <path d="M 20 68 Q 15 50 20 32" fill="none" stroke="var(--accent)" strokeWidth="2" markerEnd="url(#arrowhead-large)" opacity="0.4" filter="url(#glow-line)" />
-                        <path d="M 20 32 Q 35 18 50 15" fill="none" stroke="var(--accent)" strokeWidth="2" markerEnd="url(#arrowhead-large)" opacity="0.4" filter="url(#glow-line)" />
+                        
+                        {/* Main Paths */}
+                        {items.map((item, i) => {
+                            const next1 = items[(i + 1) % items.length];
+                            const next2 = items[(i + 2) % items.length];
+                            
+                            // 自身への遷移（ループ）は描画を簡略化
+                            return (
+                                <React.Fragment key={i}>
+                                    <path 
+                                        d={`M ${item.x} ${item.y} L ${next1.x} ${next1.y}`} 
+                                        fill="none" 
+                                        stroke="rgba(255,255,255,0.05)" 
+                                        strokeWidth="1" 
+                                        className={`transition-all duration-500 ${isPathActive(item.k, next1.k) ? 'path-active' : ''}`}
+                                        style={{ color: isPathActive(item.k, next1.k) ? 'var(--accent)' : 'inherit' }}
+                                        markerEnd={isPathActive(item.k, next1.k) ? "url(#arrowhead-large)" : ""}
+                                    />
+                                </React.Fragment>
+                            );
+                        })}
                     </svg>
 
                     {items.map(item => (
-                        <div key={item.k} className="absolute flex flex-col items-center justify-center transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500" style={{ left: `${item.x}%`, top: `${item.y}%` }}>
-                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-black/80 border-2 flex items-center justify-center shadow-lg" style={{ borderColor: REALMS[item.k].color, boxShadow: `0 0 15px ${REALMS[item.k].dim || REALMS[item.k].color}` }}>
+                        <div 
+                            key={item.k} 
+                            className="absolute flex flex-col items-center justify-center transform -translate-x-1/2 -translate-y-1/2 interactive-node" 
+                            style={{ left: `${item.x}%`, top: `${item.y}%`, opacity: hovered && !transitions[hovered].includes(item.k) && hovered !== item.k ? 0.3 : 1 }}
+                            onMouseEnter={() => setHovered(item.k)}
+                            onMouseLeave={() => setHovered(null)}
+                        >
+                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-black/80 border-2 flex items-center justify-center shadow-lg transition-all" style={{ borderColor: REALMS[item.k].color, boxShadow: `0 0 20px ${REALMS[item.k].dim || REALMS[item.k].color}`, transform: hovered === item.k ? 'scale(1.1)' : 'scale(1)' }}>
                                 <div className="w-6 h-6 md:w-8 md:h-8" style={{ color: REALMS[item.k].color }}>
                                     <IconRenderer r={item.k} />
                                 </div>
                             </div>
-                            <div className="text-[8px] md:text-[10px] mt-1 font-black tracking-widest text-white/90 bg-black/40 px-2 py-0.5 rounded-full">{REALMS[item.k].n}</div>
+                            <div className="text-[8px] md:text-[10px] mt-1 font-black tracking-widest text-white/90 bg-black/60 px-2 py-0.5 rounded-full border border-white/10">{REALMS[item.k].n}</div>
                         </div>
                     ))}
+                    
+                    {!hovered && (
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] font-black text-accent/40 tracking-[4px] animate-pulse pointer-events-none uppercase">Hover Nodes</div>
+                    )}
                 </div>
             );
         };
@@ -1076,12 +1239,29 @@
             const [flash, setFlash] = React.useState(false);
             const [cutin, setCutin] = React.useState(null);
             const [uiTab, setUiTab] = React.useState('top');
+            const [scrolled, setScrolled] = React.useState(false);
 
             useEffect(() => {
-                const timer = setInterval(() => {
-                    // Auto sequence for demo? No, let user interact.
-                }, 3000);
-                return () => clearInterval(timer);
+                const handleScroll = () => setScrolled(window.scrollY > 300);
+                window.addEventListener('scroll', handleScroll);
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                        }
+                    });
+                }, { threshold: 0.1 });
+
+                document.querySelectorAll('.guide-section').forEach(el => {
+                    el.classList.add('reveal-section');
+                    observer.observe(el);
+                });
+
+                return () => {
+                    window.removeEventListener('scroll', handleScroll);
+                    observer.disconnect();
+                };
             }, []);
 
             const triggerSpecial = (r) => {
@@ -1109,6 +1289,11 @@
                 return f === h || (NEXT_MAP[f] && NEXT_MAP[f].includes(h));
             };
 
+            const scrollTo = (id) => {
+                const el = document.getElementById(id);
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+            };
+
             return (
                 <div className={`w-full min-h-screen ${shake ? 'shake-active' : ''}`}>
                     {flash && <div className="flash-overlay" />}
@@ -1121,6 +1306,17 @@
                     )}
                     <AstralBackground />
 
+                    <div className="sticky-header">
+                        <div className="nav-link" onClick={() => scrollTo('section-lore')}>Realms</div>
+                        <div className="nav-link" onClick={() => scrollTo('section-rules')}>Rules</div>
+                        <div className="nav-link" onClick={() => scrollTo('section-tactics')}>Tactics</div>
+                        <div className="nav-link" onClick={() => scrollTo('section-special')}>Special</div>
+                    </div>
+
+                    <div className={`back-to-top ${scrolled ? 'visible' : ''}`} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-6 h-6"><path d="M18 15l-6-6-6 6" /></svg>
+                    </div>
+
                     <div className="guide-content">
                         {/* Title Section */}
                         <div className="top-logo-area mt-4 mb-4">
@@ -1131,6 +1327,7 @@
                                 <div className="text-accent font-['Audiowide'] text-[0.85rem] mt-2 tracking-[6px] animate-pulse">- OMEGA SINGULARITY -</div>
                             </div>
                         </div>
+
                         <div className="text-center mb-12">
                             <div className="text-2xl md:text-3xl font-bold tracking-[8px] uppercase mb-4 text-white">Interactive Guide</div>
                             <p className="text-white/80 font-bold tracking-widest bg-black/60 inline-block px-6 py-2 rounded-full border border-white/20 backdrop-blur-md mb-8">オメガ・シンギュラリティ 対応マニュアル</p>
@@ -1144,8 +1341,9 @@
 
 
                         {/* World Flavor Lore Section */}
-                        <div className="guide-section text-center">
+                        <div id="section-lore" className="guide-section text-center">
                             <h2 className="section-title text-[var(--steam-gold)]">The Three Realms: 三つの世界と移ろい</h2>
+
                             <p className="text-white/60 text-sm mb-12 font-bold max-w-2xl mx-auto">
                                 カードの属性はただの記号ではありません。それは次元の境界を越え、変貌し続ける世界の姿です。
                             </p>
@@ -1161,11 +1359,14 @@
                                         厚い氷の下で、人智を超えた神秘が芽吹き、次なる「幻想世界（FANTASY）」が産声を上げる……
                                     </p>
                                     <div className="mt-6 flex justify-center gap-2 opacity-60">
-                                        <div className="px-2 py-1 bg-black/40 rounded border border-white/10 text-[10px]">GEAR</div>
-                                        <div className="text-[10px] mt-1">→</div>
-                                        <div className="px-2 py-1 bg-[#1E90FF]/30 rounded border border-[#1E90FF]/40 text-[10px] text-[#00F3FF]">ICEAGE</div>
+                                        <div className="realm-transition-badge">
+                                            <span className="text-white/60">GEAR</span>
+                                            <span className="text-[var(--accent)]">→</span>
+                                            <span className="text-[#00F3FF]">ICEAGE</span>
+                                        </div>
                                     </div>
                                 </div>
+
 
                                 {/* Fantasy Lore */}
                                 <div className="bg-gradient-to-b from-[#1E90FF]/20 to-black p-6 rounded-2xl border border-[#1E90FF]/30 relative overflow-hidden group">
@@ -1177,11 +1378,14 @@
                                         高度な情報処理能力を得た世界は、やがて電脳の海「サイバーパンク（CYBER）」へと変貌を遂げる……
                                     </p>
                                     <div className="mt-6 flex justify-center gap-2 opacity-60">
-                                        <div className="px-2 py-1 bg-black/40 rounded border border-white/10 text-[10px]">FOUNTAIN</div>
-                                        <div className="text-[10px] mt-1">→</div>
-                                        <div className="px-2 py-1 bg-[#E2B0FF]/30 rounded border border-[#E2B0FF]/40 text-[10px] text-[#DDA0DD]">BATTERY</div>
+                                        <div className="realm-transition-badge">
+                                            <span className="text-white/60">FOUNTAIN</span>
+                                            <span className="text-[var(--accent)]">→</span>
+                                            <span className="text-[#DDA0DD]">BATTERY</span>
+                                        </div>
                                     </div>
                                 </div>
+
 
                                 {/* Cyber Lore */}
                                 <div className="bg-gradient-to-b from-[#E2B0FF]/20 to-black p-6 rounded-2xl border border-[#E2B0FF]/30 relative overflow-hidden group">
@@ -1193,19 +1397,23 @@
                                         そこに記された失われた蒸気技術を求め、世界は再び「スチームパンク（STEAM）」へと回帰していく……
                                     </p>
                                     <div className="mt-6 flex justify-center gap-2 opacity-60">
-                                        <div className="px-2 py-1 bg-black/40 rounded border border-white/10 text-[10px]">MACHINE</div>
-                                        <div className="text-[10px] mt-1">→</div>
-                                        <div className="px-2 py-1 bg-[#8B4513]/30 rounded border border-[#8B4513]/40 text-[10px] text-[#FF8C00]">ARCHIVE</div>
+                                        <div className="realm-transition-badge">
+                                            <span className="text-white/60">MACHINE</span>
+                                            <span className="text-[var(--accent)]">→</span>
+                                            <span className="text-[#FF8C00]">ARCHIVE</span>
+                                        </div>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
 
                         {/* Core Rules Summary Section */}
 
                         {/* Core Rules Summary Section */}
-                        <div className="guide-section">
+                        <div id="section-rules" className="guide-section">
                             <h2 className="section-title text-[var(--steam-gold)]" style={{ textShadow: '0 0 15px rgba(212,175,55,0.6)' }}>Core Rules Summary</h2>
+
                             <div className="bg-black/50 p-6 md:p-8 rounded-xl border border-white/10 text-left max-w-2xl mx-auto shadow-2xl backdrop-blur-md">
                                 <ul className="space-y-4 text-white/90 font-bold leading-relaxed">
                                     {/* Rule 1: Initial Hand */}
@@ -1223,6 +1431,15 @@
                                         <div className="flex-1">
                                             <div className="text-lg font-black text-white mb-1">1ラウンドの勝利条件</div>
                                             <div className="text-sm text-white/80">手札を最も早く <span className="text-[var(--accent)] bg-white/10 px-2 rounded">0枚</span> にしたプレイヤーがそのラウンドの勝者です。</div>
+                                        </div>
+                                    </li>
+
+                                    {/* Rule 2b: Turn Direction */}
+                                    <li className="flex items-start bg-white/5 p-4 rounded-lg border border-white/10 shadow-lg">
+                                        <span className="text-[var(--accent)] font-black text-xl mr-4 mt-1">↻</span>
+                                        <div className="flex-1">
+                                            <div className="text-lg font-black text-white mb-1">順番は<span className="text-[var(--accent)]">時計回り</span>に進行</div>
+                                            <div className="text-sm text-white/60 font-bold">REVERSE発動時は<span className="text-[var(--danger)]">反時計回り</span>に切り替わります。中央のサイクル図の矢印で現在の方向を確認できます。</div>
                                         </div>
                                     </li>
 
@@ -1270,8 +1487,9 @@
                         </div>
 
                         {/* Tactical Simulator Section */}
-                        <div className="guide-section">
+                        <div id="section-tactics" className="guide-section">
                             <h2 className="section-title text-[var(--steam-gold)]">Interactive Tactical Simulator</h2>
+
                             <p className="text-white/80 text-sm mb-8 leading-relaxed font-bold">
                                 「タクティカル・ペア・システム」は、場の属性によって次に出せるカードが制限されるルールです。<br />
                                 下の手札カードをクリックすると、それが「場のカード」になり、次に出せるカードがハイライトされます。<br />
@@ -1317,8 +1535,9 @@
                         </div>
 
                         {/* Special Cards Section */}
-                        <div className="guide-section">
+                        <div id="section-special" className="guide-section">
                             <h2 className="section-title text-[var(--magic-purple)]">Special & Wild Cards</h2>
+
                             <p className="text-white/80 text-sm mb-8 leading-relaxed font-bold text-center">
                                 戦局を大きく覆す特殊な能力を持ったカードたちです。
                             </p>
@@ -1337,7 +1556,7 @@
                                     <div className="pointer-events-none"><CardView realmKey="MACHINE" isSpecial={true} /></div>
                                     <div className="flex-1">
                                         <h3 className="text-xl font-black text-[#DDA0DD] mb-2 tracking-widest pointer-events-none">🤖 機械 (S) [REVERSE] <span className="text-sm font-normal text-white/40 ml-2">(属性10枚中 3枚)</span></h3>
-                                        <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none">手番の進行方向を反転させます。2人プレイ時は相手の手番をスキップして連続で自分のターンになります。（クリックで試す）</p>
+                                        <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none">手番の進行方向（時計回り↔反時計回り）を反転させます。中央のサイクル図の矢印もリアルタイムに反転します。2人プレイ時は相手の手番をスキップして連続で自分のターンになります。（クリックで試す）</p>
                                     </div>
                                 </div>
 
@@ -1579,8 +1798,9 @@
                                 </p>
                                 <ul className="space-y-3 text-white/70 font-bold text-xs list-disc pl-5">
                                     <li><span className="text-white">Backend</span>: Node.js / Express / Socket.io</li>
-                                    <li><span className="text-white">Frontend</span>: React / Vite / Vanilla CSS</li>
-                                    <li><span className="text-white">Design</span>: Image-less, Pure CSS & SVG UI</li>
+                                    <li><span className="text-white">Frontend</span>: React 18 / Vite / Tailwind CSS + Vanilla CSS</li>
+                                    <li><span className="text-white">Design</span>: Image-less, Pure CSS & SVG UI (480px固定幅レイアウト)</li>
+                                    <li><span className="text-white">Direction</span>: 時計回り/反時計回り対応のサイクル図矢印</li>
                                 </ul>
                                 <div className="mt-6 pt-4 border-t border-white/10 text-[10px] text-white/40 font-['Orbitron'] tracking-widest text-center">
                                     CROSS REALM - OMEGA SINGULARITY - TECHNICAL_DOC_SYNC_COMPLETE

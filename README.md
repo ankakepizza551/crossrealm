@@ -5,7 +5,11 @@
 
 ## ⚡ 起動・クイックスタート
 
-本プロジェクトは **Vite + React** 構成に移行しました。プレイするにはバックエンドとフロントエンドの両方を起動する必要があります。
+### 🚀 ワンクリック起動（推奨）
+
+`START_LOCAL_SERVER.bat` をダブルクリックするだけで、バックエンド・フロントエンド・ブラウザが自動で起動します。
+
+### 手動起動
 
 1.  **依存関係のインストール** (初回のみ):
     ```bash
@@ -34,6 +38,7 @@
 本ゲームは全5回のマッチで構成される「シリーズ戦」となっており、最終的な合計スコアでチャンピオンを決定します。
 
 - **初期手札**: 5枚
+- **順番の進行方向**: 通常は **時計回り** に進行します。REVERSE発動時は **反時計回り** に切り替わります。中央のサイクル図の矢印で現在の方向を確認できます。
 - **システムオーバーロード（バースト）**: 手札が **11枚以上** になった瞬間、そのプレイヤーは脱落となり、スコアに **-10ポイント** のペナルティが課せられます。
 - **ドロー**: 出せるカードがない場合は「ドロー」ボタンで1枚引きます。
 - **スコア計算**: 勝利したプレイヤーは、その時点で他のプレイヤーが持っていた手札の合計枚数分のポイントを獲得します。
@@ -45,21 +50,11 @@
 
 ### 属性の循環サイクル
 
-```mermaid
-flowchart TD
-    GEAR(("⚙️<br>歯車")) -->|遷移| ICEAGE(("❄️<br>氷河期"))
-    ICEAGE -->|遷移| FOUNTAIN(("⛲<br>噴水"))
-    FOUNTAIN -->|遷移| BATTERY(("🔋<br>電池"))
-    BATTERY -->|遷移| MACHINE(("🤖<br>機械"))
-    MACHINE -->|遷移| ARCHIVE(("📖<br>古文書"))
-    ARCHIVE -->|遷移| GEAR
-    
-    style GEAR fill:#FF8C00,stroke:#FFD700,stroke-width:3px,color:#fff
-    style ICEAGE fill:#1E90FF,stroke:#00F3FF,stroke-width:2px,color:#fff
-    style FOUNTAIN fill:#8A2BE2,stroke:#E2B0FF,stroke-width:3px,color:#fff
-    style BATTERY fill:#40E0D0,stroke:#ADFF2F,stroke-width:2px,color:#fff
-    style MACHINE fill:#000000,stroke:#FF4500,stroke-width:3px,color:#fff
-    style ARCHIVE fill:#8B4513,stroke:#FF3131,stroke-width:2px,color:#fff
+```
+    ⚙️ 歯車 ──→ ❄️ 氷河期 ──→ ⛲ 噴水
+      ↑                              │
+      │                              ↓
+    📖 古文書 ←── 🤖 機械 ←── 🔋 電池
 ```
 
 ### グループと遷移の役割
@@ -87,7 +82,7 @@ flowchart TD
   - 攻撃を受けたプレイヤーは、手札に「歯車(S)」があればそれを重ねて（+4, +6...と）回避・上乗せが可能です。それ以外のカードは出せません。
 
 - **🤖 機械 (S) [REVERSE]**
-  - 手番の進行方向（時計回り ↔ 反時計回り）を **反転** させます。
+  - 手番の進行方向（時計回り ↔ 反時計回り）を **反転** させます。中央のサイクル図の矢印もリアルタイムに反転して、現在の進行方向を示します。
   - *※2人プレイ時の特例*: 2人対戦時に出した場合は、相手をスキップして **連続で自分のターン** になります。
 
 ### 🌈 属性変化系 (Wild)
@@ -119,16 +114,35 @@ flowchart TD
 - **🪐 惑星 (PLANET)**: 3枚
 - **🏛️ 廃墟 (RUINS)**: 3枚
 
+## 📂 プロジェクト構成
+
+```
+crossrealm_test/
+├── index.js                  # バックエンドサーバー (Socket.io)
+├── launcher.js               # ワンクリック起動スクリプト
+├── START_LOCAL_SERVER.bat     # Windows用ランチャー
+├── package.json
+├── src/
+│   ├── App.jsx               # フロントエンド本体 (React)
+│   ├── CrossRealm.jsx        # ゲームロジック定義
+│   ├── index.css             # 全スタイル定義
+│   └── main.jsx              # エントリーポイント
+├── dist/                     # ビルド出力
+├── Cross_Realm_Interactive_Guide.html  # インタラクティブガイド
+└── Cross_Realm_Card_Showcase.html      # カードショーケース
+```
+
 ## 🎮 開発・技術仕様
 
-- **フロントエンド**: React 18, Vite, Tailwind CSS (Vanilla CSS 移行中)
+- **フロントエンド**: React 18, Vite, Tailwind CSS + Vanilla CSS
 - **バックエンド**: Node.js, Express, Socket.io
 - **アーキテクチャ**:
   - `index.html` モノリスから **Vite + React** モジュラー構成へリファクタリング済み。
   - ロジックは `src/App.jsx`、スタイルは `src/index.css` に分離され、メンテナンス性が向上しています。
 - **UI/UXデザイン**:
+  - **固定幅レイアウト**: PC版はmax-width 480pxの固定幅コンテナで表示され、ブラウザサイズに左右されない安定した表示を実現。スマホ版と完全に同じ見た目になります。
   - 画像アセットを使用せず、純粋なCSSグラデーションとSVGのみでサイバー・スチーム・ファンタジーの三位一体を表現（100dvh対応でモバイル完全最適化）。
-  - 中央の「戦術サークル（Tactical Cycle Wheel）」が手札のホバー状態と連動して次に発動する属性を予測表示するプレビュー機能を搭載。
+  - 中央の「戦術サークル（Tactical Cycle Wheel）」が手札のホバー状態と連動して次に発動する属性を予測表示するプレビュー機能を搭載。REVERSE時は矢印が反時計回りに反転します。
   - 特殊カード使用時の画面揺れ、BURST（脱落）やWILDボーナス時の全画面ショックウェーブVFXなど、ダイナミックな視覚効果を搭載。
   - スムーズなCSSトランジションにより、属性の変化やアイコンの点灯がシームレスにアニメーションします。
 

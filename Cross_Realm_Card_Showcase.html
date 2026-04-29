@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cross Realm - Card Showcase v14.0 SPECIAL</title>
+    <title>Cross Realm - Omega Singularity - Card Showcase</title>
+    <meta name="description" content="Cross Realm - Omega Singularity のカード全11種を3Dインタラクティブに閲覧できるショーケースページです。">
 
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -260,7 +261,16 @@
                 setTilt({ x: ((e.clientY - r.top - r.height/2) / (r.height/2)) * -20, y: ((e.clientX - r.left - r.width/2) / (r.width/2)) * 20 });
             };
 
-            let specialLabel = isSpecial ? (realmKey === 'GEAR' ? 'DRAW 2' : realmKey === 'MACHINE' ? 'REVERSE' : realmKey === 'FOUNTAIN' ? 'LIMIT WILD' : 'WILD') : '';
+            let specialLabel = isSpecial ? (realmKey === 'GEAR' ? 'DRAW\n2' : realmKey === 'MACHINE' ? 'REVERSE' : realmKey === 'FOUNTAIN' ? 'LIMIT\nWILD' : 'WILD') : '';
+            let effectDesc = '';
+            if (isSpecial) {
+                if (realmKey === 'GEAR') effectDesc = '次のプレイヤーに+2枚ドロー';
+                else if (realmKey === 'MACHINE') effectDesc = '順番の進行方向を反転';
+                else if (realmKey === 'FOUNTAIN') effectDesc = '氷河期/噴水の場で好きな属性に変更';
+                else effectDesc = 'いつでも出せる・属性を自由に変更';
+            } else {
+                if (realmKey === 'PLANET' || realmKey === 'RUINS') effectDesc = 'いつでも出せる純粋ワイルド';
+            }
 
             return (
                 <div className="flex flex-col items-center gap-6">
@@ -278,6 +288,7 @@
                         </div>
                     </div>
                     <div className="text-lg font-black text-white/70 uppercase tracking-widest bg-black/50 px-4 py-1 rounded-full border border-white/10">{realmKey} {isSpecial ? '(SPECIAL)' : '(NORMAL)'}</div>
+                    {effectDesc && <div className="text-xs text-white/50 font-bold tracking-wider mt-1 bg-black/30 px-3 py-1 rounded-full border border-white/5">{effectDesc}</div>}
                 </div>
             );
         };
@@ -400,6 +411,7 @@
                 <div className="text-center mb-20 relative z-10">
                     <h1 className="text-4xl md:text-6xl font-black text-[var(--accent)] tracking-[12px] mb-6 uppercase" style={{fontFamily:'Orbitron', textShadow:'0 0 30px rgba(64,224,208,0.8)'}}>Cross Realm<br/><span className="text-2xl md:text-4xl text-white">Showcase</span></h1>
                     <p className="text-white/80 tracking-[6px] text-sm md:text-base font-bold uppercase bg-black/60 inline-block px-8 py-3 rounded-full border border-white/20 backdrop-blur-md shadow-[0_0_20px_rgba(0,0,0,0.8)]">全11種 完全収録エディション</p>
+                    <p className="text-white/40 text-xs mt-4 tracking-widest">カードをマウスで傾けてインタラクティブに閲覧</p>
                 </div>
                 
                 <div className="showcase-container">
@@ -434,11 +446,16 @@
                         title="Void - 特異点の境界" 
                         color="#FFFFFF" 
                         cards={[
-                            {k:'PLANET', s:true}, 
-                            {k:'RUINS', s:true}
+                            {k:'PLANET', s:false}, 
+                            {k:'RUINS', s:false}
                         ]} 
                     />
                 </div>
+
+                <footer className="text-center mt-20 py-8 border-t border-white/10">
+                    <p className="text-white/30 text-xs tracking-widest font-bold">CROSS REALM - OMEGA SINGULARITY</p>
+                    <p className="text-white/20 text-[10px] mt-2">Tactical Card Game &bull; All assets rendered with CSS + SVG</p>
+                </footer>
             </div>
         );
 

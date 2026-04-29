@@ -135,8 +135,10 @@ function checkGameOver(room) {
         }
       });
 
-      // WILD上がりボーナス: 惑星か廃墟で手札0になって上がった場合、ポイント1.5倍
-      if (winner.handCount === 0 && room.fieldCard && (room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS')) {
+      // WILD上がりボーナス: 惑星、廃墟で手札0になって上がった場合、ポイント1.5倍
+      const isWildCard = room.fieldCard.realm === 'PLANET' || 
+                         room.fieldCard.realm === 'RUINS';
+      if (winner.handCount === 0 && room.fieldCard && isWildCard) {
         earnedPoints = Math.ceil(earnedPoints * 1.5);
         isWildFinish = true;
       }
