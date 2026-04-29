@@ -5,9 +5,9 @@ import './index.css';
 // const socket = io('https://crossrealm-server.onrender.com');
 // const socket = io('https://crossrealm-server.onrender.com');
 const socket = io(
-    (window.location.port !== '3000' && window.location.hostname !== 'cross-realm.onrender.com')
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? `http://${window.location.hostname}:3000`
-        : undefined
+        : undefined // Production: use same host/port
 );
 
 
