@@ -14,7 +14,7 @@ const socket = io(
 const REALMS = {
     GEAR: { n: '歯車', color: '#FF8C00', bright: '#FFD700', glow: 'rgba(255,140,0,1)', theme: 'steam', font: 'Special Elite' },
     ARCHIVE: { n: '古文書', color: '#FF3131', bright: '#FF6347', glow: 'rgba(255,49,49,1)', theme: 'steam', font: 'Special Elite' },
-    FOUNTAIN: { n: '噴水', color: '#1E90FF', bright: '#87CEFA', glow: 'rgba(30,144,255,1)', theme: 'fantasy', font: 'Cinzel Decorative' },
+    FOUNTAIN: { n: '噴水', color: '#0047FF', bright: '#6699FF', glow: 'rgba(0,71,255,1)', theme: 'fantasy', font: 'Cinzel Decorative' },
     ICEAGE: { n: '氷河期', color: '#00F3FF', bright: '#ADFCFF', glow: 'rgba(0,243,255,1)', theme: 'fantasy', font: 'Cinzel Decorative' },
     MACHINE: { n: '機械', color: '#E2B0FF', bright: '#DDA0DD', glow: 'rgba(226,176,255,1)', dim: 'rgba(226,176,255,0.4)', theme: 'cyber', font: 'Orbitron' },
     BATTERY: { n: '電池', color: '#ADFF2F', bright: '#7FFF00', glow: 'rgba(173,255,47,1)', dim: 'rgba(173,255,47,0.4)', theme: 'cyber', font: 'Orbitron' },
@@ -98,9 +98,9 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], hoveredCard, bgA
     const ry = 90;
 
     const renderNodeShape = (k, isCurrent, isPlayable, isHoveredNode) => {
-        const baseSize = isCurrent ? 16 : 13;
-        const color = isCurrent ? REALMS[k].color : "rgba(5, 1, 10, 0.95)";
-        const stroke = isCurrent ? "#fff" : (isPlayable || isHoveredNode ? REALMS[k].bright : REALMS[k].color);
+        const baseSize = isCurrent ? 20 : 17;
+        const color = REALMS[k].color;
+        const bright = REALMS[k].bright;
 
         let theme = 'steam';
         if (k === 'FOUNTAIN' || k === 'ICEAGE') theme = 'fantasy';
@@ -109,34 +109,77 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], hoveredCard, bgA
         const isDimmed = !isCurrent && !isPlayable && !isHoveredNode;
         const opacity = isCurrent ? 1 : (isPlayable || isHoveredNode ? 0.95 : 0.3);
 
-        const props = {
-            fill: color,
-            stroke: stroke,
-            strokeWidth: isCurrent ? 2 : (isPlayable || isHoveredNode ? 1.5 : 1),
-            filter: isCurrent ? "url(#node-glow)" : ((isPlayable || isHoveredNode) ? `drop-shadow(0 0 8px ${REALMS[k].color})` : "none"),
-        };
-
         return (
-            <g opacity={opacity} className="transition-all duration-500 ease-out">
+            <g opacity={opacity} className="transition-all duration-500 ease-out" style={{ '--glow-color': color }}>
+                {/* STEAM: 銅のプレート */}
                 {theme === 'steam' && (
-                    <g opacity={isDimmed ? "0.2" : "0.6"}>
-                        {[0, 60, 120, 180, 240, 300].map(deg => (
-                            <circle key={deg} cx={(baseSize + 1.5) * Math.cos(deg * Math.PI / 180)} cy={(baseSize + 1.5) * Math.sin(deg * Math.PI / 180)} r="0.8" fill={stroke} />
+                    <g>
+                        <rect x={-baseSize} y={-baseSize} width={baseSize*2} height={baseSize*2} rx="2" fill="url(#copper-plate-grad)" stroke="#3d2616" strokeWidth="0.5" />
+                        <circle cx={-baseSize+3} cy={-baseSize+3} r="1" fill="#251605" />
+                        <circle cx={baseSize-3} cy={-baseSize+3} r="1" fill="#251605" />
+                        <circle cx={-baseSize+3} cy={baseSize-3} r="1" fill="#251605" />
+                        <circle cx={baseSize-3} cy={baseSize-3} r="1" fill="#251605" />
+                    </g>
+                )}
+
+                {/* FANTASY: 水面・透明な光の魔法陣 + 水滴・光の粒 */}
+                {theme === 'fantasy' && (
+                    <g className="overflow-visible">
+                        {/* 水面のベース */}
+                        <circle r={baseSize} fill="url(#water-surface-grad)" stroke={color} strokeWidth="1" />
+                        
+                        {/* 波紋エフェクト */}
+                        <circle r={baseSize} fill="none" stroke="#fff" strokeWidth="0.5" opacity="0"
+                                style={{ animation: 'water-ripple 4s infinite linear' }} />
+                        <circle r={baseSize} fill="none" stroke="#fff" strokeWidth="0.5" opacity="0"
+                                style={{ animation: 'water-ripple 4s infinite linear', animationDelay: '2s' }} />
+
+                        <g style={{ animation: 'rotate-slow 20s linear infinite', transformOrigin: 'center' }}>
+                            <circle r={baseSize*1.4} fill="none" stroke="url(#silver-magic-grad)" strokeWidth="0.5" strokeDasharray="2 4" opacity="0.6" />
+                        </g>
+                        
+                        {/* 水滴・光の粒 (既存) */}
+                        {[...Array(4)].map((_, i) => (
+                            <circle key={`water-${i}`} r="1.5" fill={color} opacity="0"
+                                style={{ 
+                                    animation: `water-float ${2 + i}s infinite ease-in`,
+                                    animationDelay: `${i * 0.7}s`,
+                                    transform: `translate(${(i - 1.5) * 12}px, ${baseSize}px)`
+                                }} />
                         ))}
+                        <circle r={baseSize} fill="rgba(0,243,255,0.1)" stroke={color} strokeWidth="1" style={{ animation: 'fantasy-glow-pulse 3s infinite ease-in-out' }} />
                     </g>
                 )}
+
+                {/* CYBER: モニター画面風ノイズヘキサゴン */}
                 {theme === 'cyber' && (
-                    <g opacity={isDimmed ? "0.2" : "0.9"}>
-                        <path d={`M -${baseSize + 4} -${baseSize + 1} L -${baseSize + 4} -${baseSize + 4} L -${baseSize + 1} -${baseSize + 4} M ${baseSize + 1} -${baseSize + 4} L ${baseSize + 4} -${baseSize + 4} L ${baseSize + 4} -${baseSize + 1} M ${baseSize + 4} ${baseSize + 1} L ${baseSize + 4} ${baseSize + 4} L ${baseSize + 1} ${baseSize + 4} M -${baseSize + 1} ${baseSize + 4} L -${baseSize + 4} ${baseSize + 4} L -${baseSize + 4} ${baseSize + 1}`} fill="none" stroke={stroke} strokeWidth="1" />
+                    <g className="overflow-hidden">
+                        {/* 画面ベース（モニターの発光感） */}
+                        <path d={`M 0 -${baseSize} L ${baseSize*0.9} -${baseSize*0.5} L ${baseSize*0.9} ${baseSize*0.5} L 0 ${baseSize} L -${baseSize*0.9} ${baseSize*0.5} L -${baseSize*0.9} -${baseSize*0.5} Z`} 
+                              fill="url(#cyber-monitor-grad)" stroke={color} strokeWidth="1.5" 
+                              style={{ animation: 'cyber-flicker 4s infinite' }} />
+                        
+                        {/* ピクセルグリッド（画素） */}
+                        <path d={`M 0 -${baseSize} L ${baseSize*0.9} -${baseSize*0.5} L ${baseSize*0.9} ${baseSize*0.5} L 0 ${baseSize} L -${baseSize*0.9} ${baseSize*0.5} L -${baseSize*0.9} -${baseSize*0.5} Z`} 
+                              fill="url(#cyber-grid-pattern)" opacity="0.3" />
+
+                        {/* 電気スパーク（画面のノイズ） */}
+                        <path d={`M -${baseSize} 0 L -${baseSize+5} -5 L -${baseSize+2} -10 L -${baseSize+8} -15`} 
+                              fill="none" stroke="#fff" strokeWidth="1.5" opacity="0"
+                              style={{ animation: 'electric-arc 3s infinite', filter: 'drop-shadow(0 0 5px #fff)' }} />
+                        
+                        {/* スキャンライン */}
+                        <rect x={-baseSize} y="-10" width={baseSize*2} height="1" fill="rgba(255,255,255,0.2)" style={{ animation: 'scanline-move 2s linear infinite' }} />
+                        
+                        {/* 画面の内側の影（奥行き感） */}
+                        <path d={`M 0 -${baseSize} L ${baseSize*0.9} -${baseSize*0.5} L ${baseSize*0.9} ${baseSize*0.5} L 0 ${baseSize} L -${baseSize*0.9} ${baseSize*0.5} L -${baseSize*0.9} -${baseSize*0.5} Z`} 
+                              fill="none" stroke="rgba(0,0,0,0.5)" strokeWidth="2" />
                     </g>
                 )}
-                <g opacity="0.8">
-                    {(k === 'GEAR' || k === 'ARCHIVE') && <polygon points="0,-1.15 1,-0.57 1,0.57 0,1.15 -1,0.57 -1,-0.57" transform={`scale(${baseSize})`} {...props} />}
-                    {(k === 'ICEAGE' || k === 'FOUNTAIN') && <circle r={baseSize * 1.15} {...props} />}
-                    {(k === 'BATTERY' || k === 'MACHINE') && <polygon points="-0.7,-1.05 0.7,-1.05 1.05,-0.7 1.05,0.7 0.7,1.05 -0.7,1.05 -1.05,0.7 -1.05,-0.7" transform={`scale(${baseSize})`} {...props} />}
-                </g>
-                <g transform="scale(0.65)" opacity={isDimmed ? "0.4" : "1"} style={{ color: isCurrent ? '#000' : '#fff' }}>
-                    <IconRenderer r={k} spec={false} x="-12" y="-15" width="24" height="24" />
+
+                {/* アイコン本体 (中央配置) */}
+                <g transform="scale(0.85)" style={{ color: isCurrent ? '#fff' : (theme === 'steam' ? '#3d2616' : '#fff') }}>
+                    <IconRenderer r={k} spec={isCurrent} x="-12" y="-12" width="24" height="24" />
                 </g>
             </g>
         );
@@ -146,6 +189,32 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], hoveredCard, bgA
         <div className="tactical-cycle-wheel">
             <svg viewBox="0 0 320 240" className="w-full h-full overflow-visible">
                 <defs>
+                    {/* グラデーション・パターン定義 */}
+                    <linearGradient id="copper-plate-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: '#f69d3c' }} />
+                        <stop offset="40%" style={{ stopColor: '#fff', stopOpacity: 0.8 }} />
+                        <stop offset="50%" style={{ stopColor: '#eb5e28' }} />
+                        <stop offset="100%" style={{ stopColor: '#251605' }} />
+                    </linearGradient>
+                    <linearGradient id="silver-magic-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: '#fff', stopOpacity: 0.9 }} />
+                        <stop offset="50%" style={{ stopColor: 'rgba(255,255,255,0.2)' }} />
+                        <stop offset="100%" style={{ stopColor: '#fff', stopOpacity: 0.9 }} />
+                    </linearGradient>
+                    <pattern id="cyber-grid-pattern" width="6" height="6" patternUnits="userSpaceOnUse">
+                        <circle cx="1" cy="1" r="0.5" fill="rgba(255,255,255,0.15)" />
+                    </pattern>
+                    <radialGradient id="water-surface-grad" cx="50%" cy="40%" r="60%">
+                        <stop offset="0%" style={{ stopColor: 'rgba(0, 200, 255, 0.4)' }} />
+                        <stop offset="50%" style={{ stopColor: 'rgba(0, 80, 150, 0.6)' }} />
+                        <stop offset="100%" style={{ stopColor: 'rgba(0, 20, 50, 0.8)' }} />
+                    </radialGradient>
+                    <radialGradient id="cyber-monitor-grad" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style={{ stopColor: 'rgba(50, 20, 100, 0.8)' }} />
+                        <stop offset="70%" style={{ stopColor: 'rgba(20, 10, 40, 0.9)' }} />
+                        <stop offset="100%" style={{ stopColor: '#05010a' }} />
+                    </radialGradient>
+
                     <filter id="node-glow" x="-50%" y="-50%" width="200%" height="200%">
                         <feGaussianBlur stdDeviation="3" result="blur" />
                         <feComposite in="SourceGraphic" in2="blur" operator="over" />
@@ -356,11 +425,74 @@ const CardView = ({ card, playable, onClick, isField, isSelected, isMyTurn, onMo
     );
 };
 
-const GearSVG = ({ color }) => (
-    <svg viewBox="0 0 100 100" className="w-full h-full"><defs><linearGradient id={`grad-gear-${color}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{ stopColor: color, stopOpacity: 1 }} /><stop offset="100%" style={{ stopColor: '#4b2f1c', stopOpacity: 1 }} /></linearGradient></defs><path fill={`url(#grad-gear-${color})`} d="M100 56.5v-13l-12.7-2.1c-1.1-4.5-3-8.6-5.4-12.3l7.4-10.4-9.2-9.2-10.4 7.4c-3.7-2.4-7.8-4.3-12.3-5.4L55.3 0h-13l-2.1 12.7c-4.5 1.1-8.6 3-12.3 5.4l-10.4-7.4-9.2 9.2 7.4 10.4c-2.4 3.7-4.3 7.8-5.4 12.3L0 43.5v13l12.7 2.1c1.1 4.5 3 8.6 5.4 12.3l-7.4 10.4 9.2 9.2 10.4-7.4c3.7 2.4 7.8 4.3 12.3 5.4l2.1 12.7h13l2.1-12.7c4.5-1.1 8.6-3 12.3-5.4l10.4 7.4 9.2-9.2-7.4-10.4c2.4-3.7 4.3-7.8 5.4-12.3l12.7-2.1zM50 71c-11.6 0-21-9.4-21-21s9.4-21 21-21 21 9.4 21 21-9.4 21-21 21z" /><circle cx="50" cy="50" r="12" fill="#000" /></svg>
+const GearIcon = ({ color }) => (
+    <svg viewBox="0 0 100 100" className="w-full h-full">
+        <defs>
+            <linearGradient id={`grad-gear-${color}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style={{ stopColor: color, stopOpacity: 1 }} />
+                <stop offset="45%" style={{ stopColor: '#fff', stopOpacity: 0.8 }} />
+                <stop offset="55%" style={{ stopColor: color, stopOpacity: 1 }} />
+                <stop offset="100%" style={{ stopColor: '#332211', stopOpacity: 1 }} />
+            </linearGradient>
+        </defs>
+        <path fill={`url(#grad-gear-${color})`} stroke="#4b2f1c" strokeWidth="0.5"
+            d="M100 56.5v-13l-12.7-2.1c-1.1-4.5-3-8.6-5.4-12.3l7.4-10.4-9.2-9.2-10.4 7.4c-3.7-2.4-7.8-4.3-12.3-5.4L55.3 0h-13l-2.1 12.7c-4.5 1.1-8.6 3-12.3 5.4l-10.4-7.4-9.2 9.2 7.4 10.4c-2.4 3.7-4.3 7.8-5.4 12.3L0 43.5v13l12.7 2.1c1.1 4.5 3 8.6 5.4 12.3l-7.4 10.4 9.2 9.2 10.4-7.4c3.7 2.4 7.8 4.3 12.3 5.4l2.1 12.7h13l2.1-12.7c4.5-1.1 8.6-3 12.3-5.4l10.4 7.4 9.2-9.2-7.4-10.4c2.4-3.7 4.3-7.8 5.4-12.3l12.7-2.1zM50 71c-11.6 0-21-9.4-21-21s9.4-21 21-21 21 9.4 21 21-9.4 21-21 21z" />
+        <circle cx="50" cy="50" r="15" fill="none" stroke="#fff" strokeWidth="0.5" opacity="0.3" />
+        <circle cx="50" cy="50" r="8" fill="#111" stroke={`url(#grad-gear-${color})`} strokeWidth="2" />
+    </svg>
 );
-const MagicCircleSVG = ({ color }) => (
-    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible"><defs><filter id="magic-glow"><feGaussianBlur stdDeviation="2" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter></defs><g filter="url(#magic-glow)"><g style={{ animation: 'rotate-outer 10s linear infinite', transformOrigin: 'center' }}><circle cx="50" cy="50" r="48" fill="none" stroke={color} strokeWidth="1.5" strokeDasharray="10 5" /></g><g style={{ animation: 'rotate-inner 15s linear infinite', transformOrigin: 'center' }}><circle cx="50" cy="50" r="35" fill="none" stroke={color} strokeWidth="1" /><path d="M50 15 L80 70 L20 70 Z M50 85 L20 30 L80 30 Z" fill="none" stroke={color} strokeWidth="1" /><circle cx="50" cy="50" r="10" fill="none" stroke={color} strokeWidth="2" /></g></g></svg>
+const ArchiveIcon = ({ color }) => (
+    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+        <defs>
+            <linearGradient id={`grad-archive-${color}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style={{ stopColor: '#fff', stopOpacity: 1 }} />
+                <stop offset="20%" style={{ stopColor: color, stopOpacity: 1 }} />
+                <stop offset="50%" style={{ stopColor: '#fff', stopOpacity: 0.9 }} />
+                <stop offset="80%" style={{ stopColor: color, stopOpacity: 1 }} />
+                <stop offset="100%" style={{ stopColor: '#441111', stopOpacity: 1 }} />
+            </linearGradient>
+            <filter id="archive-glow"><feGaussianBlur stdDeviation="2" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
+        </defs>
+        <g filter="url(#archive-glow)">
+            <g style={{ animation: 'rotate-outer 10s linear infinite', transformOrigin: 'center' }}>
+                <circle cx="50" cy="50" r="48" fill="none" stroke={`url(#grad-archive-${color})`} strokeWidth="2" strokeDasharray="10 5" />
+            </g>
+            <g style={{ animation: 'rotate-inner 15s linear infinite', transformOrigin: 'center' }}>
+                <circle cx="50" cy="50" r="35" fill="none" stroke={`url(#grad-archive-${color})`} strokeWidth="1.5" />
+                <path d="M50 15 L80 70 L20 70 Z M50 85 L20 30 L80 30 Z" fill="none" stroke={`url(#grad-archive-${color})`} strokeWidth="1.5" />
+                <circle cx="50" cy="50" r="10" fill="none" stroke={`url(#grad-archive-${color})`} strokeWidth="2" />
+            </g>
+        </g>
+    </svg>
+);
+
+// 背景用の「光」のコンポーネント（透明感とグロウを重視）
+const GearLight = ({ color }) => (
+    <svg viewBox="0 0 100 100" className="w-full h-full opacity-60">
+        <circle cx="50" cy="50" r="20" fill="none" stroke={color} strokeWidth="2" />
+        {[...Array(8)].map((_, i) => (
+            <rect key={i} x="45" y="10" width="10" height="15" fill="none" stroke={color} strokeWidth="2"
+                transform={`rotate(${i * 45} 50 50)`} />
+        ))}
+    </svg>
+);
+
+const MagicCircleLight = ({ color }) => (
+    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+        <defs>
+            <filter id="magic-glow-bg"><feGaussianBlur stdDeviation="2" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
+        </defs>
+        <g filter="url(#magic-glow-bg)" opacity="0.6">
+            <g style={{ animation: 'rotate-outer 10s linear infinite', transformOrigin: 'center' }}>
+                <circle cx="50" cy="50" r="48" fill="none" stroke={color} strokeWidth="1" strokeDasharray="10 5" />
+            </g>
+            <g style={{ animation: 'rotate-inner 15s linear infinite', transformOrigin: 'center' }}>
+                <circle cx="50" cy="50" r="35" fill="none" stroke={color} strokeWidth="1" />
+                <path d="M50 15 L80 70 L20 70 Z M50 85 L20 30 L80 30 Z" fill="none" stroke={color} strokeWidth="1" />
+                <circle cx="50" cy="50" r="10" fill="none" stroke={color} strokeWidth="2" />
+            </g>
+        </g>
+    </svg>
 );
 
 const AstralBackground = ({ bgAnim }) => {
@@ -421,13 +553,13 @@ const AstralBackground = ({ bgAnim }) => {
                 if (it.type === 'gear') {
                     return (
                         <div key={it.id} className="flow-gear" style={{ '--sx': it.sx, '--ex': it.ex, '--sy': it.sy, '--ey': it.ey, '--delay': it.delay, '--dur': it.dur, '--op': it.op, '--rot': it.rot, '--glow-color': it.color, width: it.size, height: it.size, animationDelay: it.delay, animationDuration: it.dur }}>
-                            <GearSVG color={it.color} />
+                            <GearLight color={it.color} />
                         </div>
                     );
                 } else {
                     return (
                         <div key={it.id} className="flow-magic" style={{ '--sx': it.sx, '--ex': it.ex, '--op': it.op, '--rot': it.rot, '--glow-color': it.color, width: '130px', height: '130px', animationDelay: it.delay, animationDuration: it.dur }}>
-                            <MagicCircleSVG color={it.color} />
+                            <MagicCircleLight color={it.color} />
                         </div>
                     );
                 }
@@ -760,13 +892,13 @@ const App = () => {
                         </div>
                         <div className="w-full mt-2 px-4 flex flex-col items-center">
                             {(gs?.players[0]?.id === socket?.id || gs?.players[0]?.name === name) && (
-                                <div className="flex gap-3 w-full mb-3">
-                                    <button className="flex-1 p-5 bg-black/80 border border-white/40 backdrop-blur-md text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm" disabled={gs?.players?.length >= 5} onClick={() => {
+                                <div className="flex gap-2 w-full mb-3">
+                                    <button className="flex-1 py-4 px-1 bg-black/80 border border-white/20 backdrop-blur-md text-white font-black text-[11px] tracking-[1px] uppercase rounded-sm whitespace-nowrap" disabled={gs?.players?.length >= 5} onClick={() => {
                                         playSE('play', muted);
                                         const botNames = ['X-TREME', 'A.L.I.C.E', 'G.E.A.R', 'N.U.L.L'];
                                         socket.emit('add-cpu', { roomId: room.toUpperCase(), botName: botNames[Math.floor(Math.random() * botNames.length)] });
                                     }}>CPU追加</button>
-                                    <button className="flex-[2] p-5 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-xl rounded-sm shadow-2xl" disabled={gs?.players?.length < 2} onClick={() => { playSE('start', muted); socket.emit('start-game', { roomId: room }); }}>ミッション開始</button>
+                                    <button className="flex-[2] py-4 px-1 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-base rounded-sm shadow-2xl whitespace-nowrap" disabled={gs?.players?.length < 2} onClick={() => { playSE('start', muted); socket.emit('start-game', { roomId: room }); }}>ミッション開始</button>
                                 </div>
                             )}
                             <button className="inline-block py-2.5 px-8 bg-black/90 border-2 border-accent text-white font-['Orbitron'] text-[11px] font-black tracking-[4px] rounded-full cursor-pointer" onClick={leave}>同期を解除</button>
