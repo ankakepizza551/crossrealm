@@ -2,17 +2,50 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const fs = require('fs');
 
 const app = express();
 const path = require('path');
 app.use(cors());
 
+// デバッグ: dist/の存在チェック
+const distPath = path.join(__dirname, 'dist');
+const distIndexPath = path.join(distPath, 'index.html');
+console.log('[BOOT] __dirname:', __dirname);
+console.log('[BOOT] dist path:', distPath);
+console.log('[BOOT] dist exists:', fs.existsSync(distPath));
+console.log('[BOOT] dist/index.html exists:', fs.existsSync(distIndexPath));
+if (fs.existsSync(distPath)) {
+  console.log('[BOOT] dist contents:', fs.readdirSync(distPath));
+  const assetsPath = path.join(distPath, 'assets');
+  if (fs.existsSync(assetsPath)) {
+    console.log('[BOOT] dist/assets contents:', fs.readdirSync(assetsPath));
+  }
+}
+
+// デバッグ用エンドポイント
+app.get('/api/debug', (req, res) => {
+  res.json({
+    dirname: __dirname,
+    distExists: fs.existsSync(distPath),
+    distIndexExists: fs.existsSync(distIndexPath),
+    distContents: fs.existsSync(distPath) ? fs.readdirSync(distPath) : [],
+    assetsContents: fs.existsSync(path.join(distPath, 'assets')) ? fs.readdirSync(path.join(distPath, 'assets')) : [],
+    env: process.env.NODE_ENV || 'not set',
+    port: process.env.PORT || 3000
+  });
+});
+
 // 静的ファイルの提供 (ビルド済みのフロントエンド)
-app.use(express.static(path.join(__dirname, 'dist')));
+app.use(express.static(distPath));
 
 // どこにアクセスしても index.html を返す (SPA用設定)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  if (fs.existsSync(distIndexPath)) {
+    res.sendFile(distIndexPath);
+  } else {
+    res.status(500).send('dist/index.html not found. Build may have failed.');
+  }
 });
 
 const server = http.createServer(app);
