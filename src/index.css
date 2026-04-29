@@ -714,7 +714,7 @@ body {
     overflow-y: auto;
     max-height: 48vh;
     padding: 4px;
-    margin: 0 1.2rem 10px 80px;
+    margin: 0 1.2rem 10px 1.2rem;
     flex-shrink: 0;
 }
 
