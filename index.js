@@ -213,7 +213,11 @@ function processBotTurn(roomId) {
       const { card, chosenRealm } = action;
       bot.hand = bot.hand.filter(c => c.id !== card.id);
       const originalRealm = card.realm;
-      if (chosenRealm) { card.wasFountain = card.realm === 'FOUNTAIN'; card.realm = chosenRealm; }
+      if (chosenRealm) {
+        card.wasFountain = card.realm === 'FOUNTAIN';
+        card.realm = chosenRealm;
+        card.isSpecial = false; // 属性変更後は特殊効果を無効化
+      }
       room.fieldCard = card;
       room.logs.push({ id: Math.random(), text: `${bot.name} が ${REALM_NAME_JA[originalRealm] || originalRealm} を展開` });
 
@@ -302,19 +306,19 @@ io.on('connection', (socket) => {
       // 被っていない名前をプールから選ぶ
       const usedNames = room.players.map(p => p.name.replace(' (AI)', ''));
       const availableNames = BOT_NAMES.filter(name => !usedNames.includes(name));
-      
-      const botBaseName = availableNames.length > 0 
-        ? availableNames[Math.floor(Math.random() * availableNames.length)] 
+
+      const botBaseName = availableNames.length > 0
+        ? availableNames[Math.floor(Math.random() * availableNames.length)]
         : (data.botName || 'CPU');
 
-      room.players.push({ 
-        id: 'CPU_' + Math.random().toString(36).substr(2, 5), 
-        name: botBaseName + ' (AI)', 
-        hand: [], 
-        handCount: 0, 
-        isBot: true, 
-        isEliminated: false, 
-        score: 0 
+      room.players.push({
+        id: 'CPU_' + Math.random().toString(36).substr(2, 5),
+        name: botBaseName + ' (AI)',
+        hand: [],
+        handCount: 0,
+        isBot: true,
+        isEliminated: false,
+        score: 0
       });
       io.to(room.id).emit('update-game', room);
     }
@@ -355,7 +359,11 @@ io.on('connection', (socket) => {
       player.hand = player.hand.filter(c => c.id !== data.card.id);
       const card = data.card;
       const originalRealm = card.realm;
-      if (data.chosenRealm) { card.wasFountain = card.realm === 'FOUNTAIN'; card.realm = data.chosenRealm; }
+      if (data.chosenRealm) {
+        card.wasFountain = card.realm === 'FOUNTAIN';
+        card.realm = data.chosenRealm;
+        card.isSpecial = false; // 属性変更後は特殊効果を無効化
+      }
       room.fieldCard = card;
       room.logs.push({ id: Math.random(), text: `${player.name} が ${REALM_NAME_JA[originalRealm] || originalRealm} を展開` });
 
