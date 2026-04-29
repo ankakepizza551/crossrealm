@@ -332,9 +332,9 @@ const CardView = ({ card, playable, onClick, isField, isSelected, isMyTurn, onMo
 
     let specialLabel = "";
     if (spec) {
-        if (card.realm === 'GEAR') specialLabel = "DRAW 2";
-        else if (card.realm === 'MACHINE') specialLabel = "REVERSE";
-        else if (card.realm === 'FOUNTAIN') specialLabel = "LIMIT WILD";
+        if (dr === 'GEAR') specialLabel = "DRAW 2";
+        else if (dr === 'MACHINE') specialLabel = "REVERSE";
+        else if (dr === 'FOUNTAIN') specialLabel = "LIMIT WILD";
         else specialLabel = "WILD";
     }
 
