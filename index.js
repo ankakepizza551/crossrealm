@@ -203,6 +203,7 @@ function processBotTurn(roomId) {
       room.logs.push({ id: Math.random(), text: `${bot.name} が ${amount}枚 ドローしました` });
       room.nextDrawAmount = 1;
       bot.handCount = bot.hand.length;
+      room.lastAction = { type: 'draw', playerId: bot.id };
 
       if (bot.handCount >= HAND_LIMIT) {
         bot.isEliminated = true;
@@ -228,6 +229,8 @@ function processBotTurn(roomId) {
       bot.handCount = bot.hand.length;
     }
 
+    room.lastAction = { type: action.type, playerId: bot.id, cardId: action.card?.id };
+
     if (!checkGameOver(room)) {
       nextTurn(room, action.card?.isSpecial && action.card.realm === 'MACHINE' && room.players.length === 2);
     }
@@ -241,7 +244,7 @@ function processBotTurn(roomId) {
         processBotTurn(roomId);
       }
     }
-  }, 1200);
+  }, 2000);
 }
 
 function getBotAction(room, bot) {
@@ -324,6 +327,18 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('remove-cpu', (data) => {
+    const room = rooms[data.roomId.toUpperCase()];
+    if (room && room.status === 'waiting') {
+      const idx = room.players.findIndex(p => p.id === data.botId);
+      if (idx !== -1 && room.players[idx].isBot) {
+        room.players.splice(idx, 1);
+        io.to(room.id).emit('update-game', room);
+      }
+    }
+  });
+
+
   socket.on('start-game', (data) => {
     try {
       const room = rooms[data.roomId.toUpperCase()];
@@ -376,6 +391,7 @@ io.on('connection', (socket) => {
       if (!checkGameOver(room)) {
         nextTurn(room, card.isSpecial && card.realm === 'MACHINE' && room.players.length === 2);
       }
+      room.lastAction = { type: 'play', playerId: socket.id, cardId: card.id };
       io.to(room.id).emit('update-game', room);
 
       // 次がAIなら動かす
@@ -406,6 +422,7 @@ io.on('connection', (socket) => {
       if (!checkGameOver(room)) {
         nextTurn(room);
       }
+      room.lastAction = { type: 'draw', playerId: socket.id };
       io.to(room.id).emit('update-game', room);
 
       // 次がAIなら動かす
