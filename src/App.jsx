@@ -581,11 +581,19 @@ const App = () => {
                                     </div>
                                 </div>
                             </div>
+                            <div className="trinity-flavor-box mb-4 sm:mb-8 flex-shrink-0 hidden min-[600px]:block">
+                                <div className="flavor-line"><span className="f-steam">真鍮</span>の爆鳴、<span className="f-fantasy">星界</span>の共鳴、<span className="f-cyber">電脳</span>の火花。</div>
+                                <div className="mt-2 text-white/70 font-black text-[0.8rem]">次元の境界は消失し、特異点へと収束する。</div>
+                            </div>
                             <div className="w-full px-6 sm:px-8 flex flex-col gap-3 sm:gap-5 flex-shrink-0">
                                 <input type="text" className="w-full p-3 sm:p-4 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg outline-none rounded" value={name} placeholder="名前を入力..." onChange={e => setName(e.target.value)} maxLength={10} />
                                 <input type="text" className="w-full p-3 sm:p-4 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg outline-none rounded" value={room} placeholder="合言葉を入力..." onChange={e => setRoom(e.target.value.toUpperCase())} />
                                 <button className={`w-full mt-1 p-4 text-lg font-black rounded-sm active:scale-95 transition-transform ${(!isConnected) ? 'bg-gray-600 opacity-50' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-black'}`} onClick={join} disabled={!isConnected}>{(!isConnected) ? '接続中...' : 'リンク開始'}</button>
                             </div>
+                        </div>
+                        <div className="system-status-bar">
+                            <span>STATUS: <span className={`status-tag ${(!isConnected) ? 'bg-red-600' : ''}`}>{(!isConnected) ? 'OFFLINE' : 'ONLINE'}</span></span>
+                            <span>VER: <span className="text-white/80 font-black">133.0_R</span></span>
                         </div>
                     </div>
                 ) : (joined && !gs) ? (

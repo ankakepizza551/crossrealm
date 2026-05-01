@@ -173,9 +173,14 @@ function checkGameOver(room) {
       let totalEarned = basePoints;
       let bonusPoints = 0;
       
+<<<<<<< HEAD
       // 部屋のフラグまたは現在のフィールドカードから判定（LIMIT WILDはボーナス対象外）
       const isLimitWild = room.fieldCard.wasFountain || (room.fieldCard.realm === 'FOUNTAIN' && room.fieldCard.isSpecial);
       const isWildCard = !isLimitWild && (room.lastPlayWasWild || room.fieldCard.wasPlanet || room.fieldCard.wasRuins || room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS');
+=======
+      // 部屋のフラグまたは現在のフィールドカードから判定
+      const isWildCard = room.lastPlayWasWild || room.fieldCard.wasPlanet || room.fieldCard.wasRuins || room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS';
+>>>>>>> 541111ee8b2692ca74d41fb05c827f5cfcc62724
       
       if (winner.handCount === 0 && room.fieldCard && isWildCard) {
         totalEarned = Math.ceil(basePoints * 1.5);
@@ -234,7 +239,11 @@ function processBotTurn(roomId) {
   const bot = room.players[room.turnIndex];
   if (!bot || !bot.isBot || bot.isActing || bot.isEliminated) return;
 
+<<<<<<< HEAD
   const isWild = room.lastPlayWasWild || (room.fieldCard && (room.fieldCard.wasPlanet || room.fieldCard.wasRuins));
+=======
+  const isWild = room.lastPlayWasWild || (room.fieldCard && (room.fieldCard.wasPlanet || room.fieldCard.wasRuins || room.fieldCard.wasFountain));
+>>>>>>> 541111ee8b2692ca74d41fb05c827f5cfcc62724
   const botDelay = isWild ? 3000 : 1200;
   bot.isActing = true;
   setTimeout(() => {
@@ -347,7 +356,11 @@ io.on('connection', (socket) => {
 
     if (room.players.length >= 5) return;
 
+<<<<<<< HEAD
     const newPlayer = { id: socket.id, name: sanitizedName, hand: [], handCount: 0, isBot: false, isEliminated: false, score: 0, ready: false };
+=======
+    const newPlayer = { id: socket.id, name: sanitizedName, hand: [], handCount: 0, isBot: false, isEliminated: false, score: 0 };
+>>>>>>> 541111ee8b2692ca74d41fb05c827f5cfcc62724
     room.players.push(newPlayer);
     socket.join(rid);
 
@@ -373,8 +386,12 @@ io.on('connection', (socket) => {
         handCount: 0,
         isBot: true,
         isEliminated: false,
+<<<<<<< HEAD
         score: 0,
         ready: true
+=======
+        score: 0
+>>>>>>> 541111ee8b2692ca74d41fb05c827f5cfcc62724
       });
       io.to(room.id).emit('update-game', room);
     }
@@ -411,7 +428,10 @@ io.on('connection', (socket) => {
         room.nextDrawAmount = 1;
         room.isReversed = false;
         room.logs = [{ id: Math.random(), text: `MATCH ${room.matchCount} 開始。` }];
+<<<<<<< HEAD
         room.players.forEach(p => p.ready = p.isBot);
+=======
+>>>>>>> 541111ee8b2692ca74d41fb05c827f5cfcc62724
         io.to(room.id).emit('update-game', room);
 
         // 最初がAIなら動かす
@@ -428,7 +448,11 @@ io.on('connection', (socket) => {
       player.hand = player.hand.filter(c => c.id !== data.card.id);
       const card = data.card;
       const originalRealm = card.realm;
+<<<<<<< HEAD
       room.lastPlayWasWild = (originalRealm === 'PLANET' || originalRealm === 'RUINS');
+=======
+      room.lastPlayWasWild = (originalRealm === 'PLANET' || originalRealm === 'RUINS' || (originalRealm === 'FOUNTAIN' && card.isSpecial));
+>>>>>>> 541111ee8b2692ca74d41fb05c827f5cfcc62724
       if (data.chosenRealm) {
         card.wasPlanet = originalRealm === 'PLANET';
         card.wasRuins = originalRealm === 'RUINS';
@@ -492,6 +516,7 @@ io.on('connection', (socket) => {
 
   socket.on('play-again', (data) => {
     const room = rooms[data.roomId.toUpperCase()];
+<<<<<<< HEAD
     if (room && room.status === 'finished') {
       const player = room.players.find(p => p.id === socket.id);
       if (player) {
@@ -531,6 +556,16 @@ io.on('connection', (socket) => {
           if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
         }
       }
+=======
+    if (room) {
+      if (room.isSeriesFinished) {
+        room.matchCount = 1;
+        room.isSeriesFinished = false;
+        room.players.forEach(p => { p.score = 0; });
+      }
+      room.status = 'waiting';
+      room.logs = [];
+>>>>>>> 541111ee8b2692ca74d41fb05c827f5cfcc62724
       io.to(room.id).emit('update-game', room);
     }
   });
