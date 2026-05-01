@@ -396,6 +396,11 @@ const App = () => {
     const [entryAnim, setEntryAnim] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
     const [isMorphing, setIsMorphing] = useState(false);
+    const [draggingCardId, setDraggingCardId] = useState(null);
+    const [touchStartX, setTouchStartX] = useState(0);
+    const [touchStartY, setTouchStartY] = useState(0);
+    const [dragOffsetX, setDragOffsetX] = useState(0);
+    const [dragOffsetY, setDragOffsetY] = useState(0);
 
     const displayFieldCard = useMemo(() => {
         if (!gs?.fieldCard) return null;
@@ -538,6 +543,48 @@ const App = () => {
         const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         if (!isMobile) { if (needsSelector) setSelector(c); else socket.emit('play-card', { roomId: room, card: c }); }
         else { if (selectedCardId === c.id) { if (needsSelector) setSelector(c); else socket.emit('play-card', { roomId: room, card: c }); } else { setSelectedCardId(c.id); } }
+    };
+
+    const handleTouchStart = (e, card, isPlayable) => {
+        if (!isMyTurn || !isPlayable || isAnimating || isMorphing || selector) return;
+        setDraggingCardId(card.id);
+        setTouchStartX(e.touches[0].clientX);
+        setTouchStartY(e.touches[0].clientY);
+        setDragOffsetX(0);
+        setDragOffsetY(0);
+    };
+
+    const handleTouchMove = (e) => {
+        if (!draggingCardId) return;
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        const deltaX = currentX - touchStartX;
+        const deltaY = currentY - touchStartY;
+        
+        // 2次元的に追従
+        setDragOffsetX(deltaX);
+        setDragOffsetY(deltaY);
+    };
+
+    const handleTouchEnd = (card, isPlayable) => {
+        if (!draggingCardId) return;
+        
+        // 上方向に一定以上（80px）スワイプしていたらプレイ
+        // 左右に振れすぎていないかもチェック（誤操作防止）
+        if (dragOffsetY < -80 && Math.abs(dragOffsetX) < 150) {
+            playSE('play', muted);
+            if (window.navigator.vibrate) window.navigator.vibrate(12);
+            const needsSelector = card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial);
+            if (needsSelector) {
+                setSelector(card);
+            } else {
+                socket.emit('play-card', { roomId: room, card: card });
+            }
+        }
+        
+        setDraggingCardId(null);
+        setDragOffsetX(0);
+        setDragOffsetY(0);
     };
 
     const canPlayCheck = (room, card) => {
@@ -730,11 +777,23 @@ const App = () => {
                                 return (
                                     <div
                                         key={card.id || idx}
-                                        className={`card-anchor ${selectedCardId === card.id ? 'selected' : ''} ${hoveredCardId === card.id ? 'hovered' : ''} ${!isMyTurn || !isPlayable ? 'not-playable' : 'playable'} ${isMyTurn ? 'is-my-turn' : ''} ${isPlayable ? 'playable-card-pop' : ''}`}
-                                        style={{ zIndex: selectedCardId === card.id ? 100 : (hoveredCardId === card.id ? 200 : idx), marginRight: idx === me.hand.length - 1 ? '0' : `${dynamicMargin}px` }}
+                                        className={`card-anchor ${selectedCardId === card.id ? 'selected' : ''} ${hoveredCardId === card.id ? 'hovered' : ''} ${!isMyTurn || !isPlayable ? 'not-playable' : 'playable'} ${isMyTurn ? 'is-my-turn' : ''} ${isPlayable ? 'playable-card-pop' : ''} ${draggingCardId === card.id ? 'dragging' : ''}`}
+                                        style={{ 
+                                            zIndex: (draggingCardId === card.id) ? 1000 : (selectedCardId === card.id ? 100 : (hoveredCardId === card.id ? 200 : idx)), 
+                                            marginRight: idx === me.hand.length - 1 ? '0' : `${dynamicMargin}px`,
+                                            transform: (draggingCardId === card.id) 
+                                                ? `translate(${dragOffsetX}px, ${dragOffsetY}px) rotate(${dragOffsetX * 0.05}deg) scale(1.1)` 
+                                                : undefined,
+                                            transition: (draggingCardId === card.id) ? 'none' : undefined,
+                                            touchAction: (draggingCardId === card.id) ? 'none' : 'pan-x',
+                                            filter: (draggingCardId === card.id) ? 'drop-shadow(0 20px 40px rgba(0,0,0,0.6))' : undefined
+                                        }}
                                         onClick={() => handleCardClick(card, isPlayable)}
                                         onMouseEnter={() => setHoveredCardId(card.id)}
                                         onMouseLeave={() => setHoveredCardId(null)}
+                                        onTouchStart={(e) => handleTouchStart(e, card, isPlayable)}
+                                        onTouchMove={handleTouchMove}
+                                        onTouchEnd={() => handleTouchEnd(card, isPlayable)}
                                     >
                                         <CardView card={card} playable={isPlayable} isSelected={selectedCardId === card.id} isMyTurn={isMyTurn} />
                                     </div>
@@ -757,7 +816,7 @@ const App = () => {
                                 </button>
                             ))}
                         </div>
-                        <button className="w-full mt-3 p-2 text-white/30 text-[8px] tracking-[2px] font-black border border-white/10 uppercase hover:bg-white/5 rounded" onClick={() => { playSE('cancel', muted); setSelector(null); }}>選択をキャンセル</button>
+                        <button className="w-full mt-4 p-4 text-white/50 text-[12px] tracking-[3px] font-black border border-white/20 uppercase hover:bg-white/10 rounded transition-all active:scale-95" onClick={() => { playSE('cancel', muted); setSelector(null); }}>選択をキャンセル</button>
                     </div>
                 </div>
             )}

@@ -1270,6 +1270,12 @@ body {
     z-index: 1;
 }
 
+.card-anchor.dragging {
+    animation: none !important;
+    transition: none !important;
+    z-index: 1000 !important;
+}
+
 /* ホバー時の浮き上がり演出を表面（surface）に適用することで、アンカー（親）の判定領域を固定する */
 .card-anchor.playable:hover .card-surface,
 .card-anchor.selected .card-surface {
