@@ -57,7 +57,7 @@ const io = new Server(server, {
 });
 
 const rooms = {};
-const HAND_LIMIT = 11; // 11枚以上で脱落
+const HAND_LIMIT = 10; // 10枚で脱落
 const INITIAL_HAND = 5;
 
 const REALM_NAME_JA = { GEAR: '歯車', ICEAGE: '氷河期', FOUNTAIN: '噴水', BATTERY: '電池', MACHINE: '機械', ARCHIVE: '古文書', PLANET: '惑星', RUINS: '廃墟' };
@@ -168,27 +168,17 @@ function checkGameOver(room) {
         }
       });
 
-      const basePoints = earnedPoints;
-      let totalEarned = basePoints;
-      let bonusPoints = 0;
-      
-      // 部屋のフラグまたは現在のフィールドカードから判定
-      const isWildCard = room.lastPlayWasWild || room.fieldCard.wasPlanet || room.fieldCard.wasRuins || room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS';
-      
+      // WILD上がりボーナス: 惑星、廃墟で手札0になって上がった場合、ポイント1.5倍
+      const isWildCard = room.fieldCard.realm === 'PLANET' || 
+                         room.fieldCard.realm === 'RUINS';
       if (winner.handCount === 0 && room.fieldCard && isWildCard) {
-        totalEarned = Math.ceil(basePoints * 1.5);
-        bonusPoints = totalEarned - basePoints;
+        earnedPoints = Math.ceil(earnedPoints * 1.5);
         isWildFinish = true;
       }
 
-      room.logs.push({ id: Math.random(), text: `RESULT: Winner=${winner.name}, Base=${basePoints}, Bonus=${bonusPoints}, Wild=${isWildFinish}, LastWild=${room.lastPlayWasWild}` });
-
-      winner.score += totalEarned;
-      winner.earnedPoints = totalEarned;
-      winner.basePoints = basePoints;
-      winner.bonusPoints = bonusPoints;
+      winner.score += earnedPoints;
+      winner.earnedPoints = earnedPoints; // Temp property for result screen
       winner.finishBonus = isWildFinish;
-      room.lastPlayWasWild = false; // Reset for next match
     }
 
     room.logs.push({ id: Math.random(), text: `MATCH ${room.matchCount} COMPLETE: ${winner ? winner.name : 'NONE'} (+${earnedPoints} pts)` });
@@ -232,8 +222,6 @@ function processBotTurn(roomId) {
   const bot = room.players[room.turnIndex];
   if (!bot || !bot.isBot || bot.isActing || bot.isEliminated) return;
 
-  const isWild = room.lastPlayWasWild || (room.fieldCard && (room.fieldCard.wasPlanet || room.fieldCard.wasRuins || room.fieldCard.wasFountain));
-  const botDelay = isWild ? 3000 : 1200;
   bot.isActing = true;
   setTimeout(() => {
     bot.isActing = false;
@@ -261,13 +249,10 @@ function processBotTurn(roomId) {
       const { card, chosenRealm } = action;
       bot.hand = bot.hand.filter(c => c.id !== card.id);
       const originalRealm = card.realm;
-      room.lastPlayWasWild = (originalRealm === 'PLANET' || originalRealm === 'RUINS');
       if (chosenRealm) {
-        card.wasPlanet = originalRealm === 'PLANET';
-        card.wasRuins = originalRealm === 'RUINS';
-        card.wasFountain = originalRealm === 'FOUNTAIN';
+        card.wasFountain = card.realm === 'FOUNTAIN';
         card.realm = chosenRealm;
-        card.isSpecial = false;
+        card.isSpecial = false; // 属性変更後は特殊効果を無効化
       }
       room.fieldCard = card;
       room.logs.push({ id: Math.random(), text: `${bot.name} が ${REALM_NAME_JA[originalRealm] || originalRealm} を展開` });
@@ -294,7 +279,7 @@ function processBotTurn(roomId) {
         processBotTurn(roomId);
       }
     }
-  }, botDelay);
+  }, 2000);
 }
 
 function getBotAction(room, bot) {
@@ -424,15 +409,12 @@ io.on('connection', (socket) => {
       player.hand = player.hand.filter(c => c.id !== data.card.id);
       const card = data.card;
       const originalRealm = card.realm;
-      room.lastPlayWasWild = (originalRealm === 'PLANET' || originalRealm === 'RUINS' || (originalRealm === 'FOUNTAIN' && card.isSpecial));
       if (data.chosenRealm) {
-        card.wasPlanet = originalRealm === 'PLANET';
-        card.wasRuins = originalRealm === 'RUINS';
-        card.wasFountain = originalRealm === 'FOUNTAIN';
+        card.wasFountain = card.realm === 'FOUNTAIN';
         card.realm = data.chosenRealm;
-        card.isSpecial = false;
+        card.isSpecial = false; // 属性変更後は特殊効果を無効化
       }
-      room.fieldCard = { ...card };
+      room.fieldCard = card;
       room.logs.push({ id: Math.random(), text: `${player.name} が ${REALM_NAME_JA[originalRealm] || originalRealm} を展開` });
 
       if (card.isSpecial) {

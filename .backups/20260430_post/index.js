@@ -57,7 +57,7 @@ const io = new Server(server, {
 });
 
 const rooms = {};
-const HAND_LIMIT = 11; // 11枚以上で脱落
+const HAND_LIMIT = 10; // 10枚で脱落
 const INITIAL_HAND = 5;
 
 const REALM_NAME_JA = { GEAR: '歯車', ICEAGE: '氷河期', FOUNTAIN: '噴水', BATTERY: '電池', MACHINE: '機械', ARCHIVE: '古文書', PLANET: '惑星', RUINS: '廃墟' };
@@ -232,7 +232,7 @@ function processBotTurn(roomId) {
   const bot = room.players[room.turnIndex];
   if (!bot || !bot.isBot || bot.isActing || bot.isEliminated) return;
 
-  const isWild = room.lastPlayWasWild || (room.fieldCard && (room.fieldCard.wasPlanet || room.fieldCard.wasRuins || room.fieldCard.wasFountain));
+  const isWild = room.lastPlayWasWild || (room.fieldCard && (room.fieldCard.wasPlanet || room.fieldCard.wasRuins));
   const botDelay = isWild ? 3000 : 1200;
   bot.isActing = true;
   setTimeout(() => {
@@ -424,7 +424,7 @@ io.on('connection', (socket) => {
       player.hand = player.hand.filter(c => c.id !== data.card.id);
       const card = data.card;
       const originalRealm = card.realm;
-      room.lastPlayWasWild = (originalRealm === 'PLANET' || originalRealm === 'RUINS' || (originalRealm === 'FOUNTAIN' && card.isSpecial));
+      room.lastPlayWasWild = (originalRealm === 'PLANET' || originalRealm === 'RUINS');
       if (data.chosenRealm) {
         card.wasPlanet = originalRealm === 'PLANET';
         card.wasRuins = originalRealm === 'RUINS';
