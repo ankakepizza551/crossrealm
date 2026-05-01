@@ -560,12 +560,12 @@ body {
 .top-logo-area {
     position: relative;
     width: 100%;
-    height: 260px;
+    height: clamp(160px, 25vh, 260px);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    margin-top: 1rem;
+    margin-top: 0.5rem;
 }
 
 .emblem-bg-layer {
@@ -601,40 +601,6 @@ body {
     filter: drop-shadow(0 0 10px rgba(0, 0, 0, 1));
 }
 
-.trinity-flavor-box {
-    background: rgba(20, 10, 40, 0.85);
-    border: 1.5px solid rgba(255, 255, 255, 0.25);
-    border-left: 6px solid var(--accent);
-    padding: 1.2rem;
-    border-radius: 4px 14px 14px 4px;
-    margin: 0 1.5rem 1.2rem;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 1);
-    text-align: center;
-
-    flex-shrink: 0;
-}
-
-.f-steam {
-    font-family: 'Special Elite', cursive !important;
-    color: var(--steam-gold) !important;
-    font-size: 1.1rem;
-    text-shadow: 0 0 8px var(--steam-gold) !important;
-}
-
-.f-fantasy {
-    font-family: 'Cinzel Decorative', cursive !important;
-    color: var(--magic-purple) !important;
-    font-size: 1.2rem;
-    text-shadow: 0 0 10px var(--magic-purple) !important;
-}
-
-.f-cyber {
-    font-family: 'Orbitron', sans-serif !important;
-    color: var(--accent) !important;
-    font-size: 1rem;
-    font-weight: 950;
-    text-shadow: 0 0 10px var(--accent) !important;
-}
 
 .input-group {
     width: 100%;
@@ -1891,11 +1857,12 @@ body {
 
 .result-title {
     font-family: 'Cinzel', serif;
-    font-size: clamp(1rem, 7vw, 2.2rem);
+    font-size: clamp(1.8rem, 8vw, 2.5rem);
     font-weight: 950;
     letter-spacing: 0px;
     color: var(--steam-gold);
-    margin-bottom: 1.5rem;
+    margin-top: -2.5rem;
+    margin-bottom: 3rem;
     text-shadow: 0 0 25px var(--steam-gold);
     width: 100%;
     text-align: center;
@@ -2270,33 +2237,12 @@ body {
     }
 }
 
-/* Water Ripple Effect */
-@keyframes water-ripple {
-    0% {
-        transform: scale(0.5);
-        opacity: 0;
-    }
-
-    50% {
-        opacity: 0.3;
-    }
-
-    100% {
-        transform: scale(1.5);
-        opacity: 0;
-    }
-}
-
 /* === GPU Compositing Hints === */
 .flow-gear,
 .flow-magic,
 .flow-rune {
     will-change: transform;
-    transform: translateZ(0); /* GPUレイヤー化を強制 */
-}
-
-.screen-wrapper.my-turn-glow::after {
-    will-change: box-shadow, opacity;
+    transform: translateZ(0);
 }
 
 /* アニメーション要素の最適化 */
@@ -2304,7 +2250,7 @@ body {
 .card-anchor,
 .realm-badge,
 .tactical-cycle-wheel svg {
-    transform: translateZ(0); /* GPUレイヤー化 */
+    transform: translateZ(0);
 }
 
 .current-turn-glow-active,
@@ -2335,9 +2281,9 @@ body {
     background: rgba(20, 10, 40, 0.85);
     border: 1.5px solid rgba(255, 255, 255, 0.25);
     border-left: 6px solid var(--accent);
-    padding: 1.2rem;
+    padding: 0.8rem 1rem;
     border-radius: 4px 14px 14px 4px;
-    margin: 0 1.5rem 1.2rem;
+    margin: 0 1rem 1rem;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 1);
     text-align: center;
     flex-shrink: 0;
@@ -2414,7 +2360,8 @@ body {
 }
 
 /* === iPad/Tablet Scaling Adjustments === */
-@media (min-width: 768px) {
+/* コンテナクエリを使用して、実際の表示領域が広い場合のみ拡大する */
+@container (min-width: 700px) {
     .top-logo-area {
         height: 380px;
         margin-top: 2rem;

@@ -57,7 +57,7 @@ const playSE = (type, muted) => {
             }
         };
         if (audioCtx.state === 'suspended') {
-            audioCtx.resume().then(doPlay).catch(() => {});
+            audioCtx.resume().then(doPlay).catch(() => { });
         } else {
             doPlay();
         }
@@ -533,7 +533,7 @@ const App = () => {
         playSE('play', muted);
         if (window.navigator.vibrate) window.navigator.vibrate(12);
         const isLastCard = me?.hand?.length === 1;
-        const needsSelector = c.realm === 'PLANET' || c.realm === 'RUINS';
+        const needsSelector = c.realm === 'PLANET' || c.realm === 'RUINS' || (c.realm === 'FOUNTAIN' && c.isSpecial);
         if (isLastCard && needsSelector) { socket.emit('play-card', { roomId: room, card: c, chosenRealm: 'GEAR' }); return; }
         const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         if (!isMobile) { if (needsSelector) setSelector(c); else socket.emit('play-card', { roomId: room, card: c }); }
@@ -569,8 +569,8 @@ const App = () => {
                 ) : null}
                 <div className="motion-overlay-layer">{motions.map(m => <div key={m.mid} className={`motion-card-ghost ${m.type} ${getPlayerPosClass(m.playerId)}`}><div className="ghost-surface" /></div>)}</div>
                 {!joined ? (
-                    <div className="h-full flex flex-col no-scrollbar overflow-y-auto">
-                        <div className="flex-1 flex flex-col items-center justify-center py-4 sm:py-8">
+                    <div className="h-full flex flex-col no-scrollbar">
+                        <div className="flex-1 flex flex-col items-center justify-center py-4 sm:py-8 overflow-y-auto no-scrollbar">
                             <div className="top-logo-area flex-shrink-0 scale-90 sm:scale-100 origin-center mb-2 sm:mb-4">
                                 <div className="field-central-zone">
                                     <div className="emblem-bg-layer"><ComplexEmblem isLogo={true} /></div>
@@ -581,13 +581,21 @@ const App = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="trinity-flavor-box mb-4 sm:mb-8 flex-shrink-0 hidden min-[600px]:block">
+                            <div className="trinity-flavor-box mb-4 sm:mb-8 flex-shrink-0">
                                 <div className="flavor-line"><span className="f-steam">真鍮</span>の爆鳴、<span className="f-fantasy">星界</span>の共鳴、<span className="f-cyber">電脳</span>の火花。</div>
                                 <div className="mt-2 text-white/70 font-black text-[0.8rem]">次元の境界は消失し、特異点へと収束する。</div>
                             </div>
                             <div className="w-full px-6 sm:px-8 flex flex-col gap-3 sm:gap-5 flex-shrink-0">
-                                <input type="text" className="w-full p-3 sm:p-4 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg outline-none rounded" value={name} placeholder="名前を入力..." onChange={e => setName(e.target.value)} maxLength={10} />
-                                <input type="text" className="w-full p-3 sm:p-4 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg outline-none rounded" value={room} placeholder="合言葉を入力..." onChange={e => setRoom(e.target.value.toUpperCase())} />
+                                <div className="relative w-full flex flex-col">
+                                    <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-sm"></div>
+                                    <label className="input-label-tech font-['Orbitron'] text-[10px] font-black text-accent tracking-[2px] mb-1 pl-4 uppercase">パイロット識別名</label>
+                                    <input type="text" className="input-field-nova w-full p-3 sm:p-4 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg sm:text-xl outline-none rounded" value={name} placeholder="名前を入力..." onChange={e => setName(e.target.value)} maxLength={10} />
+                                </div>
+                                <div className="relative w-full flex flex-col">
+                                    <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-sm"></div>
+                                    <label className="input-label-tech font-['Orbitron'] text-[10px] font-black text-accent tracking-[2px] mb-1 pl-4 uppercase">セクターコード</label>
+                                    <input type="text" className="input-field-nova w-full p-3 sm:p-4 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg sm:text-xl outline-none rounded" value={room} placeholder="合言葉を入力..." onChange={e => setRoom(e.target.value.toUpperCase())} />
+                                </div>
                                 <button className={`w-full mt-1 p-4 text-lg font-black rounded-sm active:scale-95 transition-transform ${(!isConnected) ? 'bg-gray-600 opacity-50' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-black'}`} onClick={join} disabled={!isConnected}>{(!isConnected) ? '接続中...' : 'リンク開始'}</button>
                             </div>
                         </div>
@@ -637,10 +645,25 @@ const App = () => {
                                 const color = i === 0 ? 'var(--steam-gold)' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'var(--accent)';
                                 return (
                                     <div key={p.id} className="flex flex-col items-center justify-end w-[20%] relative" style={{ order }}>
-                                        {p.ready && <div className="absolute top-[-35px] text-[10px] text-accent font-black bg-black/90 px-2 py-0.5 rounded-full border border-accent animate-pulse z-30">READY</div>}
-                                        {p.isEliminated && !gs.isSeriesFinished && <div className="absolute top-[-20px] text-[8px] text-red-500 font-bold bg-black/90 px-1 rounded border border-red-500/50 z-10">臨界突破</div>}
+                                        {p.ready && <div className="absolute top-[-50px] text-[10px] text-accent font-black bg-black/90 px-2 py-0.5 rounded-full border border-accent animate-pulse z-30">READY</div>}
+                                        {p.isEliminated && !gs.isSeriesFinished && <div className="absolute top-[-25px] text-[8px] text-red-500 font-bold bg-black/90 px-1 rounded border border-red-500/50 z-10">臨界突破</div>}
                                         <div className="text-[9px] md:text-[10px] font-bold truncate w-full min-w-0 px-1 text-center mb-1" style={{ color: (p.isEliminated && !gs.isSeriesFinished) ? 'gray' : 'white', textDecoration: (p.isEliminated && !gs.isSeriesFinished) ? 'line-through' : 'none' }}>{p.name}</div>
+                                        {!gs.isSeriesFinished && <div className="text-[11px] md:text-[13px] font-black mb-1 font-['Orbitron']">{p.handCount}枚</div>}
                                         <div className="text-[12px] md:text-[14px] font-black text-[var(--steam-gold)] mb-2 font-['Orbitron']">★ {p.score}</div>
+
+                                        {/* 点数計算結果の表示 - 重なりを防ぐため高さを調整 */}
+                                        {p.finishBonus && !gs.isSeriesFinished && (
+                                            <div className="absolute top-[-90px] text-[10px] text-[#ff88ff] font-black animate-pulse drop-shadow-[0_0_5px_rgba(255,0,255,0.8)] whitespace-nowrap z-20">
+                                                ワイルドボーナス x1.5!
+                                            </div>
+                                        )}
+                                        {p.earnedPoints > 0 && !gs.isSeriesFinished && (
+                                            <div className="absolute top-[-75px] text-green-400 font-black animate-bounce z-20">+{p.earnedPoints}</div>
+                                        )}
+                                        {p.isEliminated && !gs.isSeriesFinished && (
+                                            <div className="absolute top-[-75px] text-red-500 font-black animate-pulse z-20">-10</div>
+                                        )}
+
                                         <div className="w-full flex items-start justify-center pt-2 rounded-t-md border-t-[3px] border-x border-white/10" style={{ height, background: `linear-gradient(to bottom, rgba(255,255,255,0.1), transparent)`, borderTopColor: color }}><span className="font-['Orbitron'] font-black text-xl md:text-2xl mt-1 drop-shadow-md" style={{ color }}>{i + 1}</span></div>
                                     </div>
                                 );
@@ -698,8 +721,8 @@ const App = () => {
                                 const dynamicMargin = handSize > 7 ? Math.max(-50, baseMargin - (handSize - 7) * 6) : baseMargin;
                                 const isPlayable = isMyTurn && canPlayCheck(gs, card);
                                 return (
-                                    <div 
-                                        key={card.id || idx} 
+                                    <div
+                                        key={card.id || idx}
                                         className={`card-anchor ${selectedCardId === card.id ? 'selected' : ''} ${hoveredCardId === card.id ? 'hovered' : ''} ${!isMyTurn || !isPlayable ? 'not-playable' : 'playable'} ${isMyTurn ? 'is-my-turn' : ''} ${isPlayable ? 'playable-card-pop' : ''}`}
                                         style={{ zIndex: selectedCardId === card.id ? 100 : (hoveredCardId === card.id ? 200 : idx), marginRight: idx === me.hand.length - 1 ? '0' : `${dynamicMargin}px` }}
                                         onClick={() => handleCardClick(card, isPlayable)}
@@ -711,7 +734,7 @@ const App = () => {
                                 );
                             })}
                         </div>
-                        <div className="w-full px-4 pb-4 shrink-0 flex flex-col gap-2"><button className="btn-mega-draw w-full h-16 bg-gradient-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl tracking-[8px] cursor-pointer transition-all active:scale-95 disabled:grayscale disabled:opacity-50" disabled={!isMyTurn || isAnimating || isMorphing} onClick={() => { playSE('draw', muted); socket.emit('draw-card', { roomId: room }); }}>ドロー ({gs.nextDrawAmount}枚)</button></div>
+                        <div className="w-full px-4 pb-4 shrink-0 flex flex-col gap-2"><button className="btn-mega-draw w-full h-16 bg-gradient-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl tracking-[8px] cursor-pointer transition-all active:scale-95 disabled:grayscale disabled:opacity-50" disabled={!isMyTurn || isAnimating || isMorphing || selector} onClick={() => { playSE('draw', muted); socket.emit('draw-card', { roomId: room }); }}>ドロー ({gs.nextDrawAmount}枚)</button></div>
                     </>
                 )}
             </div>
