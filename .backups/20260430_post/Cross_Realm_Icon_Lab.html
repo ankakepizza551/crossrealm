@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross Realm - Legend Asset Lab (Copper Plate Edition)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Exo+2:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-dark: #05010a;
+            --panel-bg: rgba(20, 10, 30, 0.8);
+        }
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Exo 2', sans-serif;
+            background-image: radial-gradient(circle at 50% 50%, rgba(50, 20, 100, 0.2) 0%, transparent 70%);
+        }
+        .asset-card {
+            background: var(--panel-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            text-align: center;
+        }
+        .svg-container {
+            width: 160px;
+            height: 160px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .label-font { font-family: 'Orbitron', sans-serif; }
+        
+        .defs-canvas { width: 0; height: 0; position: absolute; }
+
+        @keyframes rotate-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes rotate-rev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+        @keyframes cyber-flicker { 0%, 100% { opacity: 1; } 92% { opacity: 1; } 93% { opacity: 0.5; } 95% { opacity: 0.2; } 96% { opacity: 1; } }
+        @keyframes scanline-move { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
+    </style>
+</head>
+<body class="p-8">
+    <svg class="defs-canvas">
+        <defs>
+            <!-- 銅の光沢グラデーション -->
+            <linearGradient id="copper-plate" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color: #f69d3c;" />
+                <stop offset="40%" style="stop-color: #fff; stop-opacity: 0.8;" />
+                <stop offset="50%" style="stop-color: #eb5e28;" />
+                <stop offset="100%" style="stop-color: #251605;" />
+            </linearGradient>
+            <!-- 銀のグラデーション -->
+            <linearGradient id="silver-magic" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color: #fff; stop-opacity: 0.9;" />
+                <stop offset="50%" style="stop-color: rgba(255,255,255,0.2);" />
+                <stop offset="100%" style="stop-color: #fff; stop-opacity: 0.9;" />
+            </linearGradient>
+            <!-- フィルター -->
+            <filter id="fantasy-glow"><feGaussianBlur stdDeviation="3" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter>
+            <pattern id="cyber-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                <circle cx="1" cy="1" r="0.5" fill="rgba(255,255,255,0.2)" />
+            </pattern>
+        </defs>
+    </svg>
+
+    <header class="text-center mb-12">
+        <h1 class="text-3xl label-font tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-white to-cyan-500">LEGEND ASSET COMPOSITOR v3</h1>
+        <p class="text-gray-400 mt-2">Steam: 銅の金属板 | Fantasy: 光の魔法陣 | Cyber: ノイズ・ヘキサゴン</p>
+    </header>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        
+        <!-- GEAR (Steam Copper Plate) -->
+        <div class="asset-card">
+            <h3 class="label-font text-[#f69d3c] text-xs mb-4">GEAR</h3>
+            <div class="svg-container">
+                <svg viewBox="0 0 100 100" class="w-full h-full">
+                    <!-- Copper Plate -->
+                    <rect x="5" y="5" width="90" height="90" rx="4" fill="url(#copper-plate)" stroke="#3d2616" stroke-width="1.5" />
+                    <!-- Rivets -->
+                    <circle cx="12" cy="12" r="3" fill="#251605" /><circle cx="88" cy="12" r="3" fill="#251605" />
+                    <circle cx="12" cy="88" r="3" fill="#251605" /><circle cx="88" cy="88" r="3" fill="#251605" />
+                    <!-- Icon Centered -->
+                    <g transform="translate(50, 50) translate(-36, -36) scale(3)">
+                        <g stroke="#3d2616" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="8" /><path d="M12 1v3 M12 20v3 M1 12h3 M20 12h3" />
+                            <circle cx="12" cy="12" r="2.5" fill="#fff" stroke="none" />
+                        </g>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <!-- ARCHIVE (Steam Copper Plate) -->
+        <div class="asset-card">
+            <h3 class="label-font text-[#f69d3c] text-xs mb-4">ARCHIVE</h3>
+            <div class="svg-container">
+                <svg viewBox="0 0 100 100" class="w-full h-full">
+                    <!-- Copper Plate -->
+                    <rect x="5" y="5" width="90" height="90" rx="4" fill="url(#copper-plate)" stroke="#3d2616" stroke-width="1.5" />
+                    <!-- Rivets -->
+                    <circle cx="12" cy="12" r="3" fill="#251605" /><circle cx="88" cy="12" r="3" fill="#251605" />
+                    <circle cx="12" cy="88" r="3" fill="#251605" /><circle cx="88" cy="88" r="3" fill="#251605" />
+                    <!-- Icon Centered -->
+                    <g transform="translate(50, 50) translate(-36, -36) scale(3)">
+                        <g stroke="#3d2616" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8.5 5H20v15.5H8.5a2.5 2.5 0 0 1 0-5H20 M6 20.5A2.5 2.5 0 0 1 8.5 18H20" />
+                            <circle cx="18" cy="12.5" r="1" fill="#fff" stroke="none" />
+                        </g>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <!-- ICEAGE (Fantasy) -->
+        <div class="asset-card">
+            <h3 class="label-font text-[#00F3FF] text-xs mb-4">ICEAGE</h3>
+            <div class="svg-container">
+                <svg viewBox="0 0 100 100" class="w-full h-full overflow-visible">
+                    <g style="animation: rotate-slow 30s linear infinite; transform-origin: center;">
+                        <circle cx="50" cy="50" r="48" fill="none" stroke="url(#silver-magic)" stroke-width="0.8" stroke-dasharray="2 6" opacity="0.6" />
+                    </g>
+                    <g style="animation: rotate-rev 20s linear infinite; transform-origin: center;">
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="url(#silver-magic)" stroke-width="1" stroke-dasharray="10 5" opacity="0.5" />
+                    </g>
+                    <circle cx="50" cy="50" r="32" fill="rgba(0,243,255,0.05)" stroke="#00F3FF" stroke-width="1.5" filter="url(#fantasy-glow)" />
+                    <!-- Icon Centered -->
+                    <g transform="translate(50, 50) translate(-36, -36) scale(3)">
+                        <g stroke="#00F3FF" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 3v18 M3 12h18 M5.6 5.6l12.8 12.8 M5.6 18.4l12.8-12.8" opacity="0.7" />
+                            <circle cx="12" cy="12" r="2.5" fill="#fff" stroke="none" />
+                        </g>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <!-- FOUNTAIN (Fantasy) -->
+        <div class="asset-card">
+            <h3 class="label-font text-[#1E90FF] text-xs mb-4">FOUNTAIN</h3>
+            <div class="svg-container">
+                <svg viewBox="0 0 100 100" class="w-full h-full overflow-visible">
+                    <g style="animation: rotate-slow 25s linear infinite; transform-origin: center;">
+                        <circle cx="50" cy="50" r="48" fill="none" stroke="url(#silver-magic)" stroke-width="0.8" stroke-dasharray="4 8" opacity="0.6" />
+                    </g>
+                    <circle cx="50" cy="50" r="32" fill="rgba(30,144,255,0.05)" stroke="#1E90FF" stroke-width="1.5" filter="url(#fantasy-glow)" />
+                    <!-- Icon Centered -->
+                    <g transform="translate(50, 50) translate(-36, -36) scale(3)">
+                        <g stroke="#1E90FF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20c4.4 0 8-3.6 8-8 0-5-8-11-8-11S4 6 4 12c0 4.4 3.6 8 8 8z" />
+                            <path d="M12 17c2.5 0 4-1.5 4-4 0-3-4-6-4-6S8 10 8 13c0 2.5 1.5 4 4 4z" fill="#fff" stroke="none" />
+                        </g>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <!-- MACHINE (Cyber) -->
+        <div class="asset-card">
+            <h3 class="label-font text-[#E2B0FF] text-xs mb-4">MACHINE</h3>
+            <div class="svg-container">
+                <svg viewBox="0 0 100 100" class="w-full h-full overflow-hidden">
+                    <path d="M50 5 L90 25 L90 75 L50 95 L10 75 L10 25 Z" fill="url(#cyber-grid)" stroke="#E2B0FF" stroke-width="2.5" style="animation: cyber-flicker 5s infinite;" />
+                    <rect width="100" height="2" fill="rgba(255,255,255,0.1)" style="animation: scanline-move 2s linear infinite;" />
+                    <!-- Icon Centered -->
+                    <g transform="translate(50, 50) translate(-36, -36) scale(3)">
+                        <g stroke="#E2B0FF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="6" y="6" width="12" height="12" rx="1" stroke-dasharray="2 2" />
+                            <rect x="9" y="9" width="6" height="6" fill="#fff" stroke="none" />
+                        </g>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <!-- BATTERY (Cyber) -->
+        <div class="asset-card">
+            <h3 class="label-font text-[#ADFF2F] text-xs mb-4">BATTERY</h3>
+            <div class="svg-container">
+                <svg viewBox="0 0 100 100" class="w-full h-full overflow-hidden">
+                    <path d="M50 5 L90 25 L90 75 L50 95 L10 75 L10 25 Z" fill="url(#cyber-grid)" stroke="#ADFF2F" stroke-width="2.5" style="animation: cyber-flicker 4.3s infinite;" />
+                    <rect width="100" height="2" fill="rgba(255,255,255,0.1)" style="animation: scanline-move 1.5s linear infinite;" />
+                    <!-- Icon Centered -->
+                    <g transform="translate(50, 50) translate(-36, -36) scale(3)">
+                        <g stroke="#ADFF2F" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="5" y="3" width="14" height="18" rx="2" />
+                            <path d="M12.5 4.5l-2.5 6h4l-2.5 6" stroke="#fff" stroke-width="1.5" />
+                        </g>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <!-- PLANET (Void) -->
+        <div class="asset-card">
+            <h3 class="label-font text-white text-xs mb-4">PLANET</h3>
+            <div class="svg-container">
+                <svg viewBox="0 0 100 100" class="w-full h-full overflow-visible">
+                    <circle cx="50" cy="50" r="32" fill="rgba(255,255,255,0.05)" stroke="#fff" stroke-width="2" />
+                    <!-- Icon Centered -->
+                    <g transform="translate(50, 50) translate(-36, -36) scale(3)">
+                        <g stroke="#FFF" stroke-width="2" fill="none">
+                            <circle cx="12" cy="12" r="10" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                        </g>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <!-- RUINS (Void) -->
+        <div class="asset-card">
+            <h3 class="label-font text-gray-400 text-xs mb-4">RUINS</h3>
+            <div class="svg-container">
+                <svg viewBox="0 0 100 100" class="w-full h-full overflow-visible">
+                    <circle cx="50" cy="50" r="32" fill="rgba(255,255,255,0.05)" stroke="#fff" stroke-width="2" />
+                    <!-- Icon Centered -->
+                    <g transform="translate(50, 50) translate(-36, -36) scale(3)">
+                        <g stroke="#CCC" stroke-width="2" fill="none">
+                            <path d="M3 21h18M5 21V10a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11M9 21v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4" />
+                        </g>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

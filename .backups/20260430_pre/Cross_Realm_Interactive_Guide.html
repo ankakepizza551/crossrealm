@@ -411,7 +411,23 @@
             animation: screen-shake 0.3s cubic-bezier(.36, .07, .19, .97) both;
         }
 
-/* === 特殊演出の削除済み === */
+        @keyframes flash-bang {
+            0% {
+                background-color: rgba(255, 255, 255, 0.9);
+            }
+
+            100% {
+                background-color: transparent;
+            }
+        }
+
+        .flash-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
+            animation: flash-bang 0.6s ease-out forwards;
+        }
 
         @keyframes cutin-slide {
             0% {
@@ -463,14 +479,13 @@
 
         .cutin-text {
             font-family: 'Orbitron', sans-serif;
-            font-size: clamp(1.8rem, 8vw, 3rem);
+            font-size: clamp(2.5rem, 10vw, 4rem);
             font-weight: 1000;
             color: var(--c);
             text-shadow: 0 0 20px var(--c), 0 0 10px #fff;
-            letter-spacing: 4px;
+            letter-spacing: 12px;
             transform: skewX(15deg);
             text-transform: uppercase;
-            white-space: nowrap;
         }
 
         .steam-particle {
@@ -1221,6 +1236,7 @@
         const App = () => {
             const [fieldRealm, setFieldRealm] = useState('GEAR');
             const [shake, setShake] = React.useState(false);
+            const [flash, setFlash] = React.useState(false);
             const [cutin, setCutin] = React.useState(null);
             const [uiTab, setUiTab] = React.useState('top');
             const [scrolled, setScrolled] = React.useState(false);
@@ -1250,6 +1266,7 @@
 
             const triggerSpecial = (r) => {
                 playSE('play');
+                setFlash(true); setTimeout(() => setFlash(false), 600);
                 let text = "WILD";
                 if (r === 'GEAR') text = "DRAW 2";
                 else if (r === 'MACHINE') text = "REVERSE";
@@ -1279,6 +1296,7 @@
 
             return (
                 <div className={`w-full min-h-screen ${shake ? 'shake-active' : ''}`}>
+                    {flash && <div className="flash-overlay" />}
                     {cutin && (
                         <div className="cutin-container">
                             <div className="cutin-bar" style={{ '--c': cutin.color }}>
@@ -1315,77 +1333,82 @@
                             <p className="text-white/80 font-bold tracking-widest bg-black/60 inline-block px-6 py-2 rounded-full border border-white/20 backdrop-blur-md mb-8">オメガ・シンギュラリティ 対応マニュアル</p>
                             
                             <div className="flex justify-center">
-                                <a href="https://crossrealm-server.onrender.com/" target="_blank" rel="noopener noreferrer" className="bg-gradient-to-r from-[var(--accent)] to-[var(--magic-purple)] px-10 py-4 rounded-full font-black text-xl tracking-[4px] shadow-[0_0_20px_rgba(64,224,208,0.4)] hover:scale-110 transition-all border-2 border-white/20">
+                                <a href="https://ankakepizza551.github.io/crossrealm/" target="_blank" rel="noopener noreferrer" className="bg-gradient-to-r from-[var(--accent)] to-[var(--magic-purple)] px-10 py-4 rounded-full font-black text-xl tracking-[4px] shadow-[0_0_20px_rgba(64,224,208,0.4)] hover:scale-110 transition-all border-2 border-white/20">
                                     🚀 PLAY CROSS REALM
                                 </a>
                             </div>
                         </div>
 
 
-                        {/* 用語集 Section */}
-                        <div className="guide-section mb-16">
-                            <h2 className="section-title text-[var(--magic-purple)]">📖 用語集</h2>
-                            <p className="text-white/80 text-sm mb-8 leading-relaxed font-bold text-center">
-                                ゲーム内で使用される専門用語の一覧です。
+                        {/* World Flavor Lore Section */}
+                        <div id="section-lore" className="guide-section text-center">
+                            <h2 className="section-title text-[var(--steam-gold)]">The Three Realms: 三つの世界と移ろい</h2>
+
+                            <p className="text-white/60 text-sm mb-12 font-bold max-w-2xl mx-auto">
+                                カードの属性はただの記号ではありません。それは次元の境界を越え、変貌し続ける世界の姿です。
                             </p>
                             
-                            <div className="max-w-4xl mx-auto bg-black/40 rounded-xl border border-white/10 overflow-hidden">
-                                <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/10">
-                                    <div className="p-6 space-y-4">
-                                        <div>
-                                            <h4 className="text-[var(--accent)] font-black text-sm mb-1">場（フィールド）/ レルム（Realm）</h4>
-                                            <p className="text-white/70 text-xs">現在プレイされているカードの属性。歯車、氷河期、噴水、電池、機械、古文書の6種類。</p>
-                                        </div>
-                                        <div>
-                                            <h4 className="text-[var(--accent)] font-black text-sm mb-1">サイクル図（Cycle Chart）</h4>
-                                            <p className="text-white/70 text-xs">6つの属性が循環する図。光っている場が次に出せる場を示す。</p>
-                                        </div>
-                                        <div>
-                                            <h4 className="text-[var(--accent)] font-black text-sm mb-1">バースト（Burst）/ ドボン</h4>
-                                            <p className="text-white/70 text-xs">手札が11枚以上になると発生する脱落。スコア-10ptのペナルティ。</p>
-                                        </div>
-                                        <div>
-                                            <h4 className="text-[var(--accent)] font-black text-sm mb-1">DRAW / ドロー</h4>
-                                            <p className="text-white/70 text-xs">山札からカードを引く行為。特殊カード「歯車」で相手に強制ドローさせることも。</p>
-                                        </div>
-                                        <div>
-                                            <h4 className="text-[var(--accent)] font-black text-sm mb-1">REVERSE / リバース</h4>
-                                            <p className="text-white/70 text-xs">手番の進行方向を反転させる特殊カード「機械」の効果。</p>
-                                        </div>
-                                        <div>
-                                            <h4 className="text-[var(--accent)] font-black text-sm mb-1">WILD / ワイルド</h4>
-                                            <p className="text-white/70 text-xs">どの場でも出せる万能カード。惑星・廃墟（Pure WILD）と噴水（Limit WILD）がある。</p>
-                                        </div>
-                                    </div>
-                                    <div className="p-6 space-y-4">
-                                        <div>
-                                            <h4 className="text-[var(--steam-gold)] font-black text-sm mb-1">WILDボーナス</h4>
-                                            <p className="text-white/70 text-xs">Pure WILD（惑星・廃墟）であがると獲得スコアが1.5倍になる特典。</p>
-                                        </div>
-                                        <div>
-                                            <h4 className="text-[var(--steam-gold)] font-black text-sm mb-1">あがり / 上がり</h4>
-                                            <p className="text-white/70 text-xs">手札を0枚にしてラウンドに勝利すること。残りプレイヤーの手札枚数がスコアになる。</p>
-                                        </div>
-                                        <div>
-                                            <h4 className="text-[var(--steam-gold)] font-black text-sm mb-1">カウンティング</h4>
-                                            <p className="text-white/70 text-xs">出たカードを記憶して残りのカードを予測する上級テクニック。デッキは固定51枚。</p>
-                                        </div>
-                                        <div>
-                                            <h4 className="text-[var(--steam-gold)] font-black text-sm mb-1">HUD（ヘッズアップディスプレイ）</h4>
-                                            <p className="text-white/70 text-xs">画面上部の他プレイヤー情報表示エリア。手札枚数とスコアが一目で分かる。</p>
-                                        </div>
-                                        <div>
-                                            <h4 className="text-[var(--steam-gold)] font-black text-sm mb-1">ラウンド（Round）</h4>
-                                            <p className="text-white/70 text-xs">1ゲームの1回分。誰かがあがるかバーストで終了。全5ラウンドで1トーナメント。</p>
-                                        </div>
-                                        <div>
-                                            <h4 className="text-[var(--steam-gold)] font-black text-sm mb-1">CHAMPION / チャンピオン</h4>
-                                            <p className="text-white/70 text-xs">5ラウンド終了後、最も高いスコアを獲得したプレイヤーに与えられる称号。</p>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                                {/* Steam Lore */}
+                                <div className="bg-gradient-to-b from-[#8B4513]/20 to-black p-6 rounded-2xl border border-[#8B4513]/30 relative overflow-hidden group">
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-[#8B4513]"></div>
+                                    <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">⚙️</div>
+                                    <h3 className="text-xl font-black text-[#FF8C00] mb-4 font-['Special_Elite'] tracking-widest">STEAMPUNK</h3>
+                                    <p className="text-xs text-white/80 leading-relaxed font-bold text-left">
+                                        蒸気と歯車が支配する鉄の都。繁栄の絶頂で「氷河期」が訪れ、すべてが凍てつき文明は一度滅びを迎える。<br /><br />
+                                        厚い氷の下で、人智を超えた神秘が芽吹き、次なる「幻想世界（FANTASY）」が産声を上げる……
+                                    </p>
+                                    <div className="mt-6 flex justify-center gap-2 opacity-60">
+                                        <div className="realm-transition-badge">
+                                            <span className="text-white/60">GEAR</span>
+                                            <span className="text-[var(--accent)]">→</span>
+                                            <span className="text-[#00F3FF]">ICEAGE</span>
                                         </div>
                                     </div>
                                 </div>
+
+
+                                {/* Fantasy Lore */}
+                                <div className="bg-gradient-to-b from-[#1E90FF]/20 to-black p-6 rounded-2xl border border-[#1E90FF]/30 relative overflow-hidden group">
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-[#1E90FF]"></div>
+                                    <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">⛲</div>
+                                    <h3 className="text-xl font-black text-[#00F3FF] mb-4 font-['Cinzel_Decorative'] tracking-widest">FANTASY</h3>
+                                    <p className="text-xs text-white/80 leading-relaxed font-bold text-left">
+                                        精霊と魔導が息づく神秘の聖域。集約された魔力から「バッテリー（BATTERY）」が開発され、失われた科学が再び胎動を始める。<br /><br />
+                                        高度な情報処理能力を得た世界は、やがて電脳の海「サイバーパンク（CYBER）」へと変貌を遂げる……
+                                    </p>
+                                    <div className="mt-6 flex justify-center gap-2 opacity-60">
+                                        <div className="realm-transition-badge">
+                                            <span className="text-white/60">FOUNTAIN</span>
+                                            <span className="text-[var(--accent)]">→</span>
+                                            <span className="text-[#DDA0DD]">BATTERY</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                {/* Cyber Lore */}
+                                <div className="bg-gradient-to-b from-[#E2B0FF]/20 to-black p-6 rounded-2xl border border-[#E2B0FF]/30 relative overflow-hidden group">
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-[#E2B0FF]"></div>
+                                    <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🤖</div>
+                                    <h3 className="text-xl font-black text-[#DDA0DD] mb-4 font-['Orbitron'] tracking-widest">CYBERPUNK</h3>
+                                    <p className="text-xs text-white/80 leading-relaxed font-bold text-left">
+                                        電脳と電力が交差する虚無の空間。発達しすぎた科学はエネルギーの枯渇を招くが、その果てに「古文書（ARCHIVE）」が発見される。<br /><br />
+                                        そこに記された失われた蒸気技術を求め、世界は再び「スチームパンク（STEAM）」へと回帰していく……
+                                    </p>
+                                    <div className="mt-6 flex justify-center gap-2 opacity-60">
+                                        <div className="realm-transition-badge">
+                                            <span className="text-white/60">MACHINE</span>
+                                            <span className="text-[var(--accent)]">→</span>
+                                            <span className="text-[#FF8C00]">ARCHIVE</span>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
+
+                        {/* Core Rules Summary Section */}
 
                         {/* Core Rules Summary Section */}
                         <div id="section-rules" className="guide-section">
@@ -1433,14 +1456,11 @@
                                     </li>
 
                                     {/* Rule 4: Burst */}
-                                    <li className="flex items-start bg-red-900/30 p-4 rounded-lg border-2 border-red-500/50 shadow-lg">
+                                    <li className="flex items-start bg-red-900/30 p-4 rounded-lg border border-red-500/30 shadow-lg">
                                         <span className="text-[var(--danger)] font-black text-xl mr-4 mt-1">⚠️</span>
                                         <div className="flex-1">
-                                            <div className="text-lg font-black text-red-400 mb-2">ドボン / バースト（脱落）</div>
-                                            <div className="text-sm text-white/80 mb-3">手札が <span className="text-[var(--danger)] font-black text-2xl bg-red-900/50 px-2 py-1 rounded border border-red-500">11枚以上</span> になった瞬間に即座に脱落し、スコアから <span className="text-[var(--danger)] font-black">-10pt</span> 減点されます。</div>
-                                            <div className="text-xs text-red-300 bg-red-950/50 p-2 rounded border-l-4 border-red-500">
-                                                💡 <strong>重要:</strong> 11枚目を引いた瞬間にバースト！10枚までは安全ですが、油断は禁物です。
-                                            </div>
+                                            <div className="text-lg font-black text-red-400 mb-1">ドボン / バースト（脱落）</div>
+                                            <div className="text-sm text-white/80">手札が <span className="text-[var(--danger)] font-black">11枚以上</span> になると即座に脱落し、スコアから <span className="text-[var(--danger)] font-black">-10pt</span> 減点されます。</div>
                                         </div>
                                     </li>
 
@@ -1464,193 +1484,6 @@
                                 下記の矢印の方向に沿ってのみ、次のカードを出すことができます。
                             </p>
                             <CycleDiagramLarge />
-                            
-                            {/* サイクル図の見方説明 */}
-                            <div className="mt-6 bg-[var(--accent)]/10 border-2 border-[var(--accent)]/30 rounded-lg p-4 max-w-2xl mx-auto">
-                                <h3 className="text-[var(--accent)] font-black text-lg mb-3 flex items-center justify-center gap-2">
-                                    <span>💡</span>
-                                    <span>サイクル図の見方</span>
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left text-sm">
-                                    <div className="bg-black/30 p-3 rounded border border-white/10">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className="w-8 h-8 rounded-full border-2 border-[var(--accent)] flex items-center justify-center text-xs animate-pulse">光</div>
-                                            <span className="font-black text-[var(--accent)]">光っている場</span>
-                                        </div>
-                                        <p className="text-white/70 text-xs">次に出せる場です。この場のカードを選んでプレイできます。</p>
-                                    </div>
-                                    <div className="bg-black/30 p-3 rounded border border-white/10">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className="w-8 h-8 rounded-full border-4 border-[var(--accent)] flex items-center justify-center text-xs">現</div>
-                                            <span className="font-black text-white">現在の場</span>
-                                        </div>
-                                        <p className="text-white/70 text-xs">今プレイされているカードの場です。ここから矢印の先へ進めます。</p>
-                                    </div>
-                                </div>
-                                <div className="mt-3 text-xs text-white/60 text-center">
-                                    ※ ゲーム中は常にサイクル図が表示され、リアルタイムで光って次に出せる場を教えてくれます
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Special Cards Section */}
-                        <div id="section-special" className="guide-section">
-                            <h2 className="section-title text-[var(--magic-purple)]">Special & Wild Cards</h2>
-
-                            <p className="text-white/80 text-sm mb-8 leading-relaxed font-bold text-center">
-                                戦局を大きく覆す特殊な能力を持ったカードたちです。
-                            </p>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {/* Attack / Reverse */}
-                                <div className="flex items-center gap-6 bg-black/40 p-4 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 hover:border-white/30 transition-all transform hover:-translate-y-1" onClick={() => triggerSpecial('GEAR')}>
-                                    <div className="pointer-events-none"><CardView realmKey="GEAR" isSpecial={true} /></div>
-                                    <div className="flex-1">
-                                        <h3 className="text-xl font-black text-[#FFD700] mb-2 tracking-widest pointer-events-none">⚙️ 歯車 (S) [+2 DRAW] <span className="text-sm font-normal text-white/40 ml-2">(属性10枚中 3枚)</span></h3>
-                                        <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none mb-2">次のプレイヤーに強制的に2枚ドローさせます。手札に同じカードがあれば回避して+4, +6と上乗せ可能です。（クリックで試す）</p>
-                                        <div className="text-xs text-white/60 bg-black/40 p-2 rounded border-l-2 border-yellow-500">
-                                            💡 <strong>戦略:</strong> 相手が10枚に近い時に使うとバーストさせやすい！連続で出せば強力な攻撃に。
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-6 bg-black/40 p-4 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 hover:border-white/30 transition-all transform hover:-translate-y-1" onClick={() => triggerSpecial('MACHINE')}>
-                                    <div className="pointer-events-none"><CardView realmKey="MACHINE" isSpecial={true} /></div>
-                                    <div className="flex-1">
-                                        <h3 className="text-xl font-black text-[#DDA0DD] mb-2 tracking-widest pointer-events-none">🤖 機械 (S) [REVERSE] <span className="text-sm font-normal text-white/40 ml-2">(属性10枚中 3枚)</span></h3>
-                                        <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none mb-2">手番の進行方向（時計回り↔反時計回り）を反転させます。中央のサイクル図の矢印もリアルタイムに反転します。2人プレイ時は相手の手番をスキップして連続で自分のターンになります。（クリックで試す）</p>
-                                        <div className="text-xs text-white/60 bg-black/40 p-2 rounded border-l-2 border-purple-500">
-                                            💡 <strong>戦略:</strong> 次のプレイヤーをスキップしたい時や、連続攻撃を避けたい時に有効。
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Wilds */}
-                                <div className="flex items-center gap-6 bg-black/40 p-4 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 hover:border-white/30 transition-all transform hover:-translate-y-1" onClick={() => triggerSpecial('FOUNTAIN')}>
-                                    <div className="pointer-events-none"><CardView realmKey="FOUNTAIN" isSpecial={true} /></div>
-                                    <div className="flex-1">
-                                        <h3 className="text-xl font-black text-[#87CEFA] mb-2 tracking-widest pointer-events-none">⛲ 噴水 (S) [LIMIT WILD] <span className="text-sm font-normal text-white/40 ml-2">(属性10枚中 3枚)</span></h3>
-                                        <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none mb-2">「氷河期」か「噴水」の場でのみ使用可能。出した瞬間に好きな属性に変更できる限定ワイルドカードです。（クリックで試す）</p>
-                                        <div className="text-xs text-white/60 bg-black/40 p-2 rounded border-l-2 border-blue-400">
-                                            💡 <strong>使い方:</strong> プレイ後、画面下から選択パネルが出現。6つの属性から好きなものを選択できます。
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col gap-4">
-                                    <div className="flex items-center gap-6 bg-black/40 p-4 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 hover:border-white/30 transition-all transform hover:-translate-y-1" onClick={() => triggerSpecial('PLANET')}>
-                                        <div className="pointer-events-none"><CardView realmKey="PLANET" /></div>
-                                        <div className="flex-1">
-                                            <h3 className="text-xl font-black text-[#FFFFFF] mb-2 tracking-widest pointer-events-none">🪐 惑星 [PURE WILD] <span className="text-sm font-normal text-white/40 ml-2">(3/51)</span></h3>
-                                            <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none mb-2">いつでも出せる純粋なワイルド。これで「あがり」を決めると獲得スコアが <span className="text-[var(--accent)]">1.5倍</span> になります。</p>
-                                            <div className="text-xs text-white/60 bg-black/40 p-2 rounded border-l-2 border-white">
-                                                💡 <strong>戦略:</strong> 最後の1枚として使えば高スコア！ただし枚数が少ないので計画的に。
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-6 bg-black/40 p-4 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 hover:border-white/30 transition-all transform hover:-translate-y-1" onClick={() => triggerSpecial('RUINS')}>
-                                        <div className="pointer-events-none"><CardView realmKey="RUINS" /></div>
-                                        <div className="flex-1">
-                                            <h3 className="text-xl font-black text-[#CCCCCC] mb-2 tracking-widest pointer-events-none">🏛️ 廃墟 [PURE WILD] <span className="text-sm font-normal text-white/40 ml-2">(3/51)</span></h3>
-                                            <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none">惑星と同様、いつでも出せます。惑星と同じく1.5倍の「WILDボーナス」が適用されます。</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* 初心者向け戦略ヒント Section */}
-                        <div className="guide-section mb-16">
-                            <h2 className="section-title text-[var(--steam-gold)]">🎯 初心者向け戦略ヒント</h2>
-                            <p className="text-white/80 text-sm mb-8 leading-relaxed font-bold text-center">
-                                勝率を上げるための基本的な戦略とコツをご紹介します。
-                            </p>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                                <div className="bg-gradient-to-br from-yellow-900/20 to-black/40 p-5 rounded-xl border border-yellow-500/30 shadow-lg">
-                                    <h3 className="text-lg font-black text-yellow-400 mb-3 flex items-center gap-2">
-                                        <span>⚔️</span>
-                                        <span>序盤戦略</span>
-                                    </h3>
-                                    <ul className="space-y-2 text-sm text-white/80">
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-yellow-500 font-black">•</span>
-                                            <span>最初は手札を減らすより、<strong className="text-yellow-300">DRAWカードで相手を攻撃</strong>する方が有効</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-yellow-500 font-black">•</span>
-                                            <span>WILDカードは温存し、<strong className="text-yellow-300">フィニッシュ用</strong>に取っておく</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-yellow-500 font-black">•</span>
-                                            <span>サイクル図を見て、<strong className="text-yellow-300">次に出せる場のカード</strong>を優先的に残す</span>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div className="bg-gradient-to-br from-red-900/20 to-black/40 p-5 rounded-xl border border-red-500/30 shadow-lg">
-                                    <h3 className="text-lg font-black text-red-400 mb-3 flex items-center gap-2">
-                                        <span>⚠️</span>
-                                        <span>バースト回避</span>
-                                    </h3>
-                                    <ul className="space-y-2 text-sm text-white/80">
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-red-500 font-black">•</span>
-                                            <span><strong className="text-red-300">10枚に近づいたら</strong>積極的にカードを出す</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-red-500 font-black">•</span>
-                                            <span>DRAWカードは<strong className="text-red-300">重ねて回避</strong>できることを忘れずに</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-red-500 font-black">•</span>
-                                            <span>WILDカードがあれば<strong className="text-red-300">確実に出せる</strong>ので保険になる</span>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div className="bg-gradient-to-br from-purple-900/20 to-black/40 p-5 rounded-xl border border-purple-500/30 shadow-lg">
-                                    <h3 className="text-lg font-black text-purple-400 mb-3 flex items-center gap-2">
-                                        <span>🧠</span>
-                                        <span>中級テクニック</span>
-                                    </h3>
-                                    <ul className="space-y-2 text-sm text-white/80">
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-purple-500 font-black">•</span>
-                                            <span><strong className="text-purple-300">カウンティング</strong>: 出たカードを記憶して残りを予測</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-purple-500 font-black">•</span>
-                                            <span><strong className="text-purple-300">REVERSE</strong>で攻撃を回避したり連続ターンを獲得</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-purple-500 font-black">•</span>
-                                            <span>相手が10枚に近い時に<strong className="text-purple-300">DRAWで追い込む</strong></span>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div className="bg-gradient-to-br from-cyan-900/20 to-black/40 p-5 rounded-xl border border-cyan-500/30 shadow-lg">
-                                    <h3 className="text-lg font-black text-cyan-400 mb-3 flex items-center gap-2">
-                                        <span>🏆</span>
-                                        <span>勝利のコツ</span>
-                                    </h3>
-                                    <ul className="space-y-2 text-sm text-white/80">
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-cyan-500 font-black">•</span>
-                                            <span><strong className="text-cyan-300">1位を目指す</strong>より、バーストせず安定して得点を稼ぐ</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-cyan-500 font-black">•</span>
-                                            <span>WILDボーナス（1.5倍）を活用して<strong className="text-cyan-300">高得点を狙う</strong></span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-cyan-500 font-black">•</span>
-                                            <span>5ラウンドの<strong className="text-cyan-300">合計得点</strong>で勝負が決まることを意識</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
                         </div>
 
                         {/* Tactical Simulator Section */}
@@ -1695,6 +1528,60 @@
                                         <div className="sim-card-slot clickable flex flex-col justify-center items-center bg-black/60 border-2 border-dashed border-white/30 rounded-xl w-[90px] h-[130px] md:w-[120px] md:h-[180px] hover:border-white hover:bg-black/80 transition-all" onClick={() => playSE('draw')}>
                                             <div className="text-3xl md:text-4xl mb-2 filter drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">🃏</div>
                                             <div className="text-white/90 font-black font-['Orbitron'] tracking-[2px] md:tracking-widest text-xs md:text-sm">DRAW</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Special Cards Section */}
+                        <div id="section-special" className="guide-section">
+                            <h2 className="section-title text-[var(--magic-purple)]">Special & Wild Cards</h2>
+
+                            <p className="text-white/80 text-sm mb-8 leading-relaxed font-bold text-center">
+                                戦局を大きく覆す特殊な能力を持ったカードたちです。
+                            </p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Attack / Reverse */}
+                                <div className="flex items-center gap-6 bg-black/40 p-4 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 hover:border-white/30 transition-all transform hover:-translate-y-1" onClick={() => triggerSpecial('GEAR')}>
+                                    <div className="pointer-events-none"><CardView realmKey="GEAR" isSpecial={true} /></div>
+                                    <div className="flex-1">
+                                        <h3 className="text-xl font-black text-[#FFD700] mb-2 tracking-widest pointer-events-none">⚙️ 歯車 (S) [+2 DRAW] <span className="text-sm font-normal text-white/40 ml-2">(属性10枚中 3枚)</span></h3>
+                                        <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none">次のプレイヤーに強制的に2枚ドローさせます。手札に同じカードがあれば回避して+4, +6と上乗せ可能です。（クリックで試す）</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-6 bg-black/40 p-4 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 hover:border-white/30 transition-all transform hover:-translate-y-1" onClick={() => triggerSpecial('MACHINE')}>
+                                    <div className="pointer-events-none"><CardView realmKey="MACHINE" isSpecial={true} /></div>
+                                    <div className="flex-1">
+                                        <h3 className="text-xl font-black text-[#DDA0DD] mb-2 tracking-widest pointer-events-none">🤖 機械 (S) [REVERSE] <span className="text-sm font-normal text-white/40 ml-2">(属性10枚中 3枚)</span></h3>
+                                        <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none">手番の進行方向（時計回り↔反時計回り）を反転させます。中央のサイクル図の矢印もリアルタイムに反転します。2人プレイ時は相手の手番をスキップして連続で自分のターンになります。（クリックで試す）</p>
+                                    </div>
+                                </div>
+
+                                {/* Wilds */}
+                                <div className="flex items-center gap-6 bg-black/40 p-4 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 hover:border-white/30 transition-all transform hover:-translate-y-1" onClick={() => triggerSpecial('FOUNTAIN')}>
+                                    <div className="pointer-events-none"><CardView realmKey="FOUNTAIN" isSpecial={true} /></div>
+                                    <div className="flex-1">
+                                        <h3 className="text-xl font-black text-[#87CEFA] mb-2 tracking-widest pointer-events-none">⛲ 噴水 (S) [LIMIT WILD] <span className="text-sm font-normal text-white/40 ml-2">(属性10枚中 3枚)</span></h3>
+                                        <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none">「氷河期」か「噴水」の場でのみ使用可能。出した瞬間に好きな属性に変更できる限定ワイルドカードです。（クリックで試す）</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex items-center gap-6 bg-black/40 p-4 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 hover:border-white/30 transition-all transform hover:-translate-y-1" onClick={() => triggerSpecial('PLANET')}>
+                                        <div className="pointer-events-none"><CardView realmKey="PLANET" /></div>
+                                        <div className="flex-1">
+                                            <h3 className="text-xl font-black text-[#FFFFFF] mb-2 tracking-widest pointer-events-none">🪐 惑星 [PURE WILD] <span className="text-sm font-normal text-white/40 ml-2">(3/51)</span></h3>
+                                            <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none">いつでも出せる純粋なワイルド。これで「あがり」を決めると獲得スコアが <span className="text-[var(--accent)]">1.5倍</span> になります。</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-6 bg-black/40 p-4 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 hover:border-white/30 transition-all transform hover:-translate-y-1" onClick={() => triggerSpecial('RUINS')}>
+                                        <div className="pointer-events-none"><CardView realmKey="RUINS" /></div>
+                                        <div className="flex-1">
+                                            <h3 className="text-xl font-black text-[#CCCCCC] mb-2 tracking-widest pointer-events-none">🏛️ 廃墟 [PURE WILD] <span className="text-sm font-normal text-white/40 ml-2">(3/51)</span></h3>
+                                            <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none">惑星と同様、いつでも出せます。惑星と同じく1.5倍の「WILDボーナス」が適用されます。</p>
                                         </div>
                                     </div>
                                 </div>
@@ -1902,74 +1789,6 @@
                             </div>
                         </div>
 
-                        {/* World Flavor Lore Section */}
-                        <div id="section-lore" className="guide-section text-center">
-                            <h2 className="section-title text-[var(--steam-gold)]">The Three Realms: 三つの世界と移ろい</h2>
-
-                            <p className="text-white/60 text-sm mb-12 font-bold max-w-2xl mx-auto">
-                                カードの属性はただの記号ではありません。それは次元の境界を越え、変貌し続ける世界の姿です。
-                            </p>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                                {/* Steam Lore */}
-                                <div className="bg-gradient-to-b from-[#8B4513]/20 to-black p-6 rounded-2xl border border-[#8B4513]/30 relative overflow-hidden group">
-                                    <div className="absolute top-0 left-0 w-full h-1 bg-[#8B4513]"></div>
-                                    <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">⚙️</div>
-                                    <h3 className="text-xl font-black text-[#FF8C00] mb-4 font-['Special_Elite'] tracking-widest">STEAMPUNK</h3>
-                                    <p className="text-xs text-white/80 leading-relaxed font-bold text-left">
-                                        蒸気と歯車が支配する鉄の都。繁栄の絶頂で「氷河期」が訪れ、すべてが凍てつき文明は一度滅びを迎える。<br /><br />
-                                        厚い氷の下で、人智を超えた神秘が芽吹き、次なる「幻想世界（FANTASY）」が産声を上げる……
-                                    </p>
-                                    <div className="mt-6 flex justify-center gap-2 opacity-60">
-                                        <div className="realm-transition-badge">
-                                            <span className="text-white/60">GEAR</span>
-                                            <span className="text-[var(--accent)]">→</span>
-                                            <span className="text-[#00F3FF]">ICEAGE</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                                {/* Fantasy Lore */}
-                                <div className="bg-gradient-to-b from-[#1E90FF]/20 to-black p-6 rounded-2xl border border-[#1E90FF]/30 relative overflow-hidden group">
-                                    <div className="absolute top-0 left-0 w-full h-1 bg-[#1E90FF]"></div>
-                                    <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">⛲</div>
-                                    <h3 className="text-xl font-black text-[#00F3FF] mb-4 font-['Cinzel_Decorative'] tracking-widest">FANTASY</h3>
-                                    <p className="text-xs text-white/80 leading-relaxed font-bold text-left">
-                                        精霊と魔導が息づく神秘の聖域。集約された魔力から「バッテリー（BATTERY）」が開発され、失われた科学が再び胎動を始める。<br /><br />
-                                        高度な情報処理能力を得た世界は、やがて電脳の海「サイバーパンク（CYBER）」へと変貌を遂げる……
-                                    </p>
-                                    <div className="mt-6 flex justify-center gap-2 opacity-60">
-                                        <div className="realm-transition-badge">
-                                            <span className="text-white/60">FOUNTAIN</span>
-                                            <span className="text-[var(--accent)]">→</span>
-                                            <span className="text-[#DDA0DD]">BATTERY</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                                {/* Cyber Lore */}
-                                <div className="bg-gradient-to-b from-[#E2B0FF]/20 to-black p-6 rounded-2xl border border-[#E2B0FF]/30 relative overflow-hidden group">
-                                    <div className="absolute top-0 left-0 w-full h-1 bg-[#E2B0FF]"></div>
-                                    <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🤖</div>
-                                    <h3 className="text-xl font-black text-[#DDA0DD] mb-4 font-['Orbitron'] tracking-widest">CYBERPUNK</h3>
-                                    <p className="text-xs text-white/80 leading-relaxed font-bold text-left">
-                                        電脳と電力が交差する虚無の空間。発達しすぎた科学はエネルギーの枯渇を招くが、その果てに「古文書（ARCHIVE）」が発見される。<br /><br />
-                                        そこに記された失われた蒸気技術を求め、世界は再び「スチームパンク（STEAM）」へと回帰していく……
-                                    </p>
-                                    <div className="mt-6 flex justify-center gap-2 opacity-60">
-                                        <div className="realm-transition-badge">
-                                            <span className="text-white/60">MACHINE</span>
-                                            <span className="text-[var(--accent)]">→</span>
-                                            <span className="text-[#FF8C00]">ARCHIVE</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-
                         {/* System Architecture Section */}
                         <div className="guide-section mb-16">
                             <h2 className="section-title text-[var(--accent)]">System Architecture</h2>
@@ -1988,6 +1807,7 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             );
@@ -1997,4 +1817,5 @@
         root.render(<App />);
     </script>
 </body>
+
 </html>
