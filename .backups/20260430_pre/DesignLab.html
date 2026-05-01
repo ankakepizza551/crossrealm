@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CROSS REALM: DESIGN REFINERY (LAB v2)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Cinzel:wght@700;900&family=Cinzel+Decorative:wght@700;900&family=Noto+Sans+JP:wght@700;900&family=Orbitron:wght@700;900&family=Special+Elite&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        :root {
+            --accent: #40E0D0;
+            --steam-gold: #D4AF37;
+            --magic-purple: #8A2BE2;
+            --danger: #FF4500;
+            --bg-deep: #05010a;
+            --card-w: 120px;
+            --card-h: 168px;
+        }
+        body { background: #05010a; color: white; font-family: "Noto Sans JP", sans-serif; margin: 0; }
+        
+        /* === App Logic Styles (Ported from index.css) === */
+        @keyframes rotate-inner { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes rotate-outer { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+        @keyframes steam-rise-heavy {
+            0% { transform: translateY(30%) translateX(var(--drift-start)) scale(0.5) rotate(0deg); opacity: 0; filter: blur(4px); }
+            15% { opacity: 0.85; filter: blur(6px); }
+            100% { transform: translateY(-130%) translateX(var(--drift-end)) scale(4) rotate(var(--rot)); opacity: 0; filter: blur(15px); }
+        }
+        @keyframes ripple-expand { 0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
+        @keyframes cyber-glitch-color { 0%, 94%, 100% { filter: none; } 95% { filter: drop-shadow(-3px 0 #ff00ea) drop-shadow(3px 0 #00ffff); } 97% { filter: drop-shadow(2px 0 #ff0000) drop-shadow(-2px 0 #00ff00); } }
+        @keyframes cyber-scanline { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
+        @keyframes void-pulse-wave { 0%, 100% { transform: scale(1); opacity: 0.2; } 50% { transform: scale(1.4); opacity: 0.5; } }
+        @keyframes pulse-shimmer { 0%, 100% { opacity: 0.6; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
+
+        /* Card Decoration Styles */
+        .card-surface { position: relative; border-radius: 8px; overflow: hidden; }
+        .mat-steam { background: radial-gradient(circle at 50% 0%, var(--r-color-bright) 0%, #1a0f05 100%); border: 8px solid #3d2616; }
+        .mat-fantasy { background: radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%); border: 2px solid rgba(255, 255, 255, 0.9); border-radius: 35% 10% !important; }
+        .mat-cyber { background: #000; border: none; clip-path: polygon(0 15%, 15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%); border-left: 7px solid var(--r-color); animation: cyber-glitch-color 4s infinite; }
+        .mat-void-planet, .mat-void-ruins { background: radial-gradient(circle at 50% 50%, #111 0%, #000 100%); border-radius: 50% !important; }
+
+        .steam-rivet { position: absolute; width: 5px; height: 5px; background: #2a1a10; border-radius: 50%; box-shadow: inset 1px 1px 2px #fff3, 1px 1px 4px #000; }
+        .steam-particle { position: absolute; bottom: -20px; width: 100px; height: 100px; background: radial-gradient(circle, #fff 0%, transparent 70%); border-radius: 50%; animation: steam-rise-heavy var(--d) infinite ease-in; opacity: 0; }
+        .ripple { position: absolute; top: 50%; left: 50%; width: 180px; height: 180px; border: 4px solid rgba(255,255,255,0.4); border-radius: 50%; animation: ripple-expand 4s infinite cubic-bezier(0.165, 0.84, 0.44, 1); opacity: 0; }
+        .cyber-fx-scanline { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 0%, rgba(64, 224, 208, 0.1) 50%, transparent 100%); background-size: 100% 50px; animation: cyber-scanline 1.6s linear infinite; }
+        .special-badge-base { position: absolute; left: -8px; top: 38%; background: linear-gradient(90deg, #e60000, #800000); border: 1.5px solid #FFF; color: #FFF; font-size: 7.2px; font-weight: 1000; padding: 2px 8px; border-radius: 2px 6px 6px 2px; transform: rotate(-4deg); z-index: 100; letter-spacing: 1.5px; line-height: 1.1; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.6); }
+
+        @keyframes logo-shine { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+        
+        .main-logo-text {
+            font-family: 'Cinzel', serif;
+            font-weight: 950;
+            font-size: 5rem;
+            line-height: 0.85;
+            background: linear-gradient(90deg, #fff, var(--steam-gold), #fff, var(--magic-purple), #fff, var(--accent), #fff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: logo-shine 6s linear infinite;
+            letter-spacing: 12px;
+            filter: drop-shadow(0 0 15px rgba(0, 0, 0, 1));
+        }
+
+        /* Lab Layout */
+        .lab-bg { position: fixed; inset: 0; z-index: 0; }
+        .lab-content { position: relative; z-index: 10; }
+        .section-panel { background: rgba(10, 5, 25, 0.85); border: 1px solid rgba(64, 224, 208, 0.2); border-radius: 12px; padding: 40px; margin-bottom: 40px; backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, Fragment } = React;
+
+        const REALMS = {
+            GEAR: { n: '歯車', color: '#FF8C00', bright: '#FFD700', glow: 'rgba(255,140,0,1)', theme: 'steam', font: 'Special Elite' },
+            ARCHIVE: { n: '古文書', color: '#FF3131', bright: '#FF6347', glow: 'rgba(255,49,49,1)', theme: 'steam', font: 'Special Elite' },
+            FOUNTAIN: { n: '噴水', color: '#0047FF', bright: '#6699FF', glow: 'rgba(0,71,255,1)', theme: 'fantasy', font: 'Cinzel Decorative' },
+            ICEAGE: { n: '氷河期', color: '#00F3FF', bright: '#ADFCFF', glow: 'rgba(0,243,255,1)', theme: 'fantasy', font: 'Cinzel Decorative' },
+            MACHINE: { n: '機械', color: '#E2B0FF', bright: '#DDA0DD', glow: 'rgba(226,176,255,1)', dim: 'rgba(226,176,255,0.4)', theme: 'cyber', font: 'Orbitron' },
+            BATTERY: { n: '電池', color: '#ADFF2F', bright: '#7FFF00', glow: 'rgba(173,255,47,1)', dim: 'rgba(173,255,47,0.4)', theme: 'cyber', font: 'Orbitron' },
+            PLANET: { n: '惑星', color: '#FFFFFF', bright: '#F0F8FF', glow: 'rgba(255,255,255,1)', theme: 'void-planet', font: 'Audiowide' },
+            RUINS: { n: '廃墟', color: '#CCCCCC', bright: '#D3D3D3', glow: 'rgba(204,204,204,1)', theme: 'void-ruins', font: 'Audiowide' }
+        };
+
+        const IconRenderer = ({ r, spec, className, ...rest }) => {
+            const p = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: spec ? 4 : 2, className: className || "w-full h-full", ...rest };
+            switch (r) {
+                case 'GEAR': return <svg {...p}><circle cx="12" cy="12" r="7"/><path d="M12 2v3 M12 19v3 M2 12h3 M19 12h3 M4.9 4.9l2.1 2.1 M17.1 17.1l2.1 2.1"/></svg>;
+                case 'FOUNTAIN': return <svg {...p}><path d="M12 19c3.8 0 7-3.2 7-7 0-4.5-7-10-7-10S5 7.5 5 12c0 3.8 3.2 7 7 7z"/></svg>;
+                case 'MACHINE': return <svg {...p}><rect x="6" y="6" width="12" height="12" rx="1"/><path d="M10 6V2 M14 6V2 M6 10H2 M18 10h4"/></svg>;
+                case 'PLANET': return <svg {...p}><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/></svg>;
+                default: return <svg {...p}><circle cx="12" cy="12" r="8"/></svg>;
+            }
+        };
+
+        const CardOrnaments = ({ theme }) => {
+            if (theme === 'steam') return (
+                <Fragment>
+                    <div className="steam-rivet" style={{top:4, left:4}} /><div className="steam-rivet" style={{top:4, right:4}} />
+                    <div className="steam-rivet" style={{bottom:4, left:4}} /><div className="steam-rivet" style={{bottom:4, right:4}} />
+                    <div className="steam-particle" style={{ '--l': '20%', '--d': '3s', '--delay': '0s', '--drift-start': '0px', '--drift-end': '20px', '--rot': '90deg', left: '20%' }} />
+                    <div className="steam-particle" style={{ '--l': '70%', '--d': '2.5s', '--delay': '1s', '--drift-start': '0px', '--drift-end': '-20px', '--rot': '-45deg', left: '70%' }} />
+                </Fragment>
+            );
+            if (theme === 'fantasy') return <Fragment><div className="ripple" style={{ '--delay': '0s' }} /><div className="ripple" style={{ '--delay': '2s' }} /></Fragment>;
+            if (theme === 'cyber') return <Fragment><div className="cyber-fx-scanline" /></Fragment>;
+            return null;
+        };
+
+        const getSpecLabel = (r) => {
+            if (r === 'GEAR') return 'DRAW 2';
+            if (r === 'FOUNTAIN') return 'WILD';
+            if (r === 'MACHINE') return 'REVERSE';
+            return null;
+        };
+
+        const CardView = ({ realm, isSpecial }) => {
+            const rData = REALMS[realm];
+            const specLabel = isSpecial ? getSpecLabel(realm) : null;
+            if (isSpecial && !specLabel) return null; // 他の属性にはスペシャルは存在しない
+
+            return (
+                <div className="flex flex-col items-center gap-4">
+                    <div className={`card-surface mat-${rData.theme}`} style={{ '--r-color': rData.color, '--r-color-bright': rData.bright, '--r-color-glow': rData.glow, '--r-color-dim': 'rgba(0,0,0,0.5)', width: 'var(--card-w)', height: 'var(--card-h)' }}>
+                        <CardOrnaments theme={rData.theme} />
+                        <div className="absolute top-2 left-2 px-2 py-0.5 bg-black text-[9px] font-black border-l-2" style={{ borderColor: rData.color }}>{realm}</div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16" style={{ color: rData.bright, filter: `drop-shadow(0 0 10px ${rData.glow})` }}>
+                            <IconRenderer r={realm} spec={isSpecial} />
+                        </div>
+                        <div className="absolute bottom-3 w-full text-center font-black text-[14px]" style={{ fontFamily: rData.font, textShadow: `0 0 10px ${rData.color}` }}>{rData.n}</div>
+                        {isSpecial && <div className="special-badge-base">{specLabel}</div>}
+                    </div>
+                    <span className="text-[10px] font-mono opacity-60">{realm} {isSpecial ? `(${specLabel})` : ''}</span>
+                </div>
+            );
+        };
+
+        const ComplexEmblem = ({ isLogo = false }) => (
+            <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+                <defs>
+                    <filter id="emblem-glow"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
+                    <filter id="core-glow"><feGaussianBlur stdDeviation="6" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
+                </defs>
+                <g filter="url(#emblem-glow)">
+                    <circle cx="50" cy="50" r="48" fill="none" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="4 8 12 4" opacity="0.6" style={{ animation: 'rotate-outer 20s linear infinite', transformOrigin: 'center' }} />
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="var(--accent)" strokeWidth="0.3" strokeDasharray="2 2" opacity="0.4" style={{ animation: 'rotate-inner 15s linear infinite', transformOrigin: 'center' }} />
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="var(--magic-purple)" strokeWidth="1" strokeDasharray="1 4" opacity="0.8" style={{ animation: 'rotate-inner 30s linear infinite', transformOrigin: 'center' }} />
+                    {isLogo && (
+                        <g style={{ animation: 'rotate-outer 40s linear infinite', transformOrigin: 'center' }}>
+                            <polygon points="50,12 55,32 75,32 60,45 65,65 50,53 35,65 40,45 25,32 45,32" fill="none" stroke="var(--magic-purple)" strokeWidth="0.5" opacity="0.6" />
+                        </g>
+                    )}
+                    <path d="M50 16 L79.4 33 L79.4 67 L50 84 L20.6 67 L20.6 33 Z" fill="none" stroke="var(--steam-gold)" strokeWidth="1.5" opacity="0.5" style={{ animation: 'rotate-inner 45s linear infinite', transformOrigin: 'center' }} />
+                    {isLogo && <g style={{ animation: 'rotate-inner 45s linear infinite', transformOrigin: 'center' }}>{[...Array(6)].map((_, i) => <circle key={i} cx="50" cy="16" r="1.5" fill="var(--steam-gold)" opacity="0.9" transform={`rotate(${i * 60} 50 50)`} />)}</g>}
+                    <circle cx="50" cy="50" r="12" fill="var(--danger)" opacity="0.3" filter="url(#core-glow)" style={{ animation: 'pulse-shimmer 3s infinite' }} />
+                    <path d="M36 36 L64 64 M64 36 L36 64" stroke="#fff" strokeWidth="4" strokeLinecap="square" opacity="0.9" />
+                    <text x="50" y="54" fill="var(--accent)" fontSize="10" fontWeight="1000" font-family="Orbitron" textAnchor="middle" style={{ animation: 'pulse-shimmer 2s infinite' }}>X</text>
+                </g>
+            </svg>
+        );
+
+        const GearLight = ({ color }) => (
+            <svg viewBox="0 0 100 100" className="w-full h-full opacity-60">
+                <defs>
+                    <linearGradient id={`grad-gear-bg-${color}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.8 }} />
+                        <stop offset="45%" style={{ stopColor: '#fff', stopOpacity: 0.4 }} />
+                        <stop offset="55%" style={{ stopColor: color, stopOpacity: 0.8 }} />
+                        <stop offset="100%" style={{ stopColor: '#332211', stopOpacity: 0.6 }} />
+                    </linearGradient>
+                </defs>
+                <path fill={`url(#grad-gear-bg-${color})`} stroke={color} strokeWidth="0.5" opacity="0.7"
+                    d="M100 56.5v-13l-12.7-2.1c-1.1-4.5-3-8.6-5.4-12.3l7.4-10.4-9.2-9.2-10.4 7.4c-3.7-2.4-7.8-4.3-12.3-5.4L55.3 0h-13l-2.1 12.7c-4.5 1.1-8.6 3-12.3 5.4l-10.4-7.4-9.2 9.2 7.4 10.4c-2.4 3.7-4.3 7.8-5.4 12.3L0 43.5v13l12.7 2.1c1.1 4.5 3 8.6 5.4 12.3l-7.4 10.4 9.2 9.2 10.4-7.4c3.7 2.4 7.8 4.3 12.3 5.4l2.1 12.7h13l2.1-12.7c4.5-1.1 8.6-3 12.3-5.4l10.4 7.4 9.2-9.2-7.4-10.4c2.4-3.7 4.3-7.8 5.4-12.3l12.7-2.1zM50 71c-11.6 0-21-9.4-21-21s9.4-21 21-21 21 9.4 21 21-9.4 21-21 21z" />
+                <circle cx="50" cy="50" r="15" fill="none" stroke="#fff" strokeWidth="0.5" opacity="0.2" />
+                <circle cx="50" cy="50" r="8" fill="#111" stroke={color} strokeWidth="1" opacity="0.5" />
+            </svg>
+        );
+
+        const MagicCircleLight = ({ color }) => (
+            <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+                <g opacity="0.6">
+                    <g style={{ animation: 'rotate-outer 10s linear infinite', transformOrigin: 'center' }}>
+                        <circle cx="50" cy="50" r="48" fill="none" stroke={color} strokeWidth="1" strokeDasharray="10 5" />
+                    </g>
+                    <g style={{ animation: 'rotate-inner 15s linear infinite', transformOrigin: 'center' }}>
+                        <circle cx="50" cy="50" r="35" fill="none" stroke={color} strokeWidth="1" />
+                        <path d="M50 15 L80 70 L20 70 Z M50 85 L20 30 L80 30 Z" fill="none" stroke={color} strokeWidth="1" />
+                        <circle cx="50" cy="50" r="10" fill="none" stroke={color} strokeWidth="2" />
+                    </g>
+                </g>
+            </svg>
+        );
+
+        const Lab = () => {
+            useEffect(() => {
+                const canvas = document.getElementById('matrix');
+                const ctx = canvas.getContext('2d');
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                const columns = Math.floor(canvas.width / 20);
+                const drops = new Array(columns).fill(0);
+                const draw = () => {
+                    ctx.fillStyle = 'rgba(5, 1, 10, 0.08)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZｱｲｳｴｵｶｷｸｹｺ";
+                    const colors = ['#8A2BE2', '#00FF41'];
+                    drops.forEach((y, i) => {
+                        ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+                        ctx.font = '900 16px Orbitron';
+                        ctx.fillText(chars.charAt(Math.floor(Math.random() * chars.length)), i * 20, y * 20);
+                        if (y * 20 > canvas.height && Math.random() > 0.98) drops[i] = 0;
+                        drops[i]++;
+                    });
+                };
+                const interval = setInterval(draw, 40);
+                return () => clearInterval(interval);
+            }, []);
+
+            return (
+                <div className="relative min-h-screen">
+                    <canvas id="matrix" className="lab-bg" />
+                    
+                    <div className="lab-content p-10">
+                        <header className="mb-12 text-center">
+                            <h1 className="text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 mb-2" style={{ fontFamily: 'Cinzel' }}>REFINERY</h1>
+                            <div className="flex items-center justify-center gap-4">
+                                <span className="h-px w-20 bg-cyan-500"></span>
+                                <p className="text-cyan-400 font-black tracking-[12px] text-xs">V133.8.6 DESIGN SPECIFICATION</p>
+                                <span className="h-px w-20 bg-cyan-500"></span>
+                            </div>
+                        </header>
+
+                        <section className="section-panel">
+                            <h2 className="text-2xl font-black text-cyan-400 mb-10 tracking-widest border-l-4 border-cyan-400 pl-4">I. CORE EMBLEM & BRANDING</h2>
+                            <div className="flex flex-col md:flex-row justify-center items-center gap-20 py-20 bg-black/60 rounded-xl relative overflow-hidden">
+                                <div className="w-80 h-80 relative">
+                                    <ComplexEmblem isLogo={true} />
+                                </div>
+                                <div className="flex flex-col items-center">
+                                    <div className="main-logo-text">CROSS<br />REALM</div>
+                                    <p className="text-cyan-400 font-black tracking-[10px] mt-4 opacity-80">- OMEGA SINGULARITY -</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="section-panel">
+                            <h2 className="text-2xl font-black text-cyan-400 mb-10 tracking-widest border-l-4 border-cyan-400 pl-4">II. CARD ORNAMENTATION LAB</h2>
+                            <p className="text-[10px] text-cyan-400/60 mb-6 tracking-[4px] uppercase ml-4">Standard Issue Cards</p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-10">
+                                {Object.keys(REALMS).map(r => <CardView key={r} realm={r} isSpecial={false} />)}
+                            </div>
+                            <div className="h-px bg-white/10 my-12"></div>
+                            <p className="text-[10px] text-orange-500/60 mb-6 tracking-[4px] uppercase ml-4">Tactical Special Cards (Specific Abilities)</p>
+                            <div className="flex flex-wrap gap-10">
+                                {['GEAR', 'FOUNTAIN', 'MACHINE'].map(r => <CardView key={r} realm={r} isSpecial={true} />)}
+                            </div>
+                        </section>
+
+                        <section className="section-panel">
+                            <h2 className="text-2xl font-black text-cyan-400 mb-10 tracking-widest border-l-4 border-cyan-400 pl-4">III. ASTRAL ATMOSPHERE</h2>
+                            <div className="flex gap-20 justify-center py-10 relative overflow-hidden">
+                                <div className="text-center relative z-10">
+                                    <div className="w-60 h-60 border border-orange-500/30 rounded-xl bg-black/60 flex items-center justify-center mb-4 relative overflow-hidden">
+                                        <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
+                                            {/* Local matrix preview could be here, but using global one for consistency */}
+                                        </div>
+                                        <div className="w-40 h-40 relative z-10" style={{ filter: 'drop-shadow(0 0 20px #8B4513)' }}>
+                                            <GearLight color="#8B4513" />
+                                        </div>
+                                    </div>
+                                    <p className="text-[12px] font-black text-orange-500 tracking-widest uppercase">Steam Gear (Background)</p>
+                                </div>
+                                <div className="text-center relative z-10">
+                                    <div className="w-60 h-60 border border-purple-500/30 rounded-xl bg-black/60 flex items-center justify-center mb-4 relative overflow-hidden">
+                                        <div className="w-44 h-44 relative z-10" style={{ filter: 'drop-shadow(0 0 25px #8A2BE2)' }}>
+                                            <MagicCircleLight color="#8A2BE2" />
+                                        </div>
+                                    </div>
+                                    <p className="text-[12px] font-black text-purple-500 tracking-widest uppercase">Magic Circle (Background)</p>
+                                </div>
+                                <div className="text-center relative z-10">
+                                    <div className="w-60 h-60 border border-green-500/30 rounded-xl bg-black/80 flex items-center justify-center mb-4 relative overflow-hidden">
+                                        <div className="absolute inset-0 opacity-100">
+                                            {/* Minimal representation of the rain within the box */}
+                                            <div className="w-full h-full flex items-center justify-center text-green-400 font-mono text-[8px] leading-tight overflow-hidden opacity-40">
+                                                {Array(20).fill(0).map((_, i) => (
+                                                    <div key={i} className="flex flex-col mx-1">
+                                                        {Array(10).fill(0).map((_, j) => (
+                                                            <span key={j}>{Math.random() > 0.5 ? '1' : '0'}</span>
+                                                        ))}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="relative z-10 flex flex-col items-center">
+                                            <div className="text-green-400 text-3xl font-black mb-1" style={{ textShadow: '0 0 10px #00FF41' }}>ｱｲｳｴｵ</div>
+                                            <div className="text-purple-500 text-2xl font-black" style={{ textShadow: '0 0 10px #8A2BE2' }}>0101</div>
+                                        </div>
+                                    </div>
+                                    <p className="text-[12px] font-black text-green-400 tracking-widest uppercase">Matrix Rain (Background)</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <footer className="fixed bottom-0 left-0 w-full p-4 bg-black/90 border-t border-cyan-500/30 flex justify-between px-10 text-[10px] text-cyan-500 font-mono tracking-widest z-50">
+                        <span>// STATUS: REFINING_PIXELS</span>
+                        <span>CROSS REALM DESIGN REFINERY SYSTEM // 2026</span>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Lab />);
+    </script>
+</body>
+</html>

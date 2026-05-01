@@ -57,7 +57,7 @@ const io = new Server(server, {
 });
 
 const rooms = {};
-const HAND_LIMIT = 11; // 11枚以上で脱落
+const HAND_LIMIT = 10; // 10枚で脱落
 const INITIAL_HAND = 5;
 
 const REALM_NAME_JA = { GEAR: '歯車', ICEAGE: '氷河期', FOUNTAIN: '噴水', BATTERY: '電池', MACHINE: '機械', ARCHIVE: '古文書', PLANET: '惑星', RUINS: '廃墟' };
@@ -157,7 +157,6 @@ function checkGameOver(room) {
 
   if (winnerFound || survivors.length <= 1) {
     room.status = 'finished';
-    room.players.forEach(p => { p.ready = p.isBot; }); // 全員のready状態をリセット（全員同意で次へ進む）
     const winner = survivors.find(p => p.handCount === 0) || survivors[0];
 
     let earnedPoints = 0;
@@ -173,9 +172,8 @@ function checkGameOver(room) {
       let totalEarned = basePoints;
       let bonusPoints = 0;
       
-      // 部屋のフラグまたは現在のフィールドカードから判定（LIMIT WILDはボーナス対象外）
-      const isLimitWild = room.fieldCard.wasFountain || (room.fieldCard.realm === 'FOUNTAIN' && room.fieldCard.isSpecial);
-      const isWildCard = !isLimitWild && (room.lastPlayWasWild || room.fieldCard.wasPlanet || room.fieldCard.wasRuins || room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS');
+      // 部屋のフラグまたは現在のフィールドカードから判定
+      const isWildCard = room.lastPlayWasWild || room.fieldCard.wasPlanet || room.fieldCard.wasRuins || room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS';
       
       if (winner.handCount === 0 && room.fieldCard && isWildCard) {
         totalEarned = Math.ceil(basePoints * 1.5);
@@ -347,7 +345,7 @@ io.on('connection', (socket) => {
 
     if (room.players.length >= 5) return;
 
-    const newPlayer = { id: socket.id, name: sanitizedName, hand: [], handCount: 0, isBot: false, isEliminated: false, score: 0, ready: false };
+    const newPlayer = { id: socket.id, name: sanitizedName, hand: [], handCount: 0, isBot: false, isEliminated: false, score: 0 };
     room.players.push(newPlayer);
     socket.join(rid);
 
@@ -373,8 +371,7 @@ io.on('connection', (socket) => {
         handCount: 0,
         isBot: true,
         isEliminated: false,
-        score: 0,
-        ready: true
+        score: 0
       });
       io.to(room.id).emit('update-game', room);
     }
@@ -411,7 +408,6 @@ io.on('connection', (socket) => {
         room.nextDrawAmount = 1;
         room.isReversed = false;
         room.logs = [{ id: Math.random(), text: `MATCH ${room.matchCount} 開始。` }];
-        room.players.forEach(p => p.ready = p.isBot);
         io.to(room.id).emit('update-game', room);
 
         // 最初がAIなら動かす
@@ -492,45 +488,14 @@ io.on('connection', (socket) => {
 
   socket.on('play-again', (data) => {
     const room = rooms[data.roomId.toUpperCase()];
-    if (room && room.status === 'finished') {
-      const player = room.players.find(p => p.id === socket.id);
-      if (player) {
-        player.ready = true;
-        room.logs.push({ id: Math.random(), text: `${player.name} が準備完了しました` });
+    if (room) {
+      if (room.isSeriesFinished) {
+        room.matchCount = 1;
+        room.isSeriesFinished = false;
+        room.players.forEach(p => { p.score = 0; });
       }
-
-      const humanPlayers = room.players.filter(p => !p.isBot);
-      const allReady = humanPlayers.every(p => p.ready);
-
-      if (allReady) {
-        if (room.isSeriesFinished) {
-          room.matchCount = 1;
-          room.isSeriesFinished = false;
-          room.players.forEach(p => { p.score = 0; });
-          room.status = 'waiting';
-          room.logs = [];
-        } else {
-          // 次のマッチを開始 (start-gameのロジックと同様)
-          room.deck = createDeck();
-          room.turnIndex = Math.floor(Math.random() * room.players.length);
-          room.players.forEach(p => {
-            p.hand = []; for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop());
-            p.handCount = p.hand.length;
-            p.isEliminated = false;
-            p.earnedPoints = 0;
-            p.finishBonus = false;
-            p.ready = p.isBot;
-          });
-          room.fieldCard = room.deck.pop();
-          room.status = 'playing';
-          room.currentTurnPlayerId = room.players[room.turnIndex].id;
-          room.nextDrawAmount = 1;
-          room.isReversed = false;
-          room.logs = [{ id: Math.random(), text: `MATCH ${room.matchCount} 開始。` }];
-          
-          if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
-        }
-      }
+      room.status = 'waiting';
+      room.logs = [];
       io.to(room.id).emit('update-game', room);
     }
   });
