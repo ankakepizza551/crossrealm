@@ -658,7 +658,14 @@ const App = () => {
                                             </div>
                                         )}
                                         {p.earnedPoints > 0 && !gs.isSeriesFinished && (
-                                            <div className="absolute top-[-75px] text-green-400 font-black animate-bounce z-20">+{p.earnedPoints}</div>
+                                            <div className="absolute top-[-75px] text-green-400 font-black animate-bounce z-20">
+                                                +{p.finishBonus ? (
+                                                    <>
+                                                        {p.basePoints}
+                                                        <span className="text-[#ff88ff] ml-1">+{p.bonusPoints}</span>
+                                                    </>
+                                                ) : p.earnedPoints}
+                                            </div>
                                         )}
                                         {p.isEliminated && !gs.isSeriesFinished && (
                                             <div className="absolute top-[-75px] text-red-500 font-black animate-pulse z-20">-10</div>

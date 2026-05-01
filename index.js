@@ -403,6 +403,8 @@ io.on('connection', (socket) => {
           p.handCount = p.hand.length;
           p.isEliminated = false;
           p.earnedPoints = 0;
+          p.basePoints = 0;
+          p.bonusPoints = 0;
           p.finishBonus = false;
         });
         room.fieldCard = room.deck.pop();
