@@ -2030,6 +2030,7 @@ body {
 
 .card-draw-vfx {
     animation: card-slide-in 0.5s ease-out !important;
+    transition: none !important; /* transitionを無効化してanimationを優先 */
 }
 
 @keyframes card-slide-in {
@@ -2742,6 +2743,7 @@ body {
     /* 重要なアニメーションは短縮して残す */
     .card-draw-vfx {
         animation: card-slide-in 0.2s ease-out !important;
+        transition: none !important;
     }
     
     .motion-card-ghost {
@@ -2806,6 +2808,7 @@ body {
     /* 重要：手札のドローアニメーションは残す */
     .card-draw-vfx {
         animation: card-slide-in 0.4s ease-out !important;
+        transition: none !important;
     }
 }
 
@@ -2829,6 +2832,7 @@ body {
     /* 手札のドローアニメーションは絶対に残す */
     .card-draw-vfx {
         animation: card-slide-in 0.3s ease-out !important;
+        transition: none !important;
     }
     
     .card-anchor {
