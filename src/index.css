@@ -2788,8 +2788,8 @@ body {
         display: none;
     }
     
-    /* モーションゴーストは無効化（軽いアニメーションは残す） */
-    .motion-card-ghost {
+    /* モーションゴーストはアニメーションOFF時のみ無効化 */
+    .all-anim-off .motion-card-ghost {
         opacity: 0 !important;
         display: none !important;
     }
