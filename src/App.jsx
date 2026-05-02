@@ -508,6 +508,13 @@ const App = () => {
         }
     }, [me?.hand]);
 
+    // ゲーム終了時やターン変更時にWILD選択画面をクリア
+    useEffect(() => {
+        if (gs?.status === 'finished' || !isMyTurn) {
+            setSelector(null);
+        }
+    }, [gs?.status, isMyTurn]);
+
     const sortedHand = useMemo(() => {
         if (!me?.hand) return [];
         return [...me.hand].sort((a, b) => (SORT_WEIGHT[a.realm] - SORT_WEIGHT[b.realm]) || (b.isSpecial - a.isSpecial));
