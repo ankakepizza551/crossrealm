@@ -328,6 +328,7 @@ const App = () => {
     const [isAnimating, setIsAnimating] = useState(false);
     const [isMorphing, setIsMorphing] = useState(false);
     const [newlyDrawnCardIds, setNewlyDrawnCardIds] = useState(new Set());
+    const [debugInfo, setDebugInfo] = useState('');
     const [draggingCardId, setDraggingCardId] = useState(null);
     const [touchStartX, setTouchStartX] = useState(0);
     const [touchStartY, setTouchStartY] = useState(0);
@@ -459,12 +460,12 @@ const App = () => {
             const prevIds = new Set(prevHandRef.current.map(c => c.id));
             const newIds = me.hand.filter(c => !prevIds.has(c.id)).map(c => c.id);
             if (newIds.length > 0) {
-                console.log('[DRAW ANIM] 新しいカード検出:', newIds);
+                setDebugInfo(`新カード: ${newIds.length}枚 [${newIds.join(',')}]`);
                 setNewlyDrawnCardIds(new Set(newIds));
                 setTimeout(() => {
-                    console.log('[DRAW ANIM] アニメーション終了、クリア');
                     setNewlyDrawnCardIds(new Set());
-                }, 400);
+                    setDebugInfo('');
+                }, 2000); // 2秒後にクリア
             }
             prevHandRef.current = me.hand;
         }
@@ -727,6 +728,7 @@ const App = () => {
                     <>
                         <div className="flex justify-between items-center px-4 py-2 bg-[#05010a]/90 border-b border-accent/20 shrink-0 z-50">
                             <div className="text-[11px] font-black text-accent font-['Orbitron'] tracking-[2px] sm:tracking-[4px] truncate flex-1">セクター: {room} <span className="ml-2 text-white/80">| 第{gs.matchCount}/{gs.maxMatches}戦</span> <span className="ml-2 text-[var(--steam-gold)]">★ {me?.score || 0} pts</span></div>
+                            {debugInfo && <div className="text-[9px] font-black text-yellow-400 bg-yellow-900/30 px-2 py-1 rounded border border-yellow-500/50 ml-2">{debugInfo}</div>}
                             <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80  cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.4)] transition-all ml-2" onClick={() => setBgAnim(!bgAnim)}>🎬</div>
                             <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80  cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.4)] transition-all ml-2" onClick={() => setMuted(!muted)}>{muted ? '🔇' : '🔊'}</div>
                         </div>
