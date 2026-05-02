@@ -588,7 +588,17 @@ const App = () => {
     };
 
     return (
-        <div ref={wrapperRef} className={`screen-wrapper ${shake ? 'shake-active' : ''} ${isMyTurn ? 'my-turn-glow' : ''}`} style={{ '--r-color': REALMS[currentR]?.color }}>
+        <>
+            {/* モーションレイヤーを画面揺れの影響を受けないように外側に配置 */}
+            <div className="motion-overlay-layer" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 10000 }}>
+                {motions.map(m => (
+                    <div key={m.mid} className={`motion-card-ghost ${m.type} ${getPlayerPosClass(m.playerId)}`}>
+                        <div className="ghost-surface" />
+                    </div>
+                ))}
+            </div>
+            
+            <div ref={wrapperRef} className={`screen-wrapper ${shake ? 'shake-active' : ''} ${isMyTurn ? 'my-turn-glow' : ''}`} style={{ '--r-color': REALMS[currentR]?.color }}>
             {cutin && (
                 <div className="special-cutin-layer">
                     <div className="special-cutin-bar" style={{ '--c': cutin.color }}>
@@ -611,7 +621,6 @@ const App = () => {
                         <div className="w-10 h-10 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80  cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.3)] transition-all" onClick={() => setMuted(!muted)}>{muted ? '🔇' : '🔊'}</div>
                     </div>
                 ) : null}
-                <div className="motion-overlay-layer">{motions.map(m => <div key={m.mid} className={`motion-card-ghost ${m.type} ${getPlayerPosClass(m.playerId)}`}><div className="ghost-surface" /></div>)}</div>
                 {!joined ? (
                     <div className="h-full flex flex-col no-scrollbar">
                         <div className="flex-1 flex flex-col items-center justify-center py-4 sm:py-8 overflow-y-auto no-scrollbar">
@@ -849,6 +858,7 @@ const App = () => {
                 </div>
             )}
         </div>
+        </>
     );
 };
 
