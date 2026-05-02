@@ -739,7 +739,7 @@ const App = () => {
                         <div className="flex justify-between items-center px-4 py-2 bg-[#05010a]/90 border-b border-accent/20 shrink-0 z-50">
                             <div className="text-[11px] font-black text-accent font-['Orbitron'] tracking-[2px] sm:tracking-[4px] truncate flex-1">セクター: {room} <span className="ml-2 text-white/80">| 第{gs.matchCount}/{gs.maxMatches}戦</span> <span className="ml-2 text-[var(--steam-gold)]">★ {me?.score || 0} pts</span></div>
                             {debugInfo && <div className="text-[9px] font-black text-yellow-400 bg-yellow-900/30 px-2 py-1 rounded border border-yellow-500/50 ml-2">{debugInfo}</div>}
-                            <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80  cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.4)] transition-all ml-2" onClick={() => setBgAnim(!bgAnim)}>🎬</div>
+                            <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80  cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.4)] transition-all ml-2" onClick={() => { setBgAnim(!bgAnim); setDebugInfo(bgAnim ? '🎬 OFF' : '🎬 ON'); setTimeout(() => setDebugInfo(''), 1000); }}>🎬</div>
                             <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80  cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.4)] transition-all ml-2" onClick={() => setMuted(!muted)}>{muted ? '🔇' : '🔊'}</div>
                         </div>
                         <div className={`turn-status-banner ${isMyTurn ? 'my-turn' : ''}`}>
