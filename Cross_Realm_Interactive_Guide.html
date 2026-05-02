@@ -1387,7 +1387,130 @@
                             </div>
                         </div>
 
-                        {/* Core Rules Summary Section */}
+                        {/* 設定・パフォーマンス Section */}
+                        <div className="guide-section mb-16">
+                            <h2 className="section-title text-[var(--accent)]">⚙️ 設定・パフォーマンス</h2>
+                            <p className="text-white/80 text-sm mb-8 leading-relaxed font-bold text-center">
+                                快適なプレイのための設定オプションです。
+                            </p>
+                            
+                            <div className="max-w-4xl mx-auto space-y-6">
+                                {/* アニメーション設定 */}
+                                <div className="bg-gradient-to-br from-[var(--accent)]/10 to-transparent rounded-xl border border-[var(--accent)]/30 p-6 shadow-2xl">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="text-3xl">🎬</div>
+                                        <h3 className="text-xl font-black text-[var(--accent)]">アニメーション設定</h3>
+                                    </div>
+                                    <p className="text-white/90 text-sm mb-4 leading-relaxed">
+                                        ゲーム画面右上の🎬ボタンでアニメーションのON/OFFを切り替えできます。
+                                    </p>
+                                    <div className="space-y-3">
+                                        <div className="bg-black/40 p-4 rounded-lg border border-[var(--accent)]/20">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-green-400 font-black">✓ ON（デフォルト）</span>
+                                            </div>
+                                            <ul className="text-white/70 text-xs space-y-1 ml-4">
+                                                <li>• 背景の星雲・歯車・魔法陣が回転</li>
+                                                <li>• カードプレイ時に場の中央へ飛ぶアニメーション</li>
+                                                <li>• ドロー時にカードが手札へ飛ぶアニメーション</li>
+                                                <li>• 手札に追加されたカードが光る</li>
+                                                <li>• カットイン演出（WILD等）</li>
+                                            </ul>
+                                        </div>
+                                        <div className="bg-black/40 p-4 rounded-lg border border-gray-500/20">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-gray-400 font-black">○ OFF（軽量モード）</span>
+                                            </div>
+                                            <ul className="text-white/70 text-xs space-y-1 ml-4">
+                                                <li>• 背景アニメーション停止（暗く、グレースケール化）</li>
+                                                <li>• カードが飛ぶアニメーション停止</li>
+                                                <li>• 点滅・パルスエフェクト停止</li>
+                                                <li>• カットイン演出停止</li>
+                                                <li className="text-green-400">✓ 手札のドローアニメーションは残る</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <p className="text-[var(--accent)] text-xs mt-4 bg-black/40 p-3 rounded border border-[var(--accent)]/20">
+                                        💡 古いスマホやバッテリー節約時はOFFをお勧めします
+                                    </p>
+                                </div>
+
+                                {/* 音声設定 */}
+                                <div className="bg-gradient-to-br from-[var(--steam-gold)]/10 to-transparent rounded-xl border border-[var(--steam-gold)]/30 p-6 shadow-2xl">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="text-3xl">🔊</div>
+                                        <h3 className="text-xl font-black text-[var(--steam-gold)]">効果音設定</h3>
+                                    </div>
+                                    <p className="text-white/90 text-sm mb-4 leading-relaxed">
+                                        ゲーム画面右上の🔊ボタンで効果音のON/OFFを切り替えできます。
+                                    </p>
+                                    <div className="bg-black/40 p-4 rounded-lg border border-[var(--steam-gold)]/20">
+                                        <div className="text-white/80 text-xs space-y-2">
+                                            <div className="flex items-start gap-2">
+                                                <span className="text-[var(--accent)]">▸</span>
+                                                <div><span className="font-black">カードプレイ</span> - シュッという音</div>
+                                            </div>
+                                            <div className="flex items-start gap-2">
+                                                <span className="text-[var(--accent)]">▸</span>
+                                                <div><span className="font-black">ドロー</span> - シャッという音</div>
+                                            </div>
+                                            <div className="flex items-start gap-2">
+                                                <span className="text-[var(--danger)]">▸</span>
+                                                <div><span className="font-black">バースト</span> - 下降する不協和音</div>
+                                            </div>
+                                            <div className="flex items-start gap-2">
+                                                <span className="text-[var(--steam-gold)]">▸</span>
+                                                <div><span className="font-black">勝利</span> - 上昇ファンファーレ</div>
+                                            </div>
+                                            <div className="flex items-start gap-2">
+                                                <span className="text-[var(--magic-purple)]">▸</span>
+                                                <div><span className="font-black">WILD変化</span> - キラキラ音</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 自動最適化 */}
+                                <div className="bg-gradient-to-br from-[var(--magic-purple)]/10 to-transparent rounded-xl border border-[var(--magic-purple)]/30 p-6 shadow-2xl">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="text-3xl">⚡</div>
+                                        <h3 className="text-xl font-black text-[var(--magic-purple)]">自動パフォーマンス最適化</h3>
+                                    </div>
+                                    <p className="text-white/90 text-sm mb-4 leading-relaxed">
+                                        画面サイズに応じて自動的にエフェクトが調整されます。
+                                    </p>
+                                    <div className="space-y-3">
+                                        <div className="bg-black/40 p-3 rounded border border-white/10">
+                                            <div className="text-sm font-black text-white mb-1">中スペック端末（640×800以下）</div>
+                                            <div className="text-xs text-white/70">
+                                                • blur/グロー効果軽減 • グラデーション単色化 • 点滅エフェクト削減
+                                            </div>
+                                        </div>
+                                        <div className="bg-black/40 p-3 rounded border border-white/10">
+                                            <div className="text-sm font-black text-white mb-1">低スペック端末（480×700以下）</div>
+                                            <div className="text-xs text-white/70">
+                                                • 背景アニメーション停止 • カードホバー効果削除 • 重要なアニメーションのみ残す
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="text-white/60 text-xs mt-4">
+                                        ※ユーザー設定（モーション削減）を有効にしている場合、さらに軽量化されます
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>                        {/* Core Rules Summary Section */}
                         <div id="section-rules" className="guide-section">
                             <h2 className="section-title text-[var(--steam-gold)]" style={{ textShadow: '0 0 15px rgba(212,175,55,0.6)' }}>Core Rules Summary</h2>
 
@@ -1988,13 +2111,4 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            );
-        };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>
