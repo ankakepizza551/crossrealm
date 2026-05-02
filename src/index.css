@@ -2029,7 +2029,7 @@ body {
 }
 
 .card-draw-vfx {
-    animation: card-slide-in 0.5s ease-out;
+    animation: card-slide-in 0.5s ease-out !important;
 }
 
 @keyframes card-slide-in {
@@ -2484,29 +2484,18 @@ body {
 }
 
 /* === 🎬ボタンによる全体アニメーション制御 === */
-.all-anim-off {
-    /* カードドローアニメーションを停止 */
-}
-
-.all-anim-off .card-draw-vfx {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-}
+/* アニメーションOFF時でも手札のフェードと背景の基本グラデーションは残す */
 
 .all-anim-off .motion-card-ghost {
     display: none !important;
 }
-
-/* 手札の出し入れ（opacity/filter）は残す - card-anchorのtransitionは消さない */
 
 .all-anim-off .card-surface {
     transition: background 0s, box-shadow 0s, transform 0s, border-color 0s !important;
 }
 
 .all-anim-off .animate-pulse,
-.all-anim-off .champion-fx::after,
-.all-anim-off [class*="animate-"] {
+.all-anim-off .champion-fx::after {
     animation: none !important;
 }
 
@@ -2523,6 +2512,11 @@ body {
 /* カットイン演出も停止 */
 .all-anim-off .cutin-container {
     display: none !important;
+}
+
+/* 手札のドローアニメーションは常に動く */
+.card-draw-vfx {
+    animation: card-slide-in 0.5s ease-out !important;
 }
 
 /* モバイル向けデフォルト設定 */
@@ -2825,31 +2819,26 @@ body {
 
 /* === 超低スペック端末向け：さらなる軽量化 === */
 @media (max-width: 480px) and (max-height: 700px) {
-    /* 手札以外のtransitionを無効化 */
-    *:not(.card-anchor) {
-        transition: none !important;
+    /* 背景アニメーションだけ停止 */
+    .astral-bg-container * {
+        animation: none !important;
     }
     
-    /* 全てのtransformを削除（レイアウトのみ残す） */
+    /* カードのホバー効果を削除 */
     .card-anchor:hover {
         transform: none !important;
     }
     
-    /* 手札以外のアニメーションを停止 */
-    *:not(.card-draw-vfx):not(.motion-card-ghost) {
+    /* 点滅系を停止 */
+    .animate-pulse {
         animation: none !important;
     }
     
-    /* 重要なアニメーションは残す */
+    /* 手札のドローアニメーションは絶対に残す */
     .card-draw-vfx {
         animation: card-slide-in 0.3s ease-out !important;
     }
     
-    .motion-card-ghost {
-        animation-duration: 0.6s !important;
-    }
-    
-    /* 手札の出し入れアニメーション（opacity/filter）は絶対に残す */
     .card-anchor {
         transition: opacity 0.5s ease, filter 0.5s ease !important;
     }
