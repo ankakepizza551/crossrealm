@@ -54,6 +54,30 @@ const playSE = (type, muted) => {
                 o.frequency.setValueAtTime(150, now); o.frequency.exponentialRampToValueAtTime(80, now + 0.25);
                 g.gain.setValueAtTime(0.15, now); g.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
                 o.start(now); o.stop(now + 0.25);
+            } else if (type === 'burst') {
+                // バースト音：下降する不協和音
+                const o1 = audioCtx.createOscillator(); const g1 = audioCtx.createGain();
+                o1.connect(g1); g1.connect(audioCtx.destination); o1.type = 'square';
+                o1.frequency.setValueAtTime(400, now); o1.frequency.exponentialRampToValueAtTime(50, now + 0.5);
+                g1.gain.setValueAtTime(0.2, now); g1.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                o1.start(now); o1.stop(now + 0.5);
+            } else if (type === 'victory') {
+                // 勝利音：上昇する明るいファンファーレ
+                [0, 0.15, 0.3].forEach((delay, i) => {
+                    const freq = [523, 659, 784][i]; // C, E, G
+                    const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                    o.connect(g); g.connect(audioCtx.destination); o.type = 'sine';
+                    o.frequency.setValueAtTime(freq, now + delay);
+                    g.gain.setValueAtTime(0.1, now + delay); g.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.3);
+                    o.start(now + delay); o.stop(now + delay + 0.3);
+                });
+            } else if (type === 'wild') {
+                // WILD変化音：神秘的なキラキラ音
+                const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                o.connect(g); g.connect(audioCtx.destination); o.type = 'sine';
+                o.frequency.setValueAtTime(1200, now); o.frequency.exponentialRampToValueAtTime(2400, now + 0.2);
+                g.gain.setValueAtTime(0.08, now); g.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                o.start(now); o.stop(now + 0.2);
             }
         };
         if (audioCtx.state === 'suspended') {
@@ -209,7 +233,8 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments
 
 const AstralBackground = ({ bgAnim, isDimmed }) => {
     const stars = useMemo(() => {
-        return [...Array(15)].map((_, i) => ({
+        // パフォーマンス向上のため星の数を削減（15 → 8）
+        return [...Array(8)].map((_, i) => ({
             id: i,
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
@@ -227,7 +252,7 @@ const AstralBackground = ({ bgAnim, isDimmed }) => {
             <div className="nebula-layer">
                 <div className="nebula-glow n1" />
                 <div className="nebula-glow n2" />
-                <div className="nebula-glow n3" />
+                {/* パフォーマンス向上のためn3を削除 */}
             </div>
             
             <div className="magic-circle-layer">
@@ -265,9 +290,8 @@ const App = () => {
         const act = gs.lastAction;
         if (JSON.stringify(act) !== JSON.stringify(lastActionRef.current)) {
             const mid = Math.random();
-            setDebugInfo(`🎬 ${act.type.toUpperCase()}`);
             setMotions(prev => [...prev, { ...act, mid }]);
-            setTimeout(() => setMotions(prev => prev.filter(m => m.mid !== mid)), 1000);
+            setTimeout(() => setMotions(prev => prev.filter(m => m.mid !== mid)), 700); // 1000ms → 700ms に短縮
             lastActionRef.current = act;
         }
     }, [gs]);
@@ -329,7 +353,6 @@ const App = () => {
     const [isAnimating, setIsAnimating] = useState(false);
     const [isMorphing, setIsMorphing] = useState(false);
     const [newlyDrawnCardIds, setNewlyDrawnCardIds] = useState(new Set());
-    const [debugInfo, setDebugInfo] = useState('');
     const [draggingCardId, setDraggingCardId] = useState(null);
     const [touchStartX, setTouchStartX] = useState(0);
     const [touchStartY, setTouchStartY] = useState(0);
@@ -439,8 +462,16 @@ const App = () => {
             if (prevPlayers.length > 0) {
                 gs.players.forEach(p => {
                     const oldP = prevPlayers.find(x => x.id === p.id);
-                    if (oldP && !oldP.isEliminated && p.isEliminated) { setVfxOverlay({ type: 'burst', color: '#EF4444' }); setTimeout(() => setVfxOverlay(null), 1000); }
-                    else if (oldP && !oldP.finishBonus && p.finishBonus) { setVfxOverlay({ type: 'wild', color: '#FFD700' }); setTimeout(() => setVfxOverlay(null), 1000); }
+                    if (oldP && !oldP.isEliminated && p.isEliminated) { 
+                        playSE('burst', muted); 
+                        setVfxOverlay({ type: 'burst', color: '#EF4444' }); 
+                        setTimeout(() => setVfxOverlay(null), 1000); 
+                    }
+                    else if (oldP && !oldP.finishBonus && p.finishBonus) { 
+                        playSE('wild', muted); 
+                        setVfxOverlay({ type: 'wild', color: '#FFD700' }); 
+                        setTimeout(() => setVfxOverlay(null), 1000); 
+                    }
                 });
             }
             prevPlayersRef.current = gs.players;
@@ -449,6 +480,13 @@ const App = () => {
 
     useEffect(() => { if (logContainerRef.current) logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight; }, [gs?.logs]);
     useEffect(() => { setSelectedCardId(null); }, [gs?.currentTurnPlayerId]);
+    
+    // リザルト画面表示時に勝利音を鳴らす
+    useEffect(() => {
+        if (gs?.status === 'finished') {
+            playSE('victory', muted);
+        }
+    }, [gs?.status, muted]);
 
     const currentR = gs?.fieldCard?.realm || 'GEAR';
     const me = gs?.players?.find(p => p.id === socket?.id);
@@ -461,12 +499,10 @@ const App = () => {
             const prevIds = new Set(prevHandRef.current.map(c => c.id));
             const newIds = me.hand.filter(c => !prevIds.has(c.id)).map(c => c.id);
             if (newIds.length > 0) {
-                setDebugInfo(`✨ドロー: ${newIds.length}枚`);
                 setNewlyDrawnCardIds(new Set(newIds));
                 setTimeout(() => {
                     setNewlyDrawnCardIds(new Set());
-                    setDebugInfo('');
-                }, 500); // アニメーション時間と同じ
+                }, 500);
             }
             prevHandRef.current = me.hand;
         }
@@ -598,7 +634,7 @@ const App = () => {
                 ))}
             </div>
             
-            <div ref={wrapperRef} className={`screen-wrapper ${shake ? 'shake-active' : ''} ${isMyTurn ? 'my-turn-glow' : ''}`} style={{ '--r-color': REALMS[currentR]?.color }}>
+            <div ref={wrapperRef} className={`screen-wrapper ${shake ? 'shake-active' : ''} ${isMyTurn ? 'my-turn-glow' : ''} ${bgAnim ? 'all-anim-active' : 'all-anim-off'}`} style={{ '--r-color': REALMS[currentR]?.color }}>
             {cutin && (
                 <div className="special-cutin-layer">
                     <div className="special-cutin-bar" style={{ '--c': cutin.color }}>
@@ -680,9 +716,10 @@ const App = () => {
                         <div className="w-full mt-2 px-4 flex flex-col items-center">
                             {(gs?.players[0]?.id === socket?.id || gs?.players[0]?.name === name) && (
                                 <div className="flex gap-3 w-full mb-3">
-                                    <button className="flex-1 py-4 bg-black/80 border border-white/40 text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm" disabled={gs?.players?.length >= 5} onClick={() => { playSE('play', muted); socket.emit('add-cpu', { roomId: room }); }}>CPU追加</button>
-                                    <button className="flex-[2] py-4 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-base rounded-sm shadow-2xl" disabled={gs?.players?.length < 2} onClick={() => { playSE('start', muted); socket.emit('start-game', { roomId: room }); }}>ミッション開始</button>
+                                    <button className="flex-1 py-4 bg-black/80 border border-white/40 text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm hover:bg-white/10 transition-all" disabled={gs?.players?.length >= 5} onClick={() => { playSE('play', muted); socket.emit('add-cpu', { roomId: room }); }}>🤖 CPU追加</button>
+                                    <button className="flex-[2] py-4 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-base rounded-sm shadow-2xl active:scale-95 transition-all" disabled={gs?.players?.length < 2} onClick={() => { playSE('start', muted); socket.emit('start-game', { roomId: room }); }}>ミッション開始</button>
                                 </div>
+                                <p className="text-[10px] text-white/40 mb-3 font-bold">💡 CPUは中級レベルの強さで、ランダムに選ばれます</p>
                             )}
                             <button className="mt-1 inline-block py-2.5 px-8 bg-black/90 border-2 border-accent text-white font-['Orbitron'] text-[11px] font-black tracking-[4px] rounded-full" onClick={leave}>同期を解除</button>
                         </div>
@@ -738,9 +775,8 @@ const App = () => {
                     <>
                         <div className="flex justify-between items-center px-4 py-2 bg-[#05010a]/90 border-b border-accent/20 shrink-0 z-50">
                             <div className="text-[11px] font-black text-accent font-['Orbitron'] tracking-[2px] sm:tracking-[4px] truncate flex-1">セクター: {room} <span className="ml-2 text-white/80">| 第{gs.matchCount}/{gs.maxMatches}戦</span> <span className="ml-2 text-[var(--steam-gold)]">★ {me?.score || 0} pts</span></div>
-                            {debugInfo && <div className="text-[9px] font-black text-yellow-400 bg-yellow-900/30 px-2 py-1 rounded border border-yellow-500/50 ml-2">{debugInfo}</div>}
-                            <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80  cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.4)] transition-all ml-2" onClick={() => { setBgAnim(!bgAnim); setDebugInfo(bgAnim ? '🎬 OFF' : '🎬 ON'); setTimeout(() => setDebugInfo(''), 1000); }}>🎬</div>
-                            <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80  cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.4)] transition-all ml-2" onClick={() => setMuted(!muted)}>{muted ? '🔇' : '🔊'}</div>
+                            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all ml-2 hover:bg-accent/10 ${bgAnim ? 'border-accent text-accent bg-black/80 shadow-[0_0_10px_rgba(64,224,208,0.4)]' : 'border-gray-500 text-gray-500 bg-black/60'}`} onClick={() => { playSE(bgAnim ? 'cancel' : 'start', muted); setBgAnim(!bgAnim); }} title={bgAnim ? "アニメーションOFF（軽量化）" : "アニメーションON"}>🎬</div>
+                            <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80  cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.4)] transition-all ml-2 hover:bg-accent/10" onClick={() => setMuted(!muted)} title={muted ? "音声ON" : "音声OFF"}>{muted ? '🔇' : '🔊'}</div>
                         </div>
                         <div className={`turn-status-banner ${isMyTurn ? 'my-turn' : ''}`}>
                             <div className="banner-content">
@@ -757,6 +793,11 @@ const App = () => {
                                 </div>
                             </div>
                         </div>
+                        {isMyTurn && gs.matchCount === 1 && me?.hand?.length === 5 && (
+                            <div className="w-full bg-accent/10 border-y border-accent/30 px-4 py-2 text-center shrink-0">
+                                <p className="text-[11px] font-black text-accent animate-pulse">💡 光っている場のカードが出せます！</p>
+                            </div>
+                        )}
                         <div className="grid grid-cols-4 gap-1 p-1 bg-[#0a0f23]/90 border-b-2 border-white/15 shrink-0 ">
                             {otherPlayersInCircle.map((p, i) => {
                                 if (!p) return <div key={i} className="h-16 opacity-0" />;
@@ -853,7 +894,7 @@ const App = () => {
                                 </button>
                             ))}
                         </div>
-                        <button className="w-full mt-4 p-4 text-white/50 text-[12px] tracking-[3px] font-black border border-white/20 uppercase hover:bg-white/10 rounded transition-all active:scale-95" onClick={() => { playSE('cancel', muted); setSelector(null); }}>選択をキャンセル</button>
+                        <button className="w-full mt-4 p-5 text-white/70 text-[14px] tracking-[4px] font-black border-2 border-white/30 uppercase hover:bg-white/10 hover:border-white/50 rounded transition-all active:scale-95" onClick={() => { playSE('cancel', muted); setSelector(null); }}>✕ 選択をキャンセル</button>
                     </div>
                 </div>
             )}

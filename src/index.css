@@ -2483,6 +2483,50 @@ body {
     animation: none !important;
 }
 
+/* === 🎬ボタンによる全体アニメーション制御 === */
+.all-anim-off {
+    /* カードドローアニメーションを停止 */
+}
+
+.all-anim-off .card-draw-vfx {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+.all-anim-off .motion-card-ghost {
+    display: none !important;
+}
+
+.all-anim-off .card-anchor {
+    transition: none !important;
+}
+
+.all-anim-off .card-surface {
+    transition: background 0s, box-shadow 0s, transform 0s, border-color 0s !important;
+}
+
+.all-anim-off .animate-pulse,
+.all-anim-off .champion-fx::after,
+.all-anim-off [class*="animate-"] {
+    animation: none !important;
+}
+
+/* ターン変更時のグロー効果も停止 */
+.all-anim-off .current-turn-glow-active {
+    animation: none !important;
+}
+
+/* バースト警告の点滅も停止 */
+.all-anim-off .burst-warning {
+    animation: none !important;
+}
+
+/* カットイン演出も停止 */
+.all-anim-off .cutin-container {
+    display: none !important;
+}
+
 /* モバイル向けデフォルト設定 */
 .cyber-grid-layer {
     position: absolute;
@@ -2757,8 +2801,7 @@ body {
         display: none;
     }
     
-    /* パーティクル効果を無効化 */
-    .card-draw-vfx,
+    /* モーションゴーストは無効化（軽いアニメーションは残す） */
     .motion-card-ghost {
         opacity: 0 !important;
         display: none !important;
@@ -2773,6 +2816,12 @@ body {
     /* 点滅エフェクトを削除 */
     .animate-pulse {
         animation: none !important;
+    }
+    
+    /* 重要：手札のドローアニメーションは残す */
+    .card-draw-vfx {
+        opacity: 1 !important;
+        display: block !important;
     }
 }
 
@@ -2791,5 +2840,19 @@ body {
     /* 全てのアニメーションを停止 */
     * {
         animation: none !important;
+    }
+    
+    /* 重要なアニメーションは残す */
+    .card-draw-vfx {
+        animation: card-slide-in 0.3s ease-out !important;
+    }
+    
+    .motion-card-ghost {
+        animation-duration: 0.6s !important;
+    }
+    
+    /* 手札の出し入れアニメーション（opacity/filter）は残す */
+    .card-anchor {
+        transition: opacity 0.5s ease, filter 0.5s ease !important;
     }
 }
