@@ -861,9 +861,12 @@ const App = () => {
                                         style={{ 
                                             zIndex: (draggingCardId === card.id) ? 1000 : (selectedCardId === card.id ? 100 : (hoveredCardId === card.id ? 200 : idx)), 
                                             marginRight: idx === me.hand.length - 1 ? '0' : `${dynamicMargin}px`,
-                                            transform: (draggingCardId === card.id) 
-                                                ? `translate(${dragOffsetX}px, ${dragOffsetY}px) rotate(${dragOffsetX * 0.05}deg) scale(1.1)` 
-                                                : `scale(${cardScale})`,
+                                            // ドロー中はCSSアニメーション優先のためインラインtransformを無効化
+                                            transform: isNewlyDrawn ? undefined : (
+                                                (draggingCardId === card.id) 
+                                                    ? `translate(${dragOffsetX}px, ${dragOffsetY}px) rotate(${dragOffsetX * 0.05}deg) scale(1.1)` 
+                                                    : `scale(${cardScale})`
+                                            ),
                                             transition: (draggingCardId === card.id) ? 'none' : undefined,
                                             touchAction: (draggingCardId === card.id) ? 'none' : 'pan-x',
                                             filter: (draggingCardId === card.id) ? 'drop-shadow(0 20px 40px rgba(0,0,0,0.6))' : undefined
