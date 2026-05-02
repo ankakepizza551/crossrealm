@@ -250,76 +250,50 @@ const MagicCircleLight = ({ color }) => (
 );
 
 const AstralBackground = ({ bgAnim }) => {
-    const rainColors = ['#8A2BE2', '#00FF41'];
-    const items = useMemo(() => {
-        if (!bgAnim) return [];
-        const arr = [];
-        for (let i = 0; i < 3; i++) arr.push({ id: `m${i}`, type: 'magic', color: i % 2 ? '#00F3FF' : '#1E90FF', sx: `${(Math.random() * 60) - 30}vw`, ex: `${(Math.random() * 20) - 10}vw`, delay: `${Math.random() * 20}s`, dur: `${16 + Math.random() * 12}s`, op: 0.3, rot: `${360 + Math.random() * 720}deg` });
-        for (let i = 0; i < 6; i++) {
-            const isLtr = Math.random() > 0.5;
-            const sx = isLtr ? '-300px' : 'calc(100vw + 300px)';
-            const ex = isLtr ? 'calc(100vw + 300px)' : '-300px';
-            const sy = `${Math.random() * 90}vh`;
-            const rot = isLtr ? `${360 + Math.random() * 720}deg` : `-${360 + Math.random() * 720}deg`;
-            const size = 80 + Math.random() * 100;
-            arr.push({
-                id: `g${i}`, type: 'gear', color: i % 3 === 0 ? '#8B4513' : (i % 3 === 1 ? '#B22222' : '#555555'),
-                sx, ex, sy, ey: sy, size: `${size}px`,
-                delay: `${Math.random() * 20}s`, dur: `${20 + Math.random() * 30}s`, op: 0.2 + Math.random() * 0.3, rot: rot
-            });
-        }
-        return arr;
-    }, [bgAnim]);
-
-    useEffect(() => {
-        const canvas = document.getElementById('matrixCanvas');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!bgAnim) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            return;
-        }
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const cols = Math.floor(canvas.width / 16); const heads = new Array(cols).fill(0);
-        const draw = () => {
-            if (!bgAnim) return;
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.font = '900 16px Orbitron';
-            for (let j = 0; j < cols; j++) {
-                if (Math.random() > 0.99) {
-                    const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ";
-                    const char = chars.charAt(Math.floor(Math.random() * chars.length));
-                    ctx.fillStyle = rainColors[Math.floor(Math.random() * rainColors.length)];
-                    ctx.fillText(char, j * 16, heads[j] * 16);
-                    heads[j]++;
-                    if (heads[j] * 16 > canvas.height && Math.random() > 0.9) heads[j] = 0;
-                }
-            }
-            requestAnimationFrame(draw);
-        };
-        const animId = requestAnimationFrame(draw);
-        return () => cancelAnimationFrame(animId);
-    }, [bgAnim]);
+    // 再描画のたびにMath.random()が走らないようにメモ化
+    const stars = useMemo(() => {
+        return [...Array(15)].map((_, i) => ({
+            id: i,
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            delay: `${Math.random() * 5}s`,
+            dur: `${4 + Math.random() * 6}s`
+        }));
+    }, []);
 
     return (
-        <div className="astral-canvas">
-            {bgAnim && <canvas id="matrixCanvas" className="matrix-code-canvas" />}
-            {bgAnim && items.map(it => {
-                if (it.type === 'gear') {
-                    return (
-                        <div key={it.id} className="flow-gear" style={{ '--sx': it.sx, '--ex': it.ex, '--sy': it.sy, '--ey': it.ey, '--delay': it.delay, '--dur': it.dur, '--op': it.op, '--rot': it.rot, '--glow-color': it.color, width: it.size, height: it.size, animationDelay: it.delay, animationDuration: it.dur }}>
-                            <GearLight color={it.color} />
-                        </div>
-                    );
-                } else {
-                    return (
-                        <div key={it.id} className="flow-magic" style={{ '--sx': it.sx, '--ex': it.ex, '--op': it.op, '--rot': it.rot, '--glow-color': it.color, width: '130px', height: '130px', animationDelay: it.delay, animationDuration: it.dur }}>
-                            <MagicCircleLight color={it.color} />
-                        </div>
-                    );
-                }
-            })}
+        <div className={`astral-bg-container ${bgAnim ? 'bg-anim-active' : ''}`}>
+            {/* 1. Cyber: サイバーグリッド */}
+            <div className="cyber-grid-layer" />
+            
+            {/* 2. Fantasy: 星雲 & 魔法陣 */}
+            <div className="nebula-layer">
+                <div className="nebula-glow n1" />
+                <div className="nebula-glow n2" />
+                <div className="nebula-glow n3" />
+            </div>
+            
+            <div className="magic-circle-layer">
+                <div className="bg-magic-circle"><MagicCircleLight color="var(--magic-purple)" /></div>
+            </div>
+
+            {/* 3. Steampunk: 巨大歯車 */}
+            <div className="gears-layer">
+                <div className="bg-gear g1"><GearLight color="var(--steam-gold)" /></div>
+                <div className="bg-gear g2"><GearLight color="var(--steam-gold)" /></div>
+            </div>
+            
+            {/* 4. Mana Particles: マナ粒子 */}
+            <div className="star-particles">
+                {stars.map(s => (
+                    <div key={s.id} className="star-particle" style={{
+                        left: s.left,
+                        top: s.top,
+                        animationDelay: s.delay,
+                        animationDuration: s.dur
+                    }} />
+                ))}
+            </div>
         </div>
     );
 };
@@ -401,6 +375,7 @@ const App = () => {
     const [touchStartY, setTouchStartY] = useState(0);
     const [dragOffsetX, setDragOffsetX] = useState(0);
     const [dragOffsetY, setDragOffsetY] = useState(0);
+    const [bufferedAction, setBufferedAction] = useState(null);
 
     const displayFieldCard = useMemo(() => {
         if (!gs?.fieldCard) return null;
@@ -430,6 +405,20 @@ const App = () => {
         document.addEventListener('touchstart', initAudio);
         return () => { socket.off('update-game'); socket.off('disconnect'); socket.off('connect'); document.removeEventListener('click', initAudio); document.removeEventListener('touchstart', initAudio); };
     }, []);
+
+    // 先行入力の実行
+    useEffect(() => {
+        if (!isAnimating && !isMorphing && !selector && bufferedAction) {
+            const action = bufferedAction;
+            setBufferedAction(null);
+            if (action.type === 'play') {
+                handleCardClick(action.card, action.isPlayable);
+            } else if (action.type === 'draw') {
+                playSE('draw', muted);
+                socket.emit('draw-card', { roomId: room });
+            }
+        }
+    }, [isAnimating, isMorphing, selector, bufferedAction]);
 
     useEffect(() => {
         if (gs && gs.fieldCard && gs.fieldCard.id !== prevFieldCardId.current) {
@@ -534,7 +523,11 @@ const App = () => {
     const goToTopPage = () => { playSE('cancel', muted); if (room) socket.emit('leave-room', { roomId: room.toUpperCase() }); window.location.reload(); };
 
     const handleCardClick = (c, isPlayable) => {
-        if (!isMyTurn || !isPlayable || isAnimating || isMorphing || selector) return;
+        if (!isMyTurn || !isPlayable || selector) return;
+        if (isAnimating || isMorphing) {
+            setBufferedAction({ type: 'play', card: c, isPlayable: isPlayable });
+            return;
+        }
         playSE('play', muted);
         if (window.navigator.vibrate) window.navigator.vibrate(12);
         const isLastCard = me?.hand?.length === 1;
@@ -569,16 +562,20 @@ const App = () => {
     const handleTouchEnd = (card, isPlayable) => {
         if (!draggingCardId) return;
         
-        // 上方向に一定以上（80px）スワイプしていたらプレイ
+        // 一定以上（80px）スワイプしていたらプレイ
         // 左右に振れすぎていないかもチェック（誤操作防止）
         if (dragOffsetY < -80 && Math.abs(dragOffsetX) < 150) {
-            playSE('play', muted);
-            if (window.navigator.vibrate) window.navigator.vibrate(12);
-            const needsSelector = card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial);
-            if (needsSelector) {
-                setSelector(card);
+            if (isAnimating || isMorphing) {
+                setBufferedAction({ type: 'play', card: card, isPlayable: isPlayable });
             } else {
-                socket.emit('play-card', { roomId: room, card: card });
+                playSE('play', muted);
+                if (window.navigator.vibrate) window.navigator.vibrate(12);
+                const needsSelector = card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial);
+                if (needsSelector) {
+                    setSelector(card);
+                } else {
+                    socket.emit('play-card', { roomId: room, card: card });
+                }
             }
         }
         
@@ -800,7 +797,7 @@ const App = () => {
                                 );
                             })}
                         </div>
-                        <div className="w-full px-4 pb-4 shrink-0 flex flex-col gap-2"><button className="btn-mega-draw w-full h-16 bg-gradient-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl tracking-[8px] cursor-pointer transition-all active:scale-95 disabled:grayscale disabled:opacity-50" disabled={!isMyTurn || isAnimating || isMorphing || selector} onClick={() => { playSE('draw', muted); socket.emit('draw-card', { roomId: room }); }}>ドロー ({gs.nextDrawAmount}枚)</button></div>
+                        <div className="w-full px-4 pb-4 shrink-0 flex flex-col gap-2"><button className="btn-mega-draw w-full h-16 bg-gradient-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl tracking-[8px] cursor-pointer transition-all active:scale-95 disabled:grayscale disabled:opacity-50" disabled={!isMyTurn || selector} onClick={() => { if (isAnimating || isMorphing) { setBufferedAction({ type: 'draw' }); return; } playSE('draw', muted); socket.emit('draw-card', { roomId: room }); }}>ドロー ({gs.nextDrawAmount}枚)</button></div>
                     </>
                 )}
             </div>

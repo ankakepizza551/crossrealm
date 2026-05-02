@@ -2433,3 +2433,158 @@ body {
         align-self: center;
     }
 }
+
+.astral-bg-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    background: #05010a;
+    background-image: radial-gradient(circle at center, #1a0a30 0%, #05010a 100%);
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* モバイル向けデフォルト設定 */
+.cyber-grid-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(64, 224, 208, 0.4) 1.5px, transparent 1.5px),
+        linear-gradient(90deg, rgba(64, 224, 208, 0.4) 1.5px, transparent 1.5px);
+    background-size: 80px 80px;
+    background-position: center;
+    opacity: 0.6;
+    transform: perspective(500px) rotateX(60deg) translateY(-10%);
+}
+
+.nebula-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    filter: blur(40px);
+    opacity: 0.7;
+    will-change: transform;
+}
+
+/* PC（デスクトップ）向け調整：UIの視認性を優先し不透明度を下げる */
+@media (min-width: 1024px) {
+    .cyber-grid-layer {
+        opacity: 0.15;
+        background-size: 100px 100px;
+    }
+    .nebula-layer {
+        opacity: 0.25;
+        filter: blur(80px);
+    }
+    .magic-circle-layer, .gears-layer {
+        opacity: 0.4;
+    }
+}
+
+.magic-circle-layer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vh;
+    height: 80vh;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.bg-magic-circle {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 20px var(--magic-purple));
+    opacity: 0.8;
+}
+
+.bg-anim-active .bg-magic-circle {
+    animation: magic-pulse 10s infinite ease-in-out;
+}
+
+@keyframes magic-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.05); opacity: 1; }
+}
+
+.gears-layer {
+    position: absolute;
+    inset: 0;
+    opacity: 0.5;
+}
+
+.bg-gear {
+    position: absolute;
+    width: 40vw;
+    height: 40vw;
+    filter: drop-shadow(0 0 15px var(--steam-gold));
+}
+
+.bg-gear.g1 { top: -10%; left: -10%; }
+.bg-gear.g2 { bottom: -10%; right: -10%; transform: rotate(15deg); }
+
+.bg-anim-active .bg-gear.g1 { animation: rotate-gear-cw 60s linear infinite; }
+.bg-anim-active .bg-gear.g2 { animation: rotate-gear-ccw 80s linear infinite; }
+
+@keyframes rotate-gear-cw { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes rotate-gear-ccw { from { transform: rotate(15deg); } to { transform: rotate(-345deg); } }
+
+.nebula-glow {
+    position: absolute;
+    border-radius: 50%;
+}
+
+.nebula-glow.n1 { width: 120vw; height: 120vw; background: var(--magic-purple); top: -30%; left: -30%; opacity: 0.5; }
+.nebula-glow.n2 { width: 110vw; height: 110vw; background: var(--accent); bottom: -20%; right: -20%; opacity: 0.4; }
+.nebula-glow.n3 { width: 90vw; height: 90vw; background: var(--steam-gold); top: 10%; left: 20%; opacity: 0.3; }
+
+.bg-anim-active .nebula-glow {
+    animation: nebula-drift 60s infinite alternate ease-in-out;
+}
+
+@keyframes nebula-drift {
+    from { transform: translate(-2%, -2%) scale(1); }
+    to { transform: translate(2%, 2%) scale(1.05); }
+}
+
+.star-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.star-particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.6;
+    box-shadow: 0 0 8px #fff;
+}
+
+.bg-anim-active .star-particle {
+    animation: star-twinkle 5s infinite ease-in-out;
+}
+
+@keyframes star-twinkle {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.4); }
+}
+
+/* UIレイヤーを背景より前に出す */
+.ui-viewport, .cutin-container, .motion-overlay-layer {
+    position: relative;
+    z-index: 10;
+}
