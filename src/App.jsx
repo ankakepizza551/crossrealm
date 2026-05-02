@@ -460,12 +460,12 @@ const App = () => {
             const prevIds = new Set(prevHandRef.current.map(c => c.id));
             const newIds = me.hand.filter(c => !prevIds.has(c.id)).map(c => c.id);
             if (newIds.length > 0) {
-                setDebugInfo(`新カード: ${newIds.length}枚 [${newIds.join(',')}]`);
+                setDebugInfo(`✨ドロー: ${newIds.length}枚`);
                 setNewlyDrawnCardIds(new Set(newIds));
                 setTimeout(() => {
                     setNewlyDrawnCardIds(new Set());
                     setDebugInfo('');
-                }, 2000); // 2秒後にクリア
+                }, 500); // アニメーション時間と同じ
             }
             prevHandRef.current = me.hand;
         }
