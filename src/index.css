@@ -2466,6 +2466,17 @@ body {
     overflow: hidden;
     pointer-events: none;
     isolation: isolate; /* 他のUI要素への干渉を防止 */
+    transition: opacity 0.5s ease, filter 0.5s ease;
+}
+
+/* アニメーションオフ時は暗くして停止を明確に */
+.astral-bg-container:not(.bg-anim-active) {
+    opacity: 0.4;
+    filter: grayscale(60%);
+}
+
+.astral-bg-container:not(.bg-anim-active) * {
+    animation: none !important;
 }
 
 /* モバイル向けデフォルト設定 */
