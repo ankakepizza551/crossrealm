@@ -715,11 +715,13 @@ const App = () => {
                         </div>
                         <div className="w-full mt-2 px-4 flex flex-col items-center">
                             {(gs?.players[0]?.id === socket?.id || gs?.players[0]?.name === name) && (
-                                <div className="flex gap-3 w-full mb-3">
-                                    <button className="flex-1 py-4 bg-black/80 border border-white/40 text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm hover:bg-white/10 transition-all" disabled={gs?.players?.length >= 5} onClick={() => { playSE('play', muted); socket.emit('add-cpu', { roomId: room }); }}>🤖 CPU追加</button>
-                                    <button className="flex-[2] py-4 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-base rounded-sm shadow-2xl active:scale-95 transition-all" disabled={gs?.players?.length < 2} onClick={() => { playSE('start', muted); socket.emit('start-game', { roomId: room }); }}>ミッション開始</button>
-                                </div>
-                                <p className="text-[10px] text-white/40 mb-3 font-bold">💡 CPUは中級レベルの強さで、ランダムに選ばれます</p>
+                                <>
+                                    <div className="flex gap-3 w-full mb-3">
+                                        <button className="flex-1 py-4 bg-black/80 border border-white/40 text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm hover:bg-white/10 transition-all" disabled={gs?.players?.length >= 5} onClick={() => { playSE('play', muted); socket.emit('add-cpu', { roomId: room }); }}>🤖 CPU追加</button>
+                                        <button className="flex-[2] py-4 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-base rounded-sm shadow-2xl active:scale-95 transition-all" disabled={gs?.players?.length < 2} onClick={() => { playSE('start', muted); socket.emit('start-game', { roomId: room }); }}>ミッション開始</button>
+                                    </div>
+                                    <p className="text-[10px] text-white/40 mb-3 font-bold">💡 CPUは中級レベルの強さで、ランダムに選ばれます</p>
+                                </>
                             )}
                             <button className="mt-1 inline-block py-2.5 px-8 bg-black/90 border-2 border-accent text-white font-['Orbitron'] text-[11px] font-black tracking-[4px] rounded-full" onClick={leave}>同期を解除</button>
                         </div>
