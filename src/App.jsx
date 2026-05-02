@@ -447,6 +447,10 @@ const App = () => {
 
     useEffect(() => { if (logContainerRef.current) logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight; }, [gs?.logs]);
     useEffect(() => { setSelectedCardId(null); }, [gs?.currentTurnPlayerId]);
+
+    const currentR = gs?.fieldCard?.realm || 'GEAR';
+    const me = gs?.players?.find(p => p.id === socket?.id);
+    const isMyTurn = gs?.currentTurnPlayerId === socket?.id && !me?.isEliminated;
     
     // 新しく追加されたカードを検出してアニメーションを適用
     const prevHandRef = useRef([]);
@@ -461,10 +465,6 @@ const App = () => {
             prevHandRef.current = me.hand;
         }
     }, [me?.hand]);
-
-    const currentR = gs?.fieldCard?.realm || 'GEAR';
-    const me = gs?.players?.find(p => p.id === socket?.id);
-    const isMyTurn = gs?.currentTurnPlayerId === socket?.id && !me?.isEliminated;
 
     const sortedHand = useMemo(() => {
         if (!me?.hand) return [];
