@@ -233,7 +233,8 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments
 
 const AstralBackground = ({ bgAnim, isDimmed }) => {
     const stars = useMemo(() => {
-        return [...Array(15)].map((_, i) => ({
+        // パフォーマンス向上のため星の数を削減（15 → 8）
+        return [...Array(8)].map((_, i) => ({
             id: i,
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
@@ -251,7 +252,7 @@ const AstralBackground = ({ bgAnim, isDimmed }) => {
             <div className="nebula-layer">
                 <div className="nebula-glow n1" />
                 <div className="nebula-glow n2" />
-                <div className="nebula-glow n3" />
+                {/* パフォーマンス向上のためn3を削除 */}
             </div>
             
             <div className="magic-circle-layer">
@@ -290,7 +291,7 @@ const App = () => {
         if (JSON.stringify(act) !== JSON.stringify(lastActionRef.current)) {
             const mid = Math.random();
             setMotions(prev => [...prev, { ...act, mid }]);
-            setTimeout(() => setMotions(prev => prev.filter(m => m.mid !== mid)), 1000);
+            setTimeout(() => setMotions(prev => prev.filter(m => m.mid !== mid)), 700); // 1000ms → 700ms に短縮
             lastActionRef.current = act;
         }
     }, [gs]);

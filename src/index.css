@@ -2699,3 +2699,97 @@ body {
     80% { transform: scale(1); opacity: 1; }
     100% { transform: scale(1.2); opacity: 0; }
 }
+
+/* === パフォーマンス最適化：アニメーション削減設定 === */
+@media (prefers-reduced-motion: reduce) {
+    /* ユーザーがモーション削減を設定している場合 */
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    /* 背景アニメーションを完全停止 */
+    .astral-bg-container * {
+        animation: none !important;
+    }
+    
+    /* 重要なアニメーションのみ残す */
+    .card-draw-vfx,
+    .motion-card-ghost {
+        animation-duration: 0.2s !important;
+    }
+}
+
+/* === 古いスマホ向け：負荷の高いエフェクト大幅削減 === */
+@media (max-width: 640px) and (max-height: 800px) {
+    /* 背景を完全に静止画に */
+    .astral-bg-container {
+        background: #05010a !important;
+        background-image: radial-gradient(circle at center, #1a0a30 0%, #05010a 100%) !important;
+    }
+    
+    .astral-bg-container * {
+        display: none !important; /* 背景の星雲・歯車などを全て非表示 */
+    }
+    
+    /* blur系エフェクトを完全削除 */
+    .field-kanji-text,
+    .field-card-back::before,
+    .card-surface::before {
+        filter: none !important;
+        backdrop-filter: none !important;
+    }
+    
+    /* グロー効果を最小限に */
+    .card-surface,
+    .realm-badge,
+    .turn-status-banner,
+    .btn-mega-draw {
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    
+    /* 複雑なアニメーションを削除 */
+    .champion-fx::after,
+    .champion-fx::before {
+        animation: none !important;
+        display: none;
+    }
+    
+    /* パーティクル効果を無効化 */
+    .card-draw-vfx,
+    .motion-card-ghost {
+        opacity: 0 !important;
+        display: none !important;
+    }
+    
+    /* グラデーション背景を単色に */
+    .btn-mega-draw,
+    button[class*="gradient"] {
+        background: #B8860B !important;
+    }
+    
+    /* 点滅エフェクトを削除 */
+    .animate-pulse {
+        animation: none !important;
+    }
+}
+
+/* === 超低スペック端末向け：さらなる軽量化 === */
+@media (max-width: 480px) and (max-height: 700px) {
+    /* 全てのtransitionを無効化 */
+    * {
+        transition: none !important;
+    }
+    
+    /* 全てのtransformを削除（レイアウトのみ残す） */
+    .card-anchor:hover {
+        transform: none !important;
+    }
+    
+    /* 全てのアニメーションを停止 */
+    * {
+        animation: none !important;
+    }
+}
