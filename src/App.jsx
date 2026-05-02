@@ -265,6 +265,7 @@ const App = () => {
         const act = gs.lastAction;
         if (JSON.stringify(act) !== JSON.stringify(lastActionRef.current)) {
             const mid = Math.random();
+            setDebugInfo(`🎬 ${act.type.toUpperCase()}`);
             setMotions(prev => [...prev, { ...act, mid }]);
             setTimeout(() => setMotions(prev => prev.filter(m => m.mid !== mid)), 1000);
             lastActionRef.current = act;
