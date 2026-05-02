@@ -2033,19 +2033,13 @@ body {
 }
 
 @keyframes card-slide-in {
-    0% {
+    from {
+        transform: translateX(100px) rotate(10deg);
         opacity: 0;
-        filter: brightness(2) saturate(1.5);
     }
-    
-    50% {
-        opacity: 0.7;
-        filter: brightness(1.5) saturate(1.3);
-    }
-
-    100% {
+    to {
+        transform: translateX(0) rotate(0);
         opacity: 1;
-        filter: brightness(1) saturate(1);
     }
 }
 
@@ -2514,11 +2508,6 @@ body {
     display: none !important;
 }
 
-/* 手札のドローアニメーションは常に動く */
-.card-draw-vfx {
-    animation: card-slide-in 0.5s ease-out !important;
-}
-
 /* モバイル向けデフォルト設定 */
 .cyber-grid-layer {
     position: absolute;
@@ -2750,8 +2739,11 @@ body {
         animation: none !important;
     }
     
-    /* 重要なアニメーションのみ残す */
-    .card-draw-vfx,
+    /* 重要なアニメーションは短縮して残す */
+    .card-draw-vfx {
+        animation: card-slide-in 0.2s ease-out !important;
+    }
+    
     .motion-card-ghost {
         animation-duration: 0.2s !important;
     }
@@ -2812,8 +2804,7 @@ body {
     
     /* 重要：手札のドローアニメーションは残す */
     .card-draw-vfx {
-        opacity: 1 !important;
-        display: block !important;
+        animation: card-slide-in 0.4s ease-out !important;
     }
 }
 
