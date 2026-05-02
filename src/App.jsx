@@ -459,8 +459,12 @@ const App = () => {
             const prevIds = new Set(prevHandRef.current.map(c => c.id));
             const newIds = me.hand.filter(c => !prevIds.has(c.id)).map(c => c.id);
             if (newIds.length > 0) {
+                console.log('[DRAW ANIM] 新しいカード検出:', newIds);
                 setNewlyDrawnCardIds(new Set(newIds));
-                setTimeout(() => setNewlyDrawnCardIds(new Set()), 400); // アニメーション終了後にクリア
+                setTimeout(() => {
+                    console.log('[DRAW ANIM] アニメーション終了、クリア');
+                    setNewlyDrawnCardIds(new Set());
+                }, 400);
             }
             prevHandRef.current = me.hand;
         }
@@ -506,10 +510,23 @@ const App = () => {
         if (window.navigator.vibrate) window.navigator.vibrate(12);
         const isLastCard = me?.hand?.length === 1;
         const needsSelector = c.realm === 'PLANET' || c.realm === 'RUINS' || (c.realm === 'FOUNTAIN' && c.isSpecial);
-        if (isLastCard && needsSelector) { socket.emit('play-card', { roomId: room, card: c, chosenRealm: 'GEAR' }); return; }
+        // 最後のカードの場合は自動的にGEARを選択して送信（上がり時は選択画面を出さない）
+        if (isLastCard && needsSelector) { 
+            socket.emit('play-card', { roomId: room, card: c, chosenRealm: 'GEAR' }); 
+            return; 
+        }
         const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        if (!isMobile) { if (needsSelector) setSelector(c); else socket.emit('play-card', { roomId: room, card: c }); }
-        else { if (selectedCardId === c.id) { if (needsSelector) setSelector(c); else socket.emit('play-card', { roomId: room, card: c }); } else { setSelectedCardId(c.id); } }
+        if (!isMobile) { 
+            if (needsSelector) setSelector(c); 
+            else socket.emit('play-card', { roomId: room, card: c }); 
+        } else { 
+            if (selectedCardId === c.id) { 
+                if (needsSelector) setSelector(c); 
+                else socket.emit('play-card', { roomId: room, card: c }); 
+            } else { 
+                setSelectedCardId(c.id); 
+            } 
+        }
     };
 
     const handleTouchStart = (e, card, isPlayable) => {
@@ -785,7 +802,7 @@ const App = () => {
                                 return (
                                     <div
                                         key={card.id || idx}
-                                        className={`card-anchor ${selectedCardId === card.id ? 'selected' : ''} ${hoveredCardId === card.id ? 'hovered' : ''} ${!isMyTurn || !isPlayable ? 'not-playable' : 'playable'} ${isMyTurn ? 'is-my-turn' : ''} ${isPlayable ? 'playable-card-pop' : ''} ${draggingCardId === card.id ? 'dragging' : ''} ${isNewlyDrawn ? 'card-draw-vfx' : ''}`}
+                                        className={`card-anchor ${selectedCardId === card.id ? 'selected' : ''} ${hoveredCardId === card.id ? 'hovered' : ''} ${!isMyTurn || !isPlayable ? 'not-playable' : 'playable'} ${isMyTurn ? 'is-my-turn' : ''} ${draggingCardId === card.id ? 'dragging' : ''} ${isNewlyDrawn ? 'card-draw-vfx' : ''}`}
                                         style={{ 
                                             zIndex: (draggingCardId === card.id) ? 1000 : (selectedCardId === card.id ? 100 : (hoveredCardId === card.id ? 200 : idx)), 
                                             marginRight: idx === me.hand.length - 1 ? '0' : `${dynamicMargin}px`,
