@@ -1279,9 +1279,13 @@ body {
     position: relative;
     transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
     cursor: pointer;
-    /* 判定エリアを上部に20px分拡張し、カードが浮いてもマウスが外れないようにする */
+    /* 判定エリアを上部と左右に拡張し、タップしやすくする */
     padding-top: 25px;
+    padding-left: 8px;
+    padding-right: 8px;
     margin-top: -25px;
+    margin-left: -8px;
+    margin-right: -8px;
     z-index: 1;
 }
 
