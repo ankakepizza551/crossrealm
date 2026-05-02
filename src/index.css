@@ -2498,9 +2498,7 @@ body {
     display: none !important;
 }
 
-.all-anim-off .card-anchor {
-    transition: none !important;
-}
+/* 手札の出し入れ（opacity/filter）は残す - card-anchorのtransitionは消さない */
 
 .all-anim-off .card-surface {
     transition: background 0s, box-shadow 0s, transform 0s, border-color 0s !important;
@@ -2827,8 +2825,8 @@ body {
 
 /* === 超低スペック端末向け：さらなる軽量化 === */
 @media (max-width: 480px) and (max-height: 700px) {
-    /* 全てのtransitionを無効化 */
-    * {
+    /* 手札以外のtransitionを無効化 */
+    *:not(.card-anchor) {
         transition: none !important;
     }
     
@@ -2837,8 +2835,8 @@ body {
         transform: none !important;
     }
     
-    /* 全てのアニメーションを停止 */
-    * {
+    /* 手札以外のアニメーションを停止 */
+    *:not(.card-draw-vfx):not(.motion-card-ghost) {
         animation: none !important;
     }
     
@@ -2851,7 +2849,7 @@ body {
         animation-duration: 0.6s !important;
     }
     
-    /* 手札の出し入れアニメーション（opacity/filter）は残す */
+    /* 手札の出し入れアニメーション（opacity/filter）は絶対に残す */
     .card-anchor {
         transition: opacity 0.5s ease, filter 0.5s ease !important;
     }
