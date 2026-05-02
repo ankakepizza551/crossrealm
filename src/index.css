@@ -95,6 +95,21 @@ body {
     }
 }
 
+@keyframes emblem-rotate-inner {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes emblem-rotate-outer {
+    from { transform: rotate(0deg); } to { transform: rotate(-360deg); }
+}
+
+@keyframes emblem-pulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+
 @keyframes pulse-shimmer {
 
     0%,
@@ -2445,6 +2460,7 @@ body {
     background-image: radial-gradient(circle at center, #1a0a30 0%, #05010a 100%);
     overflow: hidden;
     pointer-events: none;
+    isolation: isolate; /* 他のUI要素への干渉を防止 */
 }
 
 /* モバイル向けデフォルト設定 */
@@ -2500,21 +2516,26 @@ body {
     pointer-events: none;
 }
 
-.bg-magic-circle {
+.bg-magic-circle-css {
     width: 100%;
     height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg opacity='0.6' stroke='%238A2BE2' stroke-width='1' fill='none'%3E%3Ccircle cx='50' cy='50' r='48' stroke-dasharray='10 5'/%3E%3Ccircle cx='50' cy='50' r='35'/%3E%3Cpath d='M50 15 L80 70 L20 70 Z M50 85 L20 30 L80 30 Z'/%3E%3Ccircle cx='50' cy='50' r='10' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
     filter: drop-shadow(0 0 20px var(--magic-purple));
-    opacity: 0.8;
 }
 
-.bg-anim-active .bg-magic-circle {
-    animation: magic-pulse 10s infinite ease-in-out;
+.bg-anim-active .bg-magic-circle-css {
+    animation: bg-magic-pulse 10s infinite ease-in-out, bg-rotate-outer 40s linear infinite;
 }
 
-@keyframes magic-pulse {
+@keyframes bg-magic-pulse {
     0%, 100% { transform: scale(1); opacity: 0.8; }
     50% { transform: scale(1.05); opacity: 1; }
 }
+
+@keyframes bg-rotate-outer { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 .gears-layer {
     position: absolute;
@@ -2522,21 +2543,24 @@ body {
     opacity: 0.5;
 }
 
-.bg-gear {
+.bg-gear-css {
     position: absolute;
     width: 40vw;
     height: 40vw;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23D4AF37' opacity='0.7' d='M100 56.5v-13l-12.7-2.1c-1.1-4.5-3-8.6-5.4-12.3l7.4-10.4-9.2-9.2-10.4 7.4c-3.7-2.4-7.8-4.3-12.3-5.4L55.3 0h-13l-2.1 12.7c-4.5 1.1-8.6 3-12.3 5.4l-10.4-7.4-9.2 9.2 7.4 10.4c-2.4 3.7-4.3 7.8-5.4 12.3L0 43.5v13l12.7 2.1c1.1 4.5 3 8.6 5.4 12.3l-7.4 10.4 9.2 9.2 10.4-7.4c3.7 2.4 7.8 4.3 12.3 5.4l2.1 12.7h13l2.1-12.7c4.5-1.1 8.6-3 12.3-5.4l10.4 7.4 9.2-9.2-7.4-10.4c2.4-3.7 4.3-7.8 5.4-12.3l12.7-2.1zM50 71c-11.6 0-21-9.4-21-21s9.4-21 21-21 21 9.4 21 21-9.4 21-21 21z'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
     filter: drop-shadow(0 0 15px var(--steam-gold));
 }
 
-.bg-gear.g1 { top: -10%; left: -10%; }
-.bg-gear.g2 { bottom: -10%; right: -10%; transform: rotate(15deg); }
+.bg-gear-css.g1 { top: -10%; left: -10%; }
+.bg-gear-css.g2 { bottom: -10%; right: -10%; }
 
-.bg-anim-active .bg-gear.g1 { animation: rotate-gear-cw 60s linear infinite; }
-.bg-anim-active .bg-gear.g2 { animation: rotate-gear-ccw 80s linear infinite; }
+.bg-anim-active .bg-gear-css.g1 { animation: bg-rotate-gear-cw 60s linear infinite; }
+.bg-anim-active .bg-gear-css.g2 { animation: bg-rotate-gear-ccw 80s linear infinite; }
 
-@keyframes rotate-gear-cw { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes rotate-gear-ccw { from { transform: rotate(15deg); } to { transform: rotate(-345deg); } }
+@keyframes bg-rotate-gear-cw { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes bg-rotate-gear-ccw { from { transform: rotate(15deg); } to { transform: rotate(-345deg); } }
 
 .nebula-glow {
     position: absolute;
@@ -2583,8 +2607,75 @@ body {
     50% { opacity: 1; transform: scale(1.4); }
 }
 
+/* 演出中の背景減光 */
+.bg-dimmed .cyber-grid-layer,
+.bg-dimmed .nebula-layer,
+.bg-dimmed .magic-circle-layer,
+.bg-dimmed .gears-layer,
+.bg-dimmed .star-particles {
+    opacity: 0.1 !important;
+    transition: opacity 0.5s ease;
+}
+
 /* UIレイヤーを背景より前に出す */
-.ui-viewport, .cutin-container, .motion-overlay-layer {
+.ui-viewport, .motion-overlay-layer {
     position: relative;
     z-index: 10;
+}
+
+/* 新・クリーン帯演出 (Special Cutin) */
+.special-cutin-layer {
+    position: fixed;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    transform: translateY(-50%);
+    z-index: 9000;
+    pointer-events: none;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.special-cutin-bar {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, var(--c) 20%, var(--c) 80%, transparent 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scaleX(0);
+    animation: special-bar-in 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+    border-top: 1px solid rgba(255,255,255,0.3);
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 0 30px var(--c);
+}
+
+.special-cutin-text {
+    color: white;
+    font-family: 'Orbitron', 'Audiowide', sans-serif;
+    font-weight: 900;
+    font-size: 2.2rem;
+    letter-spacing: 12px;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 20px var(--c);
+    animation: special-text-glow 1.5s ease-in-out forwards;
+}
+
+@keyframes special-bar-in {
+    0% { opacity: 0; transform: scaleX(0); }
+    15% { opacity: 1; transform: scaleX(1.1); }
+    25% { transform: scaleX(1); }
+    80% { opacity: 1; transform: scaleX(1); }
+    100% { opacity: 0; transform: scaleX(1.5); }
+}
+
+@keyframes special-text-glow {
+    0% { transform: scale(0.8) skewX(-10deg); opacity: 0; }
+    20% { transform: scale(1.1) skewX(0deg); opacity: 1; }
+    80% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.2); opacity: 0; }
 }

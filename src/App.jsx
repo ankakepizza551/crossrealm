@@ -67,25 +67,21 @@ const playSE = (type, muted) => {
 const ComplexEmblem = ({ isLogo = false }) => (
     <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
         <defs>
-            <filter id="emblem-glow"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
-            <filter id="core-glow"><feGaussianBlur stdDeviation="6" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
+            <filter id="core-glow-bg"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
         </defs>
-        <g filter="url(#emblem-glow)">
-            <circle cx="50" cy="50" r="48" fill="none" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="4 8 12 4" opacity="0.6" style={{ animation: 'rotate-outer 20s linear infinite', transformOrigin: 'center' }} />
-            <circle cx="50" cy="50" r="45" fill="none" stroke="var(--accent)" strokeWidth="0.3" strokeDasharray="2 2" opacity="0.4" style={{ animation: 'rotate-inner 15s linear infinite', transformOrigin: 'center' }} />
-            <circle cx="50" cy="50" r="38" fill="none" stroke="var(--magic-purple)" strokeWidth="1" strokeDasharray="1 4" opacity="0.8" style={{ animation: 'rotate-inner 30s linear infinite', transformOrigin: 'center' }} />
-            {isLogo && (
-                <g style={{ animation: 'rotate-outer 40s linear infinite', transformOrigin: 'center' }}>
-                    <polygon points="50,12 55,32 75,32 60,45 65,65 50,53 35,65 40,45 25,32 45,32" fill="none" stroke="var(--magic-purple)" strokeWidth="0.5" opacity="0.6" />
-                </g>
-            )}
-            <path d="M50 16 L79.4 33 L79.4 67 L50 84 L20.6 67 L20.6 33 Z" fill="none" stroke="var(--steam-gold)" strokeWidth="1.5" opacity="0.5" style={{ animation: 'rotate-inner 45s linear infinite', transformOrigin: 'center' }} />
-            <path d="M50 20 L76 35 L76 65 L50 80 L24 65 L24 35 Z" fill="none" stroke="var(--steam-gold)" strokeWidth="0.5" opacity="0.3" style={{ animation: 'rotate-outer 55s linear infinite', transformOrigin: 'center' }} />
-            {isLogo && <g style={{ animation: 'rotate-inner 45s linear infinite', transformOrigin: 'center' }}>{[...Array(6)].map((_, i) => <circle key={i} cx="50" cy="16" r="1.5" fill="var(--steam-gold)" opacity="0.9" transform={`rotate(${i * 60} 50 50)`} />)}</g>}
-            <circle cx="50" cy="50" r="12" fill="var(--danger)" opacity="0.3" filter="url(#core-glow)" style={{ animation: 'pulse-shimmer 3s infinite' }} />
+        <g style={{ transform: isLogo ? 'scale(1)' : 'scale(0.8)', transformOrigin: 'center' }}>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="var(--accent)" strokeWidth="0.5" opacity="0.3" strokeDasharray="1 3" />
+            <g style={{ animation: 'emblem-rotate-outer 40s linear infinite', transformOrigin: 'center' }}>
+                <circle cx="50" cy="50" r="45" fill="none" stroke="var(--accent)" strokeWidth="1" strokeDasharray="15 5" opacity="0.4" />
+                {[...Array(3)].map((_, i) => <rect key={i} x="48" y="2" width="4" height="6" fill="var(--accent)" opacity="0.6" transform={`rotate(${i * 120} 50 50)`} />)}
+            </g>
+            <path d="M50 16 L79.4 33 L79.4 67 L50 84 L20.6 67 L20.6 33 Z" fill="none" stroke="var(--steam-gold)" strokeWidth="1.5" opacity="0.5" style={{ animation: 'emblem-rotate-inner 45s linear infinite', transformOrigin: 'center' }} />
+            <path d="M50 20 L76 35 L76 65 L50 80 L24 65 L24 35 Z" fill="none" stroke="var(--steam-gold)" strokeWidth="0.5" opacity="0.3" style={{ animation: 'emblem-rotate-outer 55s linear infinite', transformOrigin: 'center' }} />
+            {isLogo && <g style={{ animation: 'emblem-rotate-inner 45s linear infinite', transformOrigin: 'center' }}>{[...Array(6)].map((_, i) => <circle key={i} cx="50" cy="16" r="1.5" fill="var(--steam-gold)" opacity="0.9" transform={`rotate(${i * 60} 50 50)`} />)}</g>}
+            <circle cx="50" cy="50" r="12" fill="var(--danger)" opacity="0.3" filter="url(#core-glow-bg)" style={{ animation: 'emblem-pulse 3s infinite' }} />
             <path d="M36 36 L64 64 M64 36 L36 64" stroke="#fff" strokeWidth="4" strokeLinecap="square" opacity="0.9" />
             <path d="M30 30 L70 70 M70 30 L30 70" stroke="var(--accent)" strokeWidth="1" strokeLinecap="square" opacity="0.5" />
-            <text x="50" y="54" fill="var(--accent)" fontSize="10" fontWeight="1000" font-family="Orbitron" textAnchor="middle" style={{ animation: 'pulse-shimmer 2s infinite' }}>X</text>
+            <text x="50" y="54" fill="var(--accent)" fontSize="10" fontWeight="1000" font-family="Orbitron" textAnchor="middle" style={{ animation: 'emblem-pulse 2s infinite' }}>X</text>
         </g>
     </svg>
 );
@@ -95,13 +91,14 @@ const IconRenderer = ({ r, spec, className, ...rest }) => {
     switch (r) {
         case 'GEAR':
             return <svg {...p}>
-                <path d="M6 16a3.5 3.5 0 0 1 3.5-3.5 4.5 4.5 0 0 1 8.5 1 3.5 3.5 0 0 1 0 7H9.5A3.5 3.5 0 0 1 6 16z" fill="currentColor" opacity="0.1" stroke="none" />
-                <path d="M12 5a2.5 2.5 0 0 1 2.5 2.5 2 2 0 0 1-3.5 1 2.5 2.5 0 0 1 1-3.5z" fill="currentColor" opacity="0.1" stroke="none" />
-                <circle cx="12" cy="12" r="7" fill="currentColor" opacity="0.2" stroke="none" />
-                <circle cx="12" cy="12" r="7" />
-                <path d="M12 2v3 M12 19v3 M2 12h3 M19 12h3" />
-                <path d="M4.9 4.9l2.1 2.1 M17.1 17.1l2.1 2.1 M4.9 19.1l2.1-2.1 M17.1 4.9l2.1 2.1" />
-                <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
+                <circle cx="12" cy="12" r="8" fill="currentColor" opacity="0.1" stroke="none" />
+                <circle cx="12" cy="12" r="5" fill="none" strokeWidth="1.5" />
+                <g style={{ transformOrigin: 'center' }}>
+                    {[...Array(8)].map((_, i) => (
+                        <rect key={i} x="11" y="2" width="2" height="4" fill="currentColor" transform={`rotate(${i * 45} 12 12)`} />
+                    ))}
+                </g>
+                <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
             </svg>;
         case 'ARCHIVE':
             return <svg {...p}>
@@ -133,15 +130,11 @@ const IconRenderer = ({ r, spec, className, ...rest }) => {
             </svg>;
         case 'MACHINE':
             return <svg {...p}>
-                <rect x="3" y="4" width="4" height="2" fill="currentColor" opacity="0.15" stroke="none" />
-                <rect x="17" y="6" width="3" height="3" fill="currentColor" opacity="0.1" stroke="none" />
-                <rect x="4" y="17" width="5" height="1" fill="currentColor" opacity="0.15" stroke="none" />
-                <rect x="15" y="16" width="4" height="2" fill="currentColor" opacity="0.1" stroke="none" />
-                <rect x="6" y="6" width="12" height="12" rx="1" fill="currentColor" opacity="0.2" stroke="none" />
-                <rect x="6" y="6" width="12" height="12" rx="1" />
-                <path d="M10 6V2 M14 6V2 M10 18v4 M14 18v4 M6 10H2 M6 14H2 M18 10h4 M18 14h4" />
-                <rect x="9" y="9" width="6" height="6" fill="currentColor" stroke="none" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
-                <path d="M9 9l-3-3 M15 9l3-3 M9 15l-3 3 M15 15l3 3" />
+                <rect x="4" y="4" width="16" height="16" rx="2" fill="currentColor" opacity="0.1" stroke="none" />
+                <rect x="8" y="8" width="8" height="8" strokeWidth="1.5" />
+                <path d="M12 8v8 M8 12h8" strokeWidth="1" opacity="0.5" />
+                <path d="M10 4v2 M14 4v2 M10 18v2 M14 18v2 M4 10h2 M4 14h2 M18 10h2 M18 14h2" strokeWidth="1.5" />
+                <rect x="11" y="11" width="2" height="2" fill="currentColor" stroke="none" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
             </svg>;
         case 'BATTERY':
             return <svg {...p}>
@@ -184,7 +177,7 @@ const CardOrnaments = ({ theme }) => {
     return null;
 };
 
-const CardView = ({ card, playable, isField, isSelected, isMyTurn }) => {
+const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments }) => {
     if (!card?.realm) return null;
     let dr = card.realm;
     const spec = card.isSpecial;
@@ -201,7 +194,7 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn }) => {
     return (
         <div className={`card-surface mat-${rData.theme}`}
             style={{ '--r-color': rData.color, '--r-color-bright': rData.bright, '--r-color-glow': rData.glow, '--r-color-dim': rData.dim || 'rgba(0,0,0,0.5)', width: 'var(--card-w)', height: 'var(--card-h)', borderRadius: '8px', overflow: 'hidden', position: 'relative', border: 'none' }}>
-            <CardOrnaments theme={rData.theme} />
+            {!hideOrnaments && <CardOrnaments theme={rData.theme} />}
             <div className="card-content">
                 <div className="card-info-top"><span>{dr}</span></div>
                 <div className="card-icon-overload" style={{ color: rData.bright, filter: `drop-shadow(0 0 10px ${rData.glow})`, position: 'absolute', top: '55%', left: '50%', transform: 'translate(-50%, -50%)', width: '55%', height: '55%' }}>
@@ -214,43 +207,7 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn }) => {
     );
 };
 
-const GearLight = ({ color }) => (
-    <svg viewBox="0 0 100 100" className="w-full h-full opacity-60">
-        <defs>
-            <linearGradient id={`grad-gear-bg-${color}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.8 }} />
-                <stop offset="45%" style={{ stopColor: '#fff', stopOpacity: 0.4 }} />
-                <stop offset="55%" style={{ stopColor: color, stopOpacity: 0.8 }} />
-                <stop offset="100%" style={{ stopColor: '#332211', stopOpacity: 0.6 }} />
-            </linearGradient>
-        </defs>
-        <path fill={`url(#grad-gear-bg-${color})`} stroke={color} strokeWidth="0.5" opacity="0.7"
-            d="M100 56.5v-13l-12.7-2.1c-1.1-4.5-3-8.6-5.4-12.3l7.4-10.4-9.2-9.2-10.4 7.4c-3.7-2.4-7.8-4.3-12.3-5.4L55.3 0h-13l-2.1 12.7c-4.5 1.1-8.6 3-12.3 5.4l-10.4-7.4-9.2 9.2 7.4 10.4c-2.4 3.7-4.3 7.8-5.4 12.3L0 43.5v13l12.7 2.1c1.1 4.5 3 8.6 5.4 12.3l-7.4 10.4 9.2 9.2 10.4-7.4c3.7 2.4 7.8 4.3 12.3 5.4l2.1 12.7h13l2.1-12.7c4.5-1.1 8.6-3 12.3-5.4l10.4 7.4 9.2-9.2-7.4-10.4c2.4-3.7 4.3-7.8 5.4-12.3l12.7-2.1zM50 71c-11.6 0-21-9.4-21-21s9.4-21 21-21 21 9.4 21 21-9.4 21-21 21z" />
-        <circle cx="50" cy="50" r="15" fill="none" stroke="#fff" strokeWidth="0.5" opacity="0.2" />
-        <circle cx="50" cy="50" r="8" fill="#111" stroke={color} strokeWidth="1" opacity="0.5" />
-    </svg>
-);
-
-const MagicCircleLight = ({ color }) => (
-    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
-        <defs>
-            <filter id="magic-glow-bg"><feGaussianBlur stdDeviation="2" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
-        </defs>
-        <g opacity="0.6">
-            <g style={{ animation: 'rotate-outer 10s linear infinite', transformOrigin: 'center' }}>
-                <circle cx="50" cy="50" r="48" fill="none" stroke={color} strokeWidth="1" strokeDasharray="10 5" />
-            </g>
-            <g style={{ animation: 'rotate-inner 15s linear infinite', transformOrigin: 'center' }}>
-                <circle cx="50" cy="50" r="35" fill="none" stroke={color} strokeWidth="1" />
-                <path d="M50 15 L80 70 L20 70 Z M50 85 L20 30 L80 30 Z" fill="none" stroke={color} strokeWidth="1" />
-                <circle cx="50" cy="50" r="10" fill="none" stroke={color} strokeWidth="2" />
-            </g>
-        </g>
-    </svg>
-);
-
-const AstralBackground = ({ bgAnim }) => {
-    // 再描画のたびにMath.random()が走らないようにメモ化
+const AstralBackground = ({ bgAnim, isDimmed }) => {
     const stars = useMemo(() => {
         return [...Array(15)].map((_, i) => ({
             id: i,
@@ -262,11 +219,11 @@ const AstralBackground = ({ bgAnim }) => {
     }, []);
 
     return (
-        <div className={`astral-bg-container ${bgAnim ? 'bg-anim-active' : ''}`}>
+        <div className={`astral-bg-container ${bgAnim ? 'bg-anim-active' : ''} ${isDimmed ? 'bg-dimmed' : ''}`}>
             {/* 1. Cyber: サイバーグリッド */}
             <div className="cyber-grid-layer" />
             
-            {/* 2. Fantasy: 星雲 & 魔法陣 */}
+            {/* 2. Fantasy: 星雲 & 魔法陣 (CSS Background) */}
             <div className="nebula-layer">
                 <div className="nebula-glow n1" />
                 <div className="nebula-glow n2" />
@@ -274,16 +231,16 @@ const AstralBackground = ({ bgAnim }) => {
             </div>
             
             <div className="magic-circle-layer">
-                <div className="bg-magic-circle"><MagicCircleLight color="var(--magic-purple)" /></div>
+                <div className="bg-magic-circle-css" />
             </div>
 
-            {/* 3. Steampunk: 巨大歯車 */}
+            {/* 3. Steampunk: 巨大歯車 (CSS Background) */}
             <div className="gears-layer">
-                <div className="bg-gear g1"><GearLight color="var(--steam-gold)" /></div>
-                <div className="bg-gear g2"><GearLight color="var(--steam-gold)" /></div>
+                <div className="bg-gear-css g1" />
+                <div className="bg-gear-css g2" />
             </div>
             
-            {/* 4. Mana Particles: マナ粒子 */}
+            {/* 4. Mana Particles */}
             <div className="star-particles">
                 {stars.map(s => (
                     <div key={s.id} className="star-particle" style={{
@@ -455,15 +412,17 @@ const App = () => {
             if (prevFieldCardId.current !== null && gs.status === 'playing') {
                 let dr = c.realm;
                 if (c.wasRuins) dr = 'RUINS'; else if (c.wasPlanet) dr = 'PLANET'; else if (c.wasFountain || (c.realm === 'FOUNTAIN' && c.isSpecial)) dr = 'FOUNTAIN';
+                
                 if (c.isSpecial || c.wasPlanet || c.wasRuins || c.wasFountain || dr === 'PLANET' || dr === 'RUINS') {
                     setShake(true); setTimeout(() => setShake(false), 500);
                     let text = "WILD";
-                    if (dr === 'GEAR') text = "DRAW 2";
-                    else if (dr === 'MACHINE') text = "REVERSE";
+                    if (dr === 'GEAR') text = "DOUBLE DRAW";
+                    else if (dr === 'MACHINE') text = "TIME REVERSE";
                     else if (dr === 'FOUNTAIN') text = "LIMIT WILD";
                     if (c.wasPlanet || c.wasRuins) text = "REALM SHIFT";
+                    
                     setCutin({ text, color: REALMS[dr].bright });
-                    setTimeout(() => setCutin(null), 1800);
+                    setTimeout(() => setCutin(null), 1500);
                 } else {
                     setShake(true); setTimeout(() => setShake(false), 300);
                 }
@@ -596,8 +555,15 @@ const App = () => {
 
     return (
         <div ref={wrapperRef} className={`screen-wrapper ${shake ? 'shake-active' : ''} ${isMyTurn ? 'my-turn-glow' : ''}`} style={{ '--r-color': REALMS[currentR]?.color }}>
-            {cutin && <div className="cutin-container"><div className="cutin-bar" style={{ '--c': cutin.color }}><div className="cutin-text">{cutin.text}</div></div></div>}
+            {cutin && (
+                <div className="special-cutin-layer">
+                    <div className="special-cutin-bar" style={{ '--c': cutin.color }}>
+                        <div className="special-cutin-text">{cutin.text}</div>
+                    </div>
+                </div>
+            )}
             <AstralBackground bgAnim={bgAnim} />
+            
             {isDisconnected && joined && (
                 <div className="fixed inset-0 bg-black/95 z-[9999] flex flex-col items-center justify-center p-8 ">
                     <h3 className="font-black text-danger text-3xl tracking-widest mb-4 animate-pulse font-['Orbitron']">CONNECTION LOST</h3>
@@ -762,14 +728,43 @@ const App = () => {
                                 );
                             })}
                         </div>
-                        <div className="field-main-area"><div className="tactical-field-viewport"><CycleDiagramSmall currentRealm={gs.currentRealm} playableRealms={playableRealms} hoveredCard={null} bgAnim={bgAnim} isReversed={gs.isReversed} /><div className="central-cards-overlay"><div className="flex items-center justify-center gap-4 sm:gap-6"><div className="relative w-14 h-20 sm:w-16 sm:h-24 opacity-90 transition-all cursor-help group"><div className="absolute inset-0 bg-[#111] border border-white/40 rounded-sm shadow-md"><div className="w-full h-full p-2 flex flex-col items-center justify-center bg-gradient-to-br from-[#1a1a2e] to-black"><div className="w-full h-full opacity-30 text-accent"><IconRenderer r="BACK" /></div><div className="absolute inset-0 flex flex-col items-center justify-center"><div className="text-xl font-black text-white font-['Orbitron']">{gs.deck?.length || 0}</div></div></div></div></div><div className={`field-card-scale relative z-10 ${entryAnim ? 'card-play-vfx' : ''}`}><div className={`transition-opacity duration-[1500ms] ease-in-out ${(!isAnimating && gs.fieldCard.id === displayFieldCard?.id) ? 'opacity-100' : 'opacity-0'}`}><CardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} /></div><div className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${isAnimating ? 'opacity-100' : 'opacity-0'}`}><CardView card={displayFieldCard} isField={true} isMyTurn={isMyTurn} /></div></div></div></div></div></div>
+                        <div className="field-main-area">
+                            <div className="tactical-field-viewport">
+                                <CycleDiagramSmall currentRealm={gs.currentRealm} playableRealms={playableRealms} hoveredCard={null} bgAnim={bgAnim} isReversed={gs.isReversed} />
+                                <div className="central-cards-overlay">
+                                    <div className="flex items-center justify-center gap-4 sm:gap-6">
+                                        <div className="relative w-14 h-20 sm:w-16 sm:h-24 opacity-90 transition-all cursor-help group">
+                                            <div className="absolute inset-0 bg-[#111] border border-white/40 rounded-sm shadow-md">
+                                                <div className="w-full h-full p-2 flex flex-col items-center justify-center bg-gradient-to-br from-[#1a1a2e] to-black">
+                                                    <div className="w-full h-full opacity-30 text-accent"><IconRenderer r="BACK" /></div>
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                        <div className="text-xl font-black text-white font-['Orbitron']">{gs.deck?.length || 0}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className={`field-card-scale relative z-10 ${entryAnim ? 'card-play-vfx' : ''}`}>
+                                            <div className={`transition-opacity duration-[1500ms] ease-in-out ${(!isAnimating && gs.fieldCard.id === displayFieldCard?.id) ? 'opacity-100' : 'opacity-0'}`}>
+                                                <CardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={isAnimating} />
+                                            </div>
+                                            <div className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${isAnimating ? 'opacity-100' : 'opacity-0'}`}>
+                                                <CardView card={displayFieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={true} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div className="tactical-log-box no-scrollbar" ref={logContainerRef}>{gs.logs && gs.logs.length > 0 ? gs.logs.slice(-10).map(l => <div key={l.id} className="log-entry-text text-[11px] font-black mb-0.5 border-b border-white/5">≫ {l.text}</div>) : <div className="opacity-40 italic text-xs font-bold mt-1">ANALYZING...</div>}</div>
                         <div className="flex justify-between items-center px-5 py-1 shrink-0"><div className="flex items-baseline gap-2"><span className="hand-info-label text-[10px] font-black text-white/40 tracking-[2px] uppercase">Your Hand</span><span className={`hand-info-count text-2xl font-black font-['Orbitron'] leading-none ${me?.hand.length >= 8 ? 'text-danger animate-pulse' : 'text-white'}`}>{me?.hand.length || 0}<span className="text-xs ml-1 opacity-60">枚</span></span></div>{(isAnimating || isMorphing) && <div className="text-[9px] font-black text-accent animate-pulse tracking-[2px] bg-accent/10 px-3 py-1 rounded border border-accent/30 uppercase">Processing...</div>}</div>
                         <div className={`hand-container no-scrollbar ${isMyTurn ? 'my-turn-hand-fx' : ''} ${(isAnimating || isMorphing || selector) ? 'opacity-40 grayscale-[50%] pointer-events-none' : ''}`}>
                             {sortedHand.map((card, idx) => {
                                 const handSize = me.hand.length;
-                                const baseMargin = -12;
-                                const dynamicMargin = handSize > 7 ? Math.max(-50, baseMargin - (handSize - 7) * 6) : baseMargin;
+                                const baseMargin = -8;
+                                // 5枚以上から徐々に重なりを強くする
+                                const dynamicMargin = handSize > 5 ? Math.max(-48, baseMargin - (handSize - 5) * 10) : baseMargin;
+                                // 8枚以上でカードを少し小さくして収まりを良くする
+                                const cardScale = handSize > 8 ? 0.88 : 1.0;
                                 const isPlayable = isMyTurn && canPlayCheck(gs, card);
                                 return (
                                     <div
@@ -780,7 +775,7 @@ const App = () => {
                                             marginRight: idx === me.hand.length - 1 ? '0' : `${dynamicMargin}px`,
                                             transform: (draggingCardId === card.id) 
                                                 ? `translate(${dragOffsetX}px, ${dragOffsetY}px) rotate(${dragOffsetX * 0.05}deg) scale(1.1)` 
-                                                : undefined,
+                                                : `scale(${cardScale})`,
                                             transition: (draggingCardId === card.id) ? 'none' : undefined,
                                             touchAction: (draggingCardId === card.id) ? 'none' : 'pan-x',
                                             filter: (draggingCardId === card.id) ? 'drop-shadow(0 20px 40px rgba(0,0,0,0.6))' : undefined
