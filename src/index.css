@@ -2757,8 +2757,9 @@ body {
         background-image: radial-gradient(circle at center, #1a0a30 0%, #05010a 100%) !important;
     }
     
-    .astral-bg-container * {
-        display: none !important; /* 背景の星雲・歯車などを全て非表示 */
+    /* アニメーションOFF時のみ背景を非表示 */
+    .all-anim-off .astral-bg-container * {
+        display: none !important;
     }
     
     /* blur系エフェクトを完全削除 */
