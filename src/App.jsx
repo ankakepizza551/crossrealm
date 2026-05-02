@@ -327,6 +327,7 @@ const App = () => {
     const [entryAnim, setEntryAnim] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
     const [isMorphing, setIsMorphing] = useState(false);
+    const [newlyDrawnCardIds, setNewlyDrawnCardIds] = useState(new Set());
     const [draggingCardId, setDraggingCardId] = useState(null);
     const [touchStartX, setTouchStartX] = useState(0);
     const [touchStartY, setTouchStartY] = useState(0);
@@ -446,6 +447,20 @@ const App = () => {
 
     useEffect(() => { if (logContainerRef.current) logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight; }, [gs?.logs]);
     useEffect(() => { setSelectedCardId(null); }, [gs?.currentTurnPlayerId]);
+    
+    // 新しく追加されたカードを検出してアニメーションを適用
+    const prevHandRef = useRef([]);
+    useEffect(() => {
+        if (me?.hand) {
+            const prevIds = new Set(prevHandRef.current.map(c => c.id));
+            const newIds = me.hand.filter(c => !prevIds.has(c.id)).map(c => c.id);
+            if (newIds.length > 0) {
+                setNewlyDrawnCardIds(new Set(newIds));
+                setTimeout(() => setNewlyDrawnCardIds(new Set()), 400); // アニメーション終了後にクリア
+            }
+            prevHandRef.current = me.hand;
+        }
+    }, [me?.hand]);
 
     const currentR = gs?.fieldCard?.realm || 'GEAR';
     const me = gs?.players?.find(p => p.id === socket?.id);
@@ -766,10 +781,11 @@ const App = () => {
                                 // 8枚以上でカードを少し小さくして収まりを良くする
                                 const cardScale = handSize > 8 ? 0.88 : 1.0;
                                 const isPlayable = isMyTurn && canPlayCheck(gs, card);
+                                const isNewlyDrawn = newlyDrawnCardIds.has(card.id);
                                 return (
                                     <div
                                         key={card.id || idx}
-                                        className={`card-anchor ${selectedCardId === card.id ? 'selected' : ''} ${hoveredCardId === card.id ? 'hovered' : ''} ${!isMyTurn || !isPlayable ? 'not-playable' : 'playable'} ${isMyTurn ? 'is-my-turn' : ''} ${isPlayable ? 'playable-card-pop' : ''} ${draggingCardId === card.id ? 'dragging' : ''}`}
+                                        className={`card-anchor ${selectedCardId === card.id ? 'selected' : ''} ${hoveredCardId === card.id ? 'hovered' : ''} ${!isMyTurn || !isPlayable ? 'not-playable' : 'playable'} ${isMyTurn ? 'is-my-turn' : ''} ${isPlayable ? 'playable-card-pop' : ''} ${draggingCardId === card.id ? 'dragging' : ''} ${isNewlyDrawn ? 'card-draw-vfx' : ''}`}
                                         style={{ 
                                             zIndex: (draggingCardId === card.id) ? 1000 : (selectedCardId === card.id ? 100 : (hoveredCardId === card.id ? 200 : idx)), 
                                             marginRight: idx === me.hand.length - 1 ? '0' : `${dynamicMargin}px`,
@@ -792,7 +808,7 @@ const App = () => {
                                 );
                             })}
                         </div>
-                        <div className="w-full px-4 pb-4 shrink-0 flex flex-col gap-2"><button className="btn-mega-draw w-full h-16 bg-gradient-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl tracking-[8px] cursor-pointer transition-all active:scale-95 disabled:grayscale disabled:opacity-50" disabled={!isMyTurn || selector} onClick={() => { if (isAnimating || isMorphing) { setBufferedAction({ type: 'draw' }); return; } playSE('draw', muted); socket.emit('draw-card', { roomId: room }); }}>ドロー ({gs.nextDrawAmount}枚)</button></div>
+                        <div className="w-full px-4 pb-4 shrink-0 flex flex-col gap-2"><button className="btn-mega-draw w-full h-16 bg-gradient-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl tracking-[8px] cursor-pointer transition-all active:scale-95 disabled:grayscale disabled:opacity-50" disabled={!isMyTurn || selector || isAnimating || isMorphing} onClick={() => { if (isAnimating || isMorphing) { setBufferedAction({ type: 'draw' }); return; } playSE('draw', muted); socket.emit('draw-card', { roomId: room }); }}>ドロー ({gs.nextDrawAmount}枚)</button></div>
                     </>
                 )}
             </div>
