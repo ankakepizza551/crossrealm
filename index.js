@@ -88,7 +88,11 @@ const ELIMINATION_PENALTY = -10; // 脱落時のスコアペナルティ
 // 基本点：勝者以外の残り手札枚数の合計
 // ワイルド上がりボーナス：基本点にこの倍率をかける（切り上げ）
 // ※ LIMIT WILD（FOUNTAIN特殊）はボーナス対象外
-const WILD_FINISH_MULTIPLIER = 1.5; // ワイルド上がり時の倍率
+const WILD_FINISH_MULTIPLIER = 1.2; // ワイルド上がり時の倍率
+
+// 連勝ボーナス：連続で勝ったときに加算されるボーナス点
+const WIN_STREAK_THRESHOLD = 2;  // 何連勝からボーナスが発生するか
+const WIN_STREAK_BONUS     = 3;  // ボーナス点数（上限あり・一律）
 
 // --- シリーズ設定 ---
 const MAX_MATCHES = 5; // 何戦先取でシリーズ終了か
@@ -238,12 +242,23 @@ function checkGameOver(room) {
         isWildFinish = true;
       }
 
-      room.logs.push({ id: Math.random(), text: `RESULT: Winner=${winner.name}, Base=${basePoints}, Bonus=${bonusPoints}, Wild=${isWildFinish}, LastWild=${room.lastPlayWasWild}` });
+      // 連勝ボーナス
+      winner.winStreak = (winner.winStreak || 0) + 1;
+      let streakBonus = 0;
+      if (winner.winStreak >= WIN_STREAK_THRESHOLD) {
+        streakBonus = WIN_STREAK_BONUS;
+        totalEarned += streakBonus;
+      }
+      // 負けたプレイヤーの連勝をリセット
+      room.players.forEach(p => { if (p.id !== winner.id) p.winStreak = 0; });
+
+      room.logs.push({ id: Math.random(), text: `RESULT: Winner=${winner.name}, Base=${basePoints}, WildBonus=${bonusPoints}, Streak=${winner.winStreak}, StreakBonus=${streakBonus}` });
 
       winner.score += totalEarned;
       winner.earnedPoints = totalEarned;
       winner.basePoints = basePoints;
       winner.bonusPoints = bonusPoints;
+      winner.streakBonus = streakBonus;
       winner.finishBonus = isWildFinish;
       room.lastPlayWasWild = false; // Reset for next match
     }
@@ -580,7 +595,7 @@ io.on('connection', (socket) => {
         if (room.isSeriesFinished) {
           room.matchCount = 1;
           room.isSeriesFinished = false;
-          room.players.forEach(p => { p.score = 0; });
+          room.players.forEach(p => { p.score = 0; p.winStreak = 0; });
           room.status = 'waiting';
           room.logs = [];
         } else {
