@@ -606,8 +606,12 @@ const App = () => {
             } else {
                 playSE('play', muted);
                 if (window.navigator.vibrate) window.navigator.vibrate(12);
+                const isLastCard = me?.hand?.length === 1;
                 const needsSelector = card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial);
-                if (needsSelector) {
+                // 最後のカードの場合は自動的にGEARを選択して送信（上がり時は選択画面を出さない）
+                if (isLastCard && needsSelector) {
+                    socket.emit('play-card', { roomId: room, card: card, chosenRealm: 'GEAR' });
+                } else if (needsSelector) {
                     setSelector(card);
                 } else {
                     socket.emit('play-card', { roomId: room, card: card });
