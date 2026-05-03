@@ -757,15 +757,21 @@ const App = () => {
                                         {/* 点数計算結果の表示 - 重なりを防ぐため高さを調整 */}
                                         {p.finishBonus && !gs.isSeriesFinished && (
                                             <div className="absolute top-[-90px] text-[10px] text-[#ff88ff] font-black animate-pulse drop-shadow-[0_0_5px_rgba(255,0,255,0.8)] whitespace-nowrap z-20">
-                                                ワイルドボーナス x1.5!
+                                                ワイルドボーナス x1.2!
+                                            </div>
+                                        )}
+                                        {p.winStreak >= 2 && !gs.isSeriesFinished && (
+                                            <div className="absolute top-[-106px] text-[10px] text-[#FFD700] font-black animate-pulse drop-shadow-[0_0_5px_rgba(255,215,0,0.8)] whitespace-nowrap z-20">
+                                                🔥 {p.winStreak}連勝ボーナス +3!
                                             </div>
                                         )}
                                         {p.earnedPoints > 0 && !gs.isSeriesFinished && (
                                             <div className="absolute top-[-75px] text-green-400 font-black animate-bounce z-20">
-                                                +{p.finishBonus ? (
+                                                +{p.finishBonus || p.streakBonus > 0 ? (
                                                     <>
                                                         {p.basePoints}
-                                                        <span className="text-[#ff88ff] ml-1">+{p.bonusPoints}</span>
+                                                        {p.bonusPoints > 0 && <span className="text-[#ff88ff] ml-1">+{p.bonusPoints}</span>}
+                                                        {p.streakBonus > 0 && <span className="text-[#FFD700] ml-1">+{p.streakBonus}</span>}
                                                     </>
                                                 ) : p.earnedPoints}
                                             </div>
