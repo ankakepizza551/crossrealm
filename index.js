@@ -57,8 +57,43 @@ const io = new Server(server, {
 });
 
 const rooms = {};
-const HAND_LIMIT = 11; // 11枚以上で脱落
-const INITIAL_HAND = 5;
+
+// ============================================================
+// 🎮 バランス調整エリア（ここだけ触ればOK）
+// ============================================================
+
+// --- 手札 ---
+const INITIAL_HAND = 5;       // 初期手札枚数
+const HAND_LIMIT   = 11;      // これ以上になると脱落（この枚数になった瞬間アウト）
+
+// --- デッキ枚数 ---
+// メインレルム：GEAR / MACHINE / FOUNTAIN（特殊カードあり）
+const MAIN_NORMAL_COUNT  = 7; // メインの通常カード（1種あたり）
+const MAIN_SPECIAL_COUNT = 3; // メインの特殊カード（1種あたり）
+// サブレルム：ICEAGE / BATTERY / ARCHIVE（通常カードのみ）
+const SUB_NORMAL_COUNT   = 5; // サブの通常カード（1種あたり）
+// ワイルド：PLANET / RUINS
+const WILD_COUNT         = 3; // ワイルドカード（1種あたり）
+
+// --- 特殊カード効果 ---
+// DRAW 2（GEAR特殊）: スタック時の挙動
+//   現在: 1枚目→2枚ドロー、2枚目以降→さらに+2枚ずつ積み上げ
+//   MAX_DRAW_STACK を設定するとドロー枚数の上限を制限できる（0=無制限）
+const MAX_DRAW_STACK = 0;     // ドロー枚数の上限（0=無制限）
+
+// --- 脱落ペナルティ ---
+const ELIMINATION_PENALTY = -10; // 脱落時のスコアペナルティ
+
+// --- 点数計算 ---
+// 基本点：勝者以外の残り手札枚数の合計
+// ワイルド上がりボーナス：基本点にこの倍率をかける（切り上げ）
+// ※ LIMIT WILD（FOUNTAIN特殊）はボーナス対象外
+const WILD_FINISH_MULTIPLIER = 1.5; // ワイルド上がり時の倍率
+
+// --- シリーズ設定 ---
+const MAX_MATCHES = 5; // 何戦先取でシリーズ終了か
+
+// ============================================================
 
 const REALM_NAME_JA = { GEAR: '歯車', ICEAGE: '氷河期', FOUNTAIN: '噴水', BATTERY: '電池', MACHINE: '機械', ARCHIVE: '古文書', PLANET: '惑星', RUINS: '廃墟' };
 
@@ -100,22 +135,42 @@ function filterName(name) {
   return (hasNG || finalName.length === 0) ? 'Pilot' : finalName;
 }
 
+// Fisher-Yatesアルゴリズムによる均一なシャッフル
+function shuffleDeck(deck) {
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  return deck;
+}
+
 function createDeck() {
   const deck = [];
   const mains = ['GEAR', 'MACHINE', 'FOUNTAIN'];
-  const subs = ['ICEAGE', 'BATTERY', 'ARCHIVE'];
+  const subs  = ['ICEAGE', 'BATTERY', 'ARCHIVE'];
   const wilds = ['PLANET', 'RUINS'];
+  const mkCard = (realm, isSpecial) => ({ id: Math.random().toString(36).substr(2, 9), realm, isSpecial });
   mains.forEach(r => {
-    for (let i = 0; i < 7; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: false });
-    for (let i = 0; i < 3; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: true });
+    for (let i = 0; i < MAIN_NORMAL_COUNT;  i++) deck.push(mkCard(r, false));
+    for (let i = 0; i < MAIN_SPECIAL_COUNT; i++) deck.push(mkCard(r, true));
   });
   subs.forEach(r => {
-    for (let i = 0; i < 5; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: false });
+    for (let i = 0; i < SUB_NORMAL_COUNT; i++) deck.push(mkCard(r, false));
   });
   wilds.forEach(r => {
-    for (let i = 0; i < 3; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: false });
+    for (let i = 0; i < WILD_COUNT; i++) deck.push(mkCard(r, false));
   });
-  return deck.sort(() => Math.random() - 0.5);
+  return shuffleDeck(deck);
+}
+
+// デッキが尽きたとき捨て札をシャッフルして再利用する（なければ新しいデッキ）
+function replenishDeck(room) {
+  if (room.discardPile && room.discardPile.length > 0) {
+    room.deck = shuffleDeck(room.discardPile);
+    room.discardPile = [];
+  } else {
+    room.deck = createDeck();
+  }
 }
 
 // 生存しているプレイヤーを探して次のターンを決定
@@ -178,7 +233,7 @@ function checkGameOver(room) {
       const isWildCard = !isLimitWild && (room.lastPlayWasWild || room.fieldCard.wasPlanet || room.fieldCard.wasRuins || room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS');
       
       if (winner.handCount === 0 && room.fieldCard && isWildCard) {
-        totalEarned = Math.ceil(basePoints * 1.5);
+        totalEarned = Math.ceil(basePoints * WILD_FINISH_MULTIPLIER);
         bonusPoints = totalEarned - basePoints;
         isWildFinish = true;
       }
@@ -246,7 +301,7 @@ function processBotTurn(roomId) {
     if (action.type === 'draw') {
       const amount = room.nextDrawAmount || 1;
       for (let i = 0; i < amount; i++) {
-        if (room.deck.length === 0) room.deck = createDeck();
+        if (room.deck.length === 0) replenishDeck(room);
         bot.hand.push(room.deck.pop());
       }
       room.logs.push({ id: Math.random(), text: `${bot.name} が ${amount}枚 ドローしました` });
@@ -256,7 +311,7 @@ function processBotTurn(roomId) {
 
       if (bot.handCount >= HAND_LIMIT) {
         bot.isEliminated = true;
-        bot.score -= 10;
+        bot.score += ELIMINATION_PENALTY;
         room.logs.push({ id: Math.random(), text: `臨界突破: ${bot.name} が脱落！ (SCORE -10)` });
       }
     } else {
@@ -271,11 +326,19 @@ function processBotTurn(roomId) {
         card.realm = chosenRealm;
         card.isSpecial = false;
       }
+      // 前のフィールドカードを捨て札へ
+      if (room.fieldCard) {
+        if (!room.discardPile) room.discardPile = [];
+        room.discardPile.push(room.fieldCard);
+      }
       room.fieldCard = card;
       room.logs.push({ id: Math.random(), text: `${bot.name} が ${REALM_NAME_JA[originalRealm] || originalRealm} を展開` });
 
       if (card.isSpecial) {
-        if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : (room.nextDrawAmount || 0) + 2;
+        if (card.realm === 'GEAR') {
+          const next = (room.nextDrawAmount === 1) ? 2 : (room.nextDrawAmount || 0) + 2;
+          room.nextDrawAmount = (MAX_DRAW_STACK > 0) ? Math.min(next, MAX_DRAW_STACK) : next;
+        }
         if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
       }
       bot.handCount = bot.hand.length;
@@ -319,7 +382,7 @@ io.on('connection', (socket) => {
     console.log(`[SYSTEM] Join Request: Room=${rid}, Player=${data.playerName}`);
 
     if (!rooms[rid]) {
-      rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], currentTurnPlayerId: null, matchCount: 1, maxMatches: 5, isSeriesFinished: false };
+      rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], currentTurnPlayerId: null, matchCount: 1, maxMatches: MAX_MATCHES, isSeriesFinished: false };
       console.log(`[SYSTEM] New Room Created: ${rid}`);
     }
 
@@ -412,6 +475,7 @@ io.on('connection', (socket) => {
         room.currentTurnPlayerId = room.players[room.turnIndex].id;
         room.nextDrawAmount = 1;
         room.isReversed = false;
+        room.discardPile = [];
         room.logs = [{ id: Math.random(), text: `MATCH ${room.matchCount} 開始。` }];
         room.players.forEach(p => p.ready = p.isBot);
         io.to(room.id).emit('update-game', room);
@@ -438,11 +502,19 @@ io.on('connection', (socket) => {
         card.realm = data.chosenRealm;
         card.isSpecial = false;
       }
+      // 前のフィールドカードを捨て札へ
+      if (room.fieldCard) {
+        if (!room.discardPile) room.discardPile = [];
+        room.discardPile.push(room.fieldCard);
+      }
       room.fieldCard = { ...card };
       room.logs.push({ id: Math.random(), text: `${player.name} が ${REALM_NAME_JA[originalRealm] || originalRealm} を展開` });
 
       if (card.isSpecial) {
-        if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : (room.nextDrawAmount || 0) + 2;
+        if (card.realm === 'GEAR') {
+          const next = (room.nextDrawAmount === 1) ? 2 : (room.nextDrawAmount || 0) + 2;
+          room.nextDrawAmount = (MAX_DRAW_STACK > 0) ? Math.min(next, MAX_DRAW_STACK) : next;
+        }
         if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
       }
       player.handCount = player.hand.length;
@@ -467,15 +539,15 @@ io.on('connection', (socket) => {
       if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
       const player = room.players.find(p => p.id === socket.id);
       const amount = room.nextDrawAmount || 1;
-      for (let i = 0; i < amount; i++) { if (room.deck.length === 0) room.deck = createDeck(); player.hand.push(room.deck.pop()); }
+      for (let i = 0; i < amount; i++) { if (room.deck.length === 0) replenishDeck(room); player.hand.push(room.deck.pop()); }
       player.handCount = player.hand.length;
       room.logs.push({ id: Math.random(), text: `${player.name} が ${amount}枚 ドロー` });
       room.nextDrawAmount = 1;
 
       if (player.handCount >= HAND_LIMIT) {
         player.isEliminated = true;
-        player.score -= 10;
-        room.logs.push({ id: Math.random(), text: `臨界突破: ${player.name} が脱落！ (SCORE -10)` });
+        player.score += ELIMINATION_PENALTY;
+        room.logs.push({ id: Math.random(), text: `臨界突破: ${player.name} が脱落！ (SCORE ${ELIMINATION_PENALTY})` });
       }
 
       if (!checkGameOver(room)) {
@@ -528,6 +600,7 @@ io.on('connection', (socket) => {
           room.currentTurnPlayerId = room.players[room.turnIndex].id;
           room.nextDrawAmount = 1;
           room.isReversed = false;
+          room.discardPile = [];
           room.logs = [{ id: Math.random(), text: `MATCH ${room.matchCount} 開始。` }];
           
           if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
