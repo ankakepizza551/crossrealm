@@ -561,7 +561,7 @@ io.on('connection', (socket) => {
     console.log(`[SYSTEM] Join Request: Room=${rid}, Player=${data.playerName}`);
 
     if (!rooms[rid]) {
-      rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], currentTurnPlayerId: null, matchCount: 1, maxMatches: MAX_MATCHES, isSeriesFinished: false };
+      rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], currentTurnPlayerId: null, matchCount: 1, maxMatches: MAX_MATCHES, isSeriesFinished: false, createdAt: Date.now(), lastActivityAt: Date.now() };
       console.log(`[SYSTEM] New Room Created: ${rid}`);
     }
 
@@ -571,10 +571,15 @@ io.on('connection', (socket) => {
     // NGワードフィルタを適用
     const sanitizedName = filterName(data.playerName);
 
-    // 同名のプレイヤーがいるかチェック（再接続対応）
-    const existingPlayer = room.players.find(p => p.name === sanitizedName);
+    // ゲーム中の場合のみ再接続を許可（waiting中は通常の新規入室として扱う）
+    // 再接続判定：同名かつisBot=falseのプレイヤーがいて、ゲームが進行中の場合
+    const existingPlayer = room.status === 'playing'
+      ? room.players.find(p => p.name === sanitizedName && !p.isBot)
+      : null;
 
     if (existingPlayer) {
+      // 既に同じsocket.idで接続中なら無視（二重接続防止）
+      if (existingPlayer.id === socket.id) return;
       console.log(`[SYSTEM] Reconnecting Player: ${existingPlayer.name} (ID: ${existingPlayer.id} -> ${socket.id})`);
       existingPlayer.id = socket.id;
       socket.join(rid);
@@ -673,8 +678,28 @@ io.on('connection', (socket) => {
       const room = rooms[data.roomId.toUpperCase()];
       if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
       const player = room.players.find(p => p.id === socket.id);
-      player.hand = player.hand.filter(c => c.id !== data.card.id);
-      const card = data.card;
+
+      // ① そのカードが本当に手札にあるかチェック
+      const cardInHand = player.hand.find(c => c.id === data.card.id);
+      if (!cardInHand) {
+        console.warn(`[CHEAT?] ${player.name} tried to play a card not in hand: ${data.card.id}`);
+        return;
+      }
+      // ② そのカードが本当に出せるカードかチェック（サーバー側のcanPlayで判定）
+      if (!canPlay(room, cardInHand)) {
+        console.warn(`[CHEAT?] ${player.name} tried to play an unplayable card: ${cardInHand.realm}`);
+        return;
+      }
+      // ③ chosenRealmが正当な値かチェック
+      const validRealms = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
+      if (data.chosenRealm && !validRealms.includes(data.chosenRealm)) {
+        console.warn(`[CHEAT?] ${player.name} sent invalid chosenRealm: ${data.chosenRealm}`);
+        return;
+      }
+
+      // クライアントのcard情報ではなくサーバーの手札データを使う
+      player.hand = player.hand.filter(c => c.id !== cardInHand.id);
+      const card = { ...cardInHand };
       const originalRealm = card.realm;
       room.lastPlayWasWild = (originalRealm === 'PLANET' || originalRealm === 'RUINS');
       if (data.chosenRealm) {
@@ -705,6 +730,7 @@ io.on('connection', (socket) => {
         nextTurn(room, card.isSpecial && card.realm === 'MACHINE' && room.players.length === 2);
       }
       room.lastAction = { type: 'play', playerId: socket.id, cardId: card.id };
+      room.lastActivityAt = Date.now();
       io.to(room.id).emit('update-game', room);
 
       // 次がAIなら動かす
@@ -736,6 +762,7 @@ io.on('connection', (socket) => {
         nextTurn(room);
       }
       room.lastAction = { type: 'draw', playerId: socket.id };
+      room.lastActivityAt = Date.now();
       io.to(room.id).emit('update-game', room);
 
       // 次がAIなら動かす
@@ -804,3 +831,23 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// 放置部屋の自動クリーンアップ（1時間ごとに確認、2時間操作なしで削除）
+const ROOM_TIMEOUT_MS = 2 * 60 * 60 * 1000; // 2時間
+const CLEANUP_INTERVAL_MS = 60 * 60 * 1000;  // 1時間ごとにチェック
+
+setInterval(() => {
+  const now = Date.now();
+  let cleaned = 0;
+  for (const rid in rooms) {
+    const room = rooms[rid];
+    // 最終アクションのタイムスタンプがなければ作成時刻を基準にする
+    const lastActivity = room.lastActivityAt || room.createdAt || now;
+    if (now - lastActivity > ROOM_TIMEOUT_MS) {
+      delete rooms[rid];
+      cleaned++;
+      console.log(`[CLEANUP] Room ${rid} deleted (inactive)`);
+    }
+  }
+  if (cleaned > 0) console.log(`[CLEANUP] ${cleaned} room(s) cleaned up. Active rooms: ${Object.keys(rooms).length}`);
+}, CLEANUP_INTERVAL_MS);
