@@ -481,7 +481,6 @@ body {
     overflow: hidden;
     background: radial-gradient(circle at 20% 30%, rgba(138, 43, 226, 0.25) 0%, transparent 60%),
         radial-gradient(circle at 80% 70%, rgba(64, 224, 208, 0.2) 0%, transparent 60%), var(--bg-deep);
-    will-change: auto; /* 静的な背景なのでwill-changeは不要 */
 }
 
 .matrix-code-canvas {
@@ -1143,7 +1142,7 @@ body {
 }
 
 .current-turn-glow-active {
-    will-change: border-color, box-shadow, background;
+    will-change: border-color, box-shadow;
     border-width: 3px !important;
     animation: turn-glow-pulse 1.5s infinite ease-in-out;
     z-index: 50;
@@ -2270,19 +2269,8 @@ body {
     transform: translateZ(0);
 }
 
-/* アニメーション要素の最適化 */
-.card-surface,
-.card-anchor,
-.realm-badge,
-.tactical-cycle-wheel svg {
-    transform: translateZ(0);
-}
+/* card-surface等のtranslateZ(0)は削除（過剰なGPUレイヤー消費を防止） */
 
-.current-turn-glow-active,
-.burst-warning,
-.playable-card-pulse-fast {
-    will-change: border-color, box-shadow, transform;
-}
 
 /* === Reduced Motion Support (Disabled aggressive hiding) === */
 @media (prefers-reduced-motion: reduce) {
@@ -2533,7 +2521,6 @@ body {
     height: 100%;
     filter: blur(20px);
     opacity: 0.7;
-    will-change: transform;
 }
 
 /* PC（デスクトップ）向け調整：UIの視認性を優先し不透明度を下げる */
