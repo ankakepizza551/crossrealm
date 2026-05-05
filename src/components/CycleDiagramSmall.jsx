@@ -257,4 +257,4 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], isReversed }) =>
     );
 };
 
-export default React.memo(CycleDiagramSmall);
+export default CycleDiagramSmall;
