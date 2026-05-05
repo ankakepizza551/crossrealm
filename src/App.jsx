@@ -231,6 +231,16 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments
     );
 };
 
+// パフォーマンス最適化：CardViewをメモ化
+const MemoizedCardView = React.memo(CardView, (prev, next) => {
+    return prev.card?.id === next.card?.id && 
+           prev.playable === next.playable && 
+           prev.isField === next.isField && 
+           prev.isSelected === next.isSelected && 
+           prev.isMyTurn === next.isMyTurn && 
+           prev.hideOrnaments === next.hideOrnaments;
+});
+
 const AstralBackground = ({ bgAnim, isDimmed }) => {
     const stars = useMemo(() => {
         // パフォーマンス向上のため星の数を削減（15 → 8）
@@ -280,6 +290,57 @@ const AstralBackground = ({ bgAnim, isDimmed }) => {
     );
 };
 
+// パフォーマンス最適化：手札カードをメモ化
+const HandCard = React.memo(({ 
+    card, idx, handSize, isMyTurn, isPlayable, selectedCardId, hoveredCardId, 
+    draggingCardId, dragOffsetX, dragOffsetY, newlyDrawnCardIds,
+    handleCardClick, setHoveredCardId, handleTouchStart, handleTouchMove, handleTouchEnd 
+}) => {
+    const baseMargin = -8;
+    const dynamicMargin = handSize > 5 ? Math.max(-48, baseMargin - (handSize - 5) * 10) : baseMargin;
+    const cardScale = handSize > 8 ? 0.88 : 1.0;
+    const isNewlyDrawn = newlyDrawnCardIds.has(card.id);
+    
+    return (
+        <div
+            key={card.id || idx}
+            className={`card-anchor ${selectedCardId === card.id ? 'selected' : ''} ${hoveredCardId === card.id ? 'hovered' : ''} ${!isMyTurn || !isPlayable ? 'not-playable' : 'playable'} ${isMyTurn ? 'is-my-turn' : ''} ${draggingCardId === card.id ? 'dragging' : ''} ${isNewlyDrawn ? 'card-draw-vfx' : ''}`}
+            style={{ 
+                zIndex: (draggingCardId === card.id) ? 1000 : (selectedCardId === card.id ? 100 : (hoveredCardId === card.id ? 200 : idx)), 
+                marginRight: idx === handSize - 1 ? '0' : `${dynamicMargin}px`,
+                transform: isNewlyDrawn ? undefined : (
+                    (draggingCardId === card.id) 
+                        ? `translate(${dragOffsetX}px, ${dragOffsetY}px) rotate(${dragOffsetX * 0.05}deg) scale(1.1)` 
+                        : `scale(${cardScale})`
+                ),
+                transition: (draggingCardId === card.id) ? 'none' : undefined,
+                touchAction: (draggingCardId === card.id) ? 'none' : 'pan-x',
+                filter: (draggingCardId === card.id) ? 'drop-shadow(0 20px 40px rgba(0,0,0,0.6))' : undefined
+            }}
+            onClick={() => handleCardClick(card, isPlayable)}
+            onMouseEnter={() => setHoveredCardId(card.id)}
+            onMouseLeave={() => setHoveredCardId(null)}
+            onTouchStart={(e) => handleTouchStart(e, card, isPlayable)}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={() => handleTouchEnd(card, isPlayable)}
+        >
+            <MemoizedCardView card={card} playable={isPlayable} isSelected={selectedCardId === card.id} isMyTurn={isMyTurn} />
+        </div>
+    );
+}, (prev, next) => {
+    return prev.card.id === next.card.id &&
+           prev.idx === next.idx &&
+           prev.handSize === next.handSize &&
+           prev.isMyTurn === next.isMyTurn &&
+           prev.isPlayable === next.isPlayable &&
+           prev.selectedCardId === next.selectedCardId &&
+           prev.hoveredCardId === next.hoveredCardId &&
+           prev.draggingCardId === next.draggingCardId &&
+           prev.dragOffsetX === next.dragOffsetX &&
+           prev.dragOffsetY === next.dragOffsetY &&
+           prev.newlyDrawnCardIds === next.newlyDrawnCardIds;
+});
+
 // パフォーマンス最適化：背景コンポーネントをメモ化
 const MemoizedAstralBackground = React.memo(AstralBackground);
 
@@ -291,7 +352,9 @@ const App = () => {
     useEffect(() => {
         if (!gs?.lastAction) return;
         const act = gs.lastAction;
-        if (JSON.stringify(act) !== JSON.stringify(lastActionRef.current)) {
+        // パフォーマンス最適化：JSON.stringify削除、プロパティ直接比較
+        const prev = lastActionRef.current;
+        if (!prev || act.type !== prev.type || act.playerId !== prev.playerId || act.cardId !== prev.cardId) {
             const mid = Math.random();
             setMotions(prev => [...prev, { ...act, mid }]);
             setTimeout(() => setMotions(prev => prev.filter(m => m.mid !== mid)), 700); // 1000ms → 700ms に短縮
@@ -873,10 +936,10 @@ const App = () => {
                                         </div>
                                         <div className={`relative z-10 ${entryAnim ? 'card-play-vfx' : ''}`}>
                                             <div className={`transition-opacity duration-[1500ms] ease-in-out ${(!isAnimating && gs.fieldCard.id === displayFieldCard?.id) ? 'opacity-100' : 'opacity-0'}`}>
-                                                <CardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={isAnimating} />
+                                                <MemoizedCardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={isAnimating} />
                                             </div>
                                             <div className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${isAnimating ? 'opacity-100' : 'opacity-0'}`}>
-                                                <CardView card={displayFieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={true} />
+                                                <MemoizedCardView card={displayFieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={true} />
                                             </div>
                                         </div>
                                     </div>
@@ -887,40 +950,27 @@ const App = () => {
                         <div className="flex justify-between items-center px-5 py-1 shrink-0"><div className="flex items-baseline gap-2"><span className="hand-info-label text-[10px] font-black text-white/40 tracking-[2px] uppercase">Your Hand</span><span className={`hand-info-count text-2xl font-black font-['Orbitron'] leading-none ${me?.hand.length >= 8 ? 'text-danger animate-pulse' : 'text-white'}`}>{me?.hand.length || 0}<span className="text-xs ml-1 opacity-60">枚</span></span></div>{(isAnimating || isMorphing) && <div className="text-[9px] font-black text-accent animate-pulse tracking-[2px] bg-accent/10 px-3 py-1 rounded border border-accent/30 uppercase">Processing...</div>}</div>
                         <div className={`hand-container no-scrollbar ${isMyTurn ? 'my-turn-hand-fx' : ''} ${(isAnimating || isMorphing || selector) ? 'opacity-40 grayscale-[50%] pointer-events-none' : ''}`}>
                             {sortedHand.map((card, idx) => {
-                                const handSize = me.hand.length;
-                                const baseMargin = -8;
-                                // 5枚以上から徐々に重なりを強くする
-                                const dynamicMargin = handSize > 5 ? Math.max(-48, baseMargin - (handSize - 5) * 10) : baseMargin;
-                                // 8枚以上でカードを少し小さくして収まりを良くする
-                                const cardScale = handSize > 8 ? 0.88 : 1.0;
                                 const isPlayable = isMyTurn && canPlayCheck(gs, card);
-                                const isNewlyDrawn = newlyDrawnCardIds.has(card.id);
                                 return (
-                                    <div
+                                    <HandCard
                                         key={card.id || idx}
-                                        className={`card-anchor ${selectedCardId === card.id ? 'selected' : ''} ${hoveredCardId === card.id ? 'hovered' : ''} ${!isMyTurn || !isPlayable ? 'not-playable' : 'playable'} ${isMyTurn ? 'is-my-turn' : ''} ${draggingCardId === card.id ? 'dragging' : ''} ${isNewlyDrawn ? 'card-draw-vfx' : ''}`}
-                                        style={{ 
-                                            zIndex: (draggingCardId === card.id) ? 1000 : (selectedCardId === card.id ? 100 : (hoveredCardId === card.id ? 200 : idx)), 
-                                            marginRight: idx === me.hand.length - 1 ? '0' : `${dynamicMargin}px`,
-                                            // ドロー中はCSSアニメーション優先のためインラインtransformを無効化
-                                            transform: isNewlyDrawn ? undefined : (
-                                                (draggingCardId === card.id) 
-                                                    ? `translate(${dragOffsetX}px, ${dragOffsetY}px) rotate(${dragOffsetX * 0.05}deg) scale(1.1)` 
-                                                    : `scale(${cardScale})`
-                                            ),
-                                            transition: (draggingCardId === card.id) ? 'none' : undefined,
-                                            touchAction: (draggingCardId === card.id) ? 'none' : 'pan-x',
-                                            filter: (draggingCardId === card.id) ? 'drop-shadow(0 20px 40px rgba(0,0,0,0.6))' : undefined
-                                        }}
-                                        onClick={() => handleCardClick(card, isPlayable)}
-                                        onMouseEnter={() => setHoveredCardId(card.id)}
-                                        onMouseLeave={() => setHoveredCardId(null)}
-                                        onTouchStart={(e) => handleTouchStart(e, card, isPlayable)}
-                                        onTouchMove={handleTouchMove}
-                                        onTouchEnd={() => handleTouchEnd(card, isPlayable)}
-                                    >
-                                        <CardView card={card} playable={isPlayable} isSelected={selectedCardId === card.id} isMyTurn={isMyTurn} />
-                                    </div>
+                                        card={card}
+                                        idx={idx}
+                                        handSize={me.hand.length}
+                                        isMyTurn={isMyTurn}
+                                        isPlayable={isPlayable}
+                                        selectedCardId={selectedCardId}
+                                        hoveredCardId={hoveredCardId}
+                                        draggingCardId={draggingCardId}
+                                        dragOffsetX={dragOffsetX}
+                                        dragOffsetY={dragOffsetY}
+                                        newlyDrawnCardIds={newlyDrawnCardIds}
+                                        handleCardClick={handleCardClick}
+                                        setHoveredCardId={setHoveredCardId}
+                                        handleTouchStart={handleTouchStart}
+                                        handleTouchMove={handleTouchMove}
+                                        handleTouchEnd={handleTouchEnd}
+                                    />
                                 );
                             })}
                         </div>
