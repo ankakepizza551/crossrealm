@@ -341,7 +341,6 @@ const App = () => {
     const [vfxOverlay, setVfxOverlay] = useState(null);
     const [isDisconnected, setIsDisconnected] = useState(false);
     const [isConnected, setIsConnected] = useState(socket.connected);
-    const [shake, setShake] = useState(false);
     const [bgAnim, setBgAnim] = useState(true);
     const [cutin, setCutin] = useState(null);
     const [visualFieldCard, setVisualFieldCard] = useState(null);
@@ -395,7 +394,7 @@ const App = () => {
 
     // 先行入力の実行
     useEffect(() => {
-        if (!isAnimating && !isMorphing && !selector && bufferedAction) {
+        if (!isAnimating && !isMorphing && !selector && bufferedAction && !isSendingCard) {
             const action = bufferedAction;
             setBufferedAction(null);
             if (action.type === 'play') {
@@ -405,7 +404,7 @@ const App = () => {
                 socket.emit('draw-card', { roomId: room });
             }
         }
-    }, [isAnimating, isMorphing, selector, bufferedAction]);
+    }, [isAnimating, isMorphing, selector, bufferedAction, isSendingCard]);
 
     useEffect(() => {
         if (gs && gs.fieldCard && gs.fieldCard.id !== prevFieldCardId.current) {
@@ -444,7 +443,6 @@ const App = () => {
                 if (c.wasRuins) dr = 'RUINS'; else if (c.wasPlanet) dr = 'PLANET'; else if (c.wasFountain || (c.realm === 'FOUNTAIN' && c.isSpecial)) dr = 'FOUNTAIN';
                 
                 if (c.isSpecial || c.wasPlanet || c.wasRuins || c.wasFountain || dr === 'PLANET' || dr === 'RUINS') {
-                    setShake(true); setTimeout(() => setShake(false), 500);
                     let text = "WILD";
                     if (dr === 'GEAR') text = "DOUBLE DRAW";
                     else if (dr === 'MACHINE') text = "TIME REVERSE";
@@ -453,8 +451,6 @@ const App = () => {
                     
                     setCutin({ text, color: REALMS[dr].bright });
                     setTimeout(() => setCutin(null), 1500);
-                } else {
-                    setShake(true); setTimeout(() => setShake(false), 300);
                 }
             }
             prevFieldCardId.current = gs.fieldCard.id;
@@ -677,7 +673,7 @@ const App = () => {
                 ))}
             </div>
             
-            <div ref={wrapperRef} className={`screen-wrapper ${shake ? 'shake-active' : ''} ${isMyTurn ? 'my-turn-glow' : ''} ${bgAnim ? 'all-anim-active' : 'all-anim-off'}`} style={{ '--r-color': REALMS[currentR]?.color }}>
+            <div ref={wrapperRef} className={`screen-wrapper ${isMyTurn ? 'my-turn-glow' : ''} ${bgAnim ? 'all-anim-active' : 'all-anim-off'}`} style={{ '--r-color': REALMS[currentR]?.color }}>
             {cutin && (
                 <div className="special-cutin-layer">
                     <div className="special-cutin-bar" style={{ '--c': cutin.color }}>
@@ -932,7 +928,7 @@ const App = () => {
                                 );
                             })}
                         </div>
-                        <div className="w-full px-4 pb-4 shrink-0 flex flex-col gap-2"><button className="btn-mega-draw w-full h-16 bg-gradient-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl tracking-[8px] cursor-pointer transition-all active:scale-95 disabled:grayscale disabled:opacity-50" disabled={!isMyTurn || selector || isAnimating || isMorphing} onClick={() => { if (isAnimating || isMorphing) { setBufferedAction({ type: 'draw' }); return; } playSE('draw', muted); socket.emit('draw-card', { roomId: room }); }}>ドロー ({gs.nextDrawAmount}枚)</button></div>
+                        <div className="w-full px-4 pb-4 shrink-0 flex flex-col gap-2"><button className="btn-mega-draw w-full h-16 bg-gradient-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl tracking-[8px] cursor-pointer transition-all active:scale-95 disabled:grayscale disabled:opacity-50" disabled={!isMyTurn || selector || isAnimating || isMorphing || isSendingCard} onClick={() => { if (isAnimating || isMorphing) { setBufferedAction({ type: 'draw' }); return; } if (isSendingCard) return; playSE('draw', muted); socket.emit('draw-card', { roomId: room }); }}>ドロー ({gs.nextDrawAmount}枚)</button></div>
                     </>
                 )}
             </div>
@@ -942,7 +938,14 @@ const App = () => {
                         <h3 className="font-black mb-3 text-[9px] tracking-[2px] text-accent/80 uppercase text-center">次次元を選択してください</h3>
                         <div className="grid grid-cols-3 gap-2">
                             {['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'].map(r => (
-                                <button key={r} className="p-2 border border-white/20 font-black text-sm hover:bg-white/10 hover:border-accent transition-all active:scale-95 flex flex-col items-center gap-1.5 bg-black/40 rounded-md" style={{ color: REALMS[r].bright }} onClick={() => { playSE('play', muted); socket.emit('play-card', { roomId: room, card: selector, chosenRealm: r }); setSelector(null); }}>
+                                <button key={r} className="p-2 border border-white/20 font-black text-sm hover:bg-white/10 hover:border-accent transition-all active:scale-95 flex flex-col items-center gap-1.5 bg-black/40 rounded-md" style={{ color: REALMS[r].bright }} onClick={() => { 
+                                    if (isSendingCard) return; // 重複送信防止
+                                    playSE('play', muted); 
+                                    setIsSendingCard(true);
+                                    socket.emit('play-card', { roomId: room, card: selector, chosenRealm: r }); 
+                                    setSelector(null); 
+                                    setTimeout(() => setIsSendingCard(false), 500);
+                                }}>
                                     <div className="w-8 h-8 drop-shadow-[0_0_10px_currentColor]"><IconRenderer r={r} spec={false} /></div>
                                     <div className="tracking-[1px] text-[10px]">{REALMS[r].n}</div>
                                 </button>

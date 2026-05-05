@@ -213,36 +213,6 @@ body {
     }
 }
 
-/* === 郢ｧ・ｲ郢晢ｽｼ郢晢ｿｽ郢晁ｼ斐≦郢晢ｽｼ郢晢ｽｫ邵ｺ・ｮ邵ｺ貅假ｽ∫ｸｺ・ｮ郢ｧ・､郢晢ｽｳ郢昜ｻ｣縺醍ｹ晏現繝ｻ郢ｧ・｢郢昜ｹ斟鍋ｹ晢ｽｼ郢ｧ・ｷ郢晢ｽｧ郢晢ｽｳ === */
-@keyframes screen-shake {
-
-    0%,
-    100% {
-        transform: translate(0, 0) rotate(0deg);
-    }
-
-    20% {
-        transform: translate(-4px, -3px) rotate(-1deg);
-    }
-
-    40% {
-        transform: translate(4px, 2px) rotate(1deg);
-    }
-
-    60% {
-        transform: translate(-2px, 4px) rotate(-1deg);
-    }
-
-    80% {
-        transform: translate(3px, -2px) rotate(1deg);
-    }
-}
-
-.shake-active {
-    animation: screen-shake 0.3s cubic-bezier(.36, .07, .19, .97) both;
-}
-
-
 /* === 危険警告パルス演出 === */
 @keyframes burst-danger-pulse {
 
@@ -1115,6 +1085,8 @@ body {
     overflow: visible;
     filter: drop-shadow(0 0 35px rgba(0, 0, 0, 0.7));
     transition: all 0.5s ease;
+    will-change: transform; /* GPU合成ヒント */
+    transform: translateZ(0); /* GPU層化 */
 }
 
 @media (max-width: 640px) {
@@ -1168,9 +1140,10 @@ body {
 
 
 .field-card-scale {
-    transform: scale(1.1);
+    transform: scale(1.1) translateZ(0); /* GPU最適化 */
     filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.8));
     z-index: 10;
+    will-change: transform; /* GPU合成ヒント */
 }
 
 
@@ -2018,13 +1991,11 @@ body {
     0% {
         transform: scale(1.5) translateY(-50px);
         opacity: 0;
-        filter: brightness(2);
     }
 
     100% {
         transform: scale(1.35) translateY(0);
         opacity: 1;
-        filter: brightness(1);
     }
 }
 
