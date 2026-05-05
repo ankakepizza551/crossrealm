@@ -12,7 +12,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #05010a; /* グラデーション削除（パフォーマンス優先） */
+    background-color: #00ff00; /* デバッグ用: 緑 */
     color: white;
     font-family: "Noto Sans JP", sans-serif;
     overflow-x: hidden;
@@ -755,7 +755,7 @@ body {
     height: 100dvh;
     min-height: 780px;
     container-type: size;
-    background: #05010a;
+    background: #ff0000; /* デバッグ用: 赤 */
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -2361,6 +2361,7 @@ body {
     pointer-events: none;
     isolation: isolate; /* 他のUI要素への干渉を防止 */
     transition: opacity 0.5s ease, filter 0.5s ease;
+    display: none; /* 一時的に非表示にして問題を特定 */
 }
 
 /* アニメーションオフ時は暗くして停止を明確に */
