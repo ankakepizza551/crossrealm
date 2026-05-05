@@ -355,7 +355,6 @@ const App = () => {
     const [vfxOverlay, setVfxOverlay] = useState(null);
     const [isDisconnected, setIsDisconnected] = useState(false);
     const [isConnected, setIsConnected] = useState(socket.connected);
-    const [shake, setShake] = useState(false);
     const [bgAnim, setBgAnim] = useState(true);
     const [cutin, setCutin] = useState(null);
     const [visualFieldCard, setVisualFieldCard] = useState(null);
@@ -454,7 +453,6 @@ const App = () => {
                 if (c.wasRuins) dr = 'RUINS'; else if (c.wasPlanet) dr = 'PLANET'; else if (c.wasFountain || (c.realm === 'FOUNTAIN' && c.isSpecial)) dr = 'FOUNTAIN';
                 
                 if (c.isSpecial || c.wasPlanet || c.wasRuins || c.wasFountain || dr === 'PLANET' || dr === 'RUINS') {
-                    setShake(true); setTimeout(() => setShake(false), 500);
                     let text = "WILD";
                     if (dr === 'GEAR') text = "DOUBLE DRAW";
                     else if (dr === 'MACHINE') text = "TIME REVERSE";
@@ -464,7 +462,6 @@ const App = () => {
                     setCutin({ text, color: REALMS[dr].bright });
                     setTimeout(() => setCutin(null), 1500);
                 } else {
-                    setShake(true); setTimeout(() => setShake(false), 300);
                 }
             }
             prevFieldCardId.current = gs.fieldCard.id;
@@ -490,7 +487,7 @@ const App = () => {
             }
             prevPlayersRef.current = gs.players;
         }
-    }, [gs]);
+    }, [gs?.fieldCard?.id, gs?.status, gs?.players]);
 
     useEffect(() => { if (logContainerRef.current) logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight; }, [gs?.logs]);
     useEffect(() => { setSelectedCardId(null); }, [gs?.currentTurnPlayerId]);
@@ -655,7 +652,7 @@ const App = () => {
                 ))}
             </div>
             
-            <div ref={wrapperRef} className={`screen-wrapper ${shake ? 'shake-active' : ''} ${isMyTurn ? 'my-turn-glow' : ''} ${bgAnim ? 'all-anim-active' : 'all-anim-off'}`} style={{ '--r-color': REALMS[currentR]?.color }}>
+            <div ref={wrapperRef} className={`screen-wrapper ${isMyTurn ? 'my-turn-glow' : ''} ${bgAnim ? 'all-anim-active' : 'all-anim-off'}`} style={{ '--r-color': REALMS[currentR]?.color }}>
             {cutin && (
                 <div className="special-cutin-layer">
                     <div className="special-cutin-bar" style={{ '--c': cutin.color }}>
