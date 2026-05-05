@@ -685,7 +685,7 @@ const App = () => {
                     <button className="w-full max-w-xs p-5 font-black bg-gradient-to-r from-red-600 to-red-900 text-white rounded-sm shadow-2xl tracking-[4px]" onClick={() => window.location.reload()}>タイトルへ戻る</button>
                 </div>
             )}
-            <div className="ui-viewport" style={{ transform: selector ? 'translateY(-250px)' : 'translateY(0)', transition: 'transform 0.35s cubic-bezier(0.19, 1, 0.22, 1)' }}>
+            <div className="ui-viewport">
                 {!gs || gs.status !== 'playing' ? (
                     <div className="absolute top-3 right-3 z-[950] flex gap-2">
                         <div className="w-10 h-10 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80  cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.3)] transition-all" onClick={() => setMuted(!muted)}>{muted ? '🔇' : '🔊'}</div>
@@ -734,7 +734,12 @@ const App = () => {
                     </div>
                 ) : (gs?.status === 'waiting') ? (
                     <div className="h-full flex flex-col items-center justify-center p-4 text-center overflow-y-auto no-scrollbar">
-                        <h2 className="text-[clamp(1.2rem,6.5vw,1.875rem)] font-black mb-6 tracking-[clamp(4px,2vw,10px)] font-['Orbitron'] text-white animate-pulse uppercase w-full text-center">同期待機中...</h2>
+                        <h2 className="text-[clamp(1.2rem,6.5vw,1.875rem)] font-black mb-3 tracking-[clamp(4px,2vw,10px)] font-['Orbitron'] text-white animate-pulse uppercase w-full text-center">同期待機中...</h2>
+                        <div className="mb-5 px-6 py-3 bg-black/60 border border-accent/40 rounded-lg text-center">
+                            <div className="text-[10px] font-black text-accent/60 tracking-[3px] uppercase mb-1">Room ID</div>
+                            <div className="text-2xl font-black font-['Orbitron'] text-accent tracking-[6px]">{room}</div>
+                            <div className="text-[10px] text-white/40 mt-1">このIDを仲間に共有してください</div>
+                        </div>
                         <div className="w-full overflow-y-auto max-h-[320px] p-1 mx-5 mb-3 shrink-0 no-scrollbar">
                             {[...Array(5)].map((_, i) => {
                                 const p = gs?.players[i];
