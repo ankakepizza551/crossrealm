@@ -280,6 +280,9 @@ const AstralBackground = ({ bgAnim, isDimmed }) => {
     );
 };
 
+// パフォーマンス最適化：背景コンポーネントをメモ化
+const MemoizedAstralBackground = React.memo(AstralBackground);
+
 const App = () => {
     const [gs, setGs] = useState(null);
     const [motions, setMotions] = useState([]);
@@ -294,7 +297,7 @@ const App = () => {
             setTimeout(() => setMotions(prev => prev.filter(m => m.mid !== mid)), 700); // 1000ms → 700ms に短縮
             lastActionRef.current = act;
         }
-    }, [gs]);
+    }, [gs?.lastAction]); // gs全体ではなくlastActionのみ監視
 
     const otherPlayersInCircle = useMemo(() => {
         if (!gs || !socket) return [];
@@ -342,7 +345,6 @@ const App = () => {
     const [isDisconnected, setIsDisconnected] = useState(false);
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [bgAnim, setBgAnim] = useState(true);
-    const [cutin, setCutin] = useState(null);
     const [visualFieldCard, setVisualFieldCard] = useState(null);
     const prevFieldCardId = useRef(null);
     const morphTimeoutRef = useRef(null);
@@ -443,14 +445,7 @@ const App = () => {
                 if (c.wasRuins) dr = 'RUINS'; else if (c.wasPlanet) dr = 'PLANET'; else if (c.wasFountain || (c.realm === 'FOUNTAIN' && c.isSpecial)) dr = 'FOUNTAIN';
                 
                 if (c.isSpecial || c.wasPlanet || c.wasRuins || c.wasFountain || dr === 'PLANET' || dr === 'RUINS') {
-                    let text = "WILD";
-                    if (dr === 'GEAR') text = "DOUBLE DRAW";
-                    else if (dr === 'MACHINE') text = "TIME REVERSE";
-                    else if (dr === 'FOUNTAIN') text = "LIMIT WILD";
-                    if (c.wasPlanet || c.wasRuins) text = "REALM SHIFT";
-                    
-                    setCutin({ text, color: REALMS[dr].bright });
-                    setTimeout(() => setCutin(null), 1500);
+                    // スペシャルカード検出のみ（カットイン演出は削除）
                 }
             }
             prevFieldCardId.current = gs.fieldCard.id;
@@ -476,7 +471,7 @@ const App = () => {
             }
             prevPlayersRef.current = gs.players;
         }
-    }, [gs]);
+    }, [gs?.fieldCard, gs?.status, gs?.players, muted]); // 必要なプロパティのみ監視
 
     useEffect(() => { if (logContainerRef.current) logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight; }, [gs?.logs]);
     useEffect(() => { setSelectedCardId(null); }, [gs?.currentTurnPlayerId]);
@@ -674,14 +669,7 @@ const App = () => {
             </div>
             
             <div ref={wrapperRef} className={`screen-wrapper ${isMyTurn ? 'my-turn-glow' : ''} ${bgAnim ? 'all-anim-active' : 'all-anim-off'}`} style={{ '--r-color': REALMS[currentR]?.color }}>
-            {cutin && (
-                <div className="special-cutin-layer">
-                    <div className="special-cutin-bar" style={{ '--c': cutin.color }}>
-                        <div className="special-cutin-text">{cutin.text}</div>
-                    </div>
-                </div>
-            )}
-            <AstralBackground bgAnim={bgAnim} />
+            <MemoizedAstralBackground bgAnim={bgAnim} />
             
             {isDisconnected && joined && (
                 <div className="fixed inset-0 bg-black/95 z-[9999] flex flex-col items-center justify-center p-8 ">
@@ -862,7 +850,15 @@ const App = () => {
                         </div>
                         <div className="field-main-area">
                             <div className="tactical-field-viewport">
-                                <CycleDiagramSmall currentRealm={gs.currentRealm} playableRealms={playableRealms} hoveredCard={null} bgAnim={bgAnim} isReversed={gs.isReversed} />
+                                {useMemo(() => (
+                                    <CycleDiagramSmall 
+                                        currentRealm={gs.currentRealm} 
+                                        playableRealms={playableRealms} 
+                                        hoveredCard={null} 
+                                        bgAnim={bgAnim} 
+                                        isReversed={gs.isReversed} 
+                                    />
+                                ), [gs?.currentRealm, playableRealms, bgAnim, gs?.isReversed])}
                                 <div className="central-cards-overlay">
                                     <div className="flex items-center justify-center gap-4 sm:gap-6">
                                         <div className="relative w-14 h-20 sm:w-16 sm:h-24 opacity-90 transition-all cursor-help group">
@@ -875,7 +871,7 @@ const App = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className={`field-card-scale relative z-10 ${entryAnim ? 'card-play-vfx' : ''}`}>
+                                        <div className={`relative z-10 ${entryAnim ? 'card-play-vfx' : ''}`}>
                                             <div className={`transition-opacity duration-[1500ms] ease-in-out ${(!isAnimating && gs.fieldCard.id === displayFieldCard?.id) ? 'opacity-100' : 'opacity-0'}`}>
                                                 <CardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={isAnimating} />
                                             </div>

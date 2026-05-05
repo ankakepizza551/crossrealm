@@ -12,8 +12,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #05010a;
-    background-image: radial-gradient(circle at center, #1a0a30 0%, #05010a 100%);
+    background-color: #05010a; /* グラデーション削除（パフォーマンス優先） */
     color: white;
     font-family: "Noto Sans JP", sans-serif;
     overflow-x: hidden;
@@ -341,67 +340,6 @@ body {
     pointer-events: none;
 }
 
-@keyframes cutin-slide {
-    0% {
-        transform: skewX(-15deg) translateX(-100%);
-        opacity: 0;
-    }
-
-    10% {
-        transform: skewX(-15deg) translateX(0);
-        opacity: 1;
-    }
-
-    85% {
-        transform: skewX(-15deg) translateX(0);
-        opacity: 1;
-    }
-
-    100% {
-        transform: skewX(-15deg) translateX(100%);
-        opacity: 0;
-    }
-}
-
-.cutin-container {
-    position: fixed;
-    top: 40%;
-    left: -10%;
-    width: 120%;
-    z-index: 9000;
-    pointer-events: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.cutin-bar {
-    background: rgba(0, 0, 0, 0.85);
-    border-top: 4px solid var(--c);
-    border-bottom: 4px solid var(--c);
-    padding: 15px 0;
-    width: 100%;
-    animation: cutin-slide 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 0 40px var(--c);
-
-}
-
-.cutin-text {
-    font-family: 'Orbitron', sans-serif;
-    font-size: clamp(1.8rem, 8vw, 3rem);
-    font-weight: 1000;
-    color: var(--c);
-    text-shadow: 0 0 20px var(--c), 0 0 10px #fff;
-    letter-spacing: 4px;
-    transform: skewX(15deg);
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-
-
 /* === 髢ｭ譴ｧ蜍ｹ === */
 @keyframes gear-roll {
     0% {
@@ -449,8 +387,7 @@ body {
     z-index: 1;
     pointer-events: none;
     overflow: hidden;
-    background: radial-gradient(circle at 20% 30%, rgba(138, 43, 226, 0.25) 0%, transparent 60%),
-        radial-gradient(circle at 80% 70%, rgba(64, 224, 208, 0.2) 0%, transparent 60%), var(--bg-deep);
+    background: var(--bg-deep); /* グラデーション削除（パフォーマンス優先） */
     will-change: auto; /* 静的な背景なのでwill-changeは不要 */
 }
 
@@ -1138,13 +1075,6 @@ body {
     font-family: "Noto Serif JP", serif;
 }
 
-
-.field-card-scale {
-    transform: scale(1.1) translateZ(0); /* GPU最適化 */
-    filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.8));
-    z-index: 10;
-    will-change: transform; /* GPU合成ヒント */
-}
 
 
 /* 郢晢ｽｭ郢ｧ・ｰ (鬯ｮ蛟･・・ｹｧ雋橸ｽｰ莉｣・鬯ｮ蛟･・・ｹｧ雋槭・邵ｺ繝ｻ */
@@ -2135,9 +2065,6 @@ body {
         height: 52px !important;
     }
 
-    .field-card-scale {
-        transform: scale(1.0) !important;
-    }
 
     .field-main-area {
         min-height: 0 !important;
@@ -2476,10 +2403,6 @@ body {
 }
 
 /* カットイン演出も停止 */
-.all-anim-off .cutin-container {
-    display: none !important;
-}
-
 /* モバイル向けデフォルト設定 */
 .cyber-grid-layer {
     position: absolute;
@@ -2502,9 +2425,9 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    filter: blur(40px);
+    filter: blur(20px); /* 40px→20pxに軽量化 */
     opacity: 0.7;
-    will-change: transform;
+    /* will-change削除：静的背景なので不要 */
 }
 
 /* PC（デスクトップ）向け調整：UIの視認性を優先し不透明度を下げる */
@@ -2515,7 +2438,7 @@ body {
     }
     .nebula-layer {
         opacity: 0.25;
-        filter: blur(80px);
+        filter: blur(30px); /* 80px→30pxに軽量化 */
     }
     .magic-circle-layer, .gears-layer {
         opacity: 0.4;
@@ -2638,67 +2561,6 @@ body {
 .ui-viewport, .motion-overlay-layer {
     position: relative;
     z-index: 10;
-}
-
-/* 新・クリーン帯演出 (Special Cutin) */
-.special-cutin-layer {
-    position: fixed;
-    top: 50%;
-    left: 0;
-    width: 100%;
-    height: clamp(56px, 12vw, 80px);
-    transform: translateY(-50%);
-    z-index: 9000;
-    pointer-events: none;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.special-cutin-bar {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent 0%, var(--c) 20%, var(--c) 80%, transparent 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transform: scaleX(0);
-    animation: special-bar-in 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-    border-top: 1px solid rgba(255,255,255,0.3);
-    border-bottom: 1px solid rgba(255,255,255,0.3);
-    box-shadow: 0 0 30px var(--c);
-}
-
-.special-cutin-text {
-    color: white;
-    font-family: 'Orbitron', 'Audiowide', sans-serif;
-    font-weight: 900;
-    font-size: clamp(1.1rem, 5.5vw, 2.2rem);
-    letter-spacing: clamp(4px, 1.5vw, 12px);
-    text-transform: uppercase;
-    text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 20px var(--c);
-    animation: special-text-glow 1.5s ease-in-out forwards;
-    white-space: nowrap;
-    max-width: 90vw;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-@keyframes special-bar-in {
-    0% { opacity: 0; transform: scaleX(0); }
-    15% { opacity: 1; transform: scaleX(1.1); }
-    25% { transform: scaleX(1); }
-    80% { opacity: 1; transform: scaleX(1); }
-    100% { opacity: 0; transform: scaleX(1.5); }
-}
-
-@keyframes special-text-glow {
-    0% { transform: scale(0.8) skewX(-10deg); opacity: 0; }
-    20% { transform: scale(1.1) skewX(0deg); opacity: 1; }
-    80% { transform: scale(1); opacity: 1; }
-    100% { transform: scale(1.2); opacity: 0; }
 }
 
 /* === パフォーマンス最適化：アニメーション削減設定 === */
