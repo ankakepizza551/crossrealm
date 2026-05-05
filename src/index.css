@@ -2759,9 +2759,9 @@ body {
         background-image: radial-gradient(circle at center, #1a0a30 0%, #05010a 100%) !important;
     }
     
-    /* アニメーションOFF時のみ背景を非表示 */
+    /* アニメーションOFF時は背景アニメーションのみ停止（display:noneにすると真っ暗になるためNG） */
     .all-anim-off .astral-bg-container * {
-        display: none !important;
+        animation: none !important;
     }
     
     /* blur系エフェクトを完全削除 */
@@ -2838,4 +2838,58 @@ body {
     .card-anchor {
         transition: opacity 0.5s ease, filter 0.5s ease !important;
     }
+}
+/* ============================================
+   🎬 アニメーションOFF時: 全無限アニメーション停止（追加分）
+   ============================================ */
+
+/* ロゴ・UI系 */
+.all-anim-off .main-logo-text,
+.all-anim-off .status-tag,
+.all-anim-off .screen-wrapper {
+    animation: none !important;
+}
+
+/* カード系アニメーション全停止 */
+.all-anim-off .steam-particle,
+.all-anim-off .ripple,
+.all-anim-off .magic-circle-bg,
+.all-anim-off .mat-cyber,
+.all-anim-off .cyber-fx-scanline,
+.all-anim-off .void-fluctuation {
+    animation: none !important;
+}
+
+/* 蒸気パーティクルは非表示（描画コスト削減） */
+.all-anim-off .steam-particle {
+    display: none !important;
+}
+
+/* ターンバナー・バッジ */
+.all-anim-off .turn-status-banner.my-turn .banner-text,
+.all-anim-off .realm-badge.active,
+.all-anim-off .card-anchor.playable.is-my-turn {
+    animation: none !important;
+}
+
+/* ドローボタン */
+.all-anim-off .btn-mega-draw {
+    animation: none !important;
+}
+
+/* 危険警告テキスト */
+.all-anim-off .log-type-danger {
+    animation: none !important;
+}
+
+/* 画面内グロー */
+.all-anim-off .screen-wrapper.my-turn-glow::after {
+    animation: none !important;
+    opacity: 0.3;
+}
+
+/* 方向矢印 */
+.all-anim-off .direction-cw,
+.all-anim-off .direction-ccw {
+    animation: none !important;
 }
