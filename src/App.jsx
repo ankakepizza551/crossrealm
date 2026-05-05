@@ -359,6 +359,7 @@ const App = () => {
     const [dragOffsetX, setDragOffsetX] = useState(0);
     const [dragOffsetY, setDragOffsetY] = useState(0);
     const [bufferedAction, setBufferedAction] = useState(null);
+    const [isSendingCard, setIsSendingCard] = useState(false); // iOS重複送信防止フラグ
 
     const displayFieldCard = useMemo(() => {
         if (!gs?.fieldCard) return null;
@@ -376,7 +377,10 @@ const App = () => {
 
     useEffect(() => {
         socket.on('connect', () => { setIsConnected(true); setIsDisconnected(false); });
-        socket.on('update-game', (data) => { setGs(data); });
+        socket.on('update-game', (data) => { 
+            setGs(data); 
+            setIsSendingCard(false); // サーバーから更新が来たら送信完了
+        });
         socket.on('disconnect', (reason) => { setIsConnected(false); setIsDisconnected(true); });
         const initAudio = () => {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -546,30 +550,45 @@ const App = () => {
     const goToTopPage = () => { playSE('cancel', muted); if (room) socket.emit('leave-room', { roomId: room.toUpperCase() }); window.location.reload(); };
 
     const handleCardClick = (c, isPlayable) => {
-        if (!isMyTurn || !isPlayable || selector) return;
+        if (!isMyTurn || !isPlayable || selector || isSendingCard) return;
         if (isAnimating || isMorphing) {
             setBufferedAction({ type: 'play', card: c, isPlayable: isPlayable });
             return;
         }
         playSE('play', muted);
         if (window.navigator.vibrate) window.navigator.vibrate(12);
+        
+        setIsSendingCard(true); // 送信開始
+        
         const isLastCard = me?.hand?.length === 1;
         const needsSelector = c.realm === 'PLANET' || c.realm === 'RUINS' || (c.realm === 'FOUNTAIN' && c.isSpecial);
         // 最後のカードの場合は自動的にGEARを選択して送信（上がり時は選択画面を出さない）
         if (isLastCard && needsSelector) { 
             socket.emit('play-card', { roomId: room, card: c, chosenRealm: 'GEAR' }); 
+            setTimeout(() => setIsSendingCard(false), 500);
             return; 
         }
         const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         if (!isMobile) { 
-            if (needsSelector) setSelector(c); 
-            else socket.emit('play-card', { roomId: room, card: c }); 
+            if (needsSelector) {
+                setSelector(c);
+                setIsSendingCard(false);
+            } else {
+                socket.emit('play-card', { roomId: room, card: c });
+                setTimeout(() => setIsSendingCard(false), 500);
+            }
         } else { 
             if (selectedCardId === c.id) { 
-                if (needsSelector) setSelector(c); 
-                else socket.emit('play-card', { roomId: room, card: c }); 
+                if (needsSelector) {
+                    setSelector(c);
+                    setIsSendingCard(false);
+                } else {
+                    socket.emit('play-card', { roomId: room, card: c });
+                    setTimeout(() => setIsSendingCard(false), 500);
+                }
             } else { 
-                setSelectedCardId(c.id); 
+                setSelectedCardId(c.id);
+                setIsSendingCard(false);
             } 
         }
     };
@@ -601,20 +620,33 @@ const App = () => {
         // 一定以上（80px）スワイプしていたらプレイ
         // 左右に振れすぎていないかもチェック（誤操作防止）
         if (dragOffsetY < -80 && Math.abs(dragOffsetX) < 150) {
+            if (isSendingCard) {
+                // 既に送信中なら無視
+                setDraggingCardId(null);
+                setDragOffsetX(0);
+                setDragOffsetY(0);
+                return;
+            }
             if (isAnimating || isMorphing) {
                 setBufferedAction({ type: 'play', card: card, isPlayable: isPlayable });
             } else {
                 playSE('play', muted);
                 if (window.navigator.vibrate) window.navigator.vibrate(12);
+                
+                setIsSendingCard(true); // 送信開始
+                
                 const isLastCard = me?.hand?.length === 1;
                 const needsSelector = card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial);
                 // 最後のカードの場合は自動的にGEARを選択して送信（上がり時は選択画面を出さない）
                 if (isLastCard && needsSelector) {
                     socket.emit('play-card', { roomId: room, card: card, chosenRealm: 'GEAR' });
+                    setTimeout(() => setIsSendingCard(false), 500);
                 } else if (needsSelector) {
                     setSelector(card);
+                    setIsSendingCard(false);
                 } else {
                     socket.emit('play-card', { roomId: room, card: card });
+                    setTimeout(() => setIsSendingCard(false), 500);
                 }
             }
         }
