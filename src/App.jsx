@@ -110,9 +110,6 @@ const ComplexEmblem = ({ isLogo = false }) => (
     </svg>
 );
 
-// パフォーマンス最適化：ComplexEmblemをメモ化
-const MemoizedComplexEmblem = React.memo(ComplexEmblem);
-
 const IconRenderer = ({ r, spec, className, ...rest }) => {
     const p = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: spec ? 4 : 2, strokeLinecap: "round", strokeLinejoin: "round", className: className || "w-full h-full", ...rest };
     switch (r) {
@@ -180,37 +177,26 @@ const IconRenderer = ({ r, spec, className, ...rest }) => {
     }
 };
 
-// パフォーマンス最適化：IconRendererをメモ化
-const MemoizedIconRenderer = React.memo(IconRenderer, (prev, next) => {
-    return prev.r === next.r && prev.spec === next.spec && prev.className === next.className;
-});
-
 const CardOrnaments = ({ theme }) => {
     if (theme === 'steam') return (
         <React.Fragment>
-            {/* リベットのみ残す（静的装飾） */}
             <div className="steam-rivet r-tl" /><div className="steam-rivet r-tr" /><div className="steam-rivet r-bl" /><div className="steam-rivet r-br" />
             <div className="steam-core-glow" />
-            {/* steam-particle削除: アニメーション無効化済みのため不要 */}
+            <div className="steam-particle" style={{ '--l': '-5%', '--d': '2.5s', '--delay': '0s', '--drift-start': '0px', '--drift-end': '30px', '--rot': '90deg' }} />
+            <div className="steam-particle" style={{ '--l': '35%', '--d': '3.2s', '--delay': '1.2s', '--drift-start': '10px', '--drift-end': '-20px', '--rot': '-45deg' }} />
+            <div className="steam-particle" style={{ '--l': '75%', '--d': '2.8s', '--delay': '0.5s', '--drift-start': '-10px', '--drift-end': '25px', '--rot': '120deg' }} />
         </React.Fragment>
     );
     if (theme === 'fantasy') return (
         <React.Fragment>
-            <div className="magic-circle-bg" />
-            {/* ripple削除: アニメーション無効化済みのため不要 */}
+            <div className="magic-circle-bg" /><div className="ripple" style={{ '--delay': '0s' }} /><div className="ripple" style={{ '--delay': '2s' }} />
         </React.Fragment>
     );
     if (theme === 'cyber') return (
-        <React.Fragment>
-            <div className="cyber-circuit" />
-            {/* cyber-fx-scanline削除: アニメーション無効化済みのため不要 */}
-        </React.Fragment>
+        <React.Fragment><div className="cyber-circuit" /><div className="cyber-fx-scanline" /></React.Fragment>
     );
     if (theme.includes('void')) return (
-        <React.Fragment>
-            <div className="void-singularity-ring" />
-            {/* void-fluctuation削除: アニメーション無効化済みのため不要 */}
-        </React.Fragment>
+        <React.Fragment><div className="void-singularity-ring" /><div className="void-fluctuation" /></React.Fragment>
     );
     return null;
 };
@@ -236,7 +222,7 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments
             <div className="card-content">
                 <div className="card-info-top"><span>{dr}</span></div>
                 <div className="card-icon-overload" style={{ color: rData.bright, filter: `drop-shadow(0 0 10px ${rData.glow})`, position: 'absolute', top: '55%', left: '50%', transform: 'translate(-50%, -50%)', width: '55%', height: '55%' }}>
-                    <MemoizedIconRenderer r={dr} spec={spec} />
+                    <IconRenderer r={dr} spec={spec} />
                 </div>
                 <div className={`card-footer-peak font-['${rData.font}']`}>{rData.n}</div>
                 {spec && <div className="special-badge-base">{specialLabel.split(' ').map((word, i) => <div key={i}>{word}</div>)}</div>}
@@ -244,16 +230,6 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments
         </div>
     );
 };
-
-// パフォーマンス最適化：CardViewをメモ化
-const MemoizedCardView = React.memo(CardView, (prev, next) => {
-    return prev.card?.id === next.card?.id && 
-           prev.playable === next.playable && 
-           prev.isField === next.isField && 
-           prev.isSelected === next.isSelected && 
-           prev.isMyTurn === next.isMyTurn && 
-           prev.hideOrnaments === next.hideOrnaments;
-});
 
 const AstralBackground = ({ bgAnim, isDimmed }) => {
     const stars = useMemo(() => {
@@ -304,60 +280,6 @@ const AstralBackground = ({ bgAnim, isDimmed }) => {
     );
 };
 
-// パフォーマンス最適化：手札カードをメモ化
-const HandCard = React.memo(({ 
-    card, idx, handSize, isMyTurn, isPlayable, selectedCardId, hoveredCardId, 
-    draggingCardId, dragOffsetX, dragOffsetY, newlyDrawnCardIds,
-    handleCardClick, setHoveredCardId, handleTouchStart, handleTouchMove, handleTouchEnd 
-}) => {
-    const baseMargin = -8;
-    const dynamicMargin = handSize > 5 ? Math.max(-48, baseMargin - (handSize - 5) * 10) : baseMargin;
-    const cardScale = handSize > 8 ? 0.88 : 1.0;
-    const isNewlyDrawn = newlyDrawnCardIds.has(card.id);
-    
-    return (
-        <div
-            key={card.id || idx}
-            className={`card-anchor ${selectedCardId === card.id ? 'selected' : ''} ${hoveredCardId === card.id ? 'hovered' : ''} ${!isMyTurn || !isPlayable ? 'not-playable' : 'playable'} ${isMyTurn ? 'is-my-turn' : ''} ${draggingCardId === card.id ? 'dragging' : ''} ${isNewlyDrawn ? 'card-draw-vfx' : ''}`}
-            style={{ 
-                zIndex: (draggingCardId === card.id) ? 1000 : (selectedCardId === card.id ? 100 : (hoveredCardId === card.id ? 200 : idx)), 
-                marginRight: idx === handSize - 1 ? '0' : `${dynamicMargin}px`,
-                transform: isNewlyDrawn ? undefined : (
-                    (draggingCardId === card.id) 
-                        ? `translate(${dragOffsetX}px, ${dragOffsetY}px) rotate(${dragOffsetX * 0.05}deg) scale(1.1)` 
-                        : `scale(${cardScale})`
-                ),
-                transition: (draggingCardId === card.id) ? 'none' : undefined,
-                touchAction: (draggingCardId === card.id) ? 'none' : 'pan-x',
-                filter: (draggingCardId === card.id) ? 'drop-shadow(0 20px 40px rgba(0,0,0,0.6))' : undefined
-            }}
-            onClick={() => handleCardClick(card, isPlayable)}
-            onMouseEnter={() => setHoveredCardId(card.id)}
-            onMouseLeave={() => setHoveredCardId(null)}
-            onTouchStart={(e) => handleTouchStart(e, card, isPlayable)}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={() => handleTouchEnd(card, isPlayable)}
-        >
-            <MemoizedCardView card={card} playable={isPlayable} isSelected={selectedCardId === card.id} isMyTurn={isMyTurn} />
-        </div>
-    );
-}, (prev, next) => {
-    return prev.card.id === next.card.id &&
-           prev.idx === next.idx &&
-           prev.handSize === next.handSize &&
-           prev.isMyTurn === next.isMyTurn &&
-           prev.isPlayable === next.isPlayable &&
-           prev.selectedCardId === next.selectedCardId &&
-           prev.hoveredCardId === next.hoveredCardId &&
-           prev.draggingCardId === next.draggingCardId &&
-           prev.dragOffsetX === next.dragOffsetX &&
-           prev.dragOffsetY === next.dragOffsetY &&
-           prev.newlyDrawnCardIds === next.newlyDrawnCardIds;
-});
-
-// パフォーマンス最適化：背景コンポーネントをメモ化
-const MemoizedAstralBackground = React.memo(AstralBackground);
-
 const App = () => {
     const [gs, setGs] = useState(null);
     const [motions, setMotions] = useState([]);
@@ -366,15 +288,13 @@ const App = () => {
     useEffect(() => {
         if (!gs?.lastAction) return;
         const act = gs.lastAction;
-        // パフォーマンス最適化：JSON.stringify削除、プロパティ直接比較
-        const prev = lastActionRef.current;
-        if (!prev || act.type !== prev.type || act.playerId !== prev.playerId || act.cardId !== prev.cardId) {
+        if (JSON.stringify(act) !== JSON.stringify(lastActionRef.current)) {
             const mid = Math.random();
             setMotions(prev => [...prev, { ...act, mid }]);
             setTimeout(() => setMotions(prev => prev.filter(m => m.mid !== mid)), 700); // 1000ms → 700ms に短縮
             lastActionRef.current = act;
         }
-    }, [gs?.lastAction]); // gs全体ではなくlastActionのみ監視
+    }, [gs]);
 
     const otherPlayersInCircle = useMemo(() => {
         if (!gs || !socket) return [];
@@ -421,7 +341,9 @@ const App = () => {
     const [vfxOverlay, setVfxOverlay] = useState(null);
     const [isDisconnected, setIsDisconnected] = useState(false);
     const [isConnected, setIsConnected] = useState(socket.connected);
+    const [shake, setShake] = useState(false);
     const [bgAnim, setBgAnim] = useState(true);
+    const [cutin, setCutin] = useState(null);
     const [visualFieldCard, setVisualFieldCard] = useState(null);
     const prevFieldCardId = useRef(null);
     const morphTimeoutRef = useRef(null);
@@ -437,7 +359,6 @@ const App = () => {
     const [dragOffsetX, setDragOffsetX] = useState(0);
     const [dragOffsetY, setDragOffsetY] = useState(0);
     const [bufferedAction, setBufferedAction] = useState(null);
-    const [isSendingCard, setIsSendingCard] = useState(false); // iOS重複送信防止フラグ
 
     const displayFieldCard = useMemo(() => {
         if (!gs?.fieldCard) return null;
@@ -455,10 +376,7 @@ const App = () => {
 
     useEffect(() => {
         socket.on('connect', () => { setIsConnected(true); setIsDisconnected(false); });
-        socket.on('update-game', (data) => { 
-            setGs(data); 
-            setIsSendingCard(false); // サーバーから更新が来たら送信完了
-        });
+        socket.on('update-game', (data) => { setGs(data); });
         socket.on('disconnect', (reason) => { setIsConnected(false); setIsDisconnected(true); });
         const initAudio = () => {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -473,7 +391,7 @@ const App = () => {
 
     // 先行入力の実行
     useEffect(() => {
-        if (!isAnimating && !isMorphing && !selector && bufferedAction && !isSendingCard) {
+        if (!isAnimating && !isMorphing && !selector && bufferedAction) {
             const action = bufferedAction;
             setBufferedAction(null);
             if (action.type === 'play') {
@@ -483,7 +401,7 @@ const App = () => {
                 socket.emit('draw-card', { roomId: room });
             }
         }
-    }, [isAnimating, isMorphing, selector, bufferedAction, isSendingCard]);
+    }, [isAnimating, isMorphing, selector, bufferedAction]);
 
     useEffect(() => {
         if (gs && gs.fieldCard && gs.fieldCard.id !== prevFieldCardId.current) {
@@ -522,7 +440,17 @@ const App = () => {
                 if (c.wasRuins) dr = 'RUINS'; else if (c.wasPlanet) dr = 'PLANET'; else if (c.wasFountain || (c.realm === 'FOUNTAIN' && c.isSpecial)) dr = 'FOUNTAIN';
                 
                 if (c.isSpecial || c.wasPlanet || c.wasRuins || c.wasFountain || dr === 'PLANET' || dr === 'RUINS') {
-                    // スペシャルカード検出のみ（カットイン演出は削除）
+                    setShake(true); setTimeout(() => setShake(false), 500);
+                    let text = "WILD";
+                    if (dr === 'GEAR') text = "DOUBLE DRAW";
+                    else if (dr === 'MACHINE') text = "TIME REVERSE";
+                    else if (dr === 'FOUNTAIN') text = "LIMIT WILD";
+                    if (c.wasPlanet || c.wasRuins) text = "REALM SHIFT";
+                    
+                    setCutin({ text, color: REALMS[dr].bright });
+                    setTimeout(() => setCutin(null), 1500);
+                } else {
+                    setShake(true); setTimeout(() => setShake(false), 300);
                 }
             }
             prevFieldCardId.current = gs.fieldCard.id;
@@ -548,7 +476,7 @@ const App = () => {
             }
             prevPlayersRef.current = gs.players;
         }
-    }, [gs?.fieldCard, gs?.status, gs?.players, muted]); // 必要なプロパティのみ監視
+    }, [gs]);
 
     useEffect(() => { if (logContainerRef.current) logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight; }, [gs?.logs]);
     useEffect(() => { setSelectedCardId(null); }, [gs?.currentTurnPlayerId]);
@@ -613,56 +541,35 @@ const App = () => {
         });
     }, [gs?.players]);
 
-    // パフォーマンス最適化: スコアソート結果もメモ化
-    const sortedByScore = useMemo(() => {
-        if (!gs?.players) return [];
-        return [...gs.players].sort((a, b) => b.score - a.score);
-    }, [gs?.players]);
-
     const join = () => { if (room && name) { playSE('start', muted); setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name }); } };
     const leave = () => { if (room) { playSE('cancel', muted); socket.emit('leave-room', { roomId: room.toUpperCase() }); setJoined(false); setGs(null); } };
     const goToTopPage = () => { playSE('cancel', muted); if (room) socket.emit('leave-room', { roomId: room.toUpperCase() }); window.location.reload(); };
 
     const handleCardClick = (c, isPlayable) => {
-        if (!isMyTurn || !isPlayable || selector || isSendingCard) return;
+        if (!isMyTurn || !isPlayable || selector) return;
         if (isAnimating || isMorphing) {
             setBufferedAction({ type: 'play', card: c, isPlayable: isPlayable });
             return;
         }
         playSE('play', muted);
         if (window.navigator.vibrate) window.navigator.vibrate(12);
-        
-        setIsSendingCard(true); // 送信開始
-        
         const isLastCard = me?.hand?.length === 1;
         const needsSelector = c.realm === 'PLANET' || c.realm === 'RUINS' || (c.realm === 'FOUNTAIN' && c.isSpecial);
         // 最後のカードの場合は自動的にGEARを選択して送信（上がり時は選択画面を出さない）
         if (isLastCard && needsSelector) { 
             socket.emit('play-card', { roomId: room, card: c, chosenRealm: 'GEAR' }); 
-            setTimeout(() => setIsSendingCard(false), 500);
             return; 
         }
         const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         if (!isMobile) { 
-            if (needsSelector) {
-                setSelector(c);
-                setIsSendingCard(false);
-            } else {
-                socket.emit('play-card', { roomId: room, card: c });
-                setTimeout(() => setIsSendingCard(false), 500);
-            }
+            if (needsSelector) setSelector(c); 
+            else socket.emit('play-card', { roomId: room, card: c }); 
         } else { 
             if (selectedCardId === c.id) { 
-                if (needsSelector) {
-                    setSelector(c);
-                    setIsSendingCard(false);
-                } else {
-                    socket.emit('play-card', { roomId: room, card: c });
-                    setTimeout(() => setIsSendingCard(false), 500);
-                }
+                if (needsSelector) setSelector(c); 
+                else socket.emit('play-card', { roomId: room, card: c }); 
             } else { 
-                setSelectedCardId(c.id);
-                setIsSendingCard(false);
+                setSelectedCardId(c.id); 
             } 
         }
     };
@@ -694,33 +601,16 @@ const App = () => {
         // 一定以上（80px）スワイプしていたらプレイ
         // 左右に振れすぎていないかもチェック（誤操作防止）
         if (dragOffsetY < -80 && Math.abs(dragOffsetX) < 150) {
-            if (isSendingCard) {
-                // 既に送信中なら無視
-                setDraggingCardId(null);
-                setDragOffsetX(0);
-                setDragOffsetY(0);
-                return;
-            }
             if (isAnimating || isMorphing) {
                 setBufferedAction({ type: 'play', card: card, isPlayable: isPlayable });
             } else {
                 playSE('play', muted);
                 if (window.navigator.vibrate) window.navigator.vibrate(12);
-                
-                setIsSendingCard(true); // 送信開始
-                
-                const isLastCard = me?.hand?.length === 1;
                 const needsSelector = card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial);
-                // 最後のカードの場合は自動的にGEARを選択して送信（上がり時は選択画面を出さない）
-                if (isLastCard && needsSelector) {
-                    socket.emit('play-card', { roomId: room, card: card, chosenRealm: 'GEAR' });
-                    setTimeout(() => setIsSendingCard(false), 500);
-                } else if (needsSelector) {
+                if (needsSelector) {
                     setSelector(card);
-                    setIsSendingCard(false);
                 } else {
                     socket.emit('play-card', { roomId: room, card: card });
-                    setTimeout(() => setIsSendingCard(false), 500);
                 }
             }
         }
@@ -751,8 +641,15 @@ const App = () => {
                 ))}
             </div>
             
-            <div ref={wrapperRef} className={`screen-wrapper ${isMyTurn ? 'my-turn-glow' : ''} ${bgAnim ? 'all-anim-active' : 'all-anim-off'}`} style={{ '--r-color': REALMS[currentR]?.color }}>
-            <MemoizedAstralBackground bgAnim={bgAnim} />
+            <div ref={wrapperRef} className={`screen-wrapper ${shake ? 'shake-active' : ''} ${isMyTurn ? 'my-turn-glow' : ''} ${bgAnim ? 'all-anim-active' : 'all-anim-off'}`} style={{ '--r-color': REALMS[currentR]?.color }}>
+            {cutin && (
+                <div className="special-cutin-layer">
+                    <div className="special-cutin-bar" style={{ '--c': cutin.color }}>
+                        <div className="special-cutin-text">{cutin.text}</div>
+                    </div>
+                </div>
+            )}
+            <AstralBackground bgAnim={bgAnim} />
             
             {isDisconnected && joined && (
                 <div className="fixed inset-0 bg-black/95 z-[9999] flex flex-col items-center justify-center p-8 ">
@@ -772,7 +669,7 @@ const App = () => {
                         <div className="flex-1 flex flex-col items-center justify-center py-4 sm:py-8 overflow-y-auto no-scrollbar">
                             <div className="top-logo-area flex-shrink-0 scale-90 sm:scale-100 origin-center mb-2 sm:mb-4">
                                 <div className="field-central-zone">
-                                    <div className="emblem-bg-layer"><MemoizedComplexEmblem isLogo={true} /></div>
+                                    <div className="emblem-bg-layer"><ComplexEmblem isLogo={true} /></div>
                                     <div className="logo-text-layer">
                                         <div className="main-logo-text text-[clamp(2.5rem,10vw,4rem)]">CROSS</div>
                                         <div className="main-logo-text text-[clamp(2rem,8vw,3.2rem)]" style={{ marginTop: '-0.5rem' }}>REALM</div>
@@ -839,9 +736,9 @@ const App = () => {
                 ) : (gs.status === 'finished') ? (
                     <div className="result-screen">
                         <h2 className="result-title uppercase tracking-tighter" style={{ color: gs.isSeriesFinished ? '#FFD700' : 'var(--steam-gold)' }}>{gs.isSeriesFinished ? "シリーズ終了" : `第 ${gs.matchCount - 1} 戦 終了`}</h2>
-                        {gs.isSeriesFinished && <div className="text-xl text-white font-black mb-6 text-center animate-pulse champion-fx py-4 px-8 rounded-full border border-[var(--steam-gold)]">総合優勝 (CHAMPION)<br /><span className="text-[clamp(1.5rem,6vw,2.25rem)] text-[var(--steam-gold)] drop-shadow-[0_0_10px_rgba(212,175,55,1)] mt-2 inline-block max-w-full truncate break-all px-2">👑 {sortedByScore[0]?.name} 👑</span></div>}
+                        {gs.isSeriesFinished && <div className="text-xl text-white font-black mb-6 text-center animate-pulse champion-fx py-4 px-8 rounded-full border border-[var(--steam-gold)]">総合優勝 (CHAMPION)<br /><span className="text-[clamp(1.5rem,6vw,2.25rem)] text-[var(--steam-gold)] drop-shadow-[0_0_10px_rgba(212,175,55,1)] mt-2 inline-block max-w-full truncate break-all px-2">👑 {[...gs.players].sort((a, b) => b.score - a.score)[0].name} 👑</span></div>}
                         <div className="flex flex-row items-end justify-center w-full max-w-[440px] h-[220px] gap-1 mt-4 mb-8 px-2">
-                            {(gs.isSeriesFinished ? sortedByScore : sortedResultPlayers).map((p, i) => {
+                            {(gs.isSeriesFinished ? [...gs.players].sort((a, b) => b.score - a.score) : sortedResultPlayers).map((p, i) => {
                                 const order = i === 0 ? 3 : i === 1 ? 2 : i === 2 ? 4 : i === 3 ? 1 : 5;
                                 const height = i === 0 ? '120px' : i === 1 ? '90px' : i === 2 ? '70px' : i === 3 ? '50px' : '40px';
                                 const color = i === 0 ? 'var(--steam-gold)' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'var(--accent)';
@@ -856,21 +753,15 @@ const App = () => {
                                         {/* 点数計算結果の表示 - 重なりを防ぐため高さを調整 */}
                                         {p.finishBonus && !gs.isSeriesFinished && (
                                             <div className="absolute top-[-90px] text-[10px] text-[#ff88ff] font-black animate-pulse drop-shadow-[0_0_5px_rgba(255,0,255,0.8)] whitespace-nowrap z-20">
-                                                ワイルドボーナス x1.2!
-                                            </div>
-                                        )}
-                                        {p.winStreak >= 2 && !gs.isSeriesFinished && (
-                                            <div className="absolute top-[-106px] text-[10px] text-[#FFD700] font-black animate-pulse drop-shadow-[0_0_5px_rgba(255,215,0,0.8)] whitespace-nowrap z-20">
-                                                🔥 {p.winStreak}連勝ボーナス +3!
+                                                ワイルドボーナス x1.5!
                                             </div>
                                         )}
                                         {p.earnedPoints > 0 && !gs.isSeriesFinished && (
                                             <div className="absolute top-[-75px] text-green-400 font-black animate-bounce z-20">
-                                                +{p.finishBonus || p.streakBonus > 0 ? (
+                                                +{p.finishBonus ? (
                                                     <>
                                                         {p.basePoints}
-                                                        {p.bonusPoints > 0 && <span className="text-[#ff88ff] ml-1">+{p.bonusPoints}</span>}
-                                                        {p.streakBonus > 0 && <span className="text-[#FFD700] ml-1">+{p.streakBonus}</span>}
+                                                        <span className="text-[#ff88ff] ml-1">+{p.bonusPoints}</span>
                                                     </>
                                                 ) : p.earnedPoints}
                                             </div>
@@ -906,7 +797,7 @@ const App = () => {
                                 <div className="banner-divider"></div>
                                 <div className="banner-badges">
                                     {Object.keys(REALMS).filter(r => r !== 'PLANET' && r !== 'RUINS').map(r => (
-                                        <div key={r} className={`realm-badge ${playableRealms.includes(r) ? 'active' : ''} ${gs.currentRealm === r ? 'current' : ''}`} style={{ '--r-color': REALMS[r].color }}><MemoizedIconRenderer r={r} spec={false} /></div>
+                                        <div key={r} className={`realm-badge ${playableRealms.includes(r) ? 'active' : ''} ${gs.currentRealm === r ? 'current' : ''}`} style={{ '--r-color': REALMS[r].color }}><IconRenderer r={r} spec={false} /></div>
                                     ))}
                                 </div>
                             </div>
@@ -925,7 +816,7 @@ const App = () => {
                                         <div className="absolute top-1 right-1 text-[9px] font-black text-[var(--steam-gold)]">★{p.score}</div>
                                         <div className="absolute bottom-2 left-8 text-xl font-black text-white font-['Orbitron'] leading-none z-10">{p.handCount}<span className="text-[10px] ml-0.5">枚</span></div>
                                         {getTurnDistance(p.id) !== null && !p.isEliminated && getTurnDistance(p.id) > 0 && <div className="absolute bottom-1 right-1 text-[8px] font-black px-1.5 py-0.5 rounded-full bg-black/60 border border-white/20 text-accent flex items-center gap-0.5 shadow-lg z-10">T-{getTurnDistance(p.id)}</div>}
-                                        {/* hand-stack-visual削除: パフォーマンス優先（視認性も低い） */}
+                                        <div className="absolute bottom-2 left-1 w-[14px] h-[20px] z-0 opacity-50">{[...Array(Math.min(p.handCount, 3))].map((_, i) => <div key={i} className="absolute w-full h-full bg-[#111] border border-white/80 rounded-[1px]" style={{ transform: `translate(${i * 2}px, ${i * 2}px)`, zIndex: i, borderColor: gs.currentTurnPlayerId === p.id ? 'var(--accent)' : 'rgba(255,255,255,0.4)' }} />)}</div>
                                         {p.isEliminated && <div className="absolute inset-0 bg-red-500/30 flex items-center justify-center text-[10px] font-black text-danger tracking-[1px] -rotate-3 z-20">BURST</div>}
                                     </div>
                                 );
@@ -933,33 +824,25 @@ const App = () => {
                         </div>
                         <div className="field-main-area">
                             <div className="tactical-field-viewport">
-                                {useMemo(() => (
-                                    <CycleDiagramSmall 
-                                        currentRealm={gs.currentRealm} 
-                                        playableRealms={playableRealms} 
-                                        hoveredCard={null} 
-                                        bgAnim={bgAnim} 
-                                        isReversed={gs.isReversed} 
-                                    />
-                                ), [gs?.currentRealm, playableRealms, bgAnim, gs?.isReversed])}
+                                <CycleDiagramSmall currentRealm={gs.currentRealm} playableRealms={playableRealms} hoveredCard={null} bgAnim={bgAnim} isReversed={gs.isReversed} />
                                 <div className="central-cards-overlay">
                                     <div className="flex items-center justify-center gap-4 sm:gap-6">
                                         <div className="relative w-14 h-20 sm:w-16 sm:h-24 opacity-90 transition-all cursor-help group">
                                             <div className="absolute inset-0 bg-[#111] border border-white/40 rounded-sm shadow-md">
                                                 <div className="w-full h-full p-2 flex flex-col items-center justify-center bg-gradient-to-br from-[#1a1a2e] to-black">
-                                                    <div className="w-full h-full opacity-30 text-accent"><MemoizedIconRenderer r="BACK" /></div>
+                                                    <div className="w-full h-full opacity-30 text-accent"><IconRenderer r="BACK" /></div>
                                                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                                                         <div className="text-xl font-black text-white font-['Orbitron']">{gs.deck?.length || 0}</div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className={`relative z-10 ${entryAnim ? 'card-play-vfx' : ''}`}>
+                                        <div className={`field-card-scale relative z-10 ${entryAnim ? 'card-play-vfx' : ''}`}>
                                             <div className={`transition-opacity duration-[1500ms] ease-in-out ${(!isAnimating && gs.fieldCard.id === displayFieldCard?.id) ? 'opacity-100' : 'opacity-0'}`}>
-                                                <MemoizedCardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={isAnimating} />
+                                                <CardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={isAnimating} />
                                             </div>
                                             <div className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${isAnimating ? 'opacity-100' : 'opacity-0'}`}>
-                                                <MemoizedCardView card={displayFieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={true} />
+                                                <CardView card={displayFieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={true} />
                                             </div>
                                         </div>
                                     </div>
@@ -970,31 +853,44 @@ const App = () => {
                         <div className="flex justify-between items-center px-5 py-1 shrink-0"><div className="flex items-baseline gap-2"><span className="hand-info-label text-[10px] font-black text-white/40 tracking-[2px] uppercase">Your Hand</span><span className={`hand-info-count text-2xl font-black font-['Orbitron'] leading-none ${me?.hand.length >= 8 ? 'text-danger animate-pulse' : 'text-white'}`}>{me?.hand.length || 0}<span className="text-xs ml-1 opacity-60">枚</span></span></div>{(isAnimating || isMorphing) && <div className="text-[9px] font-black text-accent animate-pulse tracking-[2px] bg-accent/10 px-3 py-1 rounded border border-accent/30 uppercase">Processing...</div>}</div>
                         <div className={`hand-container no-scrollbar ${isMyTurn ? 'my-turn-hand-fx' : ''} ${(isAnimating || isMorphing || selector) ? 'opacity-40 grayscale-[50%] pointer-events-none' : ''}`}>
                             {sortedHand.map((card, idx) => {
+                                const handSize = me.hand.length;
+                                const baseMargin = -8;
+                                // 5枚以上から徐々に重なりを強くする
+                                const dynamicMargin = handSize > 5 ? Math.max(-48, baseMargin - (handSize - 5) * 10) : baseMargin;
+                                // 8枚以上でカードを少し小さくして収まりを良くする
+                                const cardScale = handSize > 8 ? 0.88 : 1.0;
                                 const isPlayable = isMyTurn && canPlayCheck(gs, card);
+                                const isNewlyDrawn = newlyDrawnCardIds.has(card.id);
                                 return (
-                                    <HandCard
+                                    <div
                                         key={card.id || idx}
-                                        card={card}
-                                        idx={idx}
-                                        handSize={me.hand.length}
-                                        isMyTurn={isMyTurn}
-                                        isPlayable={isPlayable}
-                                        selectedCardId={selectedCardId}
-                                        hoveredCardId={hoveredCardId}
-                                        draggingCardId={draggingCardId}
-                                        dragOffsetX={dragOffsetX}
-                                        dragOffsetY={dragOffsetY}
-                                        newlyDrawnCardIds={newlyDrawnCardIds}
-                                        handleCardClick={handleCardClick}
-                                        setHoveredCardId={setHoveredCardId}
-                                        handleTouchStart={handleTouchStart}
-                                        handleTouchMove={handleTouchMove}
-                                        handleTouchEnd={handleTouchEnd}
-                                    />
+                                        className={`card-anchor ${selectedCardId === card.id ? 'selected' : ''} ${hoveredCardId === card.id ? 'hovered' : ''} ${!isMyTurn || !isPlayable ? 'not-playable' : 'playable'} ${isMyTurn ? 'is-my-turn' : ''} ${draggingCardId === card.id ? 'dragging' : ''} ${isNewlyDrawn ? 'card-draw-vfx' : ''}`}
+                                        style={{ 
+                                            zIndex: (draggingCardId === card.id) ? 1000 : (selectedCardId === card.id ? 100 : (hoveredCardId === card.id ? 200 : idx)), 
+                                            marginRight: idx === me.hand.length - 1 ? '0' : `${dynamicMargin}px`,
+                                            // ドロー中はCSSアニメーション優先のためインラインtransformを無効化
+                                            transform: isNewlyDrawn ? undefined : (
+                                                (draggingCardId === card.id) 
+                                                    ? `translate(${dragOffsetX}px, ${dragOffsetY}px) rotate(${dragOffsetX * 0.05}deg) scale(1.1)` 
+                                                    : `scale(${cardScale})`
+                                            ),
+                                            transition: (draggingCardId === card.id) ? 'none' : undefined,
+                                            touchAction: (draggingCardId === card.id) ? 'none' : 'pan-x',
+                                            filter: (draggingCardId === card.id) ? 'drop-shadow(0 20px 40px rgba(0,0,0,0.6))' : undefined
+                                        }}
+                                        onClick={() => handleCardClick(card, isPlayable)}
+                                        onMouseEnter={() => setHoveredCardId(card.id)}
+                                        onMouseLeave={() => setHoveredCardId(null)}
+                                        onTouchStart={(e) => handleTouchStart(e, card, isPlayable)}
+                                        onTouchMove={handleTouchMove}
+                                        onTouchEnd={() => handleTouchEnd(card, isPlayable)}
+                                    >
+                                        <CardView card={card} playable={isPlayable} isSelected={selectedCardId === card.id} isMyTurn={isMyTurn} />
+                                    </div>
                                 );
                             })}
                         </div>
-                        <div className="w-full px-4 pb-4 shrink-0 flex flex-col gap-2"><button className="btn-mega-draw w-full h-16 bg-gradient-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl tracking-[8px] cursor-pointer transition-all active:scale-95 disabled:grayscale disabled:opacity-50" disabled={!isMyTurn || selector || isAnimating || isMorphing || isSendingCard} onClick={() => { if (isAnimating || isMorphing) { setBufferedAction({ type: 'draw' }); return; } if (isSendingCard) return; playSE('draw', muted); socket.emit('draw-card', { roomId: room }); }}>ドロー ({gs.nextDrawAmount}枚)</button></div>
+                        <div className="w-full px-4 pb-4 shrink-0 flex flex-col gap-2"><button className="btn-mega-draw w-full h-16 bg-gradient-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl tracking-[8px] cursor-pointer transition-all active:scale-95 disabled:grayscale disabled:opacity-50" disabled={!isMyTurn || selector || isAnimating || isMorphing} onClick={() => { if (isAnimating || isMorphing) { setBufferedAction({ type: 'draw' }); return; } playSE('draw', muted); socket.emit('draw-card', { roomId: room }); }}>ドロー ({gs.nextDrawAmount}枚)</button></div>
                     </>
                 )}
             </div>
@@ -1004,15 +900,8 @@ const App = () => {
                         <h3 className="font-black mb-3 text-[9px] tracking-[2px] text-accent/80 uppercase text-center">次次元を選択してください</h3>
                         <div className="grid grid-cols-3 gap-2">
                             {['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'].map(r => (
-                                <button key={r} className="p-2 border border-white/20 font-black text-sm hover:bg-white/10 hover:border-accent transition-all active:scale-95 flex flex-col items-center gap-1.5 bg-black/40 rounded-md" style={{ color: REALMS[r].bright }} onClick={() => { 
-                                    if (isSendingCard) return; // 重複送信防止
-                                    playSE('play', muted); 
-                                    setIsSendingCard(true);
-                                    socket.emit('play-card', { roomId: room, card: selector, chosenRealm: r }); 
-                                    setSelector(null); 
-                                    setTimeout(() => setIsSendingCard(false), 500);
-                                }}>
-                                    <div className="w-8 h-8 drop-shadow-[0_0_10px_currentColor]"><MemoizedIconRenderer r={r} spec={false} /></div>
+                                <button key={r} className="p-2 border border-white/20 font-black text-sm hover:bg-white/10 hover:border-accent transition-all active:scale-95 flex flex-col items-center gap-1.5 bg-black/40 rounded-md" style={{ color: REALMS[r].bright }} onClick={() => { playSE('play', muted); socket.emit('play-card', { roomId: room, card: selector, chosenRealm: r }); setSelector(null); }}>
+                                    <div className="w-8 h-8 drop-shadow-[0_0_10px_currentColor]"><IconRenderer r={r} spec={false} /></div>
                                     <div className="tracking-[1px] text-[10px]">{REALMS[r].n}</div>
                                 </button>
                             ))}
