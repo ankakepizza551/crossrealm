@@ -19,10 +19,8 @@ body {
     overflow-y: auto;
     width: 100vw;
     min-width: 360px;
-    min-height: 780px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    min-height: 100vh;
+    /* flex削除: screen-wrapperを100%表示 */
 }
 
 /* PC centering is handled by .screen-wrapper margin:auto */
@@ -752,8 +750,8 @@ body {
     position: relative;
     width: 100vw;
     min-width: 360px;
-    height: 100dvh;
-    min-height: 780px;
+    height: 100vh; /* 100dvh → 100vh に変更（互換性向上） */
+    min-height: 100vh; /* min-heightも100vhに統一 */
     container-type: size;
     background: #ff0000; /* デバッグ用: 赤 */
     overflow: hidden;
