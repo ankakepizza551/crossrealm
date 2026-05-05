@@ -547,7 +547,7 @@ const App = () => {
             return f === h || (NEXT_MAP[f] && NEXT_MAP[f].includes(h));
         };
         return Object.keys(REALMS).filter(r => checkSim(r));
-    }, [gs?.fieldCard]);
+    }, [gs?.fieldCard?.id, gs?.fieldCard?.realm, gs?.fieldCard?.isSpecial]);
 
     const sortedResultPlayers = useMemo(() => {
         if (!gs?.players) return [];
@@ -556,7 +556,17 @@ const App = () => {
             if (!a.isEliminated && b.isEliminated) return -1;
             return a.handCount - b.handCount;
         });
-    }, [gs?.players]);
+    }, [gs?.players?.map(p => p.id + p.isEliminated + p.handCount).join()]);
+
+    // ログ表示をメモ化（ログが変わった時だけ再生成）
+    const logElements = useMemo(() => {
+        if (!gs?.logs || gs.logs.length === 0) {
+            return <div className="opacity-40 italic text-xs font-bold mt-1">ANALYZING...</div>;
+        }
+        return gs.logs.slice(-10).map(l => (
+            <div key={l.id} className="log-entry-text text-[11px] font-black mb-0.5 border-b border-white/5">≫ {l.text}</div>
+        ));
+    }, [gs?.logs]);
 
     const join = () => { if (room && name) { playSE('start', muted); setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name }); } };
     const leave = () => { if (room) { playSE('cancel', muted); socket.emit('leave-room', { roomId: room.toUpperCase() }); setJoined(false); setGs(null); } };
@@ -866,7 +876,7 @@ const App = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="tactical-log-box no-scrollbar" ref={logContainerRef}>{gs.logs && gs.logs.length > 0 ? gs.logs.slice(-10).map(l => <div key={l.id} className="log-entry-text text-[11px] font-black mb-0.5 border-b border-white/5">≫ {l.text}</div>) : <div className="opacity-40 italic text-xs font-bold mt-1">ANALYZING...</div>}</div>
+                        <div className="tactical-log-box no-scrollbar" ref={logContainerRef}>{logElements}</div>
                         <div className="flex justify-between items-center px-5 py-1 shrink-0"><div className="flex items-baseline gap-2"><span className="hand-info-label text-[10px] font-black text-white/40 tracking-[2px] uppercase">Your Hand</span><span className={`hand-info-count text-2xl font-black font-['Orbitron'] leading-none ${me?.hand.length >= 8 ? 'text-danger animate-pulse' : 'text-white'}`}>{me?.hand.length || 0}<span className="text-xs ml-1 opacity-60">枚</span></span></div>{(isAnimating || isMorphing) && <div className="text-[9px] font-black text-accent animate-pulse tracking-[2px] bg-accent/10 px-3 py-1 rounded border border-accent/30 uppercase">Processing...</div>}</div>
                         <div className={`hand-container no-scrollbar ${isMyTurn ? 'my-turn-hand-fx' : ''} ${(isAnimating || isMorphing || selector) ? 'opacity-40 grayscale-[50%] pointer-events-none' : ''}`}>
                             {sortedHand.map((card, idx) => {
