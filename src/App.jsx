@@ -232,7 +232,7 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments
                 <div className="card-icon-overload" style={{ color: rData.bright, filter: `drop-shadow(0 0 10px ${rData.glow})`, position: 'absolute', top: '55%', left: '50%', transform: 'translate(-50%, -50%)', width: '55%', height: '55%' }}>
                     <IconRenderer r={dr} spec={spec} />
                 </div>
-                <div className={`card-footer-peak font-['${rData.font}']`}>{rData.n}</div>
+                <div className="card-footer-peak" style={{ fontFamily: rData.font }}>{rData.n}</div>
                 {spec && <div className="special-badge-base">{specialLabel.split(' ').map((word, i) => <div key={i}>{word}</div>)}</div>}
             </div>
         </div>

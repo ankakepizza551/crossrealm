@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
     --accent: #40E0D0;
     --steam-gold: #D4AF37;
@@ -9,17 +13,13 @@
     --card-h: calc(var(--card-w) * 1.4);
 }
 
-/* GPU Hardware Acceleration for heavy elements */
+/* GPU Hardware Acceleration: 常時アニメする背景系のみ（一時演出は除外） */
 .star-particle,
 .nebula-glow,
 .bg-gear-css,
 .bg-magic-circle-css,
 .steam-particle,
-.ripple,
-.void-singularity-ring,
-.motion-card-ghost,
-.card-anchor,
-.card-surface {
+.void-singularity-ring {
     will-change: transform, opacity;
 }
 
@@ -337,26 +337,6 @@ body {
     }
 }
 
-.draw-stack-alert-text {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 14px;
-    font-weight: 900;
-    color: #fff;
-    text-shadow: 0 0 10px red;
-    white-space: nowrap;
-    z-index: 100;
-    pointer-events: none;
-    animation: draw-stack-alert-anim-fast 1.5s infinite ease-in-out;
-    letter-spacing: 1px;
-    background: rgba(130, 0, 0, 0.6);
-    padding: 4px 12px;
-    border: 1px solid rgba(255, 0, 0, 0.4);
-    border-radius: 2px;
-}
-
 
 @keyframes champion-glow-fast {
 
@@ -545,45 +525,6 @@ body {
     flex: 1;
 }
 
-/* === 郢晏現繝｣郢晏干繝ｻ陟輔・・ｩ貅ｽ蛻､鬮ｱ・｢騾包ｽｨ邵ｺ・ｮ驍ｨ・ｶ陝・ｽｾ鬩溷調・ｽ・ｮ郢晄㈱縺｡郢晢ｽｳ === */
-.system-ctrl-absolute {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    z-index: 950;
-    display: flex;
-    gap: 8px;
-}
-
-.volume-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 2px solid var(--accent);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--accent);
-    background: rgba(20, 10, 40, 0.85);
-
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(64, 224, 208, 0.3);
-    transition: 0.3s;
-}
-
-/* === 陝・ｽｾ隰鯉ｽｦ騾包ｽｻ鬮ｱ・｢騾包ｽｨ邵ｺ・ｮ陝・ｉ逡醍ｹ晏€･繝｣郢敖€郢晢ｽｼ (髯ｲ・ｫ郢ｧ髮∝ｱ馴ｩ包ｽｿ邵ｺ・ｮ髫輔・ === */
-.playing-system-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 12px;
-    background: rgba(5, 1, 10, 0.95);
-    border-bottom: 1.5px solid rgba(64, 224, 208, 0.2);
-    flex-shrink: 0;
-    z-index: 100;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-}
-
 /* === 郢晏現繝｣郢晉､ｼ蛻､鬮ｱ・｢ === */
 .top-logo-area {
     position: relative;
@@ -716,15 +657,6 @@ body {
     animation: pulse-shimmer 1.5s infinite;
 }
 
-/* 陟輔・・ｩ貅ｽ蛻､鬮ｱ・｢ */
-.waiting-room-list {
-    overflow-y: auto;
-    max-height: 48vh;
-    padding: 4px;
-    margin: 0 1.2rem 10px 1.2rem;
-    flex-shrink: 0;
-}
-
 .waiting-slot-box {
     background: rgba(20, 10, 40, 0.85);
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -743,25 +675,6 @@ body {
     border-left: 8px solid var(--accent);
     border-color: rgba(64, 224, 208, 0.8);
     background: rgba(10, 30, 40, 0.85);
-}
-
-.waiting-name {
-    font-weight: 950;
-    font-size: 14px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
-/* === HUD === */
-.player-hud-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    padding: 10px 12px 6px;
-    background: rgba(10, 15, 35, 0.92);
-    border-bottom: 2.5px solid rgba(255, 255, 255, 0.15);
-    flex-shrink: 0;
-
 }
 
 .player-slot {
@@ -788,70 +701,12 @@ body {
     overflow: hidden;
 }
 
-.p-info-name {
-    font-size: clamp(12px, 1.8cqw, 18px);
-    font-weight: 1000;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.6);
-    margin-bottom: 2px;
-    letter-spacing: 1px;
-    width: 100%;
-    word-break: break-all;
-    white-space: normal;
-    line-height: 1.2;
-}
-
-.hud-player-slot {
-    height: clamp(56px, 10vh, 100px) !important;
-    padding: clamp(6px, 1.2cqw, 15px) !important;
-}
-
-.hud-player-name {
-    font-size: clamp(12px, 1.5cqw, 16px) !important;
-}
-
-.hud-player-count {
-    font-size: clamp(18px, 3cqw, 32px) !important;
-}
-
-.hud-player-score {
-    font-size: clamp(12px, 1.2cqw, 14px) !important;
-}
-
 .p-info-count {
     font-size: clamp(26px, 4cqw, 42px); /* 26pxから最大42pxへ */
     font-weight: 1000;
     color: #fff;
     font-family: 'Orbitron';
     line-height: 1;
-}
-
-.eliminated-tag {
-    position: absolute;
-    inset: 0;
-    background: rgba(255, 0, 0, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 1000;
-    color: var(--danger);
-    letter-spacing: 4px;
-    transform: rotate(-5deg);
-    text-shadow: 0 0 10px #000;
-    z-index: 20;
-}
-
-/* 騾ｶ・ｸ隰・玄辟碑ｭ幢ｽｭ郢ｧ・｢郢ｧ・､郢ｧ・ｳ郢晢ｽｳ鬩溷調・ｽ・ｮ (陷ｿ・ｳ陋幢ｽｴ闕ｳ・ｭ陞滂ｽｮ陝・・・顔ｸｺ・ｫ髫ｱ・ｿ隰ｨ・ｴ) */
-.hand-stack-visual {
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-    width: 14px;
-    height: 20px;
-    z-index: 10;
-    opacity: 0.95;
 }
 
 /* === 画面全体のラッパー設定 (ハイブリッドレスポンシブ) === */
@@ -898,22 +753,6 @@ body {
         animation: flow-border-nova 10s infinite ease-in-out;
         overflow: hidden; /* ui-viewportにスクロールを任せる */
     }
-}
-
-
-.stack-card-layer {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: #111;
-    border: 1.2px solid rgba(255, 255, 255, 0.8);
-    border-radius: 1px;
-    box-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
-}
-
-.legend-underline.active {
-    background: var(--r-color) !important;
-    box-shadow: 0 0 10px var(--r-color), 0 0 5px #fff;
 }
 
 /* === 郢晁ｼ斐≦郢晢ｽｼ郢晢ｽｫ郢昴・=== */
@@ -1552,12 +1391,6 @@ body {
     transform: rotate(-4deg);
 }
 
-.draw-action-footer {
-    width: 100%;
-    padding: 0 12px 0px;
-    flex-shrink: 0;
-}
-
 .hand-info-label {
     font-size: clamp(12px, 1.5cqw, 18px) !important;
 }
@@ -1710,26 +1543,6 @@ body {
         top: 10%;
         opacity: 0;
         transform: scale(0.5) rotate(20deg);
-    }
-
-    20% {
-        opacity: 1;
-    }
-
-    100% {
-        left: 50%;
-        top: 50%;
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(1.5) rotate(0deg);
-    }
-}
-
-@keyframes fly-to-center-tr {
-    0% {
-        left: 90%;
-        top: 10%;
-        opacity: 0;
-        transform: scale(0.5) rotate(45deg);
     }
 
     20% {
@@ -1956,28 +1769,6 @@ body {
     box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
 }
 
-.turn-direction-indicator {
-    position: absolute;
-    top: -25px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 10px;
-    font-weight: 1000;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    white-space: nowrap;
-    opacity: 0.8;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.direction-arrow {
-    font-size: 14px;
-    display: inline-block;
-}
-
 .direction-cw {
     animation: rotate-inner 4s linear infinite;
 }
@@ -2067,21 +1858,6 @@ body {
     }
 }
 
-.deck-count-badge {
-    position: absolute;
-    bottom: -15px;
-    right: 0;
-    background: rgba(0, 0, 0, 0.8);
-    border: 1px solid var(--steam-gold);
-    color: var(--steam-gold);
-    font-size: 9px;
-    font-weight: 1000;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: 'Orbitron';
-    z-index: 100;
-}
-
 /* === 隴・ｽｰ髫募臆・ｿ・ｽ陷会ｿｽ: 郢ｧ・ｿ郢晢ｽｼ郢晢ｽｳ郢ｧ・ｰ郢晢ｽｭ郢ｧ・ｦ郢晢ｽｻ郢晢ｽｭ郢ｧ・ｰ陟厄ｽｩ豼ｶ・ｲ === */
 .screen-wrapper.my-turn-glow::after {
     content: '';
@@ -2106,20 +1882,6 @@ body {
         opacity: 0.7;
         box-shadow: inset 0 0 25px var(--accent);
     }
-}
-
-.log-type-play {
-    color: #fff !important;
-}
-
-.log-type-draw {
-    color: #aaa !important;
-    opacity: 0.8;
-}
-
-.log-type-special {
-    color: var(--accent) !important;
-    font-weight: 900;
 }
 
 .log-type-danger {
@@ -2148,10 +1910,6 @@ body {
 .tactical-log-box div:hover {
     background: rgba(255, 255, 255, 0.05);
     border-left-color: var(--accent);
-}
-
-.playable-card-pop {
-    animation: card-pop-up 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 @keyframes card-pop-up {
@@ -2213,105 +1971,15 @@ body {
     border-bottom: 2px solid var(--accent);
 }
 
-/* Legend Special Effects */
-@keyframes water-float {
-    0% {
-        transform: translateY(0) scale(1);
-        opacity: 0;
-    }
-
-    50% {
-        opacity: 0.6;
-    }
-
-    100% {
-        transform: translateY(-20px) scale(0.5);
-        opacity: 0;
-    }
-}
-
-@keyframes sparkle-twinkle {
-
-    0%,
-    100% {
-        transform: scale(0);
-        opacity: 0;
-    }
-
-    50% {
-        transform: scale(1.2);
-        opacity: 1;
-    }
-}
-
-@keyframes electric-arc {
-    0% {
-        stroke-dasharray: 0 100;
-        stroke-dashoffset: 0;
-        opacity: 0;
-    }
-
-    10% {
-        opacity: 1;
-    }
-
-    20% {
-        stroke-dasharray: 40 60;
-        stroke-dashoffset: -20;
-    }
-
-    30% {
-        opacity: 0;
-    }
-
-    100% {
-        opacity: 0;
-    }
-}
-
-@keyframes bolt-shake {
-
-    0%,
-    100% {
-        transform: translate(0, 0);
-    }
-
-    20% {
-        transform: translate(-1px, 1px);
-    }
-
-    40% {
-        transform: translate(1px, -1px);
-    }
-}
-
 /* === GPU Compositing Hints === */
 .flow-gear,
-.flow-magic,
-.flow-rune {
+    .flow-magic {
     will-change: transform;
     transform: translateZ(0);
 }
 
 /* card-surface等のtranslateZ(0)は削除（過剰なGPUレイヤー消費を防止） */
 
-
-/* === Reduced Motion Support (Disabled aggressive hiding) === */
-@media (prefers-reduced-motion: reduce) {
-    /*
-    *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-    .flow-gear, .flow-magic, .flow-rune {
-        display: none !important;
-    }
-    canvas {
-        display: none !important;
-    }
-    */
-}
 
 /* === フレーバーテキスト復元用 === */
 .trinity-flavor-box {

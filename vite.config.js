@@ -6,5 +6,23 @@ export default defineConfig({
   server: {
     host: true,
     port: 5174
-  }
+  },
+  build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        passes: 2,
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          socket: ['socket.io-client'],
+        },
+      },
+    },
+  },
 })
