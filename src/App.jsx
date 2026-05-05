@@ -625,9 +625,9 @@ const App = () => {
     const handleTouchEnd = (card, isPlayable) => {
         if (!draggingCardId) return;
         
-        // 一定以上（80px）スワイプしていたらプレイ
-        // 左右に振れすぎていないかもチェック（誤操作防止）
-        if (dragOffsetY < -80 && Math.abs(dragOffsetX) < 150) {
+        // 一定以上（60px）スワイプしていたらプレイ
+        // 横ブレ200px未満なら許容（スワイプしやすく）
+        if (dragOffsetY < -60 && Math.abs(dragOffsetX) < 200) {
             if (isAnimating || isMorphing) {
                 setBufferedAction({ type: 'play', card: card, isPlayable: isPlayable });
             } else {
@@ -902,7 +902,7 @@ const App = () => {
                                                     : `scale(${cardScale})`
                                             ),
                                             transition: (draggingCardId === card.id) ? 'none' : undefined,
-                                            touchAction: (draggingCardId === card.id) ? 'none' : 'pan-x',
+                                            touchAction: 'none', /* スクロールと競合しないよう常にnone */
                                             filter: (draggingCardId === card.id) ? 'drop-shadow(0 20px 40px rgba(0,0,0,0.6))' : undefined
                                         }}
                                         onClick={() => handleCardClick(card, isPlayable)}
