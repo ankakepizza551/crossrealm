@@ -179,29 +179,35 @@ const IconRenderer = ({ r, spec, className, ...rest }) => {
 const MemoizedIconRenderer = React.memo(IconRenderer);
 
 
-const CardOrnaments = ({ theme }) => {
+const CardOrnaments = React.memo(({ theme }) => {
     if (theme === 'steam') return (
         <React.Fragment>
-            <div className="steam-rivet r-tl" /><div className="steam-rivet r-tr" /><div className="steam-rivet r-bl" /><div className="steam-rivet r-br" />
+            <div className="steam-rivet r-tl" /><div className="steam-rivet r-tr" />
+            <div className="steam-rivet r-bl" /><div className="steam-rivet r-br" />
             <div className="steam-core-glow" />
-            <div className="steam-particle" style={{ '--l': '-5%', '--d': '2.5s', '--delay': '0s', '--drift-start': '0px', '--drift-end': '30px', '--rot': '90deg' }} />
-            <div className="steam-particle" style={{ '--l': '35%', '--d': '3.2s', '--delay': '1.2s', '--drift-start': '10px', '--drift-end': '-20px', '--rot': '-45deg' }} />
-            <div className="steam-particle" style={{ '--l': '75%', '--d': '2.8s', '--delay': '0.5s', '--drift-start': '-10px', '--drift-end': '25px', '--rot': '120deg' }} />
+            {/* パーティクルを3→1に削減 */}
+            <div className="steam-particle" style={{ '--l': '35%', '--d': '3s', '--delay': '0s', '--drift-start': '5px', '--drift-end': '-15px', '--rot': '-45deg' }} />
         </React.Fragment>
     );
     if (theme === 'fantasy') return (
         <React.Fragment>
-            <div className="magic-circle-bg" /><div className="ripple" style={{ '--delay': '0s' }} /><div className="ripple" style={{ '--delay': '2s' }} />
+            <div className="magic-circle-bg" />
+            {/* rippleを2→1に削減 */}
+            <div className="ripple" style={{ '--delay': '0s' }} />
         </React.Fragment>
     );
     if (theme === 'cyber') return (
-        <React.Fragment><div className="cyber-circuit" /><div className="cyber-fx-scanline" /></React.Fragment>
+        <React.Fragment>
+            <div className="cyber-circuit" />
+            {/* スキャンラインは負荷が高いためOFF時は削除済み */}
+            <div className="cyber-fx-scanline" />
+        </React.Fragment>
     );
     if (theme.includes('void')) return (
-        <React.Fragment><div className="void-singularity-ring" /><div className="void-fluctuation" /></React.Fragment>
+        <React.Fragment><div className="void-singularity-ring" /></React.Fragment>
     );
     return null;
-};
+});
 
 const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments }) => {
     if (!card?.realm) return null;
