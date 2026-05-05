@@ -744,7 +744,7 @@ body {
     width: 14px;
     height: 20px;
     z-index: 10;
-    opacity: 0.95;
+    opacity: 1;
 }
 
 /* === 画面全体のラッパー設定 (ハイブリッドレスポンシブ) === */
@@ -1008,7 +1008,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0.95;
+    opacity: 1;
     pointer-events: none;
     z-index: 2;
 }
@@ -1168,13 +1168,13 @@ body {
 }
 
 .card-surface {
-    transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 2.5s ease, transform 0.3s ease, border-color 2.5s ease;
+    transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.5s ease, transform 0.3s ease, border-color 0.5s ease;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 .card-icon-overload {
-    transition: color 2.5s ease, filter 2.5s ease, transform 0.3s ease;
+    transition: color 0.5s ease, filter 0.5s ease, transform 0.3s ease;
 }
 
 .card-anchor {
@@ -2357,7 +2357,7 @@ body {
     bottom: 0;
     z-index: 1;
     background: #05010a;
-    background-image: radial-gradient(circle at center, #1a0a30 0%, #05010a 100%);
+    background: #05010a;
     overflow: hidden;
     pointer-events: none;
     isolation: isolate; /* 他のUI要素への干渉を防止 */
@@ -2591,7 +2591,7 @@ body {
     /* 背景を完全に静止画に */
     .astral-bg-container {
         background: #05010a !important;
-        background-image: radial-gradient(circle at center, #1a0a30 0%, #05010a 100%) !important;
+        background: #05010a !important;
     }
     
     /* アニメーションOFF時のみ背景を非表示 */

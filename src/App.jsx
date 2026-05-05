@@ -110,6 +110,9 @@ const ComplexEmblem = ({ isLogo = false }) => (
     </svg>
 );
 
+// パフォーマンス最適化：ComplexEmblemをメモ化
+const MemoizedComplexEmblem = React.memo(ComplexEmblem);
+
 const IconRenderer = ({ r, spec, className, ...rest }) => {
     const p = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: spec ? 4 : 2, strokeLinecap: "round", strokeLinejoin: "round", className: className || "w-full h-full", ...rest };
     switch (r) {
@@ -610,6 +613,12 @@ const App = () => {
         });
     }, [gs?.players]);
 
+    // パフォーマンス最適化: スコアソート結果もメモ化
+    const sortedByScore = useMemo(() => {
+        if (!gs?.players) return [];
+        return [...gs.players].sort((a, b) => b.score - a.score);
+    }, [gs?.players]);
+
     const join = () => { if (room && name) { playSE('start', muted); setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name }); } };
     const leave = () => { if (room) { playSE('cancel', muted); socket.emit('leave-room', { roomId: room.toUpperCase() }); setJoined(false); setGs(null); } };
     const goToTopPage = () => { playSE('cancel', muted); if (room) socket.emit('leave-room', { roomId: room.toUpperCase() }); window.location.reload(); };
@@ -763,7 +772,7 @@ const App = () => {
                         <div className="flex-1 flex flex-col items-center justify-center py-4 sm:py-8 overflow-y-auto no-scrollbar">
                             <div className="top-logo-area flex-shrink-0 scale-90 sm:scale-100 origin-center mb-2 sm:mb-4">
                                 <div className="field-central-zone">
-                                    <div className="emblem-bg-layer"><ComplexEmblem isLogo={true} /></div>
+                                    <div className="emblem-bg-layer"><MemoizedComplexEmblem isLogo={true} /></div>
                                     <div className="logo-text-layer">
                                         <div className="main-logo-text text-[clamp(2.5rem,10vw,4rem)]">CROSS</div>
                                         <div className="main-logo-text text-[clamp(2rem,8vw,3.2rem)]" style={{ marginTop: '-0.5rem' }}>REALM</div>
@@ -830,9 +839,9 @@ const App = () => {
                 ) : (gs.status === 'finished') ? (
                     <div className="result-screen">
                         <h2 className="result-title uppercase tracking-tighter" style={{ color: gs.isSeriesFinished ? '#FFD700' : 'var(--steam-gold)' }}>{gs.isSeriesFinished ? "シリーズ終了" : `第 ${gs.matchCount - 1} 戦 終了`}</h2>
-                        {gs.isSeriesFinished && <div className="text-xl text-white font-black mb-6 text-center animate-pulse champion-fx py-4 px-8 rounded-full border border-[var(--steam-gold)]">総合優勝 (CHAMPION)<br /><span className="text-[clamp(1.5rem,6vw,2.25rem)] text-[var(--steam-gold)] drop-shadow-[0_0_10px_rgba(212,175,55,1)] mt-2 inline-block max-w-full truncate break-all px-2">👑 {[...gs.players].sort((a, b) => b.score - a.score)[0].name} 👑</span></div>}
+                        {gs.isSeriesFinished && <div className="text-xl text-white font-black mb-6 text-center animate-pulse champion-fx py-4 px-8 rounded-full border border-[var(--steam-gold)]">総合優勝 (CHAMPION)<br /><span className="text-[clamp(1.5rem,6vw,2.25rem)] text-[var(--steam-gold)] drop-shadow-[0_0_10px_rgba(212,175,55,1)] mt-2 inline-block max-w-full truncate break-all px-2">👑 {sortedByScore[0]?.name} 👑</span></div>}
                         <div className="flex flex-row items-end justify-center w-full max-w-[440px] h-[220px] gap-1 mt-4 mb-8 px-2">
-                            {(gs.isSeriesFinished ? [...gs.players].sort((a, b) => b.score - a.score) : sortedResultPlayers).map((p, i) => {
+                            {(gs.isSeriesFinished ? sortedByScore : sortedResultPlayers).map((p, i) => {
                                 const order = i === 0 ? 3 : i === 1 ? 2 : i === 2 ? 4 : i === 3 ? 1 : 5;
                                 const height = i === 0 ? '120px' : i === 1 ? '90px' : i === 2 ? '70px' : i === 3 ? '50px' : '40px';
                                 const color = i === 0 ? 'var(--steam-gold)' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'var(--accent)';
@@ -916,7 +925,7 @@ const App = () => {
                                         <div className="absolute top-1 right-1 text-[9px] font-black text-[var(--steam-gold)]">★{p.score}</div>
                                         <div className="absolute bottom-2 left-8 text-xl font-black text-white font-['Orbitron'] leading-none z-10">{p.handCount}<span className="text-[10px] ml-0.5">枚</span></div>
                                         {getTurnDistance(p.id) !== null && !p.isEliminated && getTurnDistance(p.id) > 0 && <div className="absolute bottom-1 right-1 text-[8px] font-black px-1.5 py-0.5 rounded-full bg-black/60 border border-white/20 text-accent flex items-center gap-0.5 shadow-lg z-10">T-{getTurnDistance(p.id)}</div>}
-                                        <div className="absolute bottom-2 left-1 w-[14px] h-[20px] z-0 opacity-50">{[...Array(Math.min(p.handCount, 3))].map((_, i) => <div key={i} className="absolute w-full h-full bg-[#111] border border-white/80 rounded-[1px]" style={{ transform: `translate(${i * 2}px, ${i * 2}px)`, zIndex: i, borderColor: gs.currentTurnPlayerId === p.id ? 'var(--accent)' : 'rgba(255,255,255,0.4)' }} />)}</div>
+                                        {/* hand-stack-visual削除: パフォーマンス優先（視認性も低い） */}
                                         {p.isEliminated && <div className="absolute inset-0 bg-red-500/30 flex items-center justify-center text-[10px] font-black text-danger tracking-[1px] -rotate-3 z-20">BURST</div>}
                                     </div>
                                 );
