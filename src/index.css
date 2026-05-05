@@ -2034,11 +2034,11 @@ body {
 
 @keyframes card-slide-in {
     from {
-        transform: translateX(100px) rotate(10deg);
+        transform: translateY(-80px) rotate(-5deg);
         opacity: 0;
     }
     to {
-        transform: translateX(0) rotate(0);
+        transform: translateY(0) rotate(0);
         opacity: 1;
     }
 }
