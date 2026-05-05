@@ -392,6 +392,7 @@ const App = () => {
     const prevPlayersRef = useRef([]);
     const logContainerRef = useRef(null);
     const wrapperRef = useRef(null);
+    const viewportRef = useRef(null);
 
     useEffect(() => {
         socket.on('connect', () => { setIsConnected(true); setIsDisconnected(false); });
@@ -532,6 +533,7 @@ const App = () => {
         }
     }, [gs?.status, isMyTurn]);
 
+
     const sortedHand = useMemo(() => {
         if (!me?.hand) return [];
         return [...me.hand].sort((a, b) => (SORT_WEIGHT[a.realm] - SORT_WEIGHT[b.realm]) || (b.isSpecial - a.isSpecial));
@@ -659,16 +661,15 @@ const App = () => {
 
     return (
         <>
-            {/* モーションレイヤーを画面揺れの影響を受けないように外側に配置 */}
-            <div className="motion-overlay-layer" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 10000 }}>
+            <div ref={wrapperRef} className={`screen-wrapper ${isMyTurn ? 'my-turn-glow' : ''} ${bgAnim ? 'all-anim-active' : 'all-anim-off'} ${selector ? 'wild-open' : ''}`} style={{ '--r-color': REALMS[currentR]?.color }}>
+            {/* モーションレイヤー: screen-wrapper内に配置してゲームエリア基準でパーセント位置を計算 */}
+            <div className="motion-overlay-layer" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10000 }}>
                 {motions.map(m => (
                     <div key={m.mid} className={`motion-card-ghost ${m.type} ${getPlayerPosClass(m.playerId)}`}>
                         <div className="ghost-surface" />
                     </div>
                 ))}
             </div>
-            
-            <div ref={wrapperRef} className={`screen-wrapper ${isMyTurn ? 'my-turn-glow' : ''} ${bgAnim ? 'all-anim-active' : 'all-anim-off'}`} style={{ '--r-color': REALMS[currentR]?.color }}>
             {cutin && (
                 <div className="special-cutin-layer">
                     <div className="special-cutin-bar" style={{ '--c': cutin.color }}>
@@ -685,12 +686,14 @@ const App = () => {
                     <button className="w-full max-w-xs p-5 font-black bg-gradient-to-r from-red-600 to-red-900 text-white rounded-sm shadow-2xl tracking-[4px]" onClick={() => window.location.reload()}>タイトルへ戻る</button>
                 </div>
             )}
-            <div className="ui-viewport">
-                {!gs || gs.status !== 'playing' ? (
-                    <div className="absolute top-3 right-3 z-[950] flex gap-2">
-                        <div className="w-10 h-10 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80  cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.3)] transition-all" onClick={() => setMuted(!muted)}>{muted ? '🔇' : '🔊'}</div>
+            <div className="ui-viewport" ref={viewportRef}>
+                {/* 非ゲーム中の共通ヘッダー（ゲーム中は情報バーがボタンを持つ） */}
+                {gs?.status !== 'playing' && (
+                    <div className="flex justify-end items-center gap-2 px-3 py-2 shrink-0 bg-[#05010a]/80 border-b border-white/10 z-50">
+                        <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all hover:bg-accent/10 ${bgAnim ? 'border-accent text-accent bg-black/80 shadow-[0_0_10px_rgba(64,224,208,0.4)]' : 'border-gray-500 text-gray-500 bg-black/60'}`} onClick={() => { playSE(bgAnim ? 'cancel' : 'start', muted); setBgAnim(!bgAnim); }} title={bgAnim ? "アニメーションOFF" : "アニメーションON"}>🎬</div>
+                        <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80 cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.3)] transition-all hover:bg-accent/10" onClick={() => setMuted(!muted)} title={muted ? "音声ON" : "音声OFF"}>{muted ? '🔇' : '🔊'}</div>
                     </div>
-                ) : null}
+                )}
                 {!joined ? (
                     <div className="h-full flex flex-col no-scrollbar">
                         <div className="flex-1 flex flex-col items-center justify-center py-4 sm:py-8 overflow-y-auto no-scrollbar">
@@ -816,8 +819,10 @@ const App = () => {
                     <>
                         <div className="flex justify-between items-center px-4 py-2 bg-[#05010a]/90 border-b border-accent/20 shrink-0 z-50">
                             <div className="text-[11px] font-black text-accent font-['Orbitron'] tracking-[2px] sm:tracking-[4px] truncate flex-1">セクター: {room} <span className="ml-2 text-white/80">| 第{gs.matchCount}/{gs.maxMatches}戦</span> <span className="ml-2 text-[var(--steam-gold)]">★ {me?.score || 0} pts</span></div>
-                            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all ml-2 hover:bg-accent/10 ${bgAnim ? 'border-accent text-accent bg-black/80 shadow-[0_0_10px_rgba(64,224,208,0.4)]' : 'border-gray-500 text-gray-500 bg-black/60'}`} onClick={() => { playSE(bgAnim ? 'cancel' : 'start', muted); setBgAnim(!bgAnim); }} title={bgAnim ? "アニメーションOFF（軽量化）" : "アニメーションON"}>🎬</div>
-                            <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80  cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.4)] transition-all ml-2 hover:bg-accent/10" onClick={() => setMuted(!muted)} title={muted ? "音声ON" : "音声OFF"}>{muted ? '🔇' : '🔊'}</div>
+                            <div className="flex items-center gap-2 shrink-0 ml-2">
+                                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all hover:bg-accent/10 ${bgAnim ? 'border-accent text-accent bg-black/80 shadow-[0_0_10px_rgba(64,224,208,0.4)]' : 'border-gray-500 text-gray-500 bg-black/60'}`} onClick={() => { playSE(bgAnim ? 'cancel' : 'start', muted); setBgAnim(!bgAnim); }} title={bgAnim ? "アニメーションOFF" : "アニメーションON"}>🎬</div>
+                                <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80 cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.4)] transition-all hover:bg-accent/10" onClick={() => setMuted(!muted)} title={muted ? "音声ON" : "音声OFF"}>{muted ? '🔇' : '🔊'}</div>
+                            </div>
                         </div>
                         <div className={`turn-status-banner ${isMyTurn ? 'my-turn' : ''}`}>
                             <div className="banner-content">
@@ -926,23 +931,23 @@ const App = () => {
                     </>
                 )}
             </div>
-            {selector && (
-                <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: wrapperRef.current?.offsetWidth || '100%', maxWidth: wrapperRef.current?.offsetWidth || 480, zIndex: 9999, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
-                    <div className="wild-choice-panel" style={{ pointerEvents: 'auto' }}>
-                        <h3 className="font-black mb-3 text-[9px] tracking-[2px] text-accent/80 uppercase text-center">次次元を選択してください</h3>
-                        <div className="grid grid-cols-3 gap-2">
-                            {['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'].map(r => (
-                                <button key={r} className="p-2 border border-white/20 font-black text-sm hover:bg-white/10 hover:border-accent transition-all active:scale-95 flex flex-col items-center gap-1.5 bg-black/40 rounded-md" style={{ color: REALMS[r].bright }} onClick={() => { playSE('play', muted); socket.emit('play-card', { roomId: room, card: selector, chosenRealm: r }); setSelector(null); }}>
-                                    <div className="w-8 h-8 drop-shadow-[0_0_10px_currentColor]"><MemoizedIconRenderer r={r} spec={false} /></div>
-                                    <div className="tracking-[1px] text-[10px]">{REALMS[r].n}</div>
-                                </button>
-                            ))}
-                        </div>
-                        <button className="w-full mt-4 p-5 text-white/70 text-[14px] tracking-[4px] font-black border-2 border-white/30 uppercase hover:bg-white/10 hover:border-white/50 rounded transition-all active:scale-95" onClick={() => { playSE('cancel', muted); setSelector(null); }}>✕ 選択をキャンセル</button>
-                    </div>
-                </div>
-            )}
         </div>
+        {selector && (
+            <div className="wild-choice-overlay">
+                <div className="wild-choice-panel">
+                    <h3 className="font-black mb-3 text-[9px] tracking-[2px] text-accent/80 uppercase text-center">次次元を選択してください</h3>
+                    <div className="grid grid-cols-3 gap-2">
+                        {['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'].map(r => (
+                            <button key={r} className="p-2 border border-white/20 font-black text-sm hover:bg-white/10 hover:border-accent transition-all active:scale-95 flex flex-col items-center gap-1.5 bg-black/40 rounded-md" style={{ color: REALMS[r].bright }} onClick={() => { playSE('play', muted); socket.emit('play-card', { roomId: room, card: selector, chosenRealm: r }); setSelector(null); }}>
+                                <div className="w-8 h-8 drop-shadow-[0_0_10px_currentColor]"><MemoizedIconRenderer r={r} spec={false} /></div>
+                                <div className="tracking-[1px] text-[10px]">{REALMS[r].n}</div>
+                            </button>
+                        ))}
+                    </div>
+                    <button className="w-full mt-4 p-5 text-white/70 text-[14px] tracking-[4px] font-black border-2 border-white/30 uppercase hover:bg-white/10 hover:border-white/50 rounded transition-all active:scale-95" onClick={() => { playSE('cancel', muted); setSelector(null); }}>✕ 選択をキャンセル</button>
+                </div>
+            </div>
+        )}
         </>
     );
 };
