@@ -177,26 +177,37 @@ const IconRenderer = ({ r, spec, className, ...rest }) => {
     }
 };
 
+// パフォーマンス最適化：IconRendererをメモ化
+const MemoizedIconRenderer = React.memo(IconRenderer, (prev, next) => {
+    return prev.r === next.r && prev.spec === next.spec && prev.className === next.className;
+});
+
 const CardOrnaments = ({ theme }) => {
     if (theme === 'steam') return (
         <React.Fragment>
+            {/* リベットのみ残す（静的装飾） */}
             <div className="steam-rivet r-tl" /><div className="steam-rivet r-tr" /><div className="steam-rivet r-bl" /><div className="steam-rivet r-br" />
             <div className="steam-core-glow" />
-            <div className="steam-particle" style={{ '--l': '-5%', '--d': '2.5s', '--delay': '0s', '--drift-start': '0px', '--drift-end': '30px', '--rot': '90deg' }} />
-            <div className="steam-particle" style={{ '--l': '35%', '--d': '3.2s', '--delay': '1.2s', '--drift-start': '10px', '--drift-end': '-20px', '--rot': '-45deg' }} />
-            <div className="steam-particle" style={{ '--l': '75%', '--d': '2.8s', '--delay': '0.5s', '--drift-start': '-10px', '--drift-end': '25px', '--rot': '120deg' }} />
+            {/* steam-particle削除: アニメーション無効化済みのため不要 */}
         </React.Fragment>
     );
     if (theme === 'fantasy') return (
         <React.Fragment>
-            <div className="magic-circle-bg" /><div className="ripple" style={{ '--delay': '0s' }} /><div className="ripple" style={{ '--delay': '2s' }} />
+            <div className="magic-circle-bg" />
+            {/* ripple削除: アニメーション無効化済みのため不要 */}
         </React.Fragment>
     );
     if (theme === 'cyber') return (
-        <React.Fragment><div className="cyber-circuit" /><div className="cyber-fx-scanline" /></React.Fragment>
+        <React.Fragment>
+            <div className="cyber-circuit" />
+            {/* cyber-fx-scanline削除: アニメーション無効化済みのため不要 */}
+        </React.Fragment>
     );
     if (theme.includes('void')) return (
-        <React.Fragment><div className="void-singularity-ring" /><div className="void-fluctuation" /></React.Fragment>
+        <React.Fragment>
+            <div className="void-singularity-ring" />
+            {/* void-fluctuation削除: アニメーション無効化済みのため不要 */}
+        </React.Fragment>
     );
     return null;
 };
@@ -222,7 +233,7 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments
             <div className="card-content">
                 <div className="card-info-top"><span>{dr}</span></div>
                 <div className="card-icon-overload" style={{ color: rData.bright, filter: `drop-shadow(0 0 10px ${rData.glow})`, position: 'absolute', top: '55%', left: '50%', transform: 'translate(-50%, -50%)', width: '55%', height: '55%' }}>
-                    <IconRenderer r={dr} spec={spec} />
+                    <MemoizedIconRenderer r={dr} spec={spec} />
                 </div>
                 <div className={`card-footer-peak font-['${rData.font}']`}>{rData.n}</div>
                 {spec && <div className="special-badge-base">{specialLabel.split(' ').map((word, i) => <div key={i}>{word}</div>)}</div>}
@@ -886,7 +897,7 @@ const App = () => {
                                 <div className="banner-divider"></div>
                                 <div className="banner-badges">
                                     {Object.keys(REALMS).filter(r => r !== 'PLANET' && r !== 'RUINS').map(r => (
-                                        <div key={r} className={`realm-badge ${playableRealms.includes(r) ? 'active' : ''} ${gs.currentRealm === r ? 'current' : ''}`} style={{ '--r-color': REALMS[r].color }}><IconRenderer r={r} spec={false} /></div>
+                                        <div key={r} className={`realm-badge ${playableRealms.includes(r) ? 'active' : ''} ${gs.currentRealm === r ? 'current' : ''}`} style={{ '--r-color': REALMS[r].color }}><MemoizedIconRenderer r={r} spec={false} /></div>
                                     ))}
                                 </div>
                             </div>
@@ -927,7 +938,7 @@ const App = () => {
                                         <div className="relative w-14 h-20 sm:w-16 sm:h-24 opacity-90 transition-all cursor-help group">
                                             <div className="absolute inset-0 bg-[#111] border border-white/40 rounded-sm shadow-md">
                                                 <div className="w-full h-full p-2 flex flex-col items-center justify-center bg-gradient-to-br from-[#1a1a2e] to-black">
-                                                    <div className="w-full h-full opacity-30 text-accent"><IconRenderer r="BACK" /></div>
+                                                    <div className="w-full h-full opacity-30 text-accent"><MemoizedIconRenderer r="BACK" /></div>
                                                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                                                         <div className="text-xl font-black text-white font-['Orbitron']">{gs.deck?.length || 0}</div>
                                                     </div>
@@ -992,7 +1003,7 @@ const App = () => {
                                     setSelector(null); 
                                     setTimeout(() => setIsSendingCard(false), 500);
                                 }}>
-                                    <div className="w-8 h-8 drop-shadow-[0_0_10px_currentColor]"><IconRenderer r={r} spec={false} /></div>
+                                    <div className="w-8 h-8 drop-shadow-[0_0_10px_currentColor]"><MemoizedIconRenderer r={r} spec={false} /></div>
                                     <div className="tracking-[1px] text-[10px]">{REALMS[r].n}</div>
                                 </button>
                             ))}

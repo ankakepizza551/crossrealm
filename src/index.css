@@ -410,7 +410,7 @@ body {
     animation-iteration-count: infinite;
     opacity: 0;
     z-index: 3;
-    filter: drop-shadow(0 0 10px var(--glow-color)) drop-shadow(0 0 5px var(--glow-color));
+    filter: drop-shadow(0 0 8px var(--glow-color));
 }
 
 .flow-magic {
@@ -422,7 +422,7 @@ body {
     animation-iteration-count: infinite;
     opacity: 0;
     z-index: 3;
-    filter: drop-shadow(0 0 25px var(--glow-color));
+    filter: drop-shadow(0 0 12px var(--glow-color));
 }
 
 .ui-viewport {
@@ -1019,7 +1019,7 @@ body {
     width: clamp(150px, 65cqw, 1100px);
     height: auto;
     overflow: visible;
-    filter: drop-shadow(0 0 35px rgba(0, 0, 0, 0.7));
+    filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.5));
     transition: all 0.5s ease;
     will-change: transform; /* GPU合成ヒント */
     transform: translateZ(0); /* GPU層化 */
@@ -1143,7 +1143,7 @@ body {
     inset: 0;
     pointer-events: none;
     background: linear-gradient(to bottom, rgba(64, 224, 208, 0.2), transparent);
-    box-shadow: 0 -20px 60px rgba(64, 224, 208, 0.6), inset 0 20px 40px rgba(64, 224, 208, 0.3);
+    box-shadow: 0 -10px 30px rgba(64, 224, 208, 0.4), inset 0 10px 20px rgba(64, 224, 208, 0.2); /* 軽量化 */
     animation: my-turn-glow-fast 2.5s infinite ease-in-out;
     z-index: 1;
     /* 手札コンテナ内のカード(通常 z-index 10以上)より下、背景より上に配置 */
