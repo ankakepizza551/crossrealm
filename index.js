@@ -57,56 +57,8 @@ const io = new Server(server, {
 });
 
 const rooms = {};
-
-// ============================================================
-// 🎮 バランス調整エリア（ここだけ触ればOK）
-// ============================================================
-
-// --- 手札 ---
-const INITIAL_HAND = 5;       // 初期手札枚数
-const HAND_LIMIT   = 11;      // これ以上になると脱落（この枚数になった瞬間アウト）
-
-// --- デッキ枚数 ---
-// メインレルム：GEAR / MACHINE / FOUNTAIN（特殊カードあり）
-const MAIN_NORMAL_COUNT  = 7; // メインの通常カード（1種あたり）
-const MAIN_SPECIAL_COUNT = 2; // メインの特殊カード（1種あたり）※ 3→2に変更（特殊カード過多を抑制）
-// サブレルム：ICEAGE / BATTERY / ARCHIVE（通常カードのみ）
-const SUB_NORMAL_COUNT   = 7; // サブの通常カード（1種あたり）※ 5→7に変更（サイクル詰まりを緩和）
-// ワイルド：PLANET / RUINS
-const WILD_COUNT         = 3; // ワイルドカード（1種あたり）
-
-// --- 特殊カード効果 ---
-// DRAW 2（GEAR特殊）: スタック時の挙動
-//   現在: 1枚目→2枚ドロー、2枚目以降→さらに+2枚ずつ積み上げ
-//   MAX_DRAW_STACK を設定するとドロー枚数の上限を制限できる（0=無制限）
-const MAX_DRAW_STACK = 0;     // ドロー枚数の上限（0=無制限）
-
-// --- 脱落ペナルティ ---
-const ELIMINATION_PENALTY = -10; // 脱落時のスコアペナルティ
-
-// --- 点数計算 ---
-// 基本点：勝者以外の残り手札枚数の合計
-// ワイルド上がりボーナス：基本点にこの倍率をかける（切り上げ）
-// ※ LIMIT WILD（FOUNTAIN特殊）はボーナス対象外
-const WILD_FINISH_MULTIPLIER = 1.2; // ワイルド上がり時の倍率
-
-// 連勝ボーナス：連続で勝ったときに加算されるボーナス点
-const WIN_STREAK_THRESHOLD = 2;  // 何連勝からボーナスが発生するか
-const WIN_STREAK_BONUS     = 3;  // ボーナス点数（上限あり・一律）
-
-// --- シリーズ設定 ---
-const MAX_MATCHES = 5; // 何戦先取でシリーズ終了か
-
-// --- ログ設定 ---
-const MAX_LOGS = 30; // 保持するログの最大件数
-
-// ============================================================
-
-// ログを追加し、上限を超えたら古いものを削除するヘルパー
-function addLog(room, text) {
-  room.logs.push({ id: Math.random(), text });
-  if (room.logs.length > MAX_LOGS) room.logs = room.logs.slice(-MAX_LOGS);
-}
+const HAND_LIMIT = 11; // 11枚以上で脱落
+const INITIAL_HAND = 5;
 
 const REALM_NAME_JA = { GEAR: '歯車', ICEAGE: '氷河期', FOUNTAIN: '噴水', BATTERY: '電池', MACHINE: '機械', ARCHIVE: '古文書', PLANET: '惑星', RUINS: '廃墟' };
 
@@ -148,42 +100,22 @@ function filterName(name) {
   return (hasNG || finalName.length === 0) ? 'Pilot' : finalName;
 }
 
-// Fisher-Yatesアルゴリズムによる均一なシャッフル
-function shuffleDeck(deck) {
-  for (let i = deck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
-  }
-  return deck;
-}
-
 function createDeck() {
   const deck = [];
   const mains = ['GEAR', 'MACHINE', 'FOUNTAIN'];
-  const subs  = ['ICEAGE', 'BATTERY', 'ARCHIVE'];
+  const subs = ['ICEAGE', 'BATTERY', 'ARCHIVE'];
   const wilds = ['PLANET', 'RUINS'];
-  const mkCard = (realm, isSpecial) => ({ id: Math.random().toString(36).substr(2, 9), realm, isSpecial });
   mains.forEach(r => {
-    for (let i = 0; i < MAIN_NORMAL_COUNT;  i++) deck.push(mkCard(r, false));
-    for (let i = 0; i < MAIN_SPECIAL_COUNT; i++) deck.push(mkCard(r, true));
+    for (let i = 0; i < 7; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: false });
+    for (let i = 0; i < 3; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: true });
   });
   subs.forEach(r => {
-    for (let i = 0; i < SUB_NORMAL_COUNT; i++) deck.push(mkCard(r, false));
+    for (let i = 0; i < 5; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: false });
   });
   wilds.forEach(r => {
-    for (let i = 0; i < WILD_COUNT; i++) deck.push(mkCard(r, false));
+    for (let i = 0; i < 3; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: false });
   });
-  return shuffleDeck(deck);
-}
-
-// デッキが尽きたとき捨て札をシャッフルして再利用する（なければ新しいデッキ）
-function replenishDeck(room) {
-  if (room.discardPile && room.discardPile.length > 0) {
-    room.deck = shuffleDeck(room.discardPile);
-    room.discardPile = [];
-  } else {
-    room.deck = createDeck();
-  }
+  return deck.sort(() => Math.random() - 0.5);
 }
 
 // 生存しているプレイヤーを探して次のターンを決定
@@ -246,33 +178,22 @@ function checkGameOver(room) {
       const isWildCard = !isLimitWild && (room.lastPlayWasWild || room.fieldCard.wasPlanet || room.fieldCard.wasRuins || room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS');
       
       if (winner.handCount === 0 && room.fieldCard && isWildCard) {
-        totalEarned = Math.ceil(basePoints * WILD_FINISH_MULTIPLIER);
+        totalEarned = Math.ceil(basePoints * 1.5);
         bonusPoints = totalEarned - basePoints;
         isWildFinish = true;
       }
 
-      // 連勝ボーナス
-      winner.winStreak = (winner.winStreak || 0) + 1;
-      let streakBonus = 0;
-      if (winner.winStreak >= WIN_STREAK_THRESHOLD) {
-        streakBonus = WIN_STREAK_BONUS;
-        totalEarned += streakBonus;
-      }
-      // 負けたプレイヤーの連勝をリセット
-      room.players.forEach(p => { if (p.id !== winner.id) p.winStreak = 0; });
-
-      addLog(room, `RESULT: Winner=${winner.name}, Base=${basePoints}, WildBonus=${bonusPoints}, Streak=${winner.winStreak}, StreakBonus=${streakBonus}`);
+      room.logs.push({ id: Math.random(), text: `RESULT: Winner=${winner.name}, Base=${basePoints}, Bonus=${bonusPoints}, Wild=${isWildFinish}, LastWild=${room.lastPlayWasWild}` });
 
       winner.score += totalEarned;
       winner.earnedPoints = totalEarned;
       winner.basePoints = basePoints;
       winner.bonusPoints = bonusPoints;
-      winner.streakBonus = streakBonus;
       winner.finishBonus = isWildFinish;
       room.lastPlayWasWild = false; // Reset for next match
     }
 
-    addLog(room, `MATCH ${room.matchCount} COMPLETE: ${winner ? winner.name : 'NONE'} (+${earnedPoints} pts)`);
+    room.logs.push({ id: Math.random(), text: `MATCH ${room.matchCount} COMPLETE: ${winner ? winner.name : 'NONE'} (+${earnedPoints} pts)` });
 
     room.matchCount++;
     if (room.matchCount > room.maxMatches) {
@@ -289,8 +210,7 @@ function handlePlayerExit(socket, roomId) {
   const pIndex = room.players.findIndex(p => p.id === socket.id);
   if (pIndex === -1) return;
   const player = room.players[pIndex];
-  const wasCurrentTurn = (pIndex === room.turnIndex);
-  addLog(room, `${player.name} が戦線を離脱しました`);
+  room.logs.push({ id: Math.random(), text: `${player.name} が戦線を離脱しました` });
   room.players.splice(pIndex, 1);
 
   if (room.players.filter(p => !p.isBot).length === 0) {
@@ -299,29 +219,10 @@ function handlePlayerExit(socket, roomId) {
   }
 
   if (room.status === 'playing') {
-    // splice後にturnIndexが範囲外にならないよう先に補正
-    if (pIndex < room.turnIndex) {
-      room.turnIndex--;
-    } else if (pIndex === room.turnIndex) {
-      // 退室したのが現在のターンのプレイヤーだった場合
-      // spliceで次のプレイヤーがそのインデックスに来るので
-      // turnIndexをそのままにして範囲チェックだけ行う
-      room.turnIndex = room.turnIndex % room.players.length;
-    }
-    room.currentTurnPlayerId = room.players[room.turnIndex]?.id;
-
     if (!checkGameOver(room)) {
-      // 現在のターンプレイヤーが退室した場合はそのまま続行（既にインデックスが次を指している）
-      // それ以外の場合もターンを正しく維持できている
-      if (!wasCurrentTurn) {
-        // ターン中でない退室は現在のターンをそのまま継続
-        room.currentTurnPlayerId = room.players[room.turnIndex]?.id;
-      }
-      // 次がAIなら動かす
-      const nextPlayer = room.players[room.turnIndex];
-      if (nextPlayer && nextPlayer.isBot && !nextPlayer.isEliminated) {
-        processBotTurn(roomId);
-      }
+      if (pIndex < room.turnIndex) room.turnIndex--;
+      room.turnIndex = (room.turnIndex + room.players.length) % room.players.length;
+      nextTurn(room, false);
     }
   }
   io.to(roomId).emit('update-game', room);
@@ -345,18 +246,18 @@ function processBotTurn(roomId) {
     if (action.type === 'draw') {
       const amount = room.nextDrawAmount || 1;
       for (let i = 0; i < amount; i++) {
-        if (room.deck.length === 0) replenishDeck(room);
+        if (room.deck.length === 0) room.deck = createDeck();
         bot.hand.push(room.deck.pop());
       }
-      addLog(room, `${bot.name} が ${amount}枚 ドローしました`);
+      room.logs.push({ id: Math.random(), text: `${bot.name} が ${amount}枚 ドローしました` });
       room.nextDrawAmount = 1;
       bot.handCount = bot.hand.length;
       room.lastAction = { type: 'draw', playerId: bot.id };
 
       if (bot.handCount >= HAND_LIMIT) {
         bot.isEliminated = true;
-        bot.score += ELIMINATION_PENALTY;
-        addLog(room, `臨界突破: ${bot.name} が脱落！ (SCORE -10)`);
+        bot.score -= 10;
+        room.logs.push({ id: Math.random(), text: `臨界突破: ${bot.name} が脱落！ (SCORE -10)` });
       }
     } else {
       const { card, chosenRealm } = action;
@@ -370,19 +271,11 @@ function processBotTurn(roomId) {
         card.realm = chosenRealm;
         card.isSpecial = false;
       }
-      // 前のフィールドカードを捨て札へ
-      if (room.fieldCard) {
-        if (!room.discardPile) room.discardPile = [];
-        room.discardPile.push(room.fieldCard);
-      }
       room.fieldCard = card;
-      addLog(room, `${bot.name} が ${REALM_NAME_JA[originalRealm] || originalRealm} を展開`);
+      room.logs.push({ id: Math.random(), text: `${bot.name} が ${REALM_NAME_JA[originalRealm] || originalRealm} を展開` });
 
       if (card.isSpecial) {
-        if (card.realm === 'GEAR') {
-          const next = (room.nextDrawAmount === 1) ? 2 : (room.nextDrawAmount || 0) + 2;
-          room.nextDrawAmount = (MAX_DRAW_STACK > 0) ? Math.min(next, MAX_DRAW_STACK) : next;
-        }
+        if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : (room.nextDrawAmount || 0) + 2;
         if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
       }
       bot.handCount = bot.hand.length;
@@ -406,160 +299,16 @@ function processBotTurn(roomId) {
   }, botDelay);
 }
 
-// ============================================================
-// 🤖 AI個性システム
-// ============================================================
-
-// ボット名と個性のマッピング
-const BOT_PERSONALITY = {
-  'Kael':  'aggressive',  // 攻撃型：DRAW2を最優先、相手の手札が少ないときを狙う
-  'Luna':  'hoarder',     // 温存型：ワイルドを上がり札として温存する
-  'Iris':  'smart',       // バランス型：手札が多い相手を攻める賢いAI
-  'Nova':  'random',      // ランダム型：完全ランダム（弱いCPU）
-  'Zion':  'defensive',   // 防御型：手札が少なくなったら特殊カードを温存
-  'Astra': 'smart',
-  'Echo':  'aggressive',
-  'Vector':'defensive',
-  'Cyrus': 'hoarder',
-  'Xenon': 'random',
-};
-
-// ワイルドカードを出す際の最適なrealmを選ぶ（自分の手札に合わせる）
-function chooseBestRealm(bot, fallback) {
-  const realmCount = {};
-  bot.hand.forEach(c => {
-    if (!['PLANET', 'RUINS'].includes(c.realm)) {
-      realmCount[c.realm] = (realmCount[c.realm] || 0) + 1;
-    }
-  });
-  const sorted = Object.entries(realmCount).sort((a, b) => b[1] - a[1]);
-  // 手札で一番多いrealmに合わせる（なければfallback）
-  return sorted.length > 0 ? sorted[0][0] : (fallback || 'GEAR');
-}
-
-function needsChosenRealm(card) {
-  return ['PLANET', 'RUINS'].includes(card.realm) ||
-    (card.realm === 'FOUNTAIN' && card.isSpecial);
-}
-
 function getBotAction(room, bot) {
   const playable = bot.hand.filter(card => canPlay(room, card));
   if (playable.length === 0) return { type: 'draw' };
-
-  // 名前からベースネームを取得（" (AI)"を除去）
-  const baseName = bot.name.replace(' (AI)', '');
-  const personality = BOT_PERSONALITY[baseName] || 'normal';
-
-  const survivors = room.players.filter(p => !p.isEliminated);
-  const opponents = survivors.filter(p => p.id !== bot.id);
-
-  let targetCard = null;
+  let targetCard = playable[Math.floor(Math.random() * playable.length)];
   let chosenRealm = undefined;
-
-  // --- 攻撃型（Kael, Echo）---
-  // DRAW2を最優先。相手の手札が少ないときにワイルドを使う
-  if (personality === 'aggressive') {
-    const draw2 = playable.find(c => c.realm === 'GEAR' && c.isSpecial);
-    if (draw2) {
-      targetCard = draw2;
-    } else {
-      // 手札が最も少ない相手を探して、その相手が追い詰められているなら積極的にワイルドを使う
-      const minOpponent = opponents.reduce((a, b) => a.handCount < b.handCount ? a : b, opponents[0]);
-      const wildCard = playable.find(c => ['PLANET', 'RUINS'].includes(c.realm));
-      if (wildCard && minOpponent && minOpponent.handCount <= 3) {
-        targetCard = wildCard;
-      } else {
-        // 特殊カード優先、なければランダム
-        targetCard = playable.find(c => c.isSpecial) ||
-                     playable[Math.floor(Math.random() * playable.length)];
-      }
-    }
+  if (['PLANET', 'RUINS', 'FOUNTAIN'].includes(targetCard.realm) && (targetCard.realm !== 'FOUNTAIN' || targetCard.isSpecial)) {
+    chosenRealm = ['GEAR', 'FOUNTAIN', 'MACHINE'][Math.floor(Math.random() * 3)];
   }
-
-  // --- 温存型（Luna, Cyrus）---
-  // ワイルドを最後の1枚になるまで温存。手札が1枚になったときだけワイルドで上がる
-  else if (personality === 'hoarder') {
-    const wilds = playable.filter(c => ['PLANET', 'RUINS'].includes(c.realm));
-    const nonWilds = playable.filter(c => !['PLANET', 'RUINS'].includes(c.realm));
-    if (bot.hand.length === 1 && wilds.length > 0) {
-      // 最後の1枚ならワイルドで上がる
-      targetCard = wilds[0];
-    } else if (nonWilds.length > 0) {
-      // ワイルド以外を優先して出す
-      targetCard = nonWilds[Math.floor(Math.random() * nonWilds.length)];
-    } else {
-      targetCard = wilds[Math.floor(Math.random() * wilds.length)];
-    }
-  }
-
-  // --- バランス型（Iris, Astra）---
-  // 手札が多い相手を優先的に狙う。DRAW2は手札が多い相手の次のターンに合わせて使う
-  else if (personality === 'smart') {
-    const maxOpponent = opponents.reduce((a, b) => a.handCount > b.handCount ? a : b, opponents[0]);
-    const draw2 = playable.find(c => c.realm === 'GEAR' && c.isSpecial);
-    const reverse = playable.find(c => c.realm === 'MACHINE' && c.isSpecial);
-    // 手札が最多の相手が次のターンなら特殊カードを優先
-    const nextPlayerIdx = (room.turnIndex + (room.isReversed ? -1 : 1) + room.players.length) % room.players.length;
-    const nextPlayer = room.players[nextPlayerIdx];
-    if (draw2 && nextPlayer && nextPlayer.id === maxOpponent?.id) {
-      targetCard = draw2;
-    } else if (reverse && maxOpponent && maxOpponent.handCount >= 5) {
-      targetCard = reverse;
-    } else {
-      // 手札を減らしやすいカードを選ぶ（ワイルドは手札3枚以下になったら使う）
-      const wilds = playable.filter(c => ['PLANET', 'RUINS'].includes(c.realm));
-      const nonWilds = playable.filter(c => !['PLANET', 'RUINS'].includes(c.realm));
-      if (wilds.length > 0 && bot.hand.length <= 3) {
-        targetCard = wilds[0];
-      } else if (nonWilds.length > 0) {
-        targetCard = nonWilds[Math.floor(Math.random() * nonWilds.length)];
-      } else {
-        targetCard = wilds[0];
-      }
-    }
-  }
-
-  // --- 防御型（Zion, Vector）---
-  // 自分の手札が少ないときは特殊カードを温存して安全に上がりを狙う
-  else if (personality === 'defensive') {
-    const specials = playable.filter(c => c.isSpecial);
-    const normals = playable.filter(c => !c.isSpecial && !['PLANET', 'RUINS'].includes(c.realm));
-    const wilds = playable.filter(c => ['PLANET', 'RUINS'].includes(c.realm));
-    if (bot.hand.length <= 4) {
-      // 手札が少ないとき：通常カード→ワイルド→特殊の順で温存
-      targetCard = normals[Math.floor(Math.random() * normals.length)] ||
-                   wilds[Math.floor(Math.random() * wilds.length)] ||
-                   specials[Math.floor(Math.random() * specials.length)];
-    } else {
-      // 手札が多いとき：特殊カードを積極的に使って場を荒らす
-      targetCard = specials[Math.floor(Math.random() * specials.length)] ||
-                   normals[Math.floor(Math.random() * normals.length)] ||
-                   wilds[Math.floor(Math.random() * wilds.length)];
-    }
-  }
-
-  // --- ランダム型（Nova, Xenon）/ ノーマル ---
-  else {
-    targetCard = playable[Math.floor(Math.random() * playable.length)];
-  }
-
-  // フォールバック
-  if (!targetCard) targetCard = playable[Math.floor(Math.random() * playable.length)];
-
-  // ワイルド系カードのrealm選択
-  if (needsChosenRealm(targetCard)) {
-    if (personality === 'random') {
-      chosenRealm = ['GEAR', 'FOUNTAIN', 'MACHINE'][Math.floor(Math.random() * 3)];
-    } else {
-      // 自分の手札に合わせて最適なrealmを選ぶ
-      chosenRealm = chooseBestRealm(bot, 'GEAR');
-    }
-  }
-
   return { type: 'play', card: targetCard, chosenRealm };
 }
-
-// ============================================================
 
 const BOT_NAMES = ['Astra', 'Nova', 'Echo', 'Vector', 'Zion', 'Kael', 'Luna', 'Cyrus', 'Iris', 'Xenon'];
 
@@ -570,7 +319,7 @@ io.on('connection', (socket) => {
     console.log(`[SYSTEM] Join Request: Room=${rid}, Player=${data.playerName}`);
 
     if (!rooms[rid]) {
-      rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], currentTurnPlayerId: null, matchCount: 1, maxMatches: MAX_MATCHES, isSeriesFinished: false, createdAt: Date.now(), lastActivityAt: Date.now() };
+      rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], currentTurnPlayerId: null, matchCount: 1, maxMatches: 5, isSeriesFinished: false };
       console.log(`[SYSTEM] New Room Created: ${rid}`);
     }
 
@@ -580,15 +329,10 @@ io.on('connection', (socket) => {
     // NGワードフィルタを適用
     const sanitizedName = filterName(data.playerName);
 
-    // ゲーム中の場合のみ再接続を許可（waiting中は通常の新規入室として扱う）
-    // 再接続判定：同名かつisBot=falseのプレイヤーがいて、ゲームが進行中の場合
-    const existingPlayer = room.status === 'playing'
-      ? room.players.find(p => p.name === sanitizedName && !p.isBot)
-      : null;
+    // 同名のプレイヤーがいるかチェック（再接続対応）
+    const existingPlayer = room.players.find(p => p.name === sanitizedName);
 
     if (existingPlayer) {
-      // 既に同じsocket.idで接続中なら無視（二重接続防止）
-      if (existingPlayer.id === socket.id) return;
       console.log(`[SYSTEM] Reconnecting Player: ${existingPlayer.name} (ID: ${existingPlayer.id} -> ${socket.id})`);
       existingPlayer.id = socket.id;
       socket.join(rid);
@@ -663,15 +407,11 @@ io.on('connection', (socket) => {
           p.bonusPoints = 0;
           p.finishBonus = false;
         });
+        room.fieldCard = room.deck.pop();
         room.status = 'playing';
         room.currentTurnPlayerId = room.players[room.turnIndex].id;
         room.nextDrawAmount = 1;
         room.isReversed = false;
-        room.discardPile = [];
-        // 初期フィールドカードを捨て札にも登録しておく（デッキ枯渇時の補充に含めるため）
-        const initialField = room.deck.pop();
-        room.discardPile.push({ ...initialField });
-        room.fieldCard = initialField;
         room.logs = [{ id: Math.random(), text: `MATCH ${room.matchCount} 開始。` }];
         room.players.forEach(p => p.ready = p.isBot);
         io.to(room.id).emit('update-game', room);
@@ -687,28 +427,8 @@ io.on('connection', (socket) => {
       const room = rooms[data.roomId.toUpperCase()];
       if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
       const player = room.players.find(p => p.id === socket.id);
-
-      // ① そのカードが本当に手札にあるかチェック
-      const cardInHand = player.hand.find(c => c.id === data.card.id);
-      if (!cardInHand) {
-        console.warn(`[CHEAT?] ${player.name} tried to play a card not in hand: ${data.card.id}`);
-        return;
-      }
-      // ② そのカードが本当に出せるカードかチェック（サーバー側のcanPlayで判定）
-      if (!canPlay(room, cardInHand)) {
-        console.warn(`[CHEAT?] ${player.name} tried to play an unplayable card: ${cardInHand.realm}`);
-        return;
-      }
-      // ③ chosenRealmが正当な値かチェック
-      const validRealms = ['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'];
-      if (data.chosenRealm && !validRealms.includes(data.chosenRealm)) {
-        console.warn(`[CHEAT?] ${player.name} sent invalid chosenRealm: ${data.chosenRealm}`);
-        return;
-      }
-
-      // クライアントのcard情報ではなくサーバーの手札データを使う
-      player.hand = player.hand.filter(c => c.id !== cardInHand.id);
-      const card = { ...cardInHand };
+      player.hand = player.hand.filter(c => c.id !== data.card.id);
+      const card = data.card;
       const originalRealm = card.realm;
       room.lastPlayWasWild = (originalRealm === 'PLANET' || originalRealm === 'RUINS');
       if (data.chosenRealm) {
@@ -718,19 +438,11 @@ io.on('connection', (socket) => {
         card.realm = data.chosenRealm;
         card.isSpecial = false;
       }
-      // 前のフィールドカードを捨て札へ
-      if (room.fieldCard) {
-        if (!room.discardPile) room.discardPile = [];
-        room.discardPile.push(room.fieldCard);
-      }
       room.fieldCard = { ...card };
-      addLog(room, `${player.name} が ${REALM_NAME_JA[originalRealm] || originalRealm} を展開`);
+      room.logs.push({ id: Math.random(), text: `${player.name} が ${REALM_NAME_JA[originalRealm] || originalRealm} を展開` });
 
       if (card.isSpecial) {
-        if (card.realm === 'GEAR') {
-          const next = (room.nextDrawAmount === 1) ? 2 : (room.nextDrawAmount || 0) + 2;
-          room.nextDrawAmount = (MAX_DRAW_STACK > 0) ? Math.min(next, MAX_DRAW_STACK) : next;
-        }
+        if (card.realm === 'GEAR') room.nextDrawAmount = (room.nextDrawAmount === 1) ? 2 : (room.nextDrawAmount || 0) + 2;
         if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
       }
       player.handCount = player.hand.length;
@@ -739,7 +451,6 @@ io.on('connection', (socket) => {
         nextTurn(room, card.isSpecial && card.realm === 'MACHINE' && room.players.length === 2);
       }
       room.lastAction = { type: 'play', playerId: socket.id, cardId: card.id };
-      room.lastActivityAt = Date.now();
       io.to(room.id).emit('update-game', room);
 
       // 次がAIなら動かす
@@ -756,22 +467,21 @@ io.on('connection', (socket) => {
       if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
       const player = room.players.find(p => p.id === socket.id);
       const amount = room.nextDrawAmount || 1;
-      for (let i = 0; i < amount; i++) { if (room.deck.length === 0) replenishDeck(room); player.hand.push(room.deck.pop()); }
+      for (let i = 0; i < amount; i++) { if (room.deck.length === 0) room.deck = createDeck(); player.hand.push(room.deck.pop()); }
       player.handCount = player.hand.length;
-      addLog(room, `${player.name} が ${amount}枚 ドロー`);
+      room.logs.push({ id: Math.random(), text: `${player.name} が ${amount}枚 ドロー` });
       room.nextDrawAmount = 1;
 
       if (player.handCount >= HAND_LIMIT) {
         player.isEliminated = true;
-        player.score += ELIMINATION_PENALTY;
-        addLog(room, `臨界突破: ${player.name} が脱落！ (SCORE ${ELIMINATION_PENALTY})`);
+        player.score -= 10;
+        room.logs.push({ id: Math.random(), text: `臨界突破: ${player.name} が脱落！ (SCORE -10)` });
       }
 
       if (!checkGameOver(room)) {
         nextTurn(room);
       }
       room.lastAction = { type: 'draw', playerId: socket.id };
-      room.lastActivityAt = Date.now();
       io.to(room.id).emit('update-game', room);
 
       // 次がAIなら動かす
@@ -788,7 +498,7 @@ io.on('connection', (socket) => {
       const player = room.players.find(p => p.id === socket.id);
       if (player) {
         player.ready = true;
-        addLog(room, `${player.name} が準備完了しました`);
+        room.logs.push({ id: Math.random(), text: `${player.name} が準備完了しました` });
       }
 
       const humanPlayers = room.players.filter(p => !p.isBot);
@@ -798,7 +508,7 @@ io.on('connection', (socket) => {
         if (room.isSeriesFinished) {
           room.matchCount = 1;
           room.isSeriesFinished = false;
-          room.players.forEach(p => { p.score = 0; p.winStreak = 0; });
+          room.players.forEach(p => { p.score = 0; });
           room.status = 'waiting';
           room.logs = [];
         } else {
@@ -810,21 +520,14 @@ io.on('connection', (socket) => {
             p.handCount = p.hand.length;
             p.isEliminated = false;
             p.earnedPoints = 0;
-            p.basePoints = 0;
-            p.bonusPoints = 0;
-            p.streakBonus = 0;
             p.finishBonus = false;
             p.ready = p.isBot;
           });
+          room.fieldCard = room.deck.pop();
           room.status = 'playing';
           room.currentTurnPlayerId = room.players[room.turnIndex].id;
           room.nextDrawAmount = 1;
           room.isReversed = false;
-          room.discardPile = [];
-          // 初期フィールドカードを捨て札にも登録しておく（デッキ枯渇時の補充に含めるため）
-          const initialField = room.deck.pop();
-          room.discardPile.push({ ...initialField });
-          room.fieldCard = initialField;
           room.logs = [{ id: Math.random(), text: `MATCH ${room.matchCount} 開始。` }];
           
           if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
@@ -840,23 +543,3 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-// 放置部屋の自動クリーンアップ（1時間ごとに確認、2時間操作なしで削除）
-const ROOM_TIMEOUT_MS = 2 * 60 * 60 * 1000; // 2時間
-const CLEANUP_INTERVAL_MS = 60 * 60 * 1000;  // 1時間ごとにチェック
-
-setInterval(() => {
-  const now = Date.now();
-  let cleaned = 0;
-  for (const rid in rooms) {
-    const room = rooms[rid];
-    // 最終アクションのタイムスタンプがなければ作成時刻を基準にする
-    const lastActivity = room.lastActivityAt || room.createdAt || now;
-    if (now - lastActivity > ROOM_TIMEOUT_MS) {
-      delete rooms[rid];
-      cleaned++;
-      console.log(`[CLEANUP] Room ${rid} deleted (inactive)`);
-    }
-  }
-  if (cleaned > 0) console.log(`[CLEANUP] ${cleaned} room(s) cleaned up. Active rooms: ${Object.keys(rooms).length}`);
-}, CLEANUP_INTERVAL_MS);
