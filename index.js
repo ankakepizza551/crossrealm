@@ -204,6 +204,41 @@ function checkGameOver(room) {
   return false;
 }
 
+function broadcastRoomState(roomId) {
+  const room = rooms[roomId];
+  if (!room) return;
+  
+  const baseRoom = { ...room, deck: { length: room.deck ? room.deck.length : 0 } };
+
+  const clientIds = io.sockets.adapter.rooms.get(roomId);
+  if (clientIds) {
+    for (const clientId of clientIds) {
+      const sanitizedRoom = {
+        ...baseRoom,
+        players: room.players.map(p => {
+          if (p.id === clientId) return p;
+          return {
+            id: p.id,
+            name: p.name,
+            isBot: p.isBot,
+            score: p.score,
+            isEliminated: p.isEliminated,
+            ready: p.ready,
+            handCount: p.handCount,
+            finishBonus: p.finishBonus,
+            earnedPoints: p.earnedPoints,
+            basePoints: p.basePoints,
+            bonusPoints: p.bonusPoints,
+            isActing: p.isActing,
+            hand: []
+          };
+        })
+      };
+      io.to(clientId).emit('update-game', sanitizedRoom);
+    }
+  }
+}
+
 function handlePlayerExit(socket, roomId) {
   const room = rooms[roomId];
   if (!room) return;
@@ -225,7 +260,7 @@ function handlePlayerExit(socket, roomId) {
       nextTurn(room, false);
     }
   }
-  io.to(roomId).emit('update-game', room);
+  broadcastRoomState(roomId);
 }
 
 function processBotTurn(roomId) {
@@ -287,7 +322,7 @@ function processBotTurn(roomId) {
       nextTurn(room, action.card?.isSpecial && action.card.realm === 'MACHINE' && room.players.length === 2);
     }
 
-    io.to(roomId).emit('update-game', room);
+    broadcastRoomState(roomId);
 
     // AIのターンが続くなら次のAIを動かす
     if (room.status === 'playing') {
@@ -336,7 +371,7 @@ io.on('connection', (socket) => {
       console.log(`[SYSTEM] Reconnecting Player: ${existingPlayer.name} (ID: ${existingPlayer.id} -> ${socket.id})`);
       existingPlayer.id = socket.id;
       socket.join(rid);
-      io.to(rid).emit('update-game', room);
+      broadcastRoomState(rid);
 
       // もしその人のターンだったら、AIかどうかチェックして進行させる（念のため）
       if (room.status === 'playing' && room.players[room.turnIndex].id === socket.id && room.players[room.turnIndex].isBot) {
@@ -352,7 +387,7 @@ io.on('connection', (socket) => {
     socket.join(rid);
 
     console.log(`[SYSTEM] Player ${newPlayer.name} joined ${rid}. Total players: ${room.players.length}`);
-    io.to(rid).emit('update-game', room);
+    broadcastRoomState(rid);
   });
 
   socket.on('add-cpu', (data) => {
@@ -376,7 +411,7 @@ io.on('connection', (socket) => {
         score: 0,
         ready: true
       });
-      io.to(room.id).emit('update-game', room);
+      broadcastRoomState(room.id);
     }
   });
 
@@ -386,7 +421,7 @@ io.on('connection', (socket) => {
       const idx = room.players.findIndex(p => p.id === data.botId);
       if (idx !== -1 && room.players[idx].isBot) {
         room.players.splice(idx, 1);
-        io.to(room.id).emit('update-game', room);
+        broadcastRoomState(room.id);
       }
     }
   });
@@ -414,7 +449,7 @@ io.on('connection', (socket) => {
         room.isReversed = false;
         room.logs = [{ id: Math.random(), text: `MATCH ${room.matchCount} 開始。` }];
         room.players.forEach(p => p.ready = p.isBot);
-        io.to(room.id).emit('update-game', room);
+        broadcastRoomState(room.id);
 
         // 最初がAIなら動かす
         if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
@@ -451,7 +486,7 @@ io.on('connection', (socket) => {
         nextTurn(room, card.isSpecial && card.realm === 'MACHINE' && room.players.length === 2);
       }
       room.lastAction = { type: 'play', playerId: socket.id, cardId: card.id };
-      io.to(room.id).emit('update-game', room);
+      broadcastRoomState(room.id);
 
       // 次がAIなら動かす
       const nextPlayer = room.players[room.turnIndex];
@@ -482,7 +517,7 @@ io.on('connection', (socket) => {
         nextTurn(room);
       }
       room.lastAction = { type: 'draw', playerId: socket.id };
-      io.to(room.id).emit('update-game', room);
+      broadcastRoomState(room.id);
 
       // 次がAIなら動かす
       const nextPlayer = room.players[room.turnIndex];
@@ -533,7 +568,7 @@ io.on('connection', (socket) => {
           if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
         }
       }
-      io.to(room.id).emit('update-game', room);
+      broadcastRoomState(room.id);
     }
   });
 

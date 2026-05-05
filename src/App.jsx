@@ -248,6 +248,28 @@ const MemoizedCardView = React.memo(CardView, (prev, next) => {
            prev.hideOrnaments === next.hideOrnaments;
 });
 
+const PlayerSlot = ({ p, isCurrentTurn, turnDistance }) => {
+    if (!p) return <div className="h-16 opacity-0" />;
+    return (
+        <div className={`bg-white/5 border border-white/15 rounded-md p-1.5 relative h-16 flex flex-col justify-start overflow-hidden ${isCurrentTurn ? 'current-turn-glow-active' : ''} ${p.isEliminated ? 'grayscale brightness-50 border-danger' : ''} ${(p.handCount >= 10 && !p.isEliminated) ? 'burst-warning' : ''}`}>
+            <div className="font-black uppercase text-white/60 tracking-tight leading-none w-full pr-6" style={{ fontSize: p.name.length > 12 ? '6px' : p.name.length > 9 ? '7px' : p.name.length > 6 ? '8px' : '9px', overflow: 'hidden', whiteSpace: 'nowrap' }}>{p.name}</div>
+            <div className="absolute top-1 right-1 text-[9px] font-black text-[var(--steam-gold)]">★{p.score}</div>
+            <div className="absolute bottom-2 left-8 text-xl font-black text-white font-['Orbitron'] leading-none z-10">{p.handCount}<span className="text-[10px] ml-0.5">枚</span></div>
+            {turnDistance !== null && !p.isEliminated && turnDistance > 0 && <div className="absolute bottom-1 right-1 text-[8px] font-black px-1.5 py-0.5 rounded-full bg-black/60 border border-white/20 text-accent flex items-center gap-0.5 shadow-lg z-10">T-{turnDistance}</div>}
+            <div className="absolute bottom-2 left-1 w-[14px] h-[20px] z-0 opacity-50">{[...Array(Math.min(p.handCount, 3))].map((_, i) => <div key={i} className="absolute w-full h-full bg-[#111] border border-white/80 rounded-[1px]" style={{ transform: `translate(${i * 2}px, ${i * 2}px)`, zIndex: i, borderColor: isCurrentTurn ? 'var(--accent)' : 'rgba(255,255,255,0.4)' }} />)}</div>
+            {p.isEliminated && <div className="absolute inset-0 bg-red-500/30 flex items-center justify-center text-[10px] font-black text-danger tracking-[1px] -rotate-3 z-20">BURST</div>}
+        </div>
+    );
+};
+const MemoizedPlayerSlot = React.memo(PlayerSlot, (prev, next) => {
+    return prev.p?.id === next.p?.id &&
+           prev.p?.handCount === next.p?.handCount &&
+           prev.p?.score === next.p?.score &&
+           prev.p?.isEliminated === next.p?.isEliminated &&
+           prev.isCurrentTurn === next.isCurrentTurn &&
+           prev.turnDistance === next.turnDistance;
+});
+
 
 const AstralBackground = ({ bgAnim, isDimmed }) => {
     const stars = useMemo(() => {
@@ -690,7 +712,7 @@ const App = () => {
                 {/* 非ゲーム中の共通ヘッダー（ゲーム中は情報バーがボタンを持つ） */}
                 {gs?.status !== 'playing' && (
                     <div className="flex justify-end items-center gap-2 px-3 py-2 shrink-0 bg-[#05010a]/80 border-b border-white/10 z-50">
-                        <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all hover:bg-accent/10 ${bgAnim ? 'border-accent text-accent bg-black/80 shadow-[0_0_10px_rgba(64,224,208,0.4)]' : 'border-gray-500 text-gray-500 bg-black/60'}`} onClick={() => { playSE(bgAnim ? 'cancel' : 'start', muted); setBgAnim(!bgAnim); }} title={bgAnim ? "アニメーションOFF" : "アニメーションON"}>🎬</div>
+                        <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all hover:bg-accent/10 ${bgAnim ? 'border-accent text-accent bg-black/80 shadow-[0_0_10px_rgba(64,224,208,0.4)]' : 'border-gray-500 text-gray-500 bg-black/60'}`} onClick={() => { playSE(bgAnim ? 'cancel' : 'start', muted); setBgAnim(!bgAnim); }} title={bgAnim ? "軽量モードON (描画負荷軽減)" : "軽量モードOFF (通常演出)"}>{bgAnim ? '✨' : '🍃'}</div>
                         <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80 cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.3)] transition-all hover:bg-accent/10" onClick={() => setMuted(!muted)} title={muted ? "音声ON" : "音声OFF"}>{muted ? '🔇' : '🔊'}</div>
                     </div>
                 )}
@@ -820,7 +842,7 @@ const App = () => {
                         <div className="flex justify-between items-center px-4 py-2 bg-[#05010a]/90 border-b border-accent/20 shrink-0 z-50">
                             <div className="text-[11px] font-black text-accent font-['Orbitron'] tracking-[2px] sm:tracking-[4px] truncate flex-1">セクター: {room} <span className="ml-2 text-white/80">| 第{gs.matchCount}/{gs.maxMatches}戦</span> <span className="ml-2 text-[var(--steam-gold)]">★ {me?.score || 0} pts</span></div>
                             <div className="flex items-center gap-2 shrink-0 ml-2">
-                                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all hover:bg-accent/10 ${bgAnim ? 'border-accent text-accent bg-black/80 shadow-[0_0_10px_rgba(64,224,208,0.4)]' : 'border-gray-500 text-gray-500 bg-black/60'}`} onClick={() => { playSE(bgAnim ? 'cancel' : 'start', muted); setBgAnim(!bgAnim); }} title={bgAnim ? "アニメーションOFF" : "アニメーションON"}>🎬</div>
+                                <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all hover:bg-accent/10 ${bgAnim ? 'border-accent text-accent bg-black/80 shadow-[0_0_10px_rgba(64,224,208,0.4)]' : 'border-gray-500 text-gray-500 bg-black/60'}`} onClick={() => { playSE(bgAnim ? 'cancel' : 'start', muted); setBgAnim(!bgAnim); }} title={bgAnim ? "軽量モードON (描画負荷軽減)" : "軽量モードOFF (通常演出)"}>{bgAnim ? '✨' : '🍃'}</div>
                                 <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80 cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.4)] transition-all hover:bg-accent/10" onClick={() => setMuted(!muted)} title={muted ? "音声ON" : "音声OFF"}>{muted ? '🔇' : '🔊'}</div>
                             </div>
                         </div>
@@ -847,16 +869,7 @@ const App = () => {
                         <div className="grid grid-cols-4 gap-1 p-1 bg-[#0a0f23]/90 border-b-2 border-white/15 shrink-0 ">
                             {otherPlayersInCircle.map((p, i) => {
                                 if (!p) return <div key={i} className="h-16 opacity-0" />;
-                                return (
-                                    <div key={p.id} className={`bg-white/5 border border-white/15 rounded-md p-1.5 relative h-16 flex flex-col justify-start overflow-hidden ${gs.currentTurnPlayerId === p.id ? 'current-turn-glow-active' : ''} ${p.isEliminated ? 'grayscale brightness-50 border-danger' : ''} ${(p.handCount >= 10 && !p.isEliminated) ? 'burst-warning' : ''}`}>
-                                        <div className="font-black uppercase text-white/60 tracking-tight leading-none w-full pr-6" style={{ fontSize: p.name.length > 12 ? '6px' : p.name.length > 9 ? '7px' : p.name.length > 6 ? '8px' : '9px', overflow: 'hidden', whiteSpace: 'nowrap' }}>{p.name}</div>
-                                        <div className="absolute top-1 right-1 text-[9px] font-black text-[var(--steam-gold)]">★{p.score}</div>
-                                        <div className="absolute bottom-2 left-8 text-xl font-black text-white font-['Orbitron'] leading-none z-10">{p.handCount}<span className="text-[10px] ml-0.5">枚</span></div>
-                                        {getTurnDistance(p.id) !== null && !p.isEliminated && getTurnDistance(p.id) > 0 && <div className="absolute bottom-1 right-1 text-[8px] font-black px-1.5 py-0.5 rounded-full bg-black/60 border border-white/20 text-accent flex items-center gap-0.5 shadow-lg z-10">T-{getTurnDistance(p.id)}</div>}
-                                        <div className="absolute bottom-2 left-1 w-[14px] h-[20px] z-0 opacity-50">{[...Array(Math.min(p.handCount, 3))].map((_, i) => <div key={i} className="absolute w-full h-full bg-[#111] border border-white/80 rounded-[1px]" style={{ transform: `translate(${i * 2}px, ${i * 2}px)`, zIndex: i, borderColor: gs.currentTurnPlayerId === p.id ? 'var(--accent)' : 'rgba(255,255,255,0.4)' }} />)}</div>
-                                        {p.isEliminated && <div className="absolute inset-0 bg-red-500/30 flex items-center justify-center text-[10px] font-black text-danger tracking-[1px] -rotate-3 z-20">BURST</div>}
-                                    </div>
-                                );
+                                return <MemoizedPlayerSlot key={p.id} p={p} isCurrentTurn={gs.currentTurnPlayerId === p.id} turnDistance={getTurnDistance(p.id)} />;
                             })}
                         </div>
                         <div className="field-main-area">

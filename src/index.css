@@ -9,6 +9,20 @@
     --card-h: calc(var(--card-w) * 1.4);
 }
 
+/* GPU Hardware Acceleration for heavy elements */
+.star-particle,
+.nebula-glow,
+.bg-gear-css,
+.bg-magic-circle-css,
+.steam-particle,
+.ripple,
+.void-singularity-ring,
+.motion-card-ghost,
+.card-anchor,
+.card-surface {
+    will-change: transform, opacity;
+}
+
 body {
     margin: 0;
     padding: 0;
