@@ -257,4 +257,11 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], isReversed }) =>
     );
 };
 
-export default CycleDiagramSmall;
+// currentRealm、playableRealms、isReversedが変わった時だけ再描画
+export default React.memo(CycleDiagramSmall, (prev, next) => {
+    if (prev.currentRealm !== next.currentRealm) return false;
+    if (prev.isReversed !== next.isReversed) return false;
+    if (prev.playableRealms.length !== next.playableRealms.length) return false;
+    if (!prev.playableRealms.every((r, i) => r === next.playableRealms[i])) return false;
+    return true;
+});
