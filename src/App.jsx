@@ -176,6 +176,8 @@ const IconRenderer = ({ r, spec, className, ...rest }) => {
         default: return null;
     }
 };
+const MemoizedIconRenderer = React.memo(IconRenderer);
+
 
 const CardOrnaments = ({ theme }) => {
     if (theme === 'steam') return (
@@ -230,6 +232,16 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments
         </div>
     );
 };
+const MemoizedCardView = React.memo(CardView, (prev, next) => {
+    return prev.card?.realm === next.card?.realm &&
+           prev.card?.isSpecial === next.card?.isSpecial &&
+           prev.playable === next.playable &&
+           prev.isField === next.isField &&
+           prev.isSelected === next.isSelected &&
+           prev.isMyTurn === next.isMyTurn &&
+           prev.hideOrnaments === next.hideOrnaments;
+});
+
 
 const AstralBackground = ({ bgAnim, isDimmed }) => {
     const stars = useMemo(() => {
@@ -279,6 +291,8 @@ const AstralBackground = ({ bgAnim, isDimmed }) => {
         </div>
     );
 };
+const MemoizedAstralBackground = React.memo(AstralBackground);
+
 
 const App = () => {
     const [gs, setGs] = useState(null);
@@ -649,7 +663,7 @@ const App = () => {
                     </div>
                 </div>
             )}
-            <AstralBackground bgAnim={bgAnim} />
+            <MemoizedAstralBackground bgAnim={bgAnim} />
             
             {isDisconnected && joined && (
                 <div className="fixed inset-0 bg-black/95 z-[9999] flex flex-col items-center justify-center p-8 ">
@@ -797,7 +811,7 @@ const App = () => {
                                 <div className="banner-divider"></div>
                                 <div className="banner-badges">
                                     {Object.keys(REALMS).filter(r => r !== 'PLANET' && r !== 'RUINS').map(r => (
-                                        <div key={r} className={`realm-badge ${playableRealms.includes(r) ? 'active' : ''} ${gs.currentRealm === r ? 'current' : ''}`} style={{ '--r-color': REALMS[r].color }}><IconRenderer r={r} spec={false} /></div>
+                                        <div key={r} className={`realm-badge ${playableRealms.includes(r) ? 'active' : ''} ${gs.currentRealm === r ? 'current' : ''}`} style={{ '--r-color': REALMS[r].color }}><MemoizedIconRenderer r={r} spec={false} /></div>
                                     ))}
                                 </div>
                             </div>
@@ -839,10 +853,10 @@ const App = () => {
                                         </div>
                                         <div className={`field-card-scale relative z-10 ${entryAnim ? 'card-play-vfx' : ''}`}>
                                             <div className={`transition-opacity duration-[1500ms] ease-in-out ${(!isAnimating && gs.fieldCard.id === displayFieldCard?.id) ? 'opacity-100' : 'opacity-0'}`}>
-                                                <CardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={isAnimating} />
+                                                <MemoizedCardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={isAnimating} />
                                             </div>
                                             <div className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${isAnimating ? 'opacity-100' : 'opacity-0'}`}>
-                                                <CardView card={displayFieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={true} />
+                                                <MemoizedCardView card={displayFieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={true} />
                                             </div>
                                         </div>
                                     </div>
@@ -885,7 +899,7 @@ const App = () => {
                                         onTouchMove={handleTouchMove}
                                         onTouchEnd={() => handleTouchEnd(card, isPlayable)}
                                     >
-                                        <CardView card={card} playable={isPlayable} isSelected={selectedCardId === card.id} isMyTurn={isMyTurn} />
+                                        <MemoizedCardView card={card} playable={isPlayable} isSelected={selectedCardId === card.id} isMyTurn={isMyTurn} />
                                     </div>
                                 );
                             })}
@@ -901,7 +915,7 @@ const App = () => {
                         <div className="grid grid-cols-3 gap-2">
                             {['GEAR', 'ICEAGE', 'FOUNTAIN', 'BATTERY', 'MACHINE', 'ARCHIVE'].map(r => (
                                 <button key={r} className="p-2 border border-white/20 font-black text-sm hover:bg-white/10 hover:border-accent transition-all active:scale-95 flex flex-col items-center gap-1.5 bg-black/40 rounded-md" style={{ color: REALMS[r].bright }} onClick={() => { playSE('play', muted); socket.emit('play-card', { roomId: room, card: selector, chosenRealm: r }); setSelector(null); }}>
-                                    <div className="w-8 h-8 drop-shadow-[0_0_10px_currentColor]"><IconRenderer r={r} spec={false} /></div>
+                                    <div className="w-8 h-8 drop-shadow-[0_0_10px_currentColor]"><MemoizedIconRenderer r={r} spec={false} /></div>
                                     <div className="tracking-[1px] text-[10px]">{REALMS[r].n}</div>
                                 </button>
                             ))}
