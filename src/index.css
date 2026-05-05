@@ -2592,9 +2592,10 @@ body {
         background: transparent !important;
     }
     
-    /* アニメーションOFF時のみ背景を非表示 */
+    /* アニメーションOFF時のみ背景を非表示 → アニメーション停止のみに変更 */
     .all-anim-off .astral-bg-container * {
-        display: none !important;
+        animation: none !important;
+        /* display: none削除: 背景は表示してアニメーションのみ停止 */
     }
     
     /* blur系エフェクトを完全削除 */
