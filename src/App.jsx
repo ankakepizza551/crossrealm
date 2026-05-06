@@ -437,15 +437,10 @@ const App = () => {
 
     const playableRealms = useMemo(() => {
         if (!gs?.fieldCard) return [];
-        const checkSim = (r) => {
-            const h = r; const f = gs.fieldCard.realm;
-            if (h === 'PLANET' || h === 'RUINS' || f === 'PLANET' || f === 'RUINS') return true;
-            if (h === 'FOUNTAIN' && gs.fieldCard.isSpecial) return (f === 'ICEAGE' || f === 'FOUNTAIN');
-            if (['ICEAGE', 'BATTERY', 'ARCHIVE'].includes(f) && f === h) return false;
-            return f === h || (NEXT_MAP[f] && NEXT_MAP[f].includes(h));
-        };
-        return Object.keys(REALMS).filter(r => checkSim(r));
-    }, [gs?.fieldCard?.id, gs?.fieldCard?.realm, gs?.fieldCard?.isSpecial]);
+        // Badge highlighting should show all compatible realms for normal cards
+        return Object.keys(REALMS).filter(r => canPlayCheck(gs, { realm: r, isSpecial: false }));
+    }, [gs?.fieldCard?.id, gs?.fieldCard?.realm, gs?.fieldCard?.isSpecial, gs?.nextDrawAmount, canPlayCheck]);
+
 
     const sortedResultPlayers = useMemo(() => {
         if (!gs?.players) return [];

@@ -44,26 +44,11 @@ body {
 
 /* === 陷茨ｽｱ鬨ｾ螢ｹ縺・ｹ昜ｹ斟鍋ｹ晢ｽｼ郢ｧ・ｷ郢晢ｽｧ郢晢ｽｳ === */
 @keyframes flow-border-nova {
-    0% {
-        border-color: var(--steam-gold);
-        box-shadow: 0 0 15px var(--steam-gold);
-    }
-
-    33% {
-        border-color: var(--magic-purple);
-        box-shadow: 0 0 15px var(--magic-purple);
-    }
-
-    66% {
-        border-color: var(--accent);
-        box-shadow: 0 0 15px var(--accent);
-    }
-
-    100% {
-        border-color: var(--steam-gold);
-        box-shadow: 0 0 15px var(--steam-gold);
-    }
+    0%, 100% { border-color: var(--steam-gold); opacity: 0.8; }
+    33% { border-color: var(--magic-purple); opacity: 1; }
+    66% { border-color: var(--accent); opacity: 1; }
 }
+
 
 @keyframes logo-shine {
     0% {
