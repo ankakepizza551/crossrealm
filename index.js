@@ -396,17 +396,20 @@ function processBotTurn(roomId) {
       }
     } else {
       const { card, chosenRealm } = action;
+      // 移動演出用には変異前のクローンを確保
+      const motionCard = { ...card };
+      
       bot.hand = bot.hand.filter(c => c.id !== card.id);
       const originalRealm = card.realm;
       room.lastPlayWasWild = (originalRealm === 'PLANET' || originalRealm === 'RUINS');
       if (chosenRealm) {
-        card.wasPlanet = originalRealm === 'PLANET';
-        card.wasRuins = originalRealm === 'RUINS';
-        card.wasFountain = originalRealm === 'FOUNTAIN';
+        card.wasPlanet = (originalRealm === 'PLANET');
+        card.wasRuins = (originalRealm === 'RUINS');
+        card.wasFountain = (originalRealm === 'FOUNTAIN');
         card.realm = chosenRealm;
         card.isSpecial = false;
       }
-      room.fieldCard = card;
+      room.fieldCard = { ...card };
       room.logs.push({ id: Math.random(), text: `${bot.name} が ${REALM_NAME_JA[originalRealm] || originalRealm} を展開` });
 
       if (card.isSpecial) {
@@ -414,10 +417,10 @@ function processBotTurn(roomId) {
         if (card.realm === 'MACHINE') room.isReversed = !room.isReversed;
       }
       bot.handCount = bot.hand.length;
+      room.lastAction = { type: 'play', playerId: bot.id, cardId: motionCard.id, card: motionCard };
     }
 
-    room.lastAction = { type: action.type, playerId: bot.id, cardId: action.card?.id };
-    room.lastActivityAt = Date.now(); // 活動履歴を更新
+    room.lastActivityAt = Date.now(); 
 
     if (!checkGameOver(room)) {
       nextTurn(room, action.card?.isSpecial && action.card.realm === 'MACHINE' && room.players.length === 2);
@@ -566,14 +569,20 @@ io.on('connection', (socket) => {
       const room = rooms[data.roomId.toUpperCase()];
       if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
       const player = room.players.find(p => p.id === socket.id);
+      const cardInHand = player.hand.find(c => c.id === data.card.id);
+      if (!cardInHand) return;
+      
+      // 移動演出用には変異前のクローンを確保
+      const motionCard = { ...cardInHand };
+      
       player.hand = player.hand.filter(c => c.id !== data.card.id);
-      const card = data.card;
+      const card = { ...cardInHand };
       const originalRealm = card.realm;
       room.lastPlayWasWild = (originalRealm === 'PLANET' || originalRealm === 'RUINS');
       if (data.chosenRealm) {
-        card.wasPlanet = originalRealm === 'PLANET';
-        card.wasRuins = originalRealm === 'RUINS';
-        card.wasFountain = originalRealm === 'FOUNTAIN';
+        card.wasPlanet = (originalRealm === 'PLANET');
+        card.wasRuins = (originalRealm === 'RUINS');
+        card.wasFountain = (originalRealm === 'FOUNTAIN');
         card.realm = data.chosenRealm;
         card.isSpecial = false;
       }
@@ -589,8 +598,9 @@ io.on('connection', (socket) => {
       if (!checkGameOver(room)) {
         nextTurn(room, card.isSpecial && card.realm === 'MACHINE' && room.players.length === 2);
       }
-      room.lastAction = { type: 'play', playerId: socket.id, cardId: card.id };
-      room.lastActivityAt = Date.now(); // 活動履歴を更新
+      // lastActionには変身前のカード情報（motionCard）を使用
+      room.lastAction = { type: 'play', playerId: socket.id, cardId: motionCard.id, card: motionCard };
+      room.lastActivityAt = Date.now(); 
       broadcastRoomState(room.id);
 
       // 次がAIなら動かす

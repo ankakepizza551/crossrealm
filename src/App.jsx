@@ -241,18 +241,26 @@ const CardOrnaments = React.memo(({ theme, isHand }) => {
 });
 
 
-const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments }) => {
+const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments, forceRealRealm }) => {
     if (!card?.realm) return null;
+    
+    // 変異ガード：wasPlanet等のフラグがある場合は、WILDの見た目を優先する（forceRealRealmがtrueでない限り）
     let dr = card.realm;
-    const spec = card.isSpecial;
-    const rData = REALMS[dr] || REALMS.GEAR;
+    const spec = card.isSpecial || card.wasPlanet || card.wasRuins || card.wasFountain;
+    
+    if (!forceRealRealm) {
+        if (card.wasPlanet) dr = 'PLANET';
+        else if (card.wasRuins) dr = 'RUINS';
+        else if (card.wasFountain) dr = 'FOUNTAIN';
+    }
 
+    const rData = REALMS[dr] || REALMS.GEAR;
     let specialLabel = "";
     if (spec) {
         if (dr === 'GEAR') specialLabel = "DRAW 2";
         else if (dr === 'MACHINE') specialLabel = "REVERSE";
-        else if (dr === 'FOUNTAIN') specialLabel = "LIMIT WILD";
-        else specialLabel = "WILD";
+        else if (dr === 'FOUNTAIN' || card.wasFountain) specialLabel = "LIMIT WILD";
+        else if (dr === 'PLANET' || dr === 'RUINS' || card.wasPlanet || card.wasRuins) specialLabel = "WILD";
     }
 
     return (
@@ -278,10 +286,14 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments
 const MemoizedCardView = React.memo(CardView, (prev, next) => {
     return prev.card?.realm === next.card?.realm &&
            prev.card?.isSpecial === next.card?.isSpecial &&
+           prev.card?.wasPlanet === next.card?.wasPlanet &&
+           prev.card?.wasRuins === next.card?.wasRuins &&
+           prev.card?.wasFountain === next.card?.wasFountain &&
            prev.playable === next.playable &&
            prev.isField === next.isField &&
            prev.isSelected === next.isSelected &&
            prev.isMyTurn === next.isMyTurn &&
+           prev.forceRealRealm === next.forceRealRealm &&
            prev.hideOrnaments === next.hideOrnaments;
 });
 
@@ -730,8 +742,14 @@ const App = () => {
             <div ref={wrapperRef} className={`screen-wrapper ${isMyTurn ? 'my-turn-glow' : ''} ${bgAnim ? 'all-anim-active' : 'all-anim-off'} ${selector ? 'wild-open' : ''}`} style={{ '--r-color': REALMS[currentR]?.color }}>
             <div className="motion-overlay-layer" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10000 }}>
                 {motions.map(m => (
-                    <div key={m.mid} className={`motion-card-ghost ${m.type} ${getPlayerPosClass(m.playerId)}`}>
-                        <div className="ghost-surface" />
+                    <div key={m.mid} className={`motion-card-ghost ${m.type} ${getPlayerPosClass(m.playerId)}`} style={{ background: 'none', border: 'none' }}>
+                        {m.card ? (
+                            <div style={{ transform: 'scale(0.5)', transformOrigin: 'center' }}>
+                                <MemoizedCardView card={m.card} isField={false} forceRealRealm={false} />
+                            </div>
+                        ) : (
+                            <div className="ghost-surface" />
+                        )}
                     </div>
                 ))}
             </div>
@@ -936,11 +954,17 @@ const App = () => {
                                             </div>
                                         </div>
                                         <div className={`field-card-scale relative z-10 ${entryAnim ? 'card-play-vfx' : ''}`}>
-                                            <div className={`transition-opacity duration-[1500ms] ease-in-out ${(!isAnimating && gs.fieldCard.id === displayFieldCard?.id) ? 'opacity-100' : 'opacity-0'}`}>
-                                                <MemoizedCardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={isAnimating} />
+                                            <div
+                                                className={`${(gs.fieldCard.id === displayFieldCard?.id && !isAnimating && gs.fieldCard.id === prevFieldCardId.current) ? 'opacity-100' : 'opacity-0'}`}
+                                                style={{ transition: (gs.fieldCard.id === prevFieldCardId.current) ? 'opacity 1500ms ease-in-out' : 'none' }}
+                                            >
+                                                <MemoizedCardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={isAnimating || isMorphing} forceRealRealm={true} />
                                             </div>
-                                            <div className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${isAnimating ? 'opacity-100' : 'opacity-0'}`}>
-                                                <MemoizedCardView card={displayFieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={true} />
+                                            <div
+                                                className={`absolute inset-0 ${(isAnimating || gs.fieldCard.id !== prevFieldCardId.current) ? 'opacity-100' : 'opacity-0'}`}
+                                                style={{ transition: 'opacity 1500ms ease-in-out' }}
+                                            >
+                                                <MemoizedCardView card={displayFieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={true} forceRealRealm={false} />
                                             </div>
                                         </div>
                                     </div>
