@@ -115,7 +115,13 @@ function createDeck() {
   wilds.forEach(r => {
     for (let i = 0; i < 3; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: false });
   });
-  return deck.sort(() => Math.random() - 0.5);
+
+  // Fisher-Yates Shuffle (より公平なシャッフル)
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  return deck;
 }
 
 // 生存しているプレイヤーを探して次のターンを決定
@@ -136,6 +142,64 @@ function nextTurn(room, skip = false) {
 
   room.turnIndex = nextIdx;
   room.currentTurnPlayerId = room.players[room.turnIndex].id;
+  
+  // ターンタイマーの開始
+  startTurnTimer(room.id);
+}
+
+function startTurnTimer(roomId) {
+  const room = rooms[roomId];
+  if (!room || room.status !== 'playing') return;
+
+  // 既存のタイマーがあればクリア
+  if (room.turnTimer) clearTimeout(room.turnTimer);
+
+  const TIMEOUT_MS = 60000; // 60秒
+  room.turnTimeoutAt = Date.now() + TIMEOUT_MS;
+
+  room.turnTimer = setTimeout(() => {
+    handleTurnTimeout(roomId);
+  }, TIMEOUT_MS);
+}
+
+function handleTurnTimeout(roomId) {
+  const room = rooms[roomId];
+  if (!room || room.status !== 'playing') return;
+
+  const player = room.players[room.turnIndex];
+  if (!player || player.isEliminated) {
+    nextTurn(room);
+    broadcastRoomState(roomId);
+    return;
+  }
+
+  room.logs.push({ id: Math.random(), text: `TIMEOUT: ${player.name} が時間切れのため自動ドロー` });
+  
+  // 自動ドロー処理
+  const amount = room.nextDrawAmount || 1;
+  for (let i = 0; i < amount; i++) {
+    if (room.deck.length === 0) room.deck = createDeck();
+    player.hand.push(room.deck.pop());
+  }
+  player.handCount = player.hand.length;
+  room.nextDrawAmount = 1;
+
+  if (player.handCount >= HAND_LIMIT) {
+    player.isEliminated = true;
+    player.score -= 10;
+    room.logs.push({ id: Math.random(), text: `臨界突破: ${player.name} が脱落！` });
+  }
+
+  if (!checkGameOver(room)) {
+    nextTurn(room);
+  }
+  broadcastRoomState(roomId);
+  
+  // 次がAIなら動かす
+  const nextPlayer = room.players[room.turnIndex];
+  if (room.status === 'playing' && nextPlayer && nextPlayer.isBot && !nextPlayer.isEliminated) {
+    processBotTurn(room.id);
+  }
 }
 
 function canPlay(room, card) {
@@ -196,6 +260,7 @@ function checkGameOver(room) {
     room.logs.push({ id: Math.random(), text: `MATCH ${room.matchCount} COMPLETE: ${winner ? winner.name : 'NONE'} (+${earnedPoints} pts)` });
 
     room.matchCount++;
+    if (room.turnTimer) clearTimeout(room.turnTimer); // 試合終了時にタイマー停止
     if (room.matchCount > room.maxMatches) {
       room.isSeriesFinished = true;
     }
@@ -208,7 +273,8 @@ function broadcastRoomState(roomId) {
   const room = rooms[roomId];
   if (!room) return;
   
-  const baseRoom = { ...room, deck: { length: room.deck ? room.deck.length : 0 } };
+  const { turnTimer, ...roomWithoutTimer } = room;
+  const baseRoom = { ...roomWithoutTimer, deck: { length: room.deck ? room.deck.length : 0 } };
 
   const clientIds = io.sockets.adapter.rooms.get(roomId);
   if (clientIds) {
@@ -239,6 +305,20 @@ function broadcastRoomState(roomId) {
   }
 }
 
+// 1時間以上放置された空き部屋を掃除する（メモリリーク対策）
+setInterval(() => {
+  const now = Date.now();
+  for (const rid in rooms) {
+    const room = rooms[rid];
+    // 最後にログが更新されてから1時間経過、またはプレイヤーがいない場合
+    if (room.players.length === 0 || (room.lastActivityAt && now - room.lastActivityAt > 3600000)) {
+      if (room.turnTimer) clearTimeout(room.turnTimer);
+      delete rooms[rid];
+      console.log(`[CLEANUP] Room ${rid} removed due to inactivity.`);
+    }
+  }
+}, 600000); // 10分おきにチェック
+
 function handlePlayerExit(socket, roomId) {
   const room = rooms[roomId];
   if (!room) return;
@@ -248,17 +328,19 @@ function handlePlayerExit(socket, roomId) {
   room.logs.push({ id: Math.random(), text: `${player.name} が戦線を離脱しました` });
   room.players.splice(pIndex, 1);
 
-  if (room.players.filter(p => !p.isBot).length === 0) {
-    delete rooms[roomId];
-    return;
-  }
-
   if (room.status === 'playing') {
     if (!checkGameOver(room)) {
       if (pIndex < room.turnIndex) room.turnIndex--;
       room.turnIndex = (room.turnIndex + room.players.length) % room.players.length;
       nextTurn(room, false);
     }
+  }
+  
+  // プレイヤーがいなくなったらタイマー停止
+  if (room.players.filter(p => !p.isBot).length === 0) {
+    if (room.turnTimer) clearTimeout(room.turnTimer);
+    delete rooms[roomId];
+    return;
   }
   broadcastRoomState(roomId);
 }
@@ -319,6 +401,7 @@ function processBotTurn(roomId) {
     }
 
     room.lastAction = { type: action.type, playerId: bot.id, cardId: action.card?.id };
+    room.lastActivityAt = Date.now(); // 活動履歴を更新
 
     if (!checkGameOver(room)) {
       nextTurn(room, action.card?.isSpecial && action.card.realm === 'MACHINE' && room.players.length === 2);
@@ -453,6 +536,9 @@ io.on('connection', (socket) => {
         room.players.forEach(p => p.ready = p.isBot);
         broadcastRoomState(room.id);
 
+        // 最初のターンのタイマー開始
+        startTurnTimer(room.id);
+
         // 最初がAIなら動かす
         if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
       }
@@ -488,6 +574,7 @@ io.on('connection', (socket) => {
         nextTurn(room, card.isSpecial && card.realm === 'MACHINE' && room.players.length === 2);
       }
       room.lastAction = { type: 'play', playerId: socket.id, cardId: card.id };
+      room.lastActivityAt = Date.now(); // 活動履歴を更新
       broadcastRoomState(room.id);
 
       // 次がAIなら動かす
@@ -519,6 +606,7 @@ io.on('connection', (socket) => {
         nextTurn(room);
       }
       room.lastAction = { type: 'draw', playerId: socket.id };
+      room.lastActivityAt = Date.now(); // 活動履歴を更新
       broadcastRoomState(room.id);
 
       // 次がAIなら動かす
@@ -567,6 +655,10 @@ io.on('connection', (socket) => {
           room.isReversed = false;
           room.logs = [{ id: Math.random(), text: `MATCH ${room.matchCount} 開始。` }];
           
+          broadcastRoomState(room.id);
+          // 最初のターンのタイマー開始
+          startTurnTimer(room.id);
+
           if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
         }
       }
