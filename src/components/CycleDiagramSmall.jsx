@@ -133,35 +133,42 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], isReversed }) =>
                 width: isPortrait ? '100%' : '120%', 
                 height: isPortrait ? '100%' : '120%', 
                 overflow: 'visible',
-                transform: isMicro ? `scale(${Math.max(0.8, width/480)})` : 'none', // 極小時はSVG自体も少し縮小
-                willChange: 'transform', // GPU最適化
-                backfaceVisibility: 'hidden' // アンチエイリアス改善
+                transform: isMicro ? `scale(${Math.max(0.8, width/480)})` : 'none',
+                willChange: 'transform'
             }}>
                 <defs>
                     <marker id="arrowhead-master" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
-                        <path d="M0,0 L0,10 L10,5 z" fill="rgba(255,255,255,0.4)" />
+                        <path d="M0,0 L0,10 L10,5 z" fill="rgba(255,255,255,0.3)" />
                     </marker>
                     <linearGradient id="marker-copper" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style={{ stopColor: '#f69d3c' }} />
-                        <stop offset="40%" style={{ stopColor: '#fff', stopOpacity: 0.8 }} />
-                        <stop offset="50%" style={{ stopColor: '#eb5e28' }} />
-                        <stop offset="100%" style={{ stopColor: '#251605' }} />
-                    </linearGradient>
-                    <linearGradient id="marker-silver" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style={{ stopColor: '#fff', stopOpacity: 0.9 }} />
-                        <stop offset="50%" style={{ stopColor: 'rgba(255,255,255,0.2)' }} />
-                        <stop offset="100%" style={{ stopColor: '#fff', stopOpacity: 0.9 }} />
+                        <stop offset="0%" style={{ stopColor: '#d4af37' }} />
+                        <stop offset="50%" style={{ stopColor: '#b8860b' }} />
+                        <stop offset="100%" style={{ stopColor: '#4b3c00' }} />
                     </linearGradient>
                     <pattern id="marker-grid" width="8" height="8" patternUnits="userSpaceOnUse">
-                        <circle cx="1.5" cy="1.5" r="0.8" fill="rgba(255,255,255,0.25)" />
+                        <circle cx="1.5" cy="1.5" r="0.8" fill="rgba(255,255,255,0.15)" />
                     </pattern>
-                    <filter id="marker-glow"><feGaussianBlur stdDeviation="4" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter>
                 </defs>
 
                 <style>{`
-                    @keyframes marker-rotate-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-                    @keyframes marker-flicker { 0%, 100% { opacity: 1; } 92% { opacity: 1; } 93% { opacity: 0.7; } 95% { opacity: 0.4; } 96% { opacity: 1; } }
-                    @keyframes marker-scanline { from { transform: translateY(-${mBase/2}px); } to { transform: translateY(${mBase/2}px); } }
+                    @keyframes eco-pulse-ring { 
+                        0% { transform: scale(0); opacity: 0; }
+                        10% { opacity: 0.8; }
+                        100% { transform: scale(1.3); opacity: 0; } 
+                    }
+                    @keyframes eco-rotate-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                    @keyframes eco-marker-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+                    .playable-pulse { 
+                        animation: eco-pulse-ring 2s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+                        transform-origin: center;
+                        transform-box: fill-box;
+                    }
+                    .marker-rotate { 
+                        animation: eco-rotate-slow 30s linear infinite; 
+                        transform-origin: center;
+                        transform-box: fill-box;
+                    }
+                    .marker-float { animation: eco-marker-float 3s ease-in-out infinite; }
                 `}</style>
 
                 {items.map((item, i) => {
@@ -184,70 +191,49 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], isReversed }) =>
                         <g key={item.k}>
                             <line
                                 x1={startX} y1={startY} x2={endX} y2={endY}
-                                stroke="rgba(255,255,255,0.25)"
+                                stroke="rgba(255,255,255,0.15)"
                                 strokeWidth={isPortrait ? 1.5 : 2.5}
                                 markerEnd="url(#arrowhead-master)"
                             />
 
-                            <g transform={`translate(${pos.x}, ${pos.y})`} style={{ opacity: isCurrent ? 1 : 0.85 }}>
-                                {isPlayable && !isCurrent && (
-                                    <animateTransform attributeName="transform" type="scale" from="1" to="1.12" dur="0.8s" repeatCount="indefinite" additive="sum" />
-                                )}
-                                {rData.theme === 'steam' && (
+                            <g transform={`translate(${pos.x}, ${pos.y})`}>
+                                {isPlayable && (
                                     <g>
-                                        <rect x={-mBase/2} y={-mBase/2} width={mBase} height={mBase} rx={isPortrait ? 6 : 10} fill="url(#marker-copper)" stroke="#3d2616" strokeWidth={isPortrait ? 1.5 : 2.5} />
-                                        <circle cx={-mBase*0.4} cy={-mBase*0.4} r={isPortrait ? 2.5 : 4} fill="#251605" />
-                                        <circle cx={mBase*0.4} cy={-mBase*0.4} r={isPortrait ? 2.5 : 4} fill="#251605" />
-                                        <circle cx={-mBase*0.4} cy={mBase*0.4} r={isPortrait ? 2.5 : 4} fill="#251605" />
-                                        <circle cx={mBase*0.4} cy={mBase*0.4} r={isPortrait ? 2.5 : 4} fill="#251605" />
+                                        <circle r={mBase * 0.6} fill="none" stroke={rData.bright} strokeWidth="3.5" className="playable-pulse" style={{ animationDelay: '0s' }} />
+                                        <circle r={mBase * 0.6} fill="none" stroke={rData.bright} strokeWidth="2.2" className="playable-pulse" style={{ animationDelay: '0.6s' }} />
+                                        <circle r={mBase * 0.6} fill="none" stroke={rData.bright} strokeWidth="1.2" className="playable-pulse" style={{ animationDelay: '1.2s' }} />
                                     </g>
                                 )}
-                                {rData.theme === 'fantasy' && (
-                                    <g>
-                                        <g style={{ animation: 'marker-rotate-slow 30s linear infinite' }}>
-                                            <circle r={mBase * 0.55} fill="none" stroke="url(#marker-silver)" strokeWidth={isPortrait ? 1 : 1.5} strokeDasharray={isPortrait ? "4 8" : "6 12"} opacity="0.5" />
-                                        </g>
-                                        <circle r={mBase * 0.45} fill={isCurrent ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.6)"} stroke={rData.bright} strokeWidth={isPortrait ? 2 : 3} filter="url(#marker-glow)" />
-                                    </g>
-                                )}
-                                {rData.theme === 'cyber' && (
-                                    <g style={{ animation: 'marker-flicker 6s infinite' }}>
-                                        <path d={`M0 -${mBase*0.55} L${mBase*0.48} -${mBase*0.28} L${mBase*0.48} ${mBase*0.28} L0 ${mBase*0.55} L-${mBase*0.48} ${mBase*0.28} L-${mBase*0.48} -${mBase*0.28} Z`} fill="url(#marker-grid)" stroke={rData.bright} strokeWidth={isPortrait ? 2 : 3.5} />
-                                        <rect x={-mBase*0.48} y={-mBase*0.55} width={mBase*0.96} height={isPortrait ? 2 : 3} fill="rgba(255,255,255,0.3)" style={{ animation: 'marker-scanline 2s linear infinite' }} />
-                                    </g>
-                                )}
-
-                                <g transform={`translate(0, -${isPortrait ? 8 : 14})`}>
-                                    <MarkerIcon r={item.k} color={isCurrent ? "#fff" : rData.bright} scale={mScale} />
-                                </g>
-                                <text
-                                    y={isPortrait ? 32 : 50}
-                                    fill={isCurrent ? "#fff" : "rgba(255,255,255,1)"}
-                                    fontSize={fontSize}
-                                    fontWeight="1000"
-                                    textAnchor="middle"
-                                    style={{ letterSpacing: isPortrait ? '1px' : '3px', paintOrder: 'stroke', stroke: '#000', strokeWidth: isPortrait ? 3 : 5, fontFamily: 'Orbitron, sans-serif' }}
-                                >
-                                    {item.n}
-                                </text>
                                 
-                                {isCurrent && (
-                                    <circle r={mBase * 0.65} fill="none" stroke={rData.bright} strokeWidth={isPortrait ? 2 : 3} strokeDasharray="6 6" opacity="0.6">
-                                        <animate attributeName="r" from={mBase * 0.55} to={mBase * 0.75} dur="1.5s" repeatCount="indefinite" />
-                                        <animate attributeName="opacity" from="0.6" to="0" dur="1.5s" repeatCount="indefinite" />
-                                    </circle>
-                                )}
-                                {isPlayable && !isCurrent && (
-                                    <>
-                                        <circle r={mBase * 0.7} fill="none" stroke={rData.bright} strokeWidth={isPortrait ? 3 : 4.5} opacity="1">
-                                            <animate attributeName="r" from={mBase * 0.6} to={mBase * 0.9} dur="1.2s" repeatCount="indefinite" />
-                                            <animate attributeName="opacity" from="1" to="0" dur="1.2s" repeatCount="indefinite" />
-                                        </circle>
-                                        <circle r={mBase * 0.6} fill="none" stroke={rData.bright} strokeWidth={isPortrait ? 2.5 : 3.5} opacity="0.9">
-                                            <animate attributeName="opacity" from="0.9" to="0.3" dur="0.8s" repeatCount="indefinite" />
-                                        </circle>
-                                    </>
-                                )}
+                                <g className={isCurrent ? "marker-float" : ""}>
+                                    {rData.theme === 'steam' && (
+                                        <rect x={-mBase/2} y={-mBase/2} width={mBase} height={mBase} rx={isPortrait ? 4 : 8} fill="url(#marker-copper)" stroke="#3d2616" strokeWidth="1" />
+                                    )}
+                                    {rData.theme === 'fantasy' && (
+                                        <g>
+                                            <circle r={mBase * 0.52} fill="none" stroke={rData.bright} strokeWidth="1" strokeDasharray="4 4" className="marker-rotate" opacity="0.4" />
+                                            <circle r={mBase * 0.45} fill="rgba(0,0,0,0.6)" stroke={rData.bright} strokeWidth="1.5" />
+                                        </g>
+                                    )}
+                                    {rData.theme === 'cyber' && (
+                                        <path d={`M0 -${mBase*0.52} L${mBase*0.45} -${mBase*0.26} L${mBase*0.45} ${mBase*0.26} L0 ${mBase*0.52} L-${mBase*0.45} ${mBase*0.26} L-${mBase*0.45} -${mBase*0.26} Z`} fill="rgba(0,0,0,0.7)" stroke={rData.bright} strokeWidth="2" />
+                                    )}
+
+                                    <g transform={`translate(0, -${isPortrait ? 8 : 14})`}>
+                                        <MarkerIcon r={item.k} color={isCurrent ? "#fff" : rData.bright} scale={mScale} />
+                                    </g>
+                                    
+                                    <text
+                                        y={isPortrait ? 32 : 50}
+                                        fill={isCurrent ? "#fff" : "rgba(255,255,255,0.95)"}
+                                        fontSize={fontSize}
+                                        fontWeight="900"
+                                        textAnchor="middle"
+                                        style={{ fontFamily: 'Orbitron, sans-serif', paintOrder: 'stroke', stroke: '#000', strokeWidth: isPortrait ? '3px' : '5px' }}
+                                    >
+                                        {item.n}
+                                    </text>
+                                </g>
                             </g>
                         </g>
                     );

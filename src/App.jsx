@@ -214,10 +214,10 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments
             style={{ '--r-color': rData.color, '--r-bright': rData.bright, width: 'var(--card-w)', height: 'var(--card-h)', borderRadius: '8px', overflow: 'hidden', position: 'relative', border: 'none' }}>
             {!hideOrnaments && <CardOrnaments theme={rData.theme} isHand={!isField} />}
             <div className="card-content">
-                <div className="card-header-tech" style={{ position: 'absolute', top: '6%', left: '50%', transform: 'translateX(-50%)', width: '85%', background: 'rgba(0,0,0,0.8)', borderLeft: `3px solid ${rData.color}`, padding: '2px 8px', zIndex: 50 }}>
+                <div className="card-header-tech" style={{ width: '90%', background: 'rgba(0,0,0,0.8)', borderLeft: '3px solid var(--r-color)', padding: '2px 8px', zIndex: 50, position: 'absolute', top: '2%', left: '50%', transform: 'translateX(-50%)' }}>
                     <span style={{ fontSize: 'calc(var(--card-w)*0.07)', fontWeight: 900, color: rData.bright, fontFamily: 'Orbitron', letterSpacing: '1px' }}>{dr}</span>
                 </div>
-                <div className="card-icon-overload" style={{ color: rData.bright, position: 'absolute', top: '52%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 20, width: '55%', height: '55%', filter: `drop-shadow(0 0 5px ${rData.color})` }}>
+                <div className="card-icon" style={{ width: '50%', height: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: '52%', left: '50%', transform: 'translate(-50%, -50%)', animation: 'ultimate-float 5s ease-in-out infinite', zIndex: 20, filter: 'drop-shadow(0 0 5px var(--r-color))' }}>
                     <IconRenderer r={dr} spec={spec} />
                 </div>
                 <div className="card-footer-peak" style={{ position: 'absolute', bottom: '0', width: '100%', padding: '25% 0 10%', background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)', textAlign: 'center', color: '#fff', zIndex: 50, fontWeight: 900, fontSize: 'calc(var(--card-w)*0.15)', textShadow: `0 0 10px ${rData.color}`, fontFamily: rData.font }}>
