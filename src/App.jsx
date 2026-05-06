@@ -90,7 +90,7 @@ const playSE = (type, muted) => {
 
 const IconRenderer = React.memo(({ r, spec, className, ...rest }) => {
     const p = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: spec ? 3.5 : 2.5, strokeLinecap: "round", strokeLinejoin: "round", className: className || "w-full h-full", ...rest };
-    const glowStyle = spec ? { filter: 'drop-shadow(0 0 3px currentColor)' } : {};
+    const glowStyle = spec ? { strokeWidth: 4, strokeOpacity: 0.8 } : {};
     
     switch (r) {
         case 'GEAR':
@@ -147,7 +147,8 @@ const ComplexEmblem = React.memo(({ isLogo = false }) => (
         <g style={{ transform: isLogo ? 'scale(1)' : 'scale(0.8)', transformOrigin: 'center' }}>
             <circle cx="50" cy="50" r="42" fill="none" stroke="var(--accent)" strokeWidth="0.5" opacity="0.3" strokeDasharray="1 3" />
             <circle cx="50" cy="50" r="45" fill="none" stroke="var(--accent)" strokeWidth="1" strokeDasharray="15 5" opacity="0.4" style={{ animation: 'emblem-rotate-outer 40s linear infinite', transformOrigin: 'center' }} />
-            <circle cx="50" cy="50" r="12" fill="var(--danger)" opacity="0.3" style={{ animation: 'emblem-pulse 3s infinite', filter: 'drop-shadow(0 0 5px var(--danger))' }} />
+            <circle cx="50" cy="50" r="12" fill="var(--danger)" opacity="0.3" style={{ animation: 'emblem-pulse 3s infinite' }} />
+            <circle cx="50" cy="50" r="12" fill="none" stroke="var(--danger)" strokeWidth="0.5" opacity="0.5" />
             <text x="50" y="54" fill="var(--accent)" fontSize="10" fontWeight="1000" fontFamily="Orbitron" textAnchor="middle" style={{ animation: 'emblem-pulse 2s infinite' }}>X</text>
 
         </g>
@@ -217,7 +218,7 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments
                 <div className="card-header-tech" style={{ width: '90%', background: 'rgba(0,0,0,0.8)', borderLeft: '3px solid var(--r-color)', padding: '2px 8px', zIndex: 50, position: 'absolute', top: '2%', left: '50%', transform: 'translateX(-50%)' }}>
                     <span style={{ fontSize: 'calc(var(--card-w)*0.07)', fontWeight: 900, color: rData.bright, fontFamily: 'Orbitron', letterSpacing: '1px' }}>{dr}</span>
                 </div>
-                <div className="card-icon" style={{ width: '50%', height: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: '52%', left: '50%', transform: 'translate(-50%, -50%)', animation: 'ultimate-float 5s ease-in-out infinite', zIndex: 20, filter: 'drop-shadow(0 0 5px var(--r-color))' }}>
+                <div className="card-icon" style={{ width: '50%', height: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: '52%', left: '50%', transform: 'translate(-50%, -50%)', animation: 'ultimate-float 5s ease-in-out infinite', zIndex: 20 }}>
                     <IconRenderer r={dr} spec={spec} />
                 </div>
                 <div className="card-footer-peak" style={{ position: 'absolute', bottom: '0', width: '100%', padding: '25% 0 10%', background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)', textAlign: 'center', color: '#fff', zIndex: 50, fontWeight: 900, fontSize: 'calc(var(--card-w)*0.15)', textShadow: `0 0 10px ${rData.color}`, fontFamily: rData.font }}>
@@ -264,7 +265,7 @@ const MemoizedPlayerSlot = React.memo(PlayerSlot, (prev, next) => {
 
 const AstralBackground = ({ bgAnim, isDimmed }) => {
     const stars = useMemo(() => {
-        return [...Array(8)].map((_, i) => ({
+        return [...Array(5)].map((_, i) => ({
             id: i,
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
