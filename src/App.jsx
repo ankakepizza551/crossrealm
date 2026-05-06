@@ -658,7 +658,10 @@ const App = () => {
                 playSE('play', muted);
                 if (window.navigator.vibrate) window.navigator.vibrate(12);
                 const needsSelector = card.realm === 'PLANET' || card.realm === 'RUINS' || (card.realm === 'FOUNTAIN' && card.isSpecial);
-                if (needsSelector) {
+                const isLastCard = me?.hand?.length === 1;
+                if (isLastCard && needsSelector) {
+                    socket.emit('play-card', { roomId: room, card: card, chosenRealm: 'GEAR' });
+                } else if (needsSelector) {
                     setSelector(card);
                 } else {
                     socket.emit('play-card', { roomId: room, card: card });
@@ -810,7 +813,7 @@ const App = () => {
                                         {/* 点数計算結果の表示 - 重なりを防ぐため高さを調整 */}
                                         {p.finishBonus && !gs.isSeriesFinished && (
                                             <div className="absolute top-[-90px] text-[10px] text-[#ff88ff] font-black animate-pulse drop-shadow-[0_0_5px_rgba(255,0,255,0.8)] whitespace-nowrap z-20">
-                                                ワイルドボーナス x1.5!
+                                                ワイルドボーナス x1.2!
                                             </div>
                                         )}
                                         {p.earnedPoints > 0 && !gs.isSeriesFinished && (

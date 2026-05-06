@@ -178,7 +178,7 @@ function checkGameOver(room) {
       const isWildCard = !isLimitWild && (room.lastPlayWasWild || room.fieldCard.wasPlanet || room.fieldCard.wasRuins || room.fieldCard.realm === 'PLANET' || room.fieldCard.realm === 'RUINS');
       
       if (winner.handCount === 0 && room.fieldCard && isWildCard) {
-        totalEarned = Math.ceil(basePoints * 1.5);
+        totalEarned = Math.ceil(basePoints * 1.2);
         bonusPoints = totalEarned - basePoints;
         isWildFinish = true;
       }
