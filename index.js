@@ -367,9 +367,11 @@ function processBotTurn(roomId) {
   const bot = room.players[room.turnIndex];
   if (!bot || !bot.isBot || bot.isActing || bot.isEliminated) return;
 
-  const isWild = room.lastPlayWasWild || (room.fieldCard && (room.fieldCard.wasPlanet || room.fieldCard.wasRuins));
   const isMatchStart = room.logs.length <= 1;
-  const botDelay = isMatchStart ? 3500 : (isWild ? 3000 : 1200);
+  // WILDアニメーションロック中は残り時間分を追加遅延
+  const wildLockRemaining = (room.wildAnimLockUntil && room.wildAnimLockUntil > Date.now()) ? (room.wildAnimLockUntil - Date.now()) : 0;
+  const baseBotDelay = isMatchStart ? 3500 : 1200;
+  const botDelay = baseBotDelay + wildLockRemaining;
 
   bot.isActing = true;
   setTimeout(() => {
@@ -418,6 +420,12 @@ function processBotTurn(roomId) {
       }
       bot.handCount = bot.hand.length;
       room.lastAction = { type: 'play', playerId: bot.id, cardId: motionCard.id, card: motionCard };
+      // WILDカードなら1.5秒のアニメーションロックを設定
+      if (card.wasPlanet || card.wasRuins || card.wasFountain) {
+        room.wildAnimLockUntil = Date.now() + 1500;
+      } else {
+        room.wildAnimLockUntil = null;
+      }
     }
 
     room.lastActivityAt = Date.now(); 
@@ -568,6 +576,8 @@ io.on('connection', (socket) => {
     try {
       const room = rooms[data.roomId.toUpperCase()];
       if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
+      // WILDアニメーションロック中はアクション拒否
+      if (room.wildAnimLockUntil && Date.now() < room.wildAnimLockUntil) return;
       const player = room.players.find(p => p.id === socket.id);
       const cardInHand = player.hand.find(c => c.id === data.card.id);
       if (!cardInHand) return;
@@ -600,7 +610,13 @@ io.on('connection', (socket) => {
       }
       // lastActionには変身前のカード情報（motionCard）を使用
       room.lastAction = { type: 'play', playerId: socket.id, cardId: motionCard.id, card: motionCard };
-      room.lastActivityAt = Date.now(); 
+      room.lastActivityAt = Date.now();
+      // WILDカードなら1.5秒のアニメーションロックを設定
+      if (card.wasPlanet || card.wasRuins || card.wasFountain) {
+        room.wildAnimLockUntil = Date.now() + 1500;
+      } else {
+        room.wildAnimLockUntil = null;
+      }
       broadcastRoomState(room.id);
 
       // 次がAIなら動かす
@@ -615,6 +631,8 @@ io.on('connection', (socket) => {
     try {
       const room = rooms[data.roomId.toUpperCase()];
       if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
+      // WILDアニメーションロック中はアクション拒否
+      if (room.wildAnimLockUntil && Date.now() < room.wildAnimLockUntil) return;
       const player = room.players.find(p => p.id === socket.id);
       const amount = room.nextDrawAmount || 1;
       for (let i = 0; i < amount; i++) { if (room.deck.length === 0) room.deck = createDeck(); player.hand.push(room.deck.pop()); }

@@ -449,16 +449,6 @@ const App = () => {
     const prevGsStatusRef = useRef(null);
 
 
-    const displayFieldCard = useMemo(() => {
-        if (!gs?.fieldCard) return null;
-        const c = gs.fieldCard;
-        const isNewWild = (c.wasPlanet || c.wasRuins || c.wasFountain) && (c.id !== prevFieldCardId.current);
-        const isDuringFreezeOrFade = (c.wasPlanet || c.wasRuins || c.wasFountain) && (isAnimating || isMorphing);
-        if (isNewWild || isDuringFreezeOrFade) {
-            return { ...c, realm: c.wasPlanet ? 'PLANET' : (c.wasRuins ? 'RUINS' : 'FOUNTAIN'), isSpecial: true };
-        }
-        return visualFieldCard || c;
-    }, [gs?.fieldCard, visualFieldCard, isAnimating, isMorphing]);
     const prevPlayersRef = useRef([]);
     const logContainerRef = useRef(null);
     const wrapperRef = useRef(null);
@@ -644,32 +634,35 @@ const App = () => {
         if (gs && gs.fieldCard && gs.fieldCard.id !== prevFieldCardId.current) {
             const c = gs.fieldCard;
             if (morphTimeoutRef.current) clearTimeout(morphTimeoutRef.current);
+            if (morphTimeout2Ref.current) clearTimeout(morphTimeout2Ref.current);
+            if (safetyTimeoutRef.current) clearTimeout(safetyTimeoutRef.current);
+
             setEntryAnim(true);
             if (entryAnimTimerRef.current) clearTimeout(entryAnimTimerRef.current);
             entryAnimTimerRef.current = setTimeout(() => { setEntryAnim(false); entryAnimTimerRef.current = null; }, 500);
+
+            // 入力ロック開始、モーフィングは停止
+            setIsMorphing(false);
+
             if (c.wasPlanet || c.wasRuins || c.wasFountain) {
-                setIsAnimating(true); setIsMorphing(false);
-                if (morphTimeout2Ref.current) clearTimeout(morphTimeout2Ref.current);
-                if (safetyTimeoutRef.current) clearTimeout(safetyTimeoutRef.current);
+                // === WILDカードシーケンス（合計約1.5秒） ===
+                // 即座にWILDとして着地 → 500ms認識 → 1000msクロスフェード
+                setIsAnimating(true);
                 setVisualFieldCard({ ...c, realm: c.wasPlanet ? 'PLANET' : (c.wasRuins ? 'RUINS' : 'FOUNTAIN'), isSpecial: true });
                 morphTimeoutRef.current = setTimeout(() => {
-                    setVisualFieldCard(c); setIsAnimating(false); setIsMorphing(true);
+                    // 認識時間終了 → モーフ開始
+                    setIsAnimating(false);
+                    setIsMorphing(true);
                     morphTimeout2Ref.current = setTimeout(() => {
-                        setIsMorphing(false); morphTimeout2Ref.current = null;
-                        if (safetyTimeoutRef.current) { clearTimeout(safetyTimeoutRef.current); safetyTimeoutRef.current = null; }
-                    }, 1500);
+                        setIsMorphing(false);
+                        setVisualFieldCard({ ...c, wasPlanet: false, wasRuins: false, wasFountain: false });
+                        morphTimeout2Ref.current = null;
+                    }, 1000);
                     morphTimeoutRef.current = null;
-                }, 1500);
-                safetyTimeoutRef.current = setTimeout(() => {
-                    setIsAnimating(false); setIsMorphing(false);
-                    setVisualFieldCard(c);
-                    safetyTimeoutRef.current = null;
-                }, 5000);
+                }, 500);
             } else {
-                setIsAnimating(false); setIsMorphing(false);
-                if (morphTimeoutRef.current) { clearTimeout(morphTimeoutRef.current); morphTimeoutRef.current = null; }
-                if (morphTimeout2Ref.current) { clearTimeout(morphTimeout2Ref.current); morphTimeout2Ref.current = null; }
-                if (safetyTimeoutRef.current) { clearTimeout(safetyTimeoutRef.current); safetyTimeoutRef.current = null; }
+                // === 通常カード：即座に切り替え ===
+                setIsAnimating(false);
                 setVisualFieldCard(c);
             }
             if (prevFieldCardId.current !== null && gs.status === 'playing') {
@@ -954,17 +947,16 @@ const App = () => {
                                             </div>
                                         </div>
                                         <div className={`field-card-scale relative z-10 ${entryAnim ? 'card-play-vfx' : ''}`}>
-                                            <div
-                                                className={`${(gs.fieldCard.id === displayFieldCard?.id && !isAnimating && gs.fieldCard.id === prevFieldCardId.current) ? 'opacity-100' : 'opacity-0'}`}
-                                                style={{ transition: (gs.fieldCard.id === prevFieldCardId.current) ? 'opacity 1500ms ease-in-out' : 'none' }}
-                                            >
-                                                <MemoizedCardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={isAnimating || isMorphing} forceRealRealm={true} />
+                                            {/* Layer A: 常時表示 - visualFieldCardをそのまま描画 */}
+                                            <div>
+                                                <MemoizedCardView card={visualFieldCard || gs.fieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={isMorphing} forceRealRealm={false} />
                                             </div>
+                                            {/* Layer B: モーフ専用 - isMorphing時のみクロスフェードで出現 */}
                                             <div
-                                                className={`absolute inset-0 ${(isAnimating || gs.fieldCard.id !== prevFieldCardId.current) ? 'opacity-100' : 'opacity-0'}`}
-                                                style={{ transition: 'opacity 1500ms ease-in-out' }}
+                                                className={`absolute inset-0 ${isMorphing ? 'opacity-100' : 'opacity-0'}`}
+                                                style={{ transition: isMorphing ? 'opacity 1000ms ease-in-out' : 'none' }}
                                             >
-                                                <MemoizedCardView card={displayFieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={true} forceRealRealm={false} />
+                                                <MemoizedCardView card={gs.fieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={false} forceRealRealm={true} />
                                             </div>
                                         </div>
                                     </div>
