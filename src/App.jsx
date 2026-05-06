@@ -88,118 +88,95 @@ const playSE = (type, muted) => {
     } catch (e) { }
 };
 
-const ComplexEmblem = ({ isLogo = false }) => (
-    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
-        <defs>
-            <filter id="core-glow-bg"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
-        </defs>
-        <g style={{ transform: isLogo ? 'scale(1)' : 'scale(0.8)', transformOrigin: 'center' }}>
-            <circle cx="50" cy="50" r="42" fill="none" stroke="var(--accent)" strokeWidth="0.5" opacity="0.3" strokeDasharray="1 3" />
-            <g style={{ animation: 'emblem-rotate-outer 40s linear infinite', transformOrigin: 'center' }}>
-                <circle cx="50" cy="50" r="45" fill="none" stroke="var(--accent)" strokeWidth="1" strokeDasharray="15 5" opacity="0.4" />
-                {[...Array(3)].map((_, i) => <rect key={i} x="48" y="2" width="4" height="6" fill="var(--accent)" opacity="0.6" transform={`rotate(${i * 120} 50 50)`} />)}
-            </g>
-            <path d="M50 16 L79.4 33 L79.4 67 L50 84 L20.6 67 L20.6 33 Z" fill="none" stroke="var(--steam-gold)" strokeWidth="1.5" opacity="0.5" style={{ animation: 'emblem-rotate-inner 45s linear infinite', transformOrigin: 'center' }} />
-            <path d="M50 20 L76 35 L76 65 L50 80 L24 65 L24 35 Z" fill="none" stroke="var(--steam-gold)" strokeWidth="0.5" opacity="0.3" style={{ animation: 'emblem-rotate-outer 55s linear infinite', transformOrigin: 'center' }} />
-            {isLogo && <g style={{ animation: 'emblem-rotate-inner 45s linear infinite', transformOrigin: 'center' }}>{[...Array(6)].map((_, i) => <circle key={i} cx="50" cy="16" r="1.5" fill="var(--steam-gold)" opacity="0.9" transform={`rotate(${i * 60} 50 50)`} />)}</g>}
-            <circle cx="50" cy="50" r="12" fill="var(--danger)" opacity="0.3" filter="url(#core-glow-bg)" style={{ animation: 'emblem-pulse 3s infinite' }} />
-            <path d="M36 36 L64 64 M64 36 L36 64" stroke="#fff" strokeWidth="4" strokeLinecap="square" opacity="0.9" />
-            <path d="M30 30 L70 70 M70 30 L30 70" stroke="var(--accent)" strokeWidth="1" strokeLinecap="square" opacity="0.5" />
-            <text x="50" y="54" fill="var(--accent)" fontSize="10" fontWeight="1000" font-family="Orbitron" textAnchor="middle" style={{ animation: 'emblem-pulse 2s infinite' }}>X</text>
-        </g>
-    </svg>
-);
-
-const IconRenderer = ({ r, spec, className, ...rest }) => {
-    const p = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: spec ? 4 : 2, strokeLinecap: "round", strokeLinejoin: "round", className: className || "w-full h-full", ...rest };
+const IconRenderer = React.memo(({ r, spec, className, ...rest }) => {
+    const p = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: spec ? 3.5 : 2.5, strokeLinecap: "round", strokeLinejoin: "round", className: className || "w-full h-full", ...rest };
+    const glowStyle = spec ? { filter: 'drop-shadow(0 0 3px currentColor)' } : {};
+    
     switch (r) {
         case 'GEAR':
             return <svg {...p}>
-                <circle cx="12" cy="12" r="8" fill="currentColor" opacity="0.1" stroke="none" />
                 <circle cx="12" cy="12" r="5" fill="none" strokeWidth="1.5" />
-                <g style={{ transformOrigin: 'center' }}>
+                <g style={{ transformOrigin: 'center', ...glowStyle }}>
                     {[...Array(8)].map((_, i) => (
                         <rect key={i} x="11" y="2" width="2" height="4" fill="currentColor" transform={`rotate(${i * 45} 12 12)`} />
                     ))}
                 </g>
-                <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
+                <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" />
             </svg>;
         case 'ARCHIVE':
             return <svg {...p}>
-                <path d="M4 17a3 3 0 0 1 3-3 5 5 0 0 1 9 1 3 3 0 0 1 0 6H7a3 3 0 0 1-3-3z" fill="currentColor" opacity="0.1" stroke="none" />
-                <path d="M8.5 5H20v15.5H8.5a2.5 2.5 0 0 1 0-5H20" fill="currentColor" opacity="0.2" stroke="none" />
                 <path d="M6 20.5A2.5 2.5 0 0 1 8.5 18H20" />
                 <path d="M8.5 5H20v15.5H8.5a2.5 2.5 0 0 1 0-5H20" />
-                <rect x="15" y="10" width="6" height="5" rx="1" fill="currentColor" opacity="0.4" stroke="none" />
-                <rect x="15" y="10" width="6" height="5" rx="1" />
-                <circle cx="18" cy="12.5" r="1.5" fill="currentColor" stroke="none" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
+                <circle cx="18" cy="12.5" r="1.5" fill="currentColor" stroke="none" style={glowStyle} />
             </svg>;
         case 'FOUNTAIN':
             return <svg {...p}>
-                <circle cx="12" cy="12" r="9" fill="currentColor" opacity="0.1" stroke="none" />
-                <circle cx="12" cy="12" r="9" strokeDasharray="2 4" opacity="0.6" />
-                <path d="M12 19c3.8 0 7-3.2 7-7 0-4.5-7-10-7-10S5 7.5 5 12c0 3.8 3.2 7 7 7z" fill="currentColor" opacity="0.25" stroke="none" />
                 <path d="M12 19c3.8 0 7-3.2 7-7 0-4.5-7-10-7-10S5 7.5 5 12c0 3.8 3.2 7 7 7z" />
-                <path d="M12 16c2 0 3.5-1.5 3.5-3.5 0-2.5-3.5-5.5-3.5-5.5S8.5 10 8.5 12.5c0 2 1.5 3.5 3.5 3.5z" fill="currentColor" stroke="none" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
-                <path d="M7 6a7 7 0 0 1 10 0" opacity="0.8" />
+                <path d="M12 16c2 0 3.5-1.5 3.5-3.5 0-2.5-3.5-5.5-3.5-5.5S8.5 10 8.5 12.5c0 2 1.5 3.5 3.5 3.5z" fill="currentColor" stroke="none" style={glowStyle} />
             </svg>;
         case 'ICEAGE':
             return <svg {...p}>
-                <circle cx="12" cy="12" r="9" fill="currentColor" opacity="0.1" stroke="none" />
                 <path d="M12 3v18 M3 12h18 M5.6 5.6l12.8 12.8 M5.6 18.4l12.8-12.8" strokeWidth="1.2" opacity="0.7" />
-                <polygon points="12 7 17 12 12 17 7 12" fill="currentColor" opacity="0.25" stroke="none" />
                 <polygon points="12 7 17 12 12 17 7 12" fill="none" strokeWidth="1.2" />
-                <polygon points="12 4 15.5 8.5 20 12 15.5 15.5 12 20 8.5 15.5 4 12 8.5 8.5" fill="none" strokeWidth="1.2" opacity="0.5" />
-                <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
+                <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" style={glowStyle} />
             </svg>;
         case 'MACHINE':
             return <svg {...p}>
-                <rect x="4" y="4" width="16" height="16" rx="2" fill="currentColor" opacity="0.1" stroke="none" />
                 <rect x="8" y="8" width="8" height="8" strokeWidth="1.5" />
                 <path d="M12 8v8 M8 12h8" strokeWidth="1" opacity="0.5" />
-                <path d="M10 4v2 M14 4v2 M10 18v2 M14 18v2 M4 10h2 M4 14h2 M18 10h2 M18 14h2" strokeWidth="1.5" />
-                <rect x="11" y="11" width="2" height="2" fill="currentColor" stroke="none" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
+                <rect x="11" y="11" width="2" height="2" fill="currentColor" stroke="none" style={glowStyle} />
             </svg>;
         case 'BATTERY':
             return <svg {...p}>
-                <rect x="2" y="7" width="4" height="1" fill="currentColor" opacity="0.2" stroke="none" />
-                <rect x="18" y="15" width="3" height="2" fill="currentColor" opacity="0.15" stroke="none" />
-                <rect x="5" y="4" width="14" height="14" fill="currentColor" opacity="0.08" stroke="none" />
-                <rect x="5" y="3" width="14" height="18" rx="2" fill="currentColor" opacity="0.2" stroke="none" />
                 <rect x="5" y="3" width="14" height="18" rx="2" />
                 <path d="M9 1h6 M5 8h14 M5 16h14" />
-                <path d="M12.5 4.5l-2.5 6h4l-2.5 6" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
+                <path d="M12.5 4.5l-2.5 6h4l-2.5 6" strokeWidth="1.5" style={glowStyle} />
             </svg>;
         case 'PLANET': return <svg {...p}><circle cx="12" cy="12" r="10" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>;
         case 'RUINS': return <svg {...p}><path d="M3 21h18M5 21V10a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11M9 21v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4" /></svg>;
         case 'BACK': return <svg {...p}><rect x="2" y="2" width="20" height="20" rx="2" fill="currentColor" opacity="0.1" stroke="none" /><circle cx="12" cy="12" r="8" strokeWidth="0.5" strokeDasharray="1 2" /><path d="M12 4v4 M12 16v4 M4 12h4 M16 12h4" opacity="0.5" /><path d="M7 7l10 10 M7 17l10-10" strokeWidth="1.5" /><circle cx="12" cy="12" r="3" fill="currentColor" /><circle cx="12" cy="12" r="5" strokeWidth="0.5" /></svg>;
         default: return null;
     }
-};
-const MemoizedIconRenderer = React.memo(IconRenderer);
+});
+const MemoizedIconRenderer = IconRenderer;
 
+const ComplexEmblem = React.memo(({ isLogo = false }) => (
+    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+        <g style={{ transform: isLogo ? 'scale(1)' : 'scale(0.8)', transformOrigin: 'center' }}>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="var(--accent)" strokeWidth="0.5" opacity="0.3" strokeDasharray="1 3" />
+            <circle cx="50" cy="50" r="45" fill="none" stroke="var(--accent)" strokeWidth="1" strokeDasharray="15 5" opacity="0.4" style={{ animation: 'emblem-rotate-outer 40s linear infinite', transformOrigin: 'center' }} />
+            <circle cx="50" cy="50" r="12" fill="var(--danger)" opacity="0.3" style={{ animation: 'emblem-pulse 3s infinite', filter: 'drop-shadow(0 0 5px var(--danger))' }} />
+            <text x="50" y="54" fill="var(--accent)" fontSize="10" fontWeight="1000" fontFamily="Orbitron" textAnchor="middle" style={{ animation: 'emblem-pulse 2s infinite' }}>X</text>
 
-const CardOrnaments = React.memo(({ theme }) => {
+        </g>
+    </svg>
+));
+
+const CardOrnaments = React.memo(({ theme, isHand }) => {
+    // 手札のカードは装飾を最小限にして負荷を減らす
+    if (isHand) {
+        if (theme === 'steam') return <div className="steam-rivet r-tl opacity-40" />;
+        if (theme === 'fantasy') return <div className="magic-circle-bg opacity-30" />;
+        if (theme === 'cyber') return <div className="cyber-circuit opacity-30" />;
+        return null;
+    }
+
     if (theme === 'steam') return (
         <React.Fragment>
             <div className="steam-rivet r-tl" /><div className="steam-rivet r-tr" />
             <div className="steam-rivet r-bl" /><div className="steam-rivet r-br" />
-            <div className="steam-core-glow" />
-            {/* パーティクルを3→1に削減 */}
             <div className="steam-particle" style={{ '--l': '35%', '--d': '3s', '--delay': '0s', '--drift-start': '5px', '--drift-end': '-15px', '--rot': '-45deg' }} />
         </React.Fragment>
     );
     if (theme === 'fantasy') return (
         <React.Fragment>
             <div className="magic-circle-bg" />
-            {/* rippleを2→1に削減 */}
             <div className="ripple" style={{ '--delay': '0s' }} />
         </React.Fragment>
     );
     if (theme === 'cyber') return (
         <React.Fragment>
             <div className="cyber-circuit" />
-            {/* スキャンラインは負荷が高いためOFF時は削除済み */}
             <div className="cyber-fx-scanline" />
         </React.Fragment>
     );
@@ -208,6 +185,7 @@ const CardOrnaments = React.memo(({ theme }) => {
     );
     return null;
 });
+
 
 const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments }) => {
     if (!card?.realm) return null;
@@ -226,10 +204,10 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments
     return (
         <div className={`card-surface mat-${rData.theme}`}
             style={{ '--r-color': rData.color, '--r-color-bright': rData.bright, '--r-color-glow': rData.glow, '--r-color-dim': rData.dim || 'rgba(0,0,0,0.5)', width: 'var(--card-w)', height: 'var(--card-h)', borderRadius: '8px', overflow: 'hidden', position: 'relative', border: 'none' }}>
-            {!hideOrnaments && <CardOrnaments theme={rData.theme} />}
+            {!hideOrnaments && <CardOrnaments theme={rData.theme} isHand={!isField} />}
             <div className="card-content">
                 <div className="card-info-top"><span>{dr}</span></div>
-                <div className="card-icon-overload" style={{ color: rData.bright, filter: `drop-shadow(0 0 10px ${rData.glow})`, position: 'absolute', top: '55%', left: '50%', transform: 'translate(-50%, -50%)', width: '55%', height: '55%' }}>
+                <div className="card-icon-overload" style={{ color: rData.bright, filter: `drop-shadow(0 0 5px ${rData.glow})`, position: 'absolute', top: '55%', left: '50%', transform: 'translate(-50%, -50%)', width: '55%', height: '55%' }}>
                     <IconRenderer r={dr} spec={spec} />
                 </div>
                 <div className="card-footer-peak" style={{ fontFamily: rData.font }}>{rData.n}</div>
@@ -238,6 +216,7 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments
         </div>
     );
 };
+
 const MemoizedCardView = React.memo(CardView, (prev, next) => {
     return prev.card?.realm === next.card?.realm &&
            prev.card?.isSpecial === next.card?.isSpecial &&
@@ -255,7 +234,7 @@ const PlayerSlot = ({ p, isCurrentTurn, turnDistance }) => {
             <div className="font-black uppercase text-white/60 tracking-tight leading-none w-full pr-6" style={{ fontSize: p.name.length > 12 ? '6px' : p.name.length > 9 ? '7px' : p.name.length > 6 ? '8px' : '9px', overflow: 'hidden', whiteSpace: 'nowrap' }}>{p.name}</div>
             <div className="absolute top-1 right-1 text-[9px] font-black text-[var(--steam-gold)]">★{p.score}</div>
             <div className="absolute bottom-2 left-8 text-xl font-black text-white font-['Orbitron'] leading-none z-10">{p.handCount}<span className="text-[10px] ml-0.5">枚</span></div>
-            {turnDistance !== null && !p.isEliminated && turnDistance > 0 && <div className="absolute bottom-1 right-1 text-[8px] font-black px-1.5 py-0.5 rounded-full bg-black/60 border border-white/20 text-accent flex items-center gap-0.5 shadow-lg z-10">T-{turnDistance}</div>}
+            {turnDistance !== null && !p.isEliminated && turnDistance > 0 && <div className="absolute bottom-1 right-1 text-[8px] font-black px-1.5 py-0.5 rounded-full bg-black/60 border border-white/20 text-accent flex items-center gap-0.5 shadow-sm z-10">T-{turnDistance}</div>}
             <div className="absolute bottom-2 left-1 w-[14px] h-[20px] z-0 opacity-50">{[...Array(Math.min(p.handCount, 3))].map((_, i) => <div key={i} className="absolute w-full h-full bg-[#111] border border-white/80 rounded-[1px]" style={{ transform: `translate(${i * 2}px, ${i * 2}px)`, zIndex: i, borderColor: isCurrentTurn ? 'var(--accent)' : 'rgba(255,255,255,0.4)' }} />)}</div>
             {p.isEliminated && <div className="absolute inset-0 bg-red-500/30 flex items-center justify-center text-[10px] font-black text-danger tracking-[1px] -rotate-3 z-20">BURST</div>}
         </div>
@@ -273,7 +252,6 @@ const MemoizedPlayerSlot = React.memo(PlayerSlot, (prev, next) => {
 
 const AstralBackground = ({ bgAnim, isDimmed }) => {
     const stars = useMemo(() => {
-        // パフォーマンス向上のため星の数を削減（15 → 8）
         return [...Array(8)].map((_, i) => ({
             id: i,
             left: `${Math.random() * 100}%`,
@@ -285,40 +263,31 @@ const AstralBackground = ({ bgAnim, isDimmed }) => {
 
     return (
         <div className={`astral-bg-container ${bgAnim ? 'bg-anim-active' : ''} ${isDimmed ? 'bg-dimmed' : ''}`}>
-            {/* 1. Cyber: サイバーグリッド */}
-            <div className="cyber-grid-layer" />
-            
-            {/* 2. Fantasy: 星雲 & 魔法陣 (CSS Background) */}
-            <div className="nebula-layer">
-                <div className="nebula-glow n1" />
-                <div className="nebula-glow n2" />
-                {/* パフォーマンス向上のためn3を削除 */}
-            </div>
-            
-            <div className="magic-circle-layer">
-                <div className="bg-magic-circle-css" />
-            </div>
-
-            {/* 3. Steampunk: 巨大歯車 (CSS Background) */}
-            <div className="gears-layer">
-                <div className="bg-gear-css g1" />
-                <div className="bg-gear-css g2" />
-            </div>
-            
-            {/* 4. Mana Particles */}
-            <div className="star-particles">
-                {stars.map(s => (
-                    <div key={s.id} className="star-particle" style={{
-                        left: s.left,
-                        top: s.top,
-                        animationDelay: s.delay,
-                        animationDuration: s.dur
-                    }} />
-                ))}
-            </div>
+            {bgAnim && (
+                <>
+                    <div className="cyber-grid-layer" />
+                    <div className="nebula-layer">
+                        <div className="nebula-glow n1" />
+                        <div className="nebula-glow n2" />
+                    </div>
+                    <div className="magic-circle-layer">
+                        <div className="bg-magic-circle-css" />
+                    </div>
+                    <div className="gears-layer">
+                        <div className="bg-gear-css g1" />
+                        <div className="bg-gear-css g2" />
+                    </div>
+                    <div className="star-particles">
+                        {stars.map(s => (
+                            <div key={s.id} className="star-particle" style={{ left: s.left, top: s.top, animationDelay: s.delay, animationDuration: s.dur }} />
+                        ))}
+                    </div>
+                </>
+            )}
         </div>
     );
 };
+
 const MemoizedAstralBackground = React.memo(AstralBackground);
 
 
@@ -429,7 +398,6 @@ const App = () => {
     const me = gs?.players?.find(p => p.id === socket?.id);
     const isMyTurn = gs?.currentTurnPlayerId === socket?.id && !me?.isEliminated;
     
-    // 新しく追加されたカードを検出してアニメーションを適用
     const prevHandRef = useRef([]);
     useEffect(() => {
         if (me?.hand) {
@@ -444,7 +412,6 @@ const App = () => {
         }
     }, [me?.hand]);
 
-    // ゲーム終了時やターン変更時にWILD選択画面をクリア
     useEffect(() => {
         if (gs?.status === 'finished' || !isMyTurn) {
             setSelector(null);
@@ -452,7 +419,18 @@ const App = () => {
     }, [gs?.status, isMyTurn]);
 
 
+    const canPlayCheck = useCallback((room, card) => {
+        if (!room || !card || !room.fieldCard) return false;
+        if (room.nextDrawAmount > 1) return (card.realm === 'GEAR' && card.isSpecial);
+        const field = room.fieldCard.realm; const h = card.realm;
+        if (h === 'PLANET' || h === 'RUINS' || field === 'PLANET' || field === 'RUINS') return true;
+        if (h === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
+        if (['ICEAGE', 'BATTERY', 'ARCHIVE'].includes(field) && field === h) return false;
+        return field === h || (NEXT_MAP[field] && NEXT_MAP[field].includes(h));
+    }, []);
+
     const sortedHand = useMemo(() => {
+
         if (!me?.hand) return [];
         return [...me.hand].sort((a, b) => (SORT_WEIGHT[a.realm] - SORT_WEIGHT[b.realm]) || (b.isSpecial - a.isSpecial));
     }, [me?.hand]);
@@ -478,7 +456,6 @@ const App = () => {
         });
     }, [gs?.players?.map(p => p.id + p.isEliminated + p.handCount).join()]);
 
-    // ログ表示をメモ化（ログが変わった時だけ再生成）
     const logElements = useMemo(() => {
         if (!gs?.logs || gs.logs.length === 0) {
             return <div className="opacity-40 italic text-xs font-bold mt-1">ANALYZING...</div>;
@@ -561,17 +538,6 @@ const App = () => {
         setDragOffsetY(0);
     }, [draggingCardId, dragOffsetY, dragOffsetX, isAnimating, isMorphing, muted, me?.hand?.length, room]);
 
-    const canPlayCheck = (room, card) => {
-        if (!room || !card || !room.fieldCard) return false;
-        if (room.nextDrawAmount > 1) return (card.realm === 'GEAR' && card.isSpecial);
-        const field = room.fieldCard.realm; const h = card.realm;
-        if (h === 'PLANET' || h === 'RUINS' || field === 'PLANET' || field === 'RUINS') return true;
-        if (h === 'FOUNTAIN' && card.isSpecial) return (field === 'ICEAGE' || field === 'FOUNTAIN');
-        if (['ICEAGE', 'BATTERY', 'ARCHIVE'].includes(field) && field === h) return false;
-        return field === h || (NEXT_MAP[field] && NEXT_MAP[field].includes(h));
-    };
-
-
     useEffect(() => {
         socket.on('connect', () => { setIsConnected(true); setIsDisconnected(false); });
         socket.on('update-game', (data) => { setGs(data); });
@@ -591,11 +557,10 @@ const App = () => {
             document.removeEventListener('click', initAudio); document.removeEventListener('touchstart', initAudio);
             window.removeEventListener('beforeunload', handleUnload);
             [entryAnimTimerRef, cutinTimerRef, vfxTimerRef, newlyDrawnTimerRef,
-             morphTimeoutRef, morphTimeout2Ref, safetyTimeoutRef].forEach(r => { if (r.current) { clearTimeout(r.current); r.current = null; } });
+             morphTimeoutRef, morphTimeout2Ref, safetyTimeoutRef, matchStartTimerRef].forEach(r => { if (r.current) { clearTimeout(r.current); r.current = null; } });
         };
     }, []);
 
-    // 先行入力の実行
     useEffect(() => {
         if (!isAnimating && !isMorphing && !selector && !matchStartCutin && bufferedAction) {
             const action = bufferedAction;
@@ -630,7 +595,6 @@ const App = () => {
                     }, 1500);
                     morphTimeoutRef.current = null;
                 }, 1500);
-                // iOS/DiscordブラウザでsetTimeoutが遅延した場合の強制リセット
                 safetyTimeoutRef.current = setTimeout(() => {
                     setIsAnimating(false); setIsMorphing(false);
                     setVisualFieldCard(c);
@@ -657,7 +621,6 @@ const App = () => {
                     setCutin({ text, color: REALMS[dr].bright });
                     if (cutinTimerRef.current) clearTimeout(cutinTimerRef.current);
                     cutinTimerRef.current = setTimeout(() => { setCutin(null); cutinTimerRef.current = null; }, 1500);
-                } else {
                 }
             }
             prevFieldCardId.current = gs.fieldCard.id;
@@ -690,14 +653,12 @@ const App = () => {
     useEffect(() => { if (logContainerRef.current) logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight; }, [gs?.logs]);
     useEffect(() => { setSelectedCardId(null); }, [gs?.currentTurnPlayerId]);
     
-    // リザルト画面表示時に勝利音を鳴らす
     useEffect(() => {
         if (gs?.status === 'finished') {
             playSE('victory', muted);
         }
     }, [gs?.status, muted]);
 
-    // マッチ開始時の演出
     useEffect(() => {
         if (gs?.status === 'playing' && prevGsStatusRef.current !== 'playing') {
             playSE('start', muted);
@@ -706,19 +667,14 @@ const App = () => {
             matchStartTimerRef.current = setTimeout(() => {
                 setMatchStartCutin(null);
                 matchStartTimerRef.current = null;
-            }, 3000); // 3秒間表示
+            }, 3000);
         }
         prevGsStatusRef.current = gs?.status;
     }, [gs?.status, gs?.matchCount, muted]);
 
-
-
-
-
     return (
         <>
             <div ref={wrapperRef} className={`screen-wrapper ${isMyTurn ? 'my-turn-glow' : ''} ${bgAnim ? 'all-anim-active' : 'all-anim-off'} ${selector ? 'wild-open' : ''}`} style={{ '--r-color': REALMS[currentR]?.color }}>
-            {/* モーションレイヤー: screen-wrapper内に配置してゲームエリア基準でパーセント位置を計算 */}
             <div className="motion-overlay-layer" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10000 }}>
                 {motions.map(m => (
                     <div key={m.mid} className={`motion-card-ghost ${m.type} ${getPlayerPosClass(m.playerId)}`}>
