@@ -103,16 +103,19 @@ function filterName(name) {
 function createDeck() {
   const deck = [];
   const mains = ['GEAR', 'MACHINE', 'FOUNTAIN'];
-  const subs = ['ICEAGE', 'BATTERY', 'ARCHIVE'];
+  const subs = ['ICEAGE', 'BATTERY', 'ARCHIVE']; // GATE
   const wilds = ['PLANET', 'RUINS'];
   mains.forEach(r => {
+    // 各属性 9枚 (通常7枚 + Special 2枚)
     for (let i = 0; i < 7; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: false });
-    for (let i = 0; i < 3; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: true });
+    for (let i = 0; i < 2; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: true });
   });
   subs.forEach(r => {
-    for (let i = 0; i < 5; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: false });
+    // 各属性 7枚
+    for (let i = 0; i < 7; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: false });
   });
   wilds.forEach(r => {
+    // 各属性 3枚
     for (let i = 0; i < 3; i++) deck.push({ id: Math.random().toString(36).substr(2, 9), realm: r, isSpecial: false });
   });
 
@@ -247,13 +250,26 @@ function checkGameOver(room) {
         isWildFinish = true;
       }
 
-      room.logs.push({ id: Math.random(), text: `RESULT: Winner=${winner.name}, Base=${basePoints}, Bonus=${bonusPoints}, Wild=${isWildFinish}, LastWild=${room.lastPlayWasWild}` });
+      // 連勝ボーナス (+3pt)
+      winner.consecutiveWins = (winner.consecutiveWins || 0) + 1;
+      if (winner.consecutiveWins >= 2) {
+        totalEarned += 3;
+        bonusPoints += 3;
+      }
+
+      // 他のプレイヤーの連勝をリセット
+      room.players.forEach(p => {
+        if (p.id !== winner.id) p.consecutiveWins = 0;
+      });
+
+      room.logs.push({ id: Math.random(), text: `RESULT: Winner=${winner.name}, Base=${basePoints}, Bonus=${bonusPoints}, Wild=${isWildFinish}, Streak=${winner.consecutiveWins}` });
 
       winner.score += totalEarned;
       winner.earnedPoints = totalEarned;
       winner.basePoints = basePoints;
       winner.bonusPoints = bonusPoints;
       winner.finishBonus = isWildFinish;
+      winner.streakCount = winner.consecutiveWins; // 表示用
       room.lastPlayWasWild = false; // Reset for next match
     }
 
