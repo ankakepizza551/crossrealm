@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import io from 'socket.io-client';
 import './index.css';
 import CycleDiagramSmall from './components/CycleDiagramSmall';
@@ -333,8 +333,9 @@ const App = () => {
         if (JSON.stringify(act) !== JSON.stringify(lastActionRef.current)) {
             const mid = Math.random();
             setMotions(prev => [...prev, { ...act, mid }]);
-            setTimeout(() => setMotions(prev => prev.filter(m => m.mid !== mid)), 700); // 1000ms → 700ms に短縮
+            const t = setTimeout(() => setMotions(prev => prev.filter(m => m.mid !== mid)), 700);
             lastActionRef.current = act;
+            return () => clearTimeout(t);
         }
     }, [gs]);
 
@@ -350,7 +351,7 @@ const App = () => {
         return sorted;
     }, [gs?.players, socket?.id]);
 
-    const getPlayerPosClass = (pid) => {
+    const getPlayerPosClass = useCallback((pid) => {
         if (!gs) return "pos-center";
         if (pid === socket.id) return "pos-bottom";
         const idx = otherPlayersInCircle.findIndex(p => p.id === pid);
@@ -359,9 +360,9 @@ const App = () => {
         if (idx === 2) return "pos-p2";
         if (idx === 3) return "pos-p3";
         return "pos-top-center";
-    };
+    }, [gs, otherPlayersInCircle]);
 
-    const getTurnDistance = (pid) => {
+    const getTurnDistance = useCallback((pid) => {
         if (!gs || gs.status !== 'playing') return null;
         const survivors = gs.players.map((p, i) => ({ ...p, originalIdx: i })).filter(p => !p.isEliminated);
         if (survivors.length <= 1) return null;
@@ -371,7 +372,7 @@ const App = () => {
         const diff = survivors.length;
         if (!gs.isReversed) return (targetSurvivorIdx - currentSurvivorIdx + diff) % diff;
         else return (currentSurvivorIdx - targetSurvivorIdx + diff) % diff;
-    };
+    }, [gs]);
 
     const [room, setRoom] = useState('');
     const [name, setName] = useState('');
@@ -390,6 +391,10 @@ const App = () => {
     const morphTimeoutRef = useRef(null);
     const morphTimeout2Ref = useRef(null);
     const safetyTimeoutRef = useRef(null);
+    const entryAnimTimerRef = useRef(null);
+    const cutinTimerRef = useRef(null);
+    const vfxTimerRef = useRef(null);
+    const newlyDrawnTimerRef = useRef(null);
     const [entryAnim, setEntryAnim] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
     const [isMorphing, setIsMorphing] = useState(false);
@@ -416,118 +421,6 @@ const App = () => {
     const wrapperRef = useRef(null);
     const viewportRef = useRef(null);
 
-    useEffect(() => {
-        socket.on('connect', () => { setIsConnected(true); setIsDisconnected(false); });
-        socket.on('update-game', (data) => { setGs(data); });
-        socket.on('disconnect', (reason) => { setIsConnected(false); setIsDisconnected(true); });
-        const initAudio = () => {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            document.removeEventListener('click', initAudio);
-            document.removeEventListener('touchstart', initAudio);
-        };
-        document.addEventListener('click', initAudio);
-        document.addEventListener('touchstart', initAudio);
-        return () => { socket.off('update-game'); socket.off('disconnect'); socket.off('connect'); document.removeEventListener('click', initAudio); document.removeEventListener('touchstart', initAudio); };
-    }, []);
-
-    // 先行入力の実行
-    useEffect(() => {
-        if (!isAnimating && !isMorphing && !selector && bufferedAction) {
-            const action = bufferedAction;
-            setBufferedAction(null);
-            if (action.type === 'play') {
-                handleCardClick(action.card, action.isPlayable);
-            } else if (action.type === 'draw') {
-                playSE('draw', muted);
-                socket.emit('draw-card', { roomId: room });
-            }
-        }
-    }, [isAnimating, isMorphing, selector, bufferedAction]);
-
-    useEffect(() => {
-        if (gs && gs.fieldCard && gs.fieldCard.id !== prevFieldCardId.current) {
-            const c = gs.fieldCard;
-            if (morphTimeoutRef.current) clearTimeout(morphTimeoutRef.current);
-            setEntryAnim(true);
-            setTimeout(() => setEntryAnim(false), 500);
-            if (c.wasPlanet || c.wasRuins || c.wasFountain) {
-                setIsAnimating(true); setIsMorphing(false);
-                if (morphTimeout2Ref.current) clearTimeout(morphTimeout2Ref.current);
-                if (safetyTimeoutRef.current) clearTimeout(safetyTimeoutRef.current);
-                setVisualFieldCard({ ...c, realm: c.wasPlanet ? 'PLANET' : (c.wasRuins ? 'RUINS' : 'FOUNTAIN'), isSpecial: true });
-                morphTimeoutRef.current = setTimeout(() => {
-                    setVisualFieldCard(c); setIsAnimating(false); setIsMorphing(true);
-                    morphTimeout2Ref.current = setTimeout(() => {
-                        setIsMorphing(false); morphTimeout2Ref.current = null;
-                        if (safetyTimeoutRef.current) { clearTimeout(safetyTimeoutRef.current); safetyTimeoutRef.current = null; }
-                    }, 1500);
-                    morphTimeoutRef.current = null;
-                }, 1500);
-                // iOS/DiscordブラウザでsetTimeoutが遅延した場合の強制リセット
-                safetyTimeoutRef.current = setTimeout(() => {
-                    setIsAnimating(false); setIsMorphing(false);
-                    setVisualFieldCard(c);
-                    safetyTimeoutRef.current = null;
-                }, 5000);
-            } else {
-                setIsAnimating(false); setIsMorphing(false);
-                if (morphTimeoutRef.current) { clearTimeout(morphTimeoutRef.current); morphTimeoutRef.current = null; }
-                if (morphTimeout2Ref.current) { clearTimeout(morphTimeout2Ref.current); morphTimeout2Ref.current = null; }
-                if (safetyTimeoutRef.current) { clearTimeout(safetyTimeoutRef.current); safetyTimeoutRef.current = null; }
-                setVisualFieldCard(c);
-            }
-            if (prevFieldCardId.current !== null && gs.status === 'playing') {
-                let dr = c.realm;
-                if (c.wasRuins) dr = 'RUINS'; else if (c.wasPlanet) dr = 'PLANET'; else if (c.wasFountain || (c.realm === 'FOUNTAIN' && c.isSpecial)) dr = 'FOUNTAIN';
-                
-                if (c.isSpecial || c.wasPlanet || c.wasRuins || c.wasFountain || dr === 'PLANET' || dr === 'RUINS') {
-                    let text = "WILD";
-                    if (dr === 'GEAR') text = "DOUBLE DRAW";
-                    else if (dr === 'MACHINE') text = "TIME REVERSE";
-                    else if (dr === 'FOUNTAIN') text = "LIMIT WILD";
-                    if (c.wasPlanet || c.wasRuins) text = "REALM SHIFT";
-                    
-                    setCutin({ text, color: REALMS[dr].bright });
-                    setTimeout(() => setCutin(null), 1500);
-                } else {
-                }
-            }
-            prevFieldCardId.current = gs.fieldCard.id;
-        } else if (gs && gs.fieldCard && !visualFieldCard) {
-            setVisualFieldCard(gs.fieldCard);
-        }
-        if (gs && gs.status === 'playing') {
-            const prevPlayers = prevPlayersRef.current;
-            if (prevPlayers.length > 0) {
-                gs.players.forEach(p => {
-                    const oldP = prevPlayers.find(x => x.id === p.id);
-                    if (oldP && !oldP.isEliminated && p.isEliminated) { 
-                        playSE('burst', muted); 
-                        setVfxOverlay({ type: 'burst', color: '#EF4444' }); 
-                        setTimeout(() => setVfxOverlay(null), 1000); 
-                    }
-                    else if (oldP && !oldP.finishBonus && p.finishBonus) { 
-                        playSE('wild', muted); 
-                        setVfxOverlay({ type: 'wild', color: '#FFD700' }); 
-                        setTimeout(() => setVfxOverlay(null), 1000); 
-                    }
-                });
-            }
-            prevPlayersRef.current = gs.players;
-        }
-    }, [gs?.fieldCard?.id, gs?.status, gs?.players]);
-
-    useEffect(() => { if (logContainerRef.current) logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight; }, [gs?.logs]);
-    useEffect(() => { setSelectedCardId(null); }, [gs?.currentTurnPlayerId]);
-    
-    // リザルト画面表示時に勝利音を鳴らす
-    useEffect(() => {
-        if (gs?.status === 'finished') {
-            playSE('victory', muted);
-        }
-    }, [gs?.status, muted]);
-
     const currentR = gs?.fieldCard?.realm || 'GEAR';
     const me = gs?.players?.find(p => p.id === socket?.id);
     const isMyTurn = gs?.currentTurnPlayerId === socket?.id && !me?.isEliminated;
@@ -540,9 +433,8 @@ const App = () => {
             const newIds = me.hand.filter(c => !prevIds.has(c.id)).map(c => c.id);
             if (newIds.length > 0) {
                 setNewlyDrawnCardIds(new Set(newIds));
-                setTimeout(() => {
-                    setNewlyDrawnCardIds(new Set());
-                }, 500);
+                if (newlyDrawnTimerRef.current) clearTimeout(newlyDrawnTimerRef.current);
+                newlyDrawnTimerRef.current = setTimeout(() => { setNewlyDrawnCardIds(new Set()); newlyDrawnTimerRef.current = null; }, 500);
             }
             prevHandRef.current = me.hand;
         }
@@ -592,11 +484,11 @@ const App = () => {
         ));
     }, [gs?.logs]);
 
-    const join = () => { if (room && name) { playSE('start', muted); setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name }); } };
-    const leave = () => { if (room) { playSE('cancel', muted); socket.emit('leave-room', { roomId: room.toUpperCase() }); setJoined(false); setGs(null); } };
-    const goToTopPage = () => { playSE('cancel', muted); if (room) socket.emit('leave-room', { roomId: room.toUpperCase() }); window.location.reload(); };
+    const join = useCallback(() => { if (room && name) { playSE('start', muted); setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name }); } }, [room, name, muted]);
+    const leave = useCallback(() => { if (room) { playSE('cancel', muted); socket.emit('leave-room', { roomId: room.toUpperCase() }); setJoined(false); setGs(null); } }, [room, muted]);
+    const goToTopPage = useCallback(() => { playSE('cancel', muted); if (room) socket.emit('leave-room', { roomId: room.toUpperCase() }); window.location.reload(); }, [room, muted]);
 
-    const handleCardClick = (c, isPlayable) => {
+    const handleCardClick = useCallback((c, isPlayable) => {
         if (!isMyTurn || !isPlayable || selector) return;
         if (isAnimating || isMorphing) {
             setBufferedAction({ type: 'play', card: c, isPlayable: isPlayable });
@@ -606,51 +498,43 @@ const App = () => {
         if (window.navigator.vibrate) window.navigator.vibrate(12);
         const isLastCard = me?.hand?.length === 1;
         const needsSelector = c.realm === 'PLANET' || c.realm === 'RUINS' || (c.realm === 'FOUNTAIN' && c.isSpecial);
-        // 最後のカードの場合は自動的にGEARを選択して送信（上がり時は選択画面を出さない）
-        if (isLastCard && needsSelector) { 
-            socket.emit('play-card', { roomId: room, card: c, chosenRealm: 'GEAR' }); 
-            return; 
+        if (isLastCard && needsSelector) {
+            socket.emit('play-card', { roomId: room, card: c, chosenRealm: 'GEAR' });
+            return;
         }
         const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        if (!isMobile) { 
-            if (needsSelector) setSelector(c); 
-            else socket.emit('play-card', { roomId: room, card: c }); 
-        } else { 
-            if (selectedCardId === c.id) { 
-                if (needsSelector) setSelector(c); 
-                else socket.emit('play-card', { roomId: room, card: c }); 
-            } else { 
-                setSelectedCardId(c.id); 
-            } 
+        if (!isMobile) {
+            if (needsSelector) setSelector(c);
+            else socket.emit('play-card', { roomId: room, card: c });
+        } else {
+            if (selectedCardId === c.id) {
+                if (needsSelector) setSelector(c);
+                else socket.emit('play-card', { roomId: room, card: c });
+            } else {
+                setSelectedCardId(c.id);
+            }
         }
-    };
+    }, [isMyTurn, selector, isAnimating, isMorphing, muted, me?.hand?.length, room, selectedCardId]);
 
-    const handleTouchStart = (e, card, isPlayable) => {
+    const handleTouchStart = useCallback((e, card, isPlayable) => {
         if (!isMyTurn || !isPlayable || isAnimating || isMorphing || selector) return;
         setDraggingCardId(card.id);
         setTouchStartX(e.touches[0].clientX);
         setTouchStartY(e.touches[0].clientY);
         setDragOffsetX(0);
         setDragOffsetY(0);
-    };
+    }, [isMyTurn, isAnimating, isMorphing, selector]);
 
-    const handleTouchMove = (e) => {
+    const handleTouchMove = useCallback((e) => {
         if (!draggingCardId) return;
         const currentX = e.touches[0].clientX;
         const currentY = e.touches[0].clientY;
-        const deltaX = currentX - touchStartX;
-        const deltaY = currentY - touchStartY;
-        
-        // 2次元的に追従
-        setDragOffsetX(deltaX);
-        setDragOffsetY(deltaY);
-    };
+        setDragOffsetX(currentX - touchStartX);
+        setDragOffsetY(currentY - touchStartY);
+    }, [draggingCardId, touchStartX, touchStartY]);
 
-    const handleTouchEnd = (card, isPlayable) => {
+    const handleTouchEnd = useCallback((card, isPlayable) => {
         if (!draggingCardId) return;
-        
-        // 一定以上（60px）スワイプしていたらプレイ
-        // 横ブレ200px未満なら許容（スワイプしやすく）
         if (dragOffsetY < -60 && Math.abs(dragOffsetX) < 200) {
             if (isAnimating || isMorphing) {
                 setBufferedAction({ type: 'play', card: card, isPlayable: isPlayable });
@@ -668,11 +552,10 @@ const App = () => {
                 }
             }
         }
-        
         setDraggingCardId(null);
         setDragOffsetX(0);
         setDragOffsetY(0);
-    };
+    }, [draggingCardId, dragOffsetY, dragOffsetX, isAnimating, isMorphing, muted, me?.hand?.length, room]);
 
     const canPlayCheck = (room, card) => {
         if (!room || !card || !room.fieldCard) return false;
@@ -683,6 +566,133 @@ const App = () => {
         if (['ICEAGE', 'BATTERY', 'ARCHIVE'].includes(field) && field === h) return false;
         return field === h || (NEXT_MAP[field] && NEXT_MAP[field].includes(h));
     };
+
+
+    useEffect(() => {
+        socket.on('connect', () => { setIsConnected(true); setIsDisconnected(false); });
+        socket.on('update-game', (data) => { setGs(data); });
+        socket.on('disconnect', (reason) => { setIsConnected(false); setIsDisconnected(true); });
+        const initAudio = () => {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            document.removeEventListener('click', initAudio);
+            document.removeEventListener('touchstart', initAudio);
+        };
+        document.addEventListener('click', initAudio);
+        document.addEventListener('touchstart', initAudio);
+        const handleUnload = () => { if (socket.connected) socket.disconnect(); };
+        window.addEventListener('beforeunload', handleUnload);
+        return () => {
+            socket.off('update-game'); socket.off('disconnect'); socket.off('connect');
+            document.removeEventListener('click', initAudio); document.removeEventListener('touchstart', initAudio);
+            window.removeEventListener('beforeunload', handleUnload);
+            [entryAnimTimerRef, cutinTimerRef, vfxTimerRef, newlyDrawnTimerRef,
+             morphTimeoutRef, morphTimeout2Ref, safetyTimeoutRef].forEach(r => { if (r.current) { clearTimeout(r.current); r.current = null; } });
+        };
+    }, []);
+
+    // 先行入力の実行
+    useEffect(() => {
+        if (!isAnimating && !isMorphing && !selector && bufferedAction) {
+            const action = bufferedAction;
+            setBufferedAction(null);
+            if (action.type === 'play') {
+                handleCardClick(action.card, action.isPlayable);
+            } else if (action.type === 'draw') {
+                playSE('draw', muted);
+                socket.emit('draw-card', { roomId: room });
+            }
+        }
+    }, [isAnimating, isMorphing, selector, bufferedAction, handleCardClick]);
+
+    useEffect(() => {
+        if (gs && gs.fieldCard && gs.fieldCard.id !== prevFieldCardId.current) {
+            const c = gs.fieldCard;
+            if (morphTimeoutRef.current) clearTimeout(morphTimeoutRef.current);
+            setEntryAnim(true);
+            if (entryAnimTimerRef.current) clearTimeout(entryAnimTimerRef.current);
+            entryAnimTimerRef.current = setTimeout(() => { setEntryAnim(false); entryAnimTimerRef.current = null; }, 500);
+            if (c.wasPlanet || c.wasRuins || c.wasFountain) {
+                setIsAnimating(true); setIsMorphing(false);
+                if (morphTimeout2Ref.current) clearTimeout(morphTimeout2Ref.current);
+                if (safetyTimeoutRef.current) clearTimeout(safetyTimeoutRef.current);
+                setVisualFieldCard({ ...c, realm: c.wasPlanet ? 'PLANET' : (c.wasRuins ? 'RUINS' : 'FOUNTAIN'), isSpecial: true });
+                morphTimeoutRef.current = setTimeout(() => {
+                    setVisualFieldCard(c); setIsAnimating(false); setIsMorphing(true);
+                    morphTimeout2Ref.current = setTimeout(() => {
+                        setIsMorphing(false); morphTimeout2Ref.current = null;
+                        if (safetyTimeoutRef.current) { clearTimeout(safetyTimeoutRef.current); safetyTimeoutRef.current = null; }
+                    }, 1500);
+                    morphTimeoutRef.current = null;
+                }, 1500);
+                // iOS/DiscordブラウザでsetTimeoutが遅延した場合の強制リセット
+                safetyTimeoutRef.current = setTimeout(() => {
+                    setIsAnimating(false); setIsMorphing(false);
+                    setVisualFieldCard(c);
+                    safetyTimeoutRef.current = null;
+                }, 5000);
+            } else {
+                setIsAnimating(false); setIsMorphing(false);
+                if (morphTimeoutRef.current) { clearTimeout(morphTimeoutRef.current); morphTimeoutRef.current = null; }
+                if (morphTimeout2Ref.current) { clearTimeout(morphTimeout2Ref.current); morphTimeout2Ref.current = null; }
+                if (safetyTimeoutRef.current) { clearTimeout(safetyTimeoutRef.current); safetyTimeoutRef.current = null; }
+                setVisualFieldCard(c);
+            }
+            if (prevFieldCardId.current !== null && gs.status === 'playing') {
+                let dr = c.realm;
+                if (c.wasRuins) dr = 'RUINS'; else if (c.wasPlanet) dr = 'PLANET'; else if (c.wasFountain || (c.realm === 'FOUNTAIN' && c.isSpecial)) dr = 'FOUNTAIN';
+                
+                if (c.isSpecial || c.wasPlanet || c.wasRuins || c.wasFountain || dr === 'PLANET' || dr === 'RUINS') {
+                    let text = "WILD";
+                    if (dr === 'GEAR') text = "DOUBLE DRAW";
+                    else if (dr === 'MACHINE') text = "TIME REVERSE";
+                    else if (dr === 'FOUNTAIN') text = "LIMIT WILD";
+                    if (c.wasPlanet || c.wasRuins) text = "REALM SHIFT";
+                    
+                    setCutin({ text, color: REALMS[dr].bright });
+                    if (cutinTimerRef.current) clearTimeout(cutinTimerRef.current);
+                    cutinTimerRef.current = setTimeout(() => { setCutin(null); cutinTimerRef.current = null; }, 1500);
+                } else {
+                }
+            }
+            prevFieldCardId.current = gs.fieldCard.id;
+        } else if (gs && gs.fieldCard && !visualFieldCard) {
+            setVisualFieldCard(gs.fieldCard);
+        }
+        if (gs && gs.status === 'playing') {
+            const prevPlayers = prevPlayersRef.current;
+            if (prevPlayers.length > 0) {
+                gs.players.forEach(p => {
+                    const oldP = prevPlayers.find(x => x.id === p.id);
+                    if (oldP && !oldP.isEliminated && p.isEliminated) { 
+                        playSE('burst', muted); 
+                        setVfxOverlay({ type: 'burst', color: '#EF4444' });
+                        if (vfxTimerRef.current) clearTimeout(vfxTimerRef.current);
+                        vfxTimerRef.current = setTimeout(() => { setVfxOverlay(null); vfxTimerRef.current = null; }, 1000);
+                    }
+                    else if (oldP && !oldP.finishBonus && p.finishBonus) {
+                        playSE('wild', muted);
+                        setVfxOverlay({ type: 'wild', color: '#FFD700' });
+                        if (vfxTimerRef.current) clearTimeout(vfxTimerRef.current);
+                        vfxTimerRef.current = setTimeout(() => { setVfxOverlay(null); vfxTimerRef.current = null; }, 1000);
+                    }
+                });
+            }
+            prevPlayersRef.current = gs.players;
+        }
+    }, [gs?.fieldCard?.id, gs?.status, gs?.players]);
+
+    useEffect(() => { if (logContainerRef.current) logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight; }, [gs?.logs]);
+    useEffect(() => { setSelectedCardId(null); }, [gs?.currentTurnPlayerId]);
+    
+    // リザルト画面表示時に勝利音を鳴らす
+    useEffect(() => {
+        if (gs?.status === 'finished') {
+            playSE('victory', muted);
+        }
+    }, [gs?.status, muted]);
+
+
 
     return (
         <>
