@@ -3,225 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cross Realm - Omega Singularity - Card Showcase</title>
-    <meta name="description" content="Cross Realm - Omega Singularity のカード全11種を3Dインタラクティブに閲覧できるショーケースページです。">
-
+    <title>Cross Realm - Card Showcase (Ultimate All-Cards)</title>
+    
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Cinzel:wght@400;700;900&family=Audiowide&family=Cinzel+Decorative:wght@700&family=Orbitron:wght@700;900&family=Special+Elite&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Cinzel:wght@400;700;900&family=Audiowide&family=Orbitron:wght@700;900&family=Special+Elite&display=swap" rel="stylesheet">
     
     <style>
         :root { 
             --accent: #40E0D0; --steam-gold: #D4AF37; --magic-purple: #8A2BE2; --danger: #FF4500; 
             --bg-deep: #05010a; 
-            --card-w: 260px; 
-            --card-h: 364px; 
+            --card-w: 200px; 
+            --card-h: 280px; 
         }
         body { 
             margin: 0; background-color: var(--bg-deep); color: white; font-family: 'Exo 2', sans-serif; 
             min-height: 100vh; overflow-x: hidden;
-            perspective: 2000px;
         }
 
-        /* === アニメーション === */
-        @keyframes gear-roll { 0% { transform: translate(var(--sx), var(--sy)) rotate(0deg); opacity: 0; } 5% { opacity: var(--op); } 95% { opacity: var(--op); } 100% { transform: translate(var(--ex), var(--ey)) rotate(var(--rot)); opacity: 0; } }
-        @keyframes magic-mega-zoom { 0% { transform: translate(var(--sx), -30vh) scale(0.3) rotate(0deg); opacity: 0; } 20% { opacity: var(--op); } 80% { opacity: var(--op); } 100% { transform: translate(var(--ex), 120vh) scale(3.5) rotate(var(--rot)); opacity: 0; } }
-        @keyframes rotate-inner { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes rotate-outer { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
-        @keyframes pulse-shimmer { 0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 2px rgba(255,255,255,0.5)); transform: scale(1); } 50% { opacity: 1; filter: drop-shadow(0 0 8px #fff) brightness(1.5); transform: scale(1.1); color: #fff; } }
-
-        /* === 本編共通のカードエフェクト === */
-        @keyframes steam-rise-heavy {
-            0% { transform: translateY(30%) translateX(var(--drift-start)) scale(0.5) rotate(0deg); opacity: 0; filter: blur(4px); }
-            15% { opacity: 0.85; filter: blur(6px); }
-            100% { transform: translateY(-130%) translateX(var(--drift-end)) scale(4) rotate(var(--rot)); opacity: 0; filter: blur(25px); }
-        }
-        @keyframes ripple-expand { 0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
-        @keyframes cyber-glitch-color {
-            0%, 94%, 100% { filter: none; transform: translate(0); }
-            95% { filter: drop-shadow(-4px 0 #ff00ea) drop-shadow(4px 0 #00ffff); transform: translate(3px, -1px); }
-            97% { filter: drop-shadow(4px 0 #ff0000) drop-shadow(-4px 0 #00ff00); transform: translate(-3px, 1px); }
-            99% { filter: brightness(1.8); }
-        }
-        @keyframes cyber-scanline { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
-        @keyframes void-pulse-wave { 0%, 100% { transform: scale(1); opacity: 0.2; filter: blur(10px); } 50% { transform: scale(1.4); opacity: 0.6; filter: blur(20px); } }
-
-        /* === 背景 (スクロール追従のため position: fixed) === */
         .astral-canvas { 
-            position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; 
-            background: radial-gradient(circle at 20% 30%, rgba(138, 43, 226, 0.15) 0%, transparent 60%), 
-                        radial-gradient(circle at 80% 70%, rgba(64, 224, 208, 0.15) 0%, transparent 60%), var(--bg-deep); 
+            position: fixed; inset: 0; z-index: -1; pointer-events: none;
+            background: radial-gradient(circle at 50% 50%, #0a0514 0%, var(--bg-deep) 100%);
         }
-        .matrix-code-canvas { position: absolute; inset: 0; z-index: 2; opacity: 0.4; pointer-events: none; mix-blend-mode: screen; }
-        .grid-floor { position: absolute; bottom: -50px; width: 200%; height: 60%; left: -50%; background-image: linear-gradient(rgba(64,224,208,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(138,43,226,0.1) 1px, transparent 1px); background-size: 40px 40px; transform: perspective(500px) rotateX(65deg); mask-image: radial-gradient(circle at center, black, transparent 80%); z-index: 3; }
-        .flow-gear { position: absolute; top: 0; left: 0; animation-name: gear-roll; animation-timing-function: linear; animation-iteration-count: infinite; opacity: 0; z-index: 4; filter: drop-shadow(0 0 10px var(--glow-color)) drop-shadow(0 0 5px var(--glow-color)); }
-        .flow-magic { position: absolute; top: 0; left: 0; animation-name: magic-mega-zoom; animation-timing-function: ease-in-out; animation-iteration-count: infinite; opacity: 0; z-index: 4; filter: drop-shadow(0 0 25px var(--glow-color)); }
 
-        .card-wrapper-3d { width: var(--card-w); height: var(--card-h); perspective: 1000px; position: relative; z-index: 10; }
-        .card-3d { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
-        .card-content { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; border-radius: inherit; z-index: 20; }
-
-        /* === マテリアル設定 === */
-        .mat-steam { background: radial-gradient(circle at 50% 0%, var(--r-color-bright) 0%, #1a0f05 100%); border: calc(var(--card-w)*0.065) solid #3d2616; border-radius: 8px; box-shadow: 0 15px 40px #000; overflow: hidden; }
-        .steam-rivet { position: absolute; width: calc(var(--card-w)*0.06); height: calc(var(--card-w)*0.06); background: #2a1a10; border-radius: 50%; box-shadow: inset 1px 1px 2px #fff3, 1px 1px 4px #000; z-index: 10; }
-        .r-tl { top: 6px; left: 6px; } .r-tr { top: 6px; right: 6px; } .r-bl { bottom: 6px; left: 6px; } .r-br { bottom: 6px; right: 6px; }
-        .steam-particle { position: absolute; bottom: -10%; left: var(--l); width: 140%; height: 140%; background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.3) 50%, transparent 70%); border-radius: 50%; animation: steam-rise-heavy var(--d) infinite ease-in; animation-delay: var(--delay); mix-blend-mode: screen; }
-        .steam-core-glow { position: absolute; bottom: -5px; left: 0; width: 100%; height: 20px; background: linear-gradient(to top, rgba(255,255,255,0.25), transparent); filter: blur(8px); z-index: 2; }
-        
-        .mat-fantasy { background: radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%); border: calc(var(--card-w)*0.02) solid rgba(255,255,255,0.9); border-radius: 35% 10% !important; box-shadow: 0 0 40px var(--r-color-glow); overflow: hidden; }
-        .ripple { position: absolute; top: 50%; left: 50%; width: 230%; height: 230%; border: 4px solid rgba(255,255,255,0.6); border-radius: 50%; animation: ripple-expand 4s infinite cubic-bezier(0.165, 0.84, 0.44, 1); animation-delay: var(--delay); opacity: 0; }
-        .magic-circle-bg { position: absolute; top: 55%; left: 50%; width: 180%; height: 180%; transform: translate(-50%, -50%); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; z-index: 1; animation: rotate-inner 25s linear infinite; }
-
-        .mat-cyber { background: #000; border: none; clip-path: polygon(0 15%, 15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%); box-shadow: inset 0 0 80px var(--r-color-dim); border-left: calc(var(--card-w)*0.06) solid var(--r-color); animation: cyber-glitch-color 4s infinite; overflow: hidden; }
-        .cyber-fx-scanline { position: absolute; inset: 0; pointer-events: none; z-index: 5; background: linear-gradient(to bottom, transparent 0%, rgba(64,224,208,0.12) 50%, transparent 100%); background-size: 100% 50px; animation: cyber-scanline 1.6s linear infinite; }
-        .cyber-circuit { position: absolute; inset: 0; background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0); background-size: 12px 12px; }
-
-        .mat-void-planet, .mat-void-ruins { background: radial-gradient(circle at 50% 50%, #111 0%, #000 100%); border-radius: 50% !important; box-shadow: 0 0 30px #fff2; overflow: hidden; border: none; }
-        .void-fluctuation { position: absolute; inset: 0; background: repeating-radial-gradient(circle at 50% 50%, transparent 0, transparent 10px, rgba(255,255,255,0.04) 11px, rgba(255,255,255,0.04) 12px); animation: void-pulse-wave 8s infinite ease-in-out; }
-        .void-singularity-ring { position: absolute; top: 50%; left: 50%; width: 120%; height: 120%; transform: translate(-50%, -50%); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 50%; }
-
-        /* 共通パーツ */
-        .card-info-top { position: absolute; top: 6%; left: 6%; padding: 3% 8%; background: #000; border-left: calc(var(--card-w)*0.04) solid var(--r-color); z-index: 50; border-radius: 1px; transform: translateZ(40px); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .card-info-top span { font-size: calc(var(--card-w)*0.068); font-weight: 950; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
-        .card-footer-peak { position: absolute; bottom: 0; width: 100%; padding: 25% 0 12%; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%); text-align: center; color: #fff; z-index: 50; font-weight: 900; font-size: calc(var(--card-w)*0.16); text-shadow: 0 0 15px var(--r-color); transform: translateZ(30px); }
-        .special-badge-base { position: absolute; left: -8px; top: 38%; background: linear-gradient(90deg, #e60000, #800000); border: 2px solid #FFF; color: #FFF; font-size: calc(var(--card-w)*0.04); font-weight: 1000; padding: 4px 8px; text-align: center; border-radius: 3px 8px 8px 3px; box-shadow: 0 8px 20px rgba(0,0,0,0.8); z-index: 200; line-height: 1.1; text-transform: uppercase; letter-spacing: 0.5px; transform: translateZ(60px) rotate(-4deg); }
-
-        .showcase-container { max-width: 1200px; margin: 0 auto; padding-bottom: 10rem; position: relative; z-index: 10; }
-        .theme-section { 
-            margin-bottom: 6rem; 
-            background: rgba(10, 15, 35, 0.7); 
-            border: 1px solid rgba(255,255,255,0.1); 
-            border-radius: 24px; 
-            padding: 3rem 2rem; 
-            backdrop-filter: blur(10px); 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            position: relative;
-            overflow: hidden;
+        /* --- Ultimate Eco Animations --- */
+        @keyframes ultimate-rotate { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+        @keyframes ultimate-rotate-rev { from { transform: translate(-50%, -50%) rotate(360deg); } to { transform: translate(-50%, -50%) rotate(0deg); } }
+        @keyframes ultimate-shine { 0% { transform: translateX(-200%) skewX(-30deg); } 20%, 100% { transform: translateX(200%) skewX(-30deg); } }
+        @keyframes ultimate-pulse { 0%, 100% { opacity: 0.2; transform: scale(0.95); } 50% { opacity: 0.5; transform: scale(1.05); } }
+        @keyframes ultimate-flicker { 0%, 100% { opacity: 0.3; } 95% { opacity: 0.3; } 96% { opacity: 0.8; } 98% { opacity: 0.4; } }
+        @keyframes ultimate-scan { 0% { transform: translateY(-100%); opacity: 0; } 10%, 90% { opacity: 0.4; } 100% { transform: translateY(350%); opacity: 0; } }
+        @keyframes ultimate-float { 
+            0%, 100% { transform: translate(-50%, -50%); } 
+            50% { transform: translate(-50%, calc(-50% - 6px)); } 
         }
-        .theme-section::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
-            background: currentColor; opacity: 0.8; box-shadow: 0 0 20px currentColor;
-        }
-        .theme-title { 
-            font-family: 'Orbitron', sans-serif; 
-            font-size: clamp(1.5rem, 5vw, 2.5rem); 
-            font-weight: 900; 
-            margin-bottom: 4rem; 
-            text-align: center; 
-            letter-spacing: 6px; 
-            text-transform: uppercase; 
-            text-shadow: 0 0 20px currentColor; 
-        }
-        .cards-row { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 4rem; }
+        @keyframes ultimate-star-pulse { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 0.8; transform: scale(1.2); } }
 
-        .emblem-container { position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 400px; height: 400px; z-index: -1; opacity: 0.3; pointer-events: none; }
+        /* --- Ultimate Eco Foundation --- */
+        .card-ultimate {
+            width: var(--card-w); height: var(--card-h);
+            position: relative; overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: #000;
+        }
+        .card-ultimate:hover { transform: translateY(-10px) scale(1.05); z-index: 100; }
+        .card-ultimate::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent 45%, rgba(255,255,255,0.03) 50%, transparent 55%);
+            pointer-events: none; z-index: 5;
+        }
+
+        /* STEAM */
+        .mat-steam {
+            background: repeating-linear-gradient(45deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(255,255,255,0.01) 3px), linear-gradient(135deg, #2a1a10 0%, #111 100%);
+            border: 2px solid #3d2616; border-top: 2px solid rgba(255,255,255,0.3);
+            clip-path: polygon(0 5%, 5% 0, 95% 0, 100% 5%, 100% 95%, 95% 100%, 5% 100%, 0 95%);
+        }
+        .u-steam-frame { position: absolute; inset: 4px; border: 1px solid rgba(212,175,55,0.15); pointer-events: none; }
+        .u-steam-gauge { position: absolute; bottom: 15%; left: 8%; width: 30px; height: 30px; border: 1.5px solid rgba(212,175,55,0.2); border-radius: 50%; opacity: 0.6; }
+        .u-steam-needle { position: absolute; top: 50%; left: 50%; width: 1px; height: 14px; background: #D4AF37; transform-origin: bottom; animation: ultimate-rotate 4s ease-in-out infinite alternate; }
+
+        /* FANTASY */
+        .mat-fantasy {
+            background: radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.1) 0%, transparent 80%), linear-gradient(135deg, #010614 0%, #000 100%);
+            border: 1px solid rgba(138, 43, 226, 0.4); border-top: 1.5px solid rgba(255,255,255,0.4);
+            border-radius: 20% 5% 20% 5% !important;
+        }
+        .u-fantasy-shine { position: absolute; top: 0; left: 0; width: 50%; height: 200%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent); animation: ultimate-shine 6s linear infinite; }
+        .u-fantasy-ring { position: absolute; top: 55%; left: 50%; width: 140px; height: 140px; border: 0.5px solid rgba(255,255,255,0.1); border-radius: 50%; animation: ultimate-rotate 30s linear infinite; }
+
+        /* CYBER */
+        .mat-cyber {
+            background: conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.02) 0%, transparent 25%, rgba(255,255,255,0.02) 50%, transparent 75%), #000;
+            border: 1px solid rgba(64,224,208,0.3); border-top: 1.5px solid rgba(255,255,255,0.4);
+            clip-path: polygon(15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%, 0 15%);
+        }
+        .u-cyber-grid { position: absolute; inset: 0; background: linear-gradient(rgba(64,224,208,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(64,224,208,0.03) 1px, transparent 1px); background-size: 10px 10px; }
+        .u-cyber-edge { position: absolute; inset: 0; border: 2px solid var(--accent); opacity: 0.1; animation: ultimate-flicker 5s step-end infinite; }
+        .u-cyber-scan { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(to right, transparent, var(--accent), transparent); opacity: 0.3; animation: ultimate-scan 3s linear infinite; }
+
+        /* VOID */
+        .mat-void-planet, .mat-void-ruins { background: radial-gradient(circle at 50% 50%, #111 0%, #000 100%); border-radius: 50% !important; border: 1px solid rgba(255,255,255,0.15); }
+        .u-void-vortex { position: absolute; top: 55%; left: 50%; width: 160px; height: 160px; background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.05), transparent); border-radius: 50%; animation: ultimate-rotate 12s linear infinite; }
+        .u-void-core { position: absolute; top: 55%; left: 50%; width: 70px; height: 70px; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); animation: ultimate-pulse 4s ease-in-out infinite; }
+        .u-void-star { position: absolute; width: 1.5px; height: 1.5px; background: white; border-radius: 50%; animation: ultimate-star-pulse var(--d) infinite; opacity: 0.4; }
+
+        .card-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding: 1rem; z-index: 10; }
+        .card-header-tech { width: 90%; background: rgba(0,0,0,0.8); border-left: 3px solid var(--r-color); padding: 2px 8px; z-index: 50; }
+        .card-header-tech span { font-size: 0.65rem; font-weight: 900; color: var(--r-bright); font-family: 'Orbitron'; letter-spacing: 1px; }
+        .card-icon { width: 50%; height: 50%; display: flex; align-items: center; justify-content: center; position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%); animation: ultimate-float 5s ease-in-out infinite; z-index: 20; filter: drop-shadow(0 0 5px var(--r-color)); }
+        .card-footer-tech { width: 100%; text-align: center; font-weight: 900; font-size: 1rem; letter-spacing: 3px; padding-bottom: 10px; text-shadow: 0 0 8px var(--r-color); }
+
+        .special-badge { 
+            position: absolute; left: -5px; top: 35%; background: linear-gradient(90deg, #e60000, #800000); 
+            border: 1px solid #FFF; color: #FFF; font-size: 6px; font-weight: 1000; padding: 2px 6px; 
+            border-radius: 2px 6px 6px 2px; box-shadow: 0 3px 10px rgba(0,0,0,0.8); z-index: 200; transform: rotate(-3deg);
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo, useRef } = React;
+        const { useState, useMemo } = React;
 
         const REALMS = {
-            GEAR:    { n: '歯車', color: '#FF8C00', bright: '#FFD700', glow: 'rgba(255,140,0,1)', theme: 'steam', font: 'Special Elite' },
-            ARCHIVE: { n: '古文書', color: '#FF3131', bright: '#FF6347', glow: 'rgba(255,49,49,1)', theme: 'steam', font: 'Special Elite' },
-            FOUNTAIN:{ n: '噴水', color: '#1E90FF', bright: '#87CEFA', glow: 'rgba(30,144,255,1)', theme: 'fantasy', font: 'Cinzel Decorative' },
-            ICEAGE:  { n: '氷河期', color: '#00F3FF', bright: '#ADFCFF', glow: 'rgba(0,243,255,1)', theme: 'fantasy', font: 'Cinzel Decorative' },
-            MACHINE: { n: '機械', color: '#E2B0FF', bright: '#DDA0DD', glow: 'rgba(226,176,255,1)', dim: 'rgba(226,176,255,0.4)', theme: 'cyber', font: 'Orbitron' },
-            BATTERY: { n: '電池', color: '#ADFF2F', bright: '#7FFF00', glow: 'rgba(173,255,47,1)', dim: 'rgba(173,255,47,0.4)', theme: 'cyber', font: 'Orbitron' },
-            PLANET:  { n: '惑星', color: '#FFFFFF', bright: '#F0F8FF', glow: 'rgba(255,255,255,1)', theme: 'void-planet', font: 'Audiowide' },
-            RUINS:   { n: '廃墟', color: '#CCCCCC', bright: '#D3D3D3', glow: 'rgba(204,204,204,1)', theme: 'void-ruins', font: 'Audiowide' }
+            GEAR:    { n: '歯車', color: '#FF8C00', bright: '#FFD700', theme: 'steam', font: 'Special Elite' },
+            ARCHIVE: { n: '古文書', color: '#FF3131', bright: '#FF6347', theme: 'steam', font: 'Special Elite' },
+            FOUNTAIN:{ n: '噴水', color: '#1E90FF', bright: '#87CEFA', theme: 'fantasy', font: 'Cinzel Decorative' },
+            ICEAGE:  { n: '氷河期', color: '#00F3FF', bright: '#ADFCFF', theme: 'fantasy', font: 'Cinzel Decorative' },
+            MACHINE: { n: '機械', color: '#E2B0FF', bright: '#DDA0DD', theme: 'cyber', font: 'Orbitron' },
+            BATTERY: { n: '電池', color: '#ADFF2F', bright: '#7FFF00', theme: 'cyber', font: 'Orbitron' },
+            PLANET:  { n: '惑星', color: '#FFFFFF', bright: '#F0F8FF', theme: 'void-planet', font: 'Audiowide' },
+            RUINS:   { n: '廃墟', color: '#CCCCCC', bright: '#D3D3D3', theme: 'void-ruins', font: 'Audiowide' }
         };
 
-        const IconRenderer = ({ r, spec, className, ...rest }) => {
-            const p = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: spec ? 4 : 2, strokeLinecap: "round", strokeLinejoin: "round", className: className || "w-full h-full", ...rest };
+        const IconRenderer = ({ r, spec, color }) => {
+            const p = { viewBox: "0 0 24 24", fill: "none", stroke: color, strokeWidth: spec ? 3.5 : 2.2, strokeLinecap: "round", strokeLinejoin: "round", className: "w-full h-full" };
             switch (r) {
-                case 'GEAR': // Steampunk: Complex Gear with Steam
-                    return <svg {...p}>
-                        {/* Ambient Steam Clouds */}
-                        <path d="M5 16a4 4 0 0 1 4-4 5 5 0 0 1 10 1 4 4 0 0 1 0 8H9A4 4 0 0 1 5 16z" fill="currentColor" opacity="0.1" stroke="none" />
-                        <path d="M12 4a3 3 0 0 1 3 3 2 2 0 0 1-4 1 3 3 0 0 1 1-4z" fill="currentColor" opacity="0.1" stroke="none" />
-                        {/* Solid Brass Body */}
-                        <circle cx="12" cy="12" r="8" fill="currentColor" opacity="0.2" stroke="none" />
-                        <circle cx="12" cy="12" r="8" />
-                        <path d="M12 1v3 M12 20v3 M1 12h3 M20 12h3" />
-                        <path d="M4.2 4.2l2.1 2.1 M17.7 17.7l2.1 2.1 M4.2 19.8l2.1-2.1 M17.7 4.2l2.1 2.1" />
-                        {/* Glowing Core */}
-                        <circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
-                    </svg>;
-                case 'ARCHIVE': // Steampunk: Mechanical Tome with Steam
-                    return <svg {...p}>
-                        {/* Ambient Steam Clouds */}
-                        <path d="M4 17a3 3 0 0 1 3-3 5 5 0 0 1 9 1 3 3 0 0 1 0 6H7a3 3 0 0 1-3-3z" fill="currentColor" opacity="0.1" stroke="none" />
-                        {/* Leather Book Body */}
-                        <path d="M8.5 5H20v15.5H8.5a2.5 2.5 0 0 1 0-5H20" fill="currentColor" opacity="0.2" stroke="none" />
-                        <path d="M6 20.5A2.5 2.5 0 0 1 8.5 18H20" />
-                        <path d="M8.5 5H20v15.5H8.5a2.5 2.5 0 0 1 0-5H20" />
-                        {/* Brass Lock (Glowing) */}
-                        <rect x="15" y="10" width="6" height="5" rx="1" fill="currentColor" opacity="0.4" stroke="none" />
-                        <rect x="15" y="10" width="6" height="5" rx="1" />
-                        <circle cx="18" cy="12.5" r="1.5" fill="currentColor" stroke="none" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
-                    </svg>;
-                case 'FOUNTAIN': // Fantasy: Magical Water Jewel Crest
-                    return <svg {...p}>
-                        {/* Ambient Magic Aura */}
-                        <circle cx="12" cy="12" r="11" fill="currentColor" opacity="0.1" stroke="none" />
-                        {/* Dotted magic boundary */}
-                        <circle cx="12" cy="12" r="11" strokeDasharray="2 4" opacity="0.6" />
-                        {/* Water Jewel Glass Body (Transparent) */}
-                        <path d="M12 20c4.4 0 8-3.6 8-8 0-5-8-11-8-11S4 6 4 12c0 4.4 3.6 8 8 8z" fill="currentColor" opacity="0.25" stroke="none" />
-                        <path d="M12 20c4.4 0 8-3.6 8-8 0-5-8-11-8-11S4 6 4 12c0 4.4 3.6 8 8 8z" />
-                        {/* Glowing Core */}
-                        <path d="M12 17c2.5 0 4-1.5 4-4 0-3-4-6-4-6S8 10 8 13c0 2.5 1.5 4 4 4z" fill="currentColor" stroke="none" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
-                        {/* Crescent Aura */}
-                        <path d="M6 6a8 8 0 0 1 12 0" opacity="0.8" />
-                    </svg>;
-                case 'ICEAGE': // Fantasy: Absolute Zero Crystal
-                    return <svg {...p}>
-                        {/* Ambient Frost Aura */}
-                        <circle cx="12" cy="12" r="9" fill="currentColor" opacity="0.1" stroke="none" />
-                        {/* 8-axis frost spears */}
-                        <path d="M12 3v18 M3 12h18 M5.6 5.6l12.8 12.8 M5.6 18.4l12.8-12.8" strokeWidth="1.2" opacity="0.7" />
-                        {/* Inner magic bounds (Glassy Ice) */}
-                        <polygon points="12 7 17 12 12 17 7 12" fill="currentColor" opacity="0.25" stroke="none" />
-                        <polygon points="12 7 17 12 12 17 7 12" fill="none" strokeWidth="1.2" />
-                        <polygon points="12 4 15.5 8.5 20 12 15.5 15.5 12 20 8.5 15.5 4 12 8.5 8.5" fill="none" strokeWidth="1.2" opacity="0.5" />
-                        {/* Solid frost core (Glowing) */}
-                        <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
-                    </svg>;
-                case 'MACHINE': // Cyber: CPU Core Circuit with Glitch Noise
-                    return <svg {...p}>
-                        {/* Digital Noise / Glitch Blocks */}
-                        <rect x="3" y="4" width="4" height="2" fill="currentColor" opacity="0.15" stroke="none" />
-                        <rect x="17" y="6" width="3" height="3" fill="currentColor" opacity="0.1" stroke="none" />
-                        <rect x="4" y="17" width="5" height="1" fill="currentColor" opacity="0.15" stroke="none" />
-                        <rect x="15" y="16" width="4" height="2" fill="currentColor" opacity="0.1" stroke="none" />
-                        {/* Solid PCB Body */}
-                        <rect x="6" y="6" width="12" height="12" rx="1" fill="currentColor" opacity="0.2" stroke="none" />
-                        <rect x="6" y="6" width="12" height="12" rx="1" />
-                        {/* Traces */}
-                        <path d="M10 6V2 M14 6V2 M10 18v4 M14 18v4 M6 10H2 M6 14H2 M18 10h4 M18 14h4" />
-                        {/* Inner core chip (Glowing) */}
-                        <rect x="9" y="9" width="6" height="6" fill="currentColor" stroke="none" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
-                        <path d="M9 9l-3-3 M15 9l3-3 M9 15l-3 3 M15 15l3 3" />
-                    </svg>;
-                case 'BATTERY': // Cyber: Energy Cell with Glitch Noise
-                    return <svg {...p}>
-                        {/* Digital Noise / Scanlines */}
-                        <rect x="2" y="7" width="4" height="1" fill="currentColor" opacity="0.2" stroke="none" />
-                        <rect x="18" y="15" width="3" height="2" fill="currentColor" opacity="0.15" stroke="none" />
-                        <rect x="5" y="4" width="14" height="14" fill="currentColor" opacity="0.08" stroke="none" />
-                        {/* Holographic Battery Body */}
-                        <rect x="5" y="3" width="14" height="18" rx="2" fill="currentColor" opacity="0.2" stroke="none" />
-                        <rect x="5" y="3" width="14" height="18" rx="2" />
-                        <path d="M9 1h6 M5 8h14 M5 16h14" />
-                        {/* Energy Lightning (Glowing) */}
-                        <path d="M12.5 4.5l-2.5 6h4l-2.5 6" strokeWidth="1.5" style={{ filter: 'drop-shadow(0 0 3px currentColor)' }} />
-                    </svg>;
+                case 'GEAR': return <svg {...p}><circle cx="12" cy="12" r="5" /><g style={{ transformOrigin: 'center' }}>{[...Array(8)].map((_, i) => (<rect key={i} x="11" y="2" width="2" height="4" fill={color} transform={`rotate(${i * 45} 12 12)`} />))}</g><circle cx="12" cy="12" r="2.5" fill={color} stroke="none" /></svg>;
+                case 'ARCHIVE': return <svg {...p}><path d="M6 20.5A2.5 2.5 0 0 1 8.5 18H20M8.5 5H20v15.5H8.5a2.5 2.5 0 0 1 0-5H20" /><circle cx="18" cy="12.5" r="1.5" fill={color} stroke="none" /></svg>;
+                case 'FOUNTAIN': return <svg {...p}><path d="M12 19c3.8 0 7-3.2 7-7 0-4.5-7-10-7-10S5 7.5 5 12c0 3.8 3.2 7 7 7z" /><path d="M12 16c2 0 3.5-1.5 3.5-3.5 0-2.5-3.5-5.5-3.5-5.5S8.5 10 8.5 12.5c0 2 1.5 3.5 3.5 3.5z" fill={color} stroke="none" /></svg>;
+                case 'ICEAGE': return <svg {...p}><path d="M12 3v18 M3 12h18 M5.6 5.6l12.8 12.8 M5.6 18.4l12.8-12.8" strokeWidth="1.2" opacity="0.7" /><polygon points="12 7 17 12 12 17 7 12" /><circle cx="12" cy="12" r="2.5" fill={color} stroke="none" /></svg>;
+                case 'MACHINE': return <svg {...p}><rect x="4" y="4" width="16" height="16" rx="1" opacity="0.3" /><rect x="8" y="8" width="8" height="8" strokeWidth="1.5" /><path d="M12 8v8 M8 12h8" opacity="0.5" /><rect x="11" y="11" width="2" height="2" fill={color} stroke="none" /></svg>;
+                case 'BATTERY': return <svg {...p}><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M9 1h6 M5 8h14 M5 16h14" /><path d="M12.5 4.5l-2.5 6h4l-2.5 6" strokeWidth="1.5" /></svg>;
                 case 'PLANET': return <svg {...p}><circle cx="12" cy="12" r="10" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>;
                 case 'RUINS': return <svg {...p}><path d="M3 21h18M5 21V10a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11M9 21v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4" /></svg>;
                 default: return null;
@@ -229,236 +139,61 @@
         };
 
         const CardOrnaments = ({ theme }) => {
-            if (theme === 'steam') return (
-                <React.Fragment>
-                    <div className="steam-rivet r-tl" /><div className="steam-rivet r-tr" /><div className="steam-rivet r-bl" /><div className="steam-rivet r-br" />
-                    <div className="steam-core-glow" />
-                    <div className="steam-particle" style={{ '--l': '-5%', '--d': '2.5s', '--delay': '0s', '--drift-start': '0px', '--drift-end': '30px', '--rot': '90deg' }} />
-                    <div className="steam-particle" style={{ '--l': '35%', '--d': '3.2s', '--delay': '1.2s', '--drift-start': '10px', '--drift-end': '-20px', '--rot': '-45deg' }} />
-                    <div className="steam-particle" style={{ '--l': '75%', '--d': '2.8s', '--delay': '0.5s', '--drift-start': '-10px', '--drift-end': '25px', '--rot': '120deg' }} />
-                </React.Fragment>
-            );
-            if (theme === 'fantasy') return (
-                <React.Fragment>
-                    <div className="magic-circle-bg" /><div className="ripple" style={{ '--delay': '0s' }} /><div className="ripple" style={{ '--delay': '2s' }} />
-                </React.Fragment>
-            );
-            if (theme === 'cyber') return (
-                <React.Fragment><div className="cyber-circuit" /><div className="cyber-fx-scanline" /></React.Fragment>
-            );
-            if (theme.includes('void')) return (
-                <React.Fragment><div className="void-singularity-ring" /><div className="void-fluctuation" /></React.Fragment>
-            );
+            if (theme === 'steam') return <React.Fragment><div className="u-steam-frame" /><div className="u-steam-gauge"><div className="u-steam-needle" /></div></React.Fragment>;
+            if (theme === 'fantasy') return <React.Fragment><div className="u-fantasy-shine" /><div className="u-fantasy-ring" /></React.Fragment>;
+            if (theme === 'cyber') return <React.Fragment><div className="u-cyber-grid" /><div className="u-cyber-edge" /><div className="u-cyber-scan" /></React.Fragment>;
+            if (theme.includes('void')) return <React.Fragment><div className="u-void-vortex" /><div className="u-void-core" />{[...Array(4)].map((_, i) => (<div key={i} className="u-void-star" style={{ top: `${20+Math.random()*60}%`, left: `${20+Math.random()*60}%`, '--d': `${2+Math.random()*4}s`, animationDelay: `${Math.random()*5}s` }} />))}</React.Fragment>;
             return null;
-        };
+        }
 
-        const CardPreview = ({ realmKey, isSpecial }) => {
-            const rData = REALMS[realmKey];
-            const [tilt, setTilt] = useState({ x: 0, y: 0 });
-
-            const handleMove = (e) => {
-                const r = e.currentTarget.getBoundingClientRect();
-                setTilt({ x: ((e.clientY - r.top - r.height/2) / (r.height/2)) * -20, y: ((e.clientX - r.left - r.width/2) / (r.width/2)) * 20 });
-            };
-
-            let specialLabel = isSpecial ? (realmKey === 'GEAR' ? 'DRAW\n2' : realmKey === 'MACHINE' ? 'REVERSE' : realmKey === 'FOUNTAIN' ? 'LIMIT\nWILD' : 'WILD') : '';
-            let effectDesc = '';
-            if (isSpecial) {
-                if (realmKey === 'GEAR') effectDesc = '次のプレイヤーに+2枚ドロー';
-                else if (realmKey === 'MACHINE') effectDesc = '順番の進行方向を反転';
-                else if (realmKey === 'FOUNTAIN') effectDesc = '氷河期/噴水の場で好きな属性に変更';
-                else effectDesc = 'いつでも出せる・属性を自由に変更';
-            } else {
-                if (realmKey === 'PLANET' || realmKey === 'RUINS') effectDesc = 'いつでも出せる純粋ワイルド';
+        const CardPreview = ({ rKey, spec }) => {
+            const r = REALMS[rKey];
+            const matClass = `mat-${r.theme}`;
+            let specLabel = "";
+            if (spec) {
+                if (rKey === 'GEAR') specLabel = "DRAW 2";
+                else if (rKey === 'MACHINE') specLabel = "REVERSE";
+                else if (rKey === 'FOUNTAIN') specLabel = "LIMIT WILD";
+                else specLabel = "WILD";
             }
 
             return (
-                <div className="flex flex-col items-center gap-6">
-                    <div className="card-wrapper-3d" onMouseMove={handleMove} onMouseLeave={() => setTilt({x:0, y:0})}>
-                        <div className={`card-3d mat-${rData.theme}`} style={{ transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`, '--r-color': rData.color, '--r-color-bright': rData.bright, '--r-color-glow': rData.glow, '--r-color-dim': rData.dim || 'rgba(0,0,0,0.5)' }}>
-                            <CardOrnaments theme={rData.theme} />
-                            <div className="card-content">
-                                <div className="card-info-top"><span>{realmKey}</span></div>
-                                <div className="card-icon-overload" style={{ color: rData.bright, filter: `drop-shadow(0 0 10px ${rData.glow})`, position: 'absolute', top: '55%', left: '50%', transform: 'translate(-50%, -50%) translateZ(60px)', width: '55%', height: '55%', zIndex: 100 }}>
-                                    <IconRenderer r={realmKey} spec={isSpecial} />
-                                </div>
-                                <div className={`card-footer-peak font-['${rData.font}']`}>{rData.n}</div>
-                                {isSpecial && <div className="special-badge-base">{specialLabel.split(' ').map((w, i) => <div key={i}>{w}</div>)}</div>}
-                            </div>
-                        </div>
+                <div className={`card-ultimate ${matClass}`} style={{ '--r-color': r.color, '--r-bright': r.bright }}>
+                    <CardOrnaments theme={r.theme} />
+                    <div className="card-inner">
+                        <div className="card-header-tech"><span>{rKey}</span></div>
+                        <div className="card-icon"><IconRenderer r={rKey} spec={spec} color={r.bright} /></div>
+                        <div className="card-footer-tech" style={{ color: r.bright, fontFamily: r.font }}>{r.n}</div>
+                        {spec && <div className="special-badge">{specLabel.split(' ').map((w, i) => <div key={i}>{w}</div>)}</div>}
                     </div>
-                    <div className="text-lg font-black text-white/70 uppercase tracking-widest bg-black/50 px-4 py-1 rounded-full border border-white/10">{realmKey} {isSpecial ? '(SPECIAL)' : '(NORMAL)'}</div>
-                    {effectDesc && <div className="text-xs text-white/50 font-bold tracking-wider mt-1 bg-black/30 px-3 py-1 rounded-full border border-white/5">{effectDesc}</div>}
-                </div>
-            );
-        };
-
-        const ThemeSection = ({ title, color, cards }) => (
-            <div className="theme-section" style={{ color: color }}>
-                <h2 className="theme-title">{title}</h2>
-                <div className="cards-row">
-                    {cards.map((c, index) => <CardPreview key={`${c.k}-${index}`} realmKey={c.k} isSpecial={c.s} />)}
-                </div>
-            </div>
-        );
-
-        const ComplexEmblem = () => (
-            <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
-                <defs>
-                    <filter id="emblem-glow"><feGaussianBlur stdDeviation="3" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter>
-                </defs>
-                <g filter="url(#emblem-glow)">
-                    <circle cx="50" cy="50" r="48" fill="none" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="4 8 12 4" opacity="0.6" style={{animation: 'rotate-outer 20s linear infinite', transformOrigin: 'center'}} />
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="var(--accent)" strokeWidth="0.3" strokeDasharray="2 2" opacity="0.4" style={{animation: 'rotate-inner 15s linear infinite', transformOrigin: 'center'}} />
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="var(--magic-purple)" strokeWidth="1" strokeDasharray="1 4" opacity="0.8" style={{animation: 'rotate-inner 30s linear infinite', transformOrigin: 'center'}} />
-                    <g style={{animation: 'rotate-outer 40s linear infinite', transformOrigin: 'center'}}>
-                        <polygon points="50,12 55,32 75,32 60,45 65,65 50,53 35,65 40,45 25,32 45,32" fill="none" stroke="var(--magic-purple)" strokeWidth="0.5" opacity="0.6" />
-                    </g>
-                    <path d="M50 16 L79.4 33 L79.4 67 L50 84 L20.6 67 L20.6 33 Z" fill="none" stroke="var(--steam-gold)" strokeWidth="1.5" opacity="0.5" style={{animation: 'rotate-inner 45s linear infinite', transformOrigin: 'center'}} />
-                    <path d="M50 20 L76 35 L76 65 L50 80 L24 65 L24 35 Z" fill="none" stroke="var(--steam-gold)" strokeWidth="0.5" opacity="0.3" style={{animation: 'rotate-outer 55s linear infinite', transformOrigin: 'center'}} />
-                    <path d="M36 36 L64 64 M64 36 L36 64" stroke="#fff" strokeWidth="4" strokeLinecap="square" opacity="0.9" />
-                    <text x="50" y="54" fill="var(--accent)" fontSize="10" fontWeight="1000" font-family="Orbitron" textAnchor="middle" style={{animation: 'pulse-shimmer 2s infinite'}}>X</text>
-                </g>
-            </svg>
-        );
-
-        const GearSVG = ({ color }) => (
-            <svg viewBox="0 0 100 100" className="w-full h-full"><defs><linearGradient id={`grad-gear-${color}`} x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor: color, stopOpacity: 1}} /><stop offset="100%" style={{stopColor: '#4b2f1c', stopOpacity: 1}} /></linearGradient></defs><path fill={`url(#grad-gear-${color})`} d="M100 56.5v-13l-12.7-2.1c-1.1-4.5-3-8.6-5.4-12.3l7.4-10.4-9.2-9.2-10.4 7.4c-3.7-2.4-7.8-4.3-12.3-5.4L55.3 0h-13l-2.1 12.7c-4.5 1.1-8.6 3-12.3 5.4l-10.4-7.4-9.2 9.2 7.4 10.4c-2.4 3.7-4.3 7.8-5.4 12.3L0 43.5v13l12.7 2.1c1.1 4.5 3 8.6 5.4 12.3l-7.4 10.4 9.2 9.2 10.4-7.4c3.7 2.4 7.8 4.3 12.3 5.4l2.1 12.7h13l2.1-12.7c4.5-1.1 8.6-3 12.3-5.4l10.4 7.4 9.2-9.2-7.4-10.4c2.4-3.7 4.3-7.8 5.4-12.3l12.7-2.1zM50 71c-11.6 0-21-9.4-21-21s9.4-21 21-21 21 9.4 21 21-9.4 21-21 21z" /><circle cx="50" cy="50" r="12" fill="#000" /></svg>
-        );
-        const MagicCircleSVG = ({ color }) => (
-            <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible"><defs><filter id="magic-glow"><feGaussianBlur stdDeviation="2" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter></defs><g filter="url(#magic-glow)"><g style={{ animation: 'rotate-outer 10s linear infinite', transformOrigin: 'center' }}><circle cx="50" cy="50" r="48" fill="none" stroke={color} strokeWidth="1.5" strokeDasharray="10 5" /></g><g style={{ animation: 'rotate-inner 15s linear infinite', transformOrigin: 'center' }}><circle cx="50" cy="50" r="35" fill="none" stroke={color} strokeWidth="1" /><path d="M50 15 L80 70 L20 70 Z M50 85 L20 30 L80 30 Z" fill="none" stroke={color} strokeWidth="1" /><circle cx="50" cy="50" r="10" fill="none" stroke={color} strokeWidth="2" /></g></g></svg>
-        );
-
-        const MatrixSequentialRain = () => {
-            const canvasRef = useRef(null);
-            useEffect(() => {
-                const canvas = canvasRef.current; const ctx = canvas.getContext('2d'); let animationId;
-                const updateSize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
-                updateSize();
-                const fontSize = 16; const columns = Math.floor(canvas.width / fontSize);
-                const heads = new Array(columns).fill(0).map(() => Math.floor(Math.random() * (canvas.height / fontSize)));
-                const rainColors = ['#FF8C00', '#FF3131', '#00BFFF', '#ADFCFF', '#E2B0FF', '#ADFF2F', '#FFFFFF'];
-
-                const draw = () => {
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.font = `900 ${fontSize}px Orbitron`;
-                    for (let i = 0; i < columns; i++) {
-                        if (Math.random() > 0.96) {
-                            const x = i * fontSize; const y = heads[i] * fontSize;
-                            ctx.fillStyle = rainColors[Math.floor(Math.random() * rainColors.length)];
-                            ctx.fillText(Math.floor(Math.random()*2).toString(), x, y);
-                            heads[i]++; if (heads[i] * fontSize > canvas.height && Math.random() > 0.98) heads[i] = 0;
-                        }
-                    }
-                    animationId = requestAnimationFrame(draw);
-                };
-                draw();
-                window.addEventListener('resize', updateSize);
-                return () => { cancelAnimationFrame(animationId); window.removeEventListener('resize', updateSize); };
-            }, []);
-            return <canvas ref={canvasRef} className="matrix-code-canvas" />;
-        };
-
-        const AstralBackground = () => {
-            const items = useMemo(() => {
-                const arr = [];
-                for(let i=0; i<6; i++) arr.push({ id: `m${i}`, type: 'magic', color: i%2?'#00F3FF':'#1E90FF', sx: `${(Math.random()*80)-10}vw`, ex: `${(Math.random()*80)-10}vw`, delay: `${Math.random()*20}s`, dur: `${20+Math.random()*15}s`, op: 0.5, rot: `${360+Math.random()*720}deg` });
-                
-                for(let i=0; i<15; i++) {
-                    const isLtr = Math.random() > 0.5;
-                    const sx = isLtr ? '-300px' : 'calc(100vw + 300px)';
-                    const ex = isLtr ? 'calc(100vw + 300px)' : '-300px';
-                    const sy = `${Math.random() * 90}vh`;
-                    const rot = isLtr ? `${360+Math.random()*720}deg` : `-${360+Math.random()*720}deg`;
-                    const size = 80 + Math.random() * 120;
-                    arr.push({ 
-                        id: `g${i}`, type: 'gear', color: i%3===0 ? '#8B4513' : (i%3===1 ? '#B22222' : '#555555'), 
-                        sx, ex, sy, ey: sy, size: `${size}px`,
-                        delay: `${Math.random()*20}s`, dur: `${20+Math.random()*30}s`, op: 0.3 + Math.random()*0.4, rot: rot 
-                    });
-                }
-                return arr;
-            }, []);
-            
-            return (
-                <div className="astral-canvas">
-                    <MatrixSequentialRain />
-                    <div className="grid-floor" />
-                    {items.map(it => {
-                        if (it.type === 'gear') {
-                            return (
-                                <div key={it.id} className="flow-gear" style={{ '--sx': it.sx, '--ex': it.ex, '--sy': it.sy, '--ey': it.ey, '--op': it.op, '--rot': it.rot, '--glow-color': it.color, width: it.size, height: it.size, animationDelay: it.delay, animationDuration: it.dur }}>
-                                    <GearSVG color={it.color} />
-                                </div>
-                            );
-                        } else {
-                            return (
-                                <div key={it.id} className="flow-magic" style={{ '--sx': it.sx, '--ex': it.ex, '--op': it.op, '--rot': it.rot, '--glow-color': it.color, width: '150px', height: '150px', animationDelay: it.delay, animationDuration: it.dur }}>
-                                    <MagicCircleSVG color={it.color} />
-                                </div>
-                            );
-                        }
-                    })}
                 </div>
             );
         };
 
         const App = () => (
-            <div className="min-h-screen py-16 px-4 md:px-8 relative">
+            <div className="p-8">
+                <div className="text-center mb-12">
+                    <h1 className="text-4xl font-black text-[var(--accent)] tracking-[10px] uppercase mb-4" style={{fontFamily:'Orbitron'}}>Ultimate Collection</h1>
+                    <p className="text-white/60 text-sm tracking-widest uppercase">全11種のカードデザイン・アルティメット省エネ版</p>
+                </div>
+                <div className="flex flex-wrap gap-8 justify-center max-w-7xl mx-auto">
+                    <CardPreview rKey="GEAR" />
+                    <CardPreview rKey="GEAR" spec />
+                    <CardPreview rKey="ARCHIVE" />
+                    <CardPreview rKey="FOUNTAIN" />
+                    <CardPreview rKey="FOUNTAIN" spec />
+                    <CardPreview rKey="ICEAGE" />
+                    <CardPreview rKey="MACHINE" />
+                    <CardPreview rKey="MACHINE" spec />
+                    <CardPreview rKey="BATTERY" />
+                    <CardPreview rKey="PLANET" spec />
+                    <CardPreview rKey="RUINS" spec />
+                </div>
                 <AstralBackground />
-                <div className="emblem-container"><ComplexEmblem /></div>
-                
-                <div className="text-center mb-20 relative z-10">
-                    <h1 className="text-4xl md:text-6xl font-black text-[var(--accent)] tracking-[12px] mb-6 uppercase" style={{fontFamily:'Orbitron', textShadow:'0 0 30px rgba(64,224,208,0.8)'}}>Cross Realm<br/><span className="text-2xl md:text-4xl text-white">Showcase</span></h1>
-                    <p className="text-white/80 tracking-[6px] text-sm md:text-base font-bold uppercase bg-black/60 inline-block px-8 py-3 rounded-full border border-white/20 backdrop-blur-md shadow-[0_0_20px_rgba(0,0,0,0.8)]">全11種 完全収録エディション</p>
-                    <p className="text-white/40 text-xs mt-4 tracking-widest">カードをマウスで傾けてインタラクティブに閲覧</p>
-                </div>
-                
-                <div className="showcase-container">
-                    <ThemeSection 
-                        title="Steampunk - 真鍮の爆鳴" 
-                        color="#FFD700" 
-                        cards={[
-                            {k:'GEAR', s:false}, 
-                            {k:'GEAR', s:true}, 
-                            {k:'ARCHIVE', s:false}
-                        ]} 
-                    />
-                    <ThemeSection 
-                        title="Fantasy - 星界の共鳴" 
-                        color="#00F3FF" 
-                        cards={[
-                            {k:'FOUNTAIN', s:false}, 
-                            {k:'FOUNTAIN', s:true}, 
-                            {k:'ICEAGE', s:false}
-                        ]} 
-                    />
-                    <ThemeSection 
-                        title="Cyberpunk - 電脳の火花" 
-                        color="#E2B0FF" 
-                        cards={[
-                            {k:'MACHINE', s:false}, 
-                            {k:'MACHINE', s:true}, 
-                            {k:'BATTERY', s:false}
-                        ]} 
-                    />
-                    <ThemeSection 
-                        title="Void - 特異点の境界" 
-                        color="#FFFFFF" 
-                        cards={[
-                            {k:'PLANET', s:false}, 
-                            {k:'RUINS', s:false}
-                        ]} 
-                    />
-                </div>
-
-                <footer className="text-center mt-20 py-8 border-t border-white/10">
-                    <p className="text-white/30 text-xs tracking-widest font-bold">CROSS REALM - OMEGA SINGULARITY</p>
-                    <p className="text-white/20 text-[10px] mt-2">Tactical Card Game &bull; All assets rendered with CSS + SVG</p>
-                </footer>
             </div>
         );
 
+        const AstralBackground = () => <div className="astral-canvas"></div>;
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>

@@ -1221,155 +1221,84 @@ body {
     border-radius: inherit;
 }
 
-.mat-steam {
-    background: radial-gradient(circle at 50% 0%, var(--r-color-bright) 0%, #1a0f05 100%);
-    border: calc(var(--card-w)*0.065) solid #3d2616;
-    border-radius: 8px;
-    box-shadow: 0 15px 40px #000;
+/* --- Ultimate Eco Animations --- */
+@keyframes ultimate-rotate { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes ultimate-rotate-rev { from { transform: translate(-50%, -50%) rotate(360deg); } to { transform: translate(-50%, -50%) rotate(0deg); } }
+@keyframes ultimate-shine { 0% { transform: translateX(-200%) skewX(-30deg); } 20%, 100% { transform: translateX(200%) skewX(-30deg); } }
+@keyframes ultimate-pulse { 0%, 100% { opacity: 0.2; transform: scale(0.95); } 50% { opacity: 0.5; transform: scale(1.05); } }
+@keyframes ultimate-flicker { 0%, 100% { opacity: 0.3; } 95% { opacity: 0.3; } 96% { opacity: 0.8; } 98% { opacity: 0.4; } }
+@keyframes ultimate-scan { 0% { transform: translateY(-100%); opacity: 0; } 10%, 90% { opacity: 0.4; } 100% { transform: translateY(350%); opacity: 0; } }
+@keyframes ultimate-float { 
+    0%, 100% { transform: translate(-50%, -50%); } 
+    50% { transform: translate(-50%, calc(-50% - 6px)); } 
+}
+@keyframes ultimate-star-pulse { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 0.8; transform: scale(1.2); } }
+
+/* --- Ultimate Eco Foundation --- */
+.card-surface {
+    position: relative;
     overflow: hidden;
-}
-
-.steam-rivet {
-    position: absolute;
-    width: 5px;
-    height: 5px;
-    background: #2a1a10;
-    border-radius: 50%;
-    box-shadow: inset 1px 1px 2px #fff3, 1px 1px 4px #000;
-    z-index: 10;
-}
-
-.r-tl {
-    top: 4px;
-    left: 4px;
-}
-
-.r-tr {
-    top: 4px;
-    right: 4px;
-}
-
-.r-bl {
-    bottom: 4px;
-    left: 4px;
-}
-
-.r-br {
-    bottom: 4px;
-    right: 4px;
-}
-
-.steam-particle {
-    position: absolute;
-    bottom: -20px;
-    left: var(--l);
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
-    border-radius: 50%;
-    animation: steam-rise-heavy var(--d) infinite ease-in;
-    animation-delay: var(--delay);
-    mix-blend-mode: screen;
-}
-
-.steam-core-glow {
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 100%;
-    height: 20px;
-    background: linear-gradient(to top, rgba(255, 255, 255, 0.25), transparent);
-    filter: blur(8px);
-    z-index: 2;
-}
-
-.mat-fantasy {
-    background: radial-gradient(circle at 50% 50%, var(--r-color-glow) 0%, #010614 100%);
-    border: calc(var(--card-w)*0.02) solid rgba(255, 255, 255, 0.9);
-    border-radius: 35% 10% !important;
-    box-shadow: 0 0 40px var(--r-color-glow);
-    overflow: hidden;
-}
-
-.ripple {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 180px;
-    height: 180px;
-    border: 4px solid rgba(255, 255, 255, 0.6);
-    border-radius: 50%;
-    animation: ripple-expand 4s infinite cubic-bezier(0.165, 0.84, 0.44, 1);
-    animation-delay: var(--delay);
-    opacity: 0;
-}
-
-.magic-circle-bg {
-    position: absolute;
-    top: 55%;
-    left: 50%;
-    width: 140px;
-    height: 140px;
-    transform: translate(-50%, -50%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    z-index: 1;
-    animation: rotate-inner 25s linear infinite;
-}
-
-.mat-cyber {
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     background: #000;
-    border: none;
-    clip-path: polygon(0 15%, 15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%);
-    box-shadow: inset 0 0 80px var(--r-color-dim);
-    border-left: calc(var(--card-w)*0.06) solid var(--r-color);
-    animation: cyber-glitch-color 4s infinite;
-    overflow: hidden;
+}
+.card-surface::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: linear-gradient(45deg, transparent 45%, rgba(255,255,255,0.03) 50%, transparent 55%);
+    pointer-events: none; z-index: 5;
 }
 
-.cyber-fx-scanline {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 5;
-    background: linear-gradient(to bottom, transparent 0%, rgba(64, 224, 208, 0.12) 50%, transparent 100%);
-    background-size: 100% 50px;
-    animation: cyber-scanline 1.6s linear infinite;
+/* STEAM */
+.mat-steam {
+    background: 
+        repeating-linear-gradient(45deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(255,255,255,0.01) 3px),
+        linear-gradient(135deg, #2a1a10 0%, #111 100%);
+    border: 2px solid #3d2616;
+    border-top: 2px solid rgba(255,255,255,0.3);
+    clip-path: polygon(0 5%, 5% 0, 95% 0, 100% 5%, 100% 95%, 95% 100%, 5% 100%, 0 95%);
 }
+.u-steam-frame { position: absolute; inset: 4px; border: 1px solid rgba(212,175,55,0.15); pointer-events: none; }
+.u-steam-gauge { position: absolute; bottom: 15%; left: 8%; width: 30px; height: 30px; border: 1.5px solid rgba(212,175,55,0.2); border-radius: 50%; opacity: 0.6; }
+.u-steam-needle { position: absolute; top: 50%; left: 50%; width: 1px; height: 14px; background: #D4AF37; transform-origin: bottom; animation: ultimate-rotate 4s ease-in-out infinite alternate; }
 
-.cyber-circuit {
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.06) 1px, transparent 0);
-    background-size: 12px 12px;
+/* FANTASY */
+.mat-fantasy {
+    background: 
+        radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.1) 0%, transparent 80%),
+        linear-gradient(135deg, #010614 0%, #000 100%);
+    border: 1px solid rgba(138, 43, 226, 0.4);
+    border-top: 1.5px solid rgba(255,255,255,0.4);
+    border-radius: 20% 5% 20% 5% !important;
 }
+.u-fantasy-shine { position: absolute; top: 0; left: 0; width: 50%; height: 200%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent); animation: ultimate-shine 6s linear infinite; }
+.u-fantasy-ring { position: absolute; top: 55%; left: 50%; width: 140px; height: 140px; border: 0.5px solid rgba(255,255,255,0.1); border-radius: 50%; animation: ultimate-rotate 30s linear infinite; }
 
-.mat-void-planet,
-.mat-void-ruins {
+/* CYBER */
+.mat-cyber {
+    background: 
+        conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.02) 0%, transparent 25%, rgba(255,255,255,0.02) 50%, transparent 75%),
+        #000;
+    border: 1px solid rgba(64,224,208,0.3);
+    border-top: 1.5px solid rgba(255,255,255,0.4);
+    clip-path: polygon(15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%, 0 15%);
+}
+.u-cyber-grid { position: absolute; inset: 0; background: linear-gradient(rgba(64,224,208,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(64,224,208,0.03) 1px, transparent 1px); background-size: 10px 10px; }
+.u-cyber-edge { position: absolute; inset: 0; border: 2px solid var(--accent); opacity: 0.1; animation: ultimate-flicker 5s step-end infinite; }
+.u-cyber-scan { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(to right, transparent, var(--accent), transparent); opacity: 0.3; animation: ultimate-scan 3s linear infinite; }
+
+/* VOID */
+.mat-void-planet, .mat-void-ruins {
     background: radial-gradient(circle at 50% 50%, #111 0%, #000 100%);
-    border-radius: 50% !important;
-    box-shadow: 0 0 30px #fff2;
-    overflow: hidden;
-    border: none;
+    border-radius: 50% !important; border: 1px solid rgba(255,255,255,0.15);
+}
+.u-void-vortex { position: absolute; top: 55%; left: 50%; width: 160px; height: 160px; background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.05), transparent); border-radius: 50%; animation: ultimate-rotate 12s linear infinite; }
+.u-void-core { position: absolute; top: 55%; left: 50%; width: 70px; height: 70px; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); animation: ultimate-pulse 4s ease-in-out infinite; }
+.u-void-star { position: absolute; width: 1.5px; height: 1.5px; background: white; border-radius: 50%; animation: ultimate-star-pulse var(--d) infinite; opacity: 0.4; }
+
+.card-icon-overload {
+    animation: ultimate-float 5s ease-in-out infinite;
 }
 
-.void-fluctuation {
-    position: absolute;
-    inset: 0;
-    background: repeating-radial-gradient(circle at 50% 50%, transparent 0, transparent 10px, rgba(255, 255, 255, 0.04) 11px, rgba(255, 255, 255, 0.04) 12px);
-    animation: void-pulse-wave 8s infinite ease-in-out;
-}
-
-.void-singularity-ring {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100px;
-    height: 100px;
-    transform: translate(-50%, -50%);
-    border: 1.5px solid rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-}
 
 .card-info-top {
     position: absolute;

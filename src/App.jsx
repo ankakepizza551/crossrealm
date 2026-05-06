@@ -96,7 +96,7 @@ const IconRenderer = React.memo(({ r, spec, className, ...rest }) => {
         case 'GEAR':
             return <svg {...p}>
                 <circle cx="12" cy="12" r="5" fill="none" strokeWidth="1.5" />
-                <g style={{ transformOrigin: 'center', ...glowStyle }}>
+                <g style={{ transformOrigin: 'center' }}>
                     {[...Array(8)].map((_, i) => (
                         <rect key={i} x="11" y="2" width="2" height="4" fill="currentColor" transform={`rotate(${i * 45} 12 12)`} />
                     ))}
@@ -107,30 +107,32 @@ const IconRenderer = React.memo(({ r, spec, className, ...rest }) => {
             return <svg {...p}>
                 <path d="M6 20.5A2.5 2.5 0 0 1 8.5 18H20" />
                 <path d="M8.5 5H20v15.5H8.5a2.5 2.5 0 0 1 0-5H20" />
-                <circle cx="18" cy="12.5" r="1.5" fill="currentColor" stroke="none" style={glowStyle} />
+                <circle cx="18" cy="12.5" r="1.5" fill="currentColor" stroke="none" />
             </svg>;
         case 'FOUNTAIN':
             return <svg {...p}>
                 <path d="M12 19c3.8 0 7-3.2 7-7 0-4.5-7-10-7-10S5 7.5 5 12c0 3.8 3.2 7 7 7z" />
-                <path d="M12 16c2 0 3.5-1.5 3.5-3.5 0-2.5-3.5-5.5-3.5-5.5S8.5 10 8.5 12.5c0 2 1.5 3.5 3.5 3.5z" fill="currentColor" stroke="none" style={glowStyle} />
+                <path d="M12 16c2 0 3.5-1.5 3.5-3.5 0-2.5-3.5-5.5-3.5-5.5S8.5 10 8.5 12.5c0 2 1.5 3.5 3.5 3.5z" fill="currentColor" stroke="none" />
             </svg>;
         case 'ICEAGE':
             return <svg {...p}>
                 <path d="M12 3v18 M3 12h18 M5.6 5.6l12.8 12.8 M5.6 18.4l12.8-12.8" strokeWidth="1.2" opacity="0.7" />
-                <polygon points="12 7 17 12 12 17 7 12" fill="none" strokeWidth="1.2" />
-                <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" style={glowStyle} />
+                <polygon points="12 7 17 12 12 17 7 12" />
+                <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" />
             </svg>;
         case 'MACHINE':
             return <svg {...p}>
+                <rect x="4" y="4" width="16" height="16" rx="1" opacity="0.3" />
                 <rect x="8" y="8" width="8" height="8" strokeWidth="1.5" />
-                <path d="M12 8v8 M8 12h8" strokeWidth="1" opacity="0.5" />
-                <rect x="11" y="11" width="2" height="2" fill="currentColor" stroke="none" style={glowStyle} />
+                <path d="M12 8v8 M8 12h8" opacity="0.5" />
+                <path d="M10 4v2 M14 4v2 M10 18v2 M14 18v2 M4 10h2 M4 14h2 M18 10h2 M18 14h2" opacity="0.6" />
+                <rect x="11" y="11" width="2" height="2" fill="currentColor" stroke="none" />
             </svg>;
         case 'BATTERY':
             return <svg {...p}>
                 <rect x="5" y="3" width="14" height="18" rx="2" />
                 <path d="M9 1h6 M5 8h14 M5 16h14" />
-                <path d="M12.5 4.5l-2.5 6h4l-2.5 6" strokeWidth="1.5" style={glowStyle} />
+                <path d="M12.5 4.5l-2.5 6h4l-2.5 6" strokeWidth="1.5" />
             </svg>;
         case 'PLANET': return <svg {...p}><circle cx="12" cy="12" r="10" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>;
         case 'RUINS': return <svg {...p}><path d="M3 21h18M5 21V10a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v11M9 21v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4" /></svg>;
@@ -155,33 +157,39 @@ const ComplexEmblem = React.memo(({ isLogo = false }) => (
 const CardOrnaments = React.memo(({ theme, isHand }) => {
     // 手札のカードは装飾を最小限にして負荷を減らす
     if (isHand) {
-        if (theme === 'steam') return <div className="steam-rivet r-tl opacity-40" />;
-        if (theme === 'fantasy') return <div className="magic-circle-bg opacity-30" />;
-        if (theme === 'cyber') return <div className="cyber-circuit opacity-30" />;
+        if (theme === 'steam') return <div className="u-steam-gauge opacity-30"><div className="u-steam-needle" /></div>;
+        if (theme === 'fantasy') return <div className="u-fantasy-ring opacity-20" />;
+        if (theme === 'cyber') return <div className="u-cyber-grid opacity-20" />;
         return null;
     }
 
     if (theme === 'steam') return (
         <React.Fragment>
-            <div className="steam-rivet r-tl" /><div className="steam-rivet r-tr" />
-            <div className="steam-rivet r-bl" /><div className="steam-rivet r-br" />
-            <div className="steam-particle" style={{ '--l': '35%', '--d': '3s', '--delay': '0s', '--drift-start': '5px', '--drift-end': '-15px', '--rot': '-45deg' }} />
+            <div className="u-steam-frame" />
+            <div className="u-steam-gauge"><div className="u-steam-needle" /></div>
         </React.Fragment>
     );
     if (theme === 'fantasy') return (
         <React.Fragment>
-            <div className="magic-circle-bg" />
-            <div className="ripple" style={{ '--delay': '0s' }} />
+            <div className="u-fantasy-shine" />
+            <div className="u-fantasy-ring" />
         </React.Fragment>
     );
     if (theme === 'cyber') return (
         <React.Fragment>
-            <div className="cyber-circuit" />
-            <div className="cyber-fx-scanline" />
+            <div className="u-cyber-grid" />
+            <div className="u-cyber-edge" />
+            <div className="u-cyber-scan" />
         </React.Fragment>
     );
     if (theme.includes('void')) return (
-        <React.Fragment><div className="void-singularity-ring" /></React.Fragment>
+        <React.Fragment>
+            <div className="u-void-vortex" />
+            <div className="u-void-core" />
+            {[...Array(4)].map((_, i) => (
+                <div key={i} className="u-void-star" style={{ top: `${20+Math.random()*60}%`, left: `${20+Math.random()*60}%`, '--d': `${2+Math.random()*4}s`, animationDelay: `${Math.random()*5}s` }} />
+            ))}
+        </React.Fragment>
     );
     return null;
 });
@@ -203,14 +211,18 @@ const CardView = ({ card, playable, isField, isSelected, isMyTurn, hideOrnaments
 
     return (
         <div className={`card-surface mat-${rData.theme}`}
-            style={{ '--r-color': rData.color, '--r-color-bright': rData.bright, '--r-color-glow': rData.glow, '--r-color-dim': rData.dim || 'rgba(0,0,0,0.5)', width: 'var(--card-w)', height: 'var(--card-h)', borderRadius: '8px', overflow: 'hidden', position: 'relative', border: 'none' }}>
+            style={{ '--r-color': rData.color, '--r-bright': rData.bright, width: 'var(--card-w)', height: 'var(--card-h)', borderRadius: '8px', overflow: 'hidden', position: 'relative', border: 'none' }}>
             {!hideOrnaments && <CardOrnaments theme={rData.theme} isHand={!isField} />}
             <div className="card-content">
-                <div className="card-info-top"><span>{dr}</span></div>
-                <div className="card-icon-overload" style={{ color: rData.bright, filter: `drop-shadow(0 0 5px ${rData.glow})`, position: 'absolute', top: '55%', left: '50%', transform: 'translate(-50%, -50%)', width: '55%', height: '55%' }}>
+                <div className="card-header-tech" style={{ position: 'absolute', top: '6%', left: '50%', transform: 'translateX(-50%)', width: '85%', background: 'rgba(0,0,0,0.8)', borderLeft: `3px solid ${rData.color}`, padding: '2px 8px', zIndex: 50 }}>
+                    <span style={{ fontSize: 'calc(var(--card-w)*0.07)', fontWeight: 900, color: rData.bright, fontFamily: 'Orbitron', letterSpacing: '1px' }}>{dr}</span>
+                </div>
+                <div className="card-icon-overload" style={{ color: rData.bright, position: 'absolute', top: '52%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 20, width: '55%', height: '55%', filter: `drop-shadow(0 0 5px ${rData.color})` }}>
                     <IconRenderer r={dr} spec={spec} />
                 </div>
-                <div className="card-footer-peak" style={{ fontFamily: rData.font }}>{rData.n}</div>
+                <div className="card-footer-peak" style={{ position: 'absolute', bottom: '0', width: '100%', padding: '25% 0 10%', background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%)', textAlign: 'center', color: '#fff', zIndex: 50, fontWeight: 900, fontSize: 'calc(var(--card-w)*0.15)', textShadow: `0 0 10px ${rData.color}`, fontFamily: rData.font }}>
+                    {rData.n}
+                </div>
                 {spec && <div className="special-badge-base">{specialLabel.split(' ').map((word, i) => <div key={i}>{word}</div>)}</div>}
             </div>
         </div>
