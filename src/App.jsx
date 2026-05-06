@@ -405,6 +405,10 @@ const App = () => {
     const [dragOffsetX, setDragOffsetX] = useState(0);
     const [dragOffsetY, setDragOffsetY] = useState(0);
     const [bufferedAction, setBufferedAction] = useState(null);
+    const [matchStartCutin, setMatchStartCutin] = useState(null);
+    const matchStartTimerRef = useRef(null);
+    const prevGsStatusRef = useRef(null);
+
 
     const displayFieldCard = useMemo(() => {
         if (!gs?.fieldCard) return null;
@@ -593,7 +597,7 @@ const App = () => {
 
     // 先行入力の実行
     useEffect(() => {
-        if (!isAnimating && !isMorphing && !selector && bufferedAction) {
+        if (!isAnimating && !isMorphing && !selector && !matchStartCutin && bufferedAction) {
             const action = bufferedAction;
             setBufferedAction(null);
             if (action.type === 'play') {
@@ -603,7 +607,8 @@ const App = () => {
                 socket.emit('draw-card', { roomId: room });
             }
         }
-    }, [isAnimating, isMorphing, selector, bufferedAction, handleCardClick]);
+    }, [isAnimating, isMorphing, selector, matchStartCutin, bufferedAction, handleCardClick]);
+
 
     useEffect(() => {
         if (gs && gs.fieldCard && gs.fieldCard.id !== prevFieldCardId.current) {
@@ -692,6 +697,22 @@ const App = () => {
         }
     }, [gs?.status, muted]);
 
+    // マッチ開始時の演出
+    useEffect(() => {
+        if (gs?.status === 'playing' && prevGsStatusRef.current !== 'playing') {
+            playSE('start', muted);
+            setMatchStartCutin(gs.matchCount || 1);
+            if (matchStartTimerRef.current) clearTimeout(matchStartTimerRef.current);
+            matchStartTimerRef.current = setTimeout(() => {
+                setMatchStartCutin(null);
+                matchStartTimerRef.current = null;
+            }, 3000); // 3秒間表示
+        }
+        prevGsStatusRef.current = gs?.status;
+    }, [gs?.status, gs?.matchCount, muted]);
+
+
+
 
 
     return (
@@ -712,6 +733,15 @@ const App = () => {
                     </div>
                 </div>
             )}
+            {matchStartCutin && (
+                <div className="match-start-layer">
+                    <div className="match-start-banner">
+                        <div className="match-start-label">MISSION START</div>
+                        <div className="match-start-round">ROUND {matchStartCutin}</div>
+                    </div>
+                </div>
+            )}
+
             <MemoizedAstralBackground bgAnim={bgAnim} />
             
             {isDisconnected && joined && (

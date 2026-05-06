@@ -270,7 +270,9 @@ function processBotTurn(roomId) {
   if (!bot || !bot.isBot || bot.isActing || bot.isEliminated) return;
 
   const isWild = room.lastPlayWasWild || (room.fieldCard && (room.fieldCard.wasPlanet || room.fieldCard.wasRuins));
-  const botDelay = isWild ? 3000 : 1200;
+  const isMatchStart = room.logs.length <= 1;
+  const botDelay = isMatchStart ? 3500 : (isWild ? 3000 : 1200);
+
   bot.isActing = true;
   setTimeout(() => {
     bot.isActing = false;
