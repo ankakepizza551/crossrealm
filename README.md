@@ -126,9 +126,10 @@ crossrealm_test/
 ├── package.json
 ├── src/
 │   ├── App.jsx               # フロントエンド本体 (React)
-│   ├── CrossRealm.jsx        # ゲームロジック定義
 │   ├── index.css             # 全スタイル定義
-│   └── main.jsx              # エントリーポイント
+│   ├── main.jsx              # エントリーポイント
+│   └── components/           # 共通コンポーネント
+│       └── CycleDiagramSmall.jsx
 ├── dist/                     # ビルド出力
 ├── Cross_Realm_Interactive_Guide.html  # インタラクティブガイド
 └── Cross_Realm_Card_Showcase.html      # カードショーケース
