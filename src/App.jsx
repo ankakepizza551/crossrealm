@@ -722,7 +722,7 @@ const App = () => {
                 {!joined ? (
                     <div className="h-full flex flex-col no-scrollbar">
                         <div className="flex-1 flex flex-col items-center justify-center py-4 sm:py-8 overflow-y-auto no-scrollbar">
-                            <div className="top-logo-area flex-shrink-0 scale-90 sm:scale-100 origin-center mb-2 sm:mb-4">
+                            <div className="top-logo-area flex-shrink-0 scale-[1.15] sm:scale-100 origin-center mb-8 sm:mb-4">
                                 <div className="field-central-zone">
                                     <div className="emblem-bg-layer"><ComplexEmblem isLogo={true} /></div>
                                     <div className="logo-text-layer">
@@ -864,11 +864,7 @@ const App = () => {
                                 </div>
                             </div>
                         </div>
-                        {isMyTurn && gs.matchCount === 1 && me?.hand?.length === 5 && (
-                            <div className="w-full bg-accent/10 border-y border-accent/30 px-4 py-2 text-center shrink-0">
-                                <p className="text-[11px] font-black text-accent animate-pulse">💡 光っている場のカードが出せます！</p>
-                            </div>
-                        )}
+
                         <div className="grid grid-cols-4 gap-1 p-1 bg-[#0a0f23]/90 border-b-2 border-white/15 shrink-0 ">
                             {otherPlayersInCircle.map((p, i) => {
                                 if (!p) return <div key={i} className="h-16 opacity-0" />;
@@ -902,6 +898,11 @@ const App = () => {
                                 </div>
                             </div>
                         </div>
+                        {isMyTurn && gs.matchCount === 1 && me?.hand?.length === 5 && (
+                            <div className="w-full bg-accent/10 border-y border-accent/30 px-4 py-2 text-center shrink-0 shadow-[0_-5px_15px_rgba(0,0,0,0.5)] z-20">
+                                <p className="text-[12px] font-black text-accent animate-pulse tracking-[1px]">💡 光っている「自分の手札」をタップ！</p>
+                            </div>
+                        )}
                         <div className="tactical-log-box no-scrollbar" ref={logContainerRef}>{logElements}</div>
                         <div className="flex justify-between items-center px-5 py-1 shrink-0"><div className="flex items-baseline gap-2"><span className="hand-info-label text-[10px] font-black text-white/40 tracking-[2px] uppercase">Your Hand</span><span className={`hand-info-count text-2xl font-black font-['Orbitron'] leading-none ${me?.hand.length >= 8 ? 'text-danger animate-pulse' : 'text-white'}`}>{me?.hand.length || 0}<span className="text-xs ml-1 opacity-60">枚</span></span></div>{(isAnimating || isMorphing) && <div className="text-[9px] font-black text-accent animate-pulse tracking-[2px] bg-accent/10 px-3 py-1 rounded border border-accent/30 uppercase">Processing...</div>}</div>
                         <div className={`hand-container no-scrollbar ${isMyTurn ? 'my-turn-hand-fx' : ''} ${(isAnimating || isMorphing || selector) ? 'opacity-40 grayscale-[50%] pointer-events-none' : ''}`}>
