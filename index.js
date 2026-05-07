@@ -311,6 +311,7 @@ function broadcastRoomState(roomId) {
             earnedPoints: p.earnedPoints,
             basePoints: p.basePoints,
             bonusPoints: p.bonusPoints,
+            streakCount: p.streakCount || 0,
             isActing: p.isActing,
             hand: []
           };

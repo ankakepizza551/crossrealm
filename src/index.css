@@ -14,10 +14,7 @@
 }
 
 /* GPU Hardware Acceleration: 常時アニメする背景系のみ（一時演出は除外） */
-.star-particle,
 .nebula-glow,
-.bg-gear-css,
-.bg-magic-circle-css,
 .steam-particle,
 .void-singularity-ring {
     will-change: transform, opacity;
@@ -131,18 +128,15 @@ body {
     0% {
         transform: translateY(30%) translateX(var(--drift-start)) scale(0.5) rotate(0deg);
         opacity: 0;
-        filter: blur(4px);
     }
 
     15% {
         opacity: 0.85;
-        filter: blur(6px);
     }
 
     100% {
         transform: translateY(-130%) translateX(var(--drift-end)) scale(4) rotate(var(--rot));
         opacity: 0;
-        filter: blur(15px);
     }
 }
 
@@ -202,13 +196,11 @@ body {
     100% {
         transform: scale(1);
         opacity: 0.2;
-        filter: blur(5px);
     }
 
     50% {
         transform: scale(1.4);
         opacity: 0.5;
-        filter: blur(12px);
     }
 }
 
@@ -530,7 +522,7 @@ body {
     z-index: 1;
     pointer-events: none;
     overflow: hidden;
-    background: var(--bg-deep);
+    background: transparent;
 }
 .astral-canvas::before {
     content: '';
@@ -756,7 +748,7 @@ body {
     height: 100dvh;
     min-height: 780px;
     container-type: size;
-    background: #05010a;
+    background: transparent;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -2093,8 +2085,12 @@ body {
     right: 0;
     bottom: 0;
     z-index: 1;
-    background: #05010a;
-    background-image: radial-gradient(circle at center, #1a0a30 0%, #05010a 100%);
+    background: linear-gradient(180deg,
+        #3a0a78 0%,
+        #1a0440 25%,
+        #06000e 55%,
+        #001a26 85%,
+        #00384a 100%);
     overflow: hidden;
     pointer-events: none;
     isolation: isolate; /* 他のUI要素への干渉を防止 */
@@ -2147,148 +2143,101 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: 
-        linear-gradient(rgba(64, 224, 208, 0.4) 1.5px, transparent 1.5px),
-        linear-gradient(90deg, rgba(64, 224, 208, 0.4) 1.5px, transparent 1.5px);
+    background-image:
+        linear-gradient(rgba(64, 224, 208, 0.55) 1.5px, transparent 1.5px),
+        linear-gradient(90deg, rgba(64, 224, 208, 0.55) 1.5px, transparent 1.5px);
     background-size: 80px 80px;
     background-position: center;
-    opacity: 0.6;
+    opacity: 0.65;
     transform: perspective(500px) rotateX(60deg) translateY(-10%);
 }
 
-.nebula-layer {
+/* コーナーアンビエントグロー（静止・アニメなし） */
+.corner-glow-layer {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    filter: blur(20px);
-    opacity: 0.7;
-}
-
-/* PC（デスクトップ）向け調整：UIの視認性を優先し不透明度を下げる */
-@media (min-width: 1024px) {
-    .cyber-grid-layer {
-        opacity: 0.15;
-        background-size: 100px 100px;
-    }
-    .nebula-layer {
-        opacity: 0.25;
-        filter: blur(30px);
-    }
-    .magic-circle-layer, .gears-layer {
-        opacity: 0.4;
-    }
-}
-
-.magic-circle-layer {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80vh;
-    height: 80vh;
-    opacity: 0.6;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 15% 100%, rgba(0, 200, 200, 0.22) 0%, transparent 45%),
+        radial-gradient(ellipse at 85% 100%, rgba(90, 0, 220, 0.18) 0%, transparent 42%),
+        radial-gradient(ellipse at 50% 0%,   rgba(70, 0, 180, 0.25) 0%, transparent 38%);
     pointer-events: none;
 }
 
-.bg-magic-circle-css {
-    width: 100%;
-    height: 100%;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg opacity='0.6' stroke='%238A2BE2' stroke-width='1' fill='none'%3E%3Ccircle cx='50' cy='50' r='48' stroke-dasharray='10 5'/%3E%3Ccircle cx='50' cy='50' r='35'/%3E%3Cpath d='M50 15 L80 70 L20 70 Z M50 85 L20 30 L80 30 Z'/%3E%3Ccircle cx='50' cy='50' r='10' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    filter: drop-shadow(0 0 20px var(--magic-purple));
+/* ホライゾングロー（opacity のみ・10s） */
+@keyframes horizon-pulse {
+    0%, 100% { opacity: 0.25; }
+    50%       { opacity: 0.8; }
 }
 
-.bg-anim-active .bg-magic-circle-css {
-    animation: bg-magic-pulse 10s infinite ease-in-out, bg-rotate-outer 40s linear infinite;
+.horizon-glow {
+    position: absolute;
+    top: 32%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg,
+        transparent 5%,
+        rgba(64, 224, 208, 0.4) 25%,
+        rgba(64, 224, 208, 0.95) 50%,
+        rgba(64, 224, 208, 0.4) 75%,
+        transparent 95%
+    );
+    animation: horizon-pulse 10s ease-in-out infinite;
+    will-change: opacity;
+    pointer-events: none;
 }
 
-@keyframes bg-magic-pulse {
-    0%, 100% { transform: scale(1); opacity: 0.8; }
-    50% { transform: scale(1.05); opacity: 1; }
-}
-
-@keyframes bg-rotate-outer { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-.gears-layer {
+/* スキャンライン（静止・アニメなし） */
+.scanline-layer {
     position: absolute;
     inset: 0;
-    opacity: 0.5;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        transparent 2px,
+        rgba(0, 0, 0, 0.1) 2px,
+        rgba(0, 0, 0, 0.1) 3px
+    );
+    pointer-events: none;
 }
 
-.bg-gear-css {
-    position: absolute;
-    width: 40vw;
-    height: 40vw;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23D4AF37' opacity='0.7' d='M100 56.5v-13l-12.7-2.1c-1.1-4.5-3-8.6-5.4-12.3l7.4-10.4-9.2-9.2-10.4 7.4c-3.7-2.4-7.8-4.3-12.3-5.4L55.3 0h-13l-2.1 12.7c-4.5 1.1-8.6 3-12.3 5.4l-10.4-7.4-9.2 9.2 7.4 10.4c-2.4 3.7-4.3 7.8-5.4 12.3L0 43.5v13l12.7 2.1c1.1 4.5 3 8.6 5.4 12.3l-7.4 10.4 9.2 9.2 10.4-7.4c3.7 2.4 7.8 4.3 12.3 5.4l2.1 12.7h13l2.1-12.7c4.5-1.1 8.6-3 12.3-5.4l10.4 7.4 9.2-9.2-7.4-10.4c2.4-3.7 4.3-7.8 5.4-12.3l12.7-2.1zM50 71c-11.6 0-21-9.4-21-21s9.4-21 21-21 21 9.4 21 21-9.4 21-21 21z'/%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
-    filter: drop-shadow(0 0 15px var(--steam-gold));
+@keyframes grid-glow {
+    0%, 100% { opacity: 0.18; }
+    50%       { opacity: 0.45; }
 }
 
-.bg-gear-css.g1 { top: -10%; left: -10%; }
-.bg-gear-css.g2 { bottom: -10%; right: -10%; }
-
-.bg-anim-active .bg-gear-css.g1 { animation: bg-rotate-gear-cw 60s linear infinite; }
-.bg-anim-active .bg-gear-css.g2 { animation: bg-rotate-gear-ccw 80s linear infinite; }
-
-@keyframes bg-rotate-gear-cw { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes bg-rotate-gear-ccw { from { transform: rotate(15deg); } to { transform: rotate(-345deg); } }
-
-.nebula-glow {
-    position: absolute;
-    border-radius: 50%;
+/* スマホ向け：PCと同じプレミアムなグラデーションを適用（視認性向上のため少し明るく） */
+@media (max-width: 1023px) {
+    body {
+        background: linear-gradient(180deg, 
+            #4a1099 0%,   /* 少し明るく */
+            #1a0440 30%, 
+            #06000e 60%, 
+            #001a26 85%, 
+            #004a61 100%) !important; /* 少し明るく */
+    }
+    .screen-wrapper {
+        background: transparent !important;
+    }
+    .astral-bg-container {
+        background: transparent !important;
+    }
 }
 
-.nebula-glow.n1 { width: 120vw; height: 120vw; background: var(--magic-purple); top: -30%; left: -30%; opacity: 0.5; }
-.nebula-glow.n2 { width: 110vw; height: 110vw; background: var(--accent); bottom: -20%; right: -20%; opacity: 0.4; }
-.nebula-glow.n3 { width: 90vw; height: 90vw; background: var(--steam-gold); top: 10%; left: 20%; opacity: 0.3; }
-
-.bg-anim-active .nebula-glow {
-    animation: nebula-drift 60s infinite alternate ease-in-out;
+/* PC（デスクトップ）向け調整 */
+@media (min-width: 1024px) {
+    .cyber-grid-layer {
+        background-size: 100px 100px;
+        animation: grid-glow 6s ease-in-out infinite;
+    }
 }
 
-@keyframes nebula-drift {
-    from { transform: translate(-2%, -2%) scale(1); }
-    to { transform: translate(2%, 2%) scale(1.05); }
-}
-
-.star-particles {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-
-.star-particle {
-    position: absolute;
-    width: 3px;
-    height: 3px;
-    background: white;
-    border-radius: 50%;
-    opacity: 0.6;
-    box-shadow: 0 0 8px #fff;
-}
-
-.bg-anim-active .star-particle {
-    animation: star-twinkle 5s infinite ease-in-out;
-}
-
-@keyframes star-twinkle {
-    0%, 100% { opacity: 0.3; transform: scale(0.8); }
-    50% { opacity: 1; transform: scale(1.4); }
-}
 
 /* 演出中の背景減光 */
 .bg-dimmed .cyber-grid-layer,
-.bg-dimmed .nebula-layer,
-.bg-dimmed .magic-circle-layer,
-.bg-dimmed .gears-layer,
-.bg-dimmed .star-particles {
+.bg-dimmed .corner-glow-layer,
+.bg-dimmed .horizon-glow,
+.bg-dimmed .scanline-layer {
     opacity: 0.1 !important;
     transition: opacity 0.5s ease;
 }
@@ -2361,10 +2310,10 @@ body {
 
 /* === 古いスマホ向け：負荷の高いエフェクト大幅削減 === */
 @media (max-width: 640px) and (max-height: 800px) {
-    /* 背景を完全に静止画に */
+    /* 背景をプレミアムなグラデーションで統一 */
     .astral-bg-container {
-        background: #05010a !important;
-        background-image: radial-gradient(circle at center, #1a0a30 0%, #05010a 100%) !important;
+        background: transparent !important;
+        background-image: linear-gradient(180deg, #4a1099 0%, #06000e 60%, #004a61 100%) !important;
     }
     
     /* アニメーションOFF時は背景アニメーションのみ停止（display:noneにすると真っ暗になるためNG） */
@@ -2499,3 +2448,27 @@ body {
 .all-anim-off .direction-ccw {
     animation: none !important;
 }
+
+/* === タッチデバイス（iPhone等）発熱対策 === */
+@media (hover: none) and (pointer: coarse) {
+    /* GPU専有レイヤーをリセット */
+    .steam-particle,
+    .void-singularity-ring {
+        will-change: auto;
+    }
+
+    /* パルス系アニメーションを緩やかに */
+    .playable-card-pulse-fast {
+        animation-duration: 3s;
+    }
+    .my-turn-glow-fast {
+        animation-duration: 4s;
+    }
+    .current-turn-glow-active {
+        animation-duration: 3s;
+    }
+    .badge-pulse {
+        animation-duration: 3s;
+    }
+}
+

@@ -321,37 +321,14 @@ const MemoizedPlayerSlot = React.memo(PlayerSlot, (prev, next) => {
 
 
 const AstralBackground = ({ bgAnim, isDimmed }) => {
-    const stars = useMemo(() => {
-        return [...Array(5)].map((_, i) => ({
-            id: i,
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            delay: `${Math.random() * 5}s`,
-            dur: `${4 + Math.random() * 6}s`
-        }));
-    }, []);
-
     return (
         <div className={`astral-bg-container ${bgAnim ? 'bg-anim-active' : ''} ${isDimmed ? 'bg-dimmed' : ''}`}>
             {bgAnim && (
                 <>
+                    <div className="corner-glow-layer" />
                     <div className="cyber-grid-layer" />
-                    <div className="nebula-layer">
-                        <div className="nebula-glow n1" />
-                        <div className="nebula-glow n2" />
-                    </div>
-                    <div className="magic-circle-layer">
-                        <div className="bg-magic-circle-css" />
-                    </div>
-                    <div className="gears-layer">
-                        <div className="bg-gear-css g1" />
-                        <div className="bg-gear-css g2" />
-                    </div>
-                    <div className="star-particles">
-                        {stars.map(s => (
-                            <div key={s.id} className="star-particle" style={{ left: s.left, top: s.top, animationDelay: s.delay, animationDuration: s.dur }} />
-                        ))}
-                    </div>
+                    <div className="horizon-glow" />
+                    <div className="scanline-layer" />
                 </>
             )}
         </div>
@@ -424,6 +401,7 @@ const App = () => {
     const [isDisconnected, setIsDisconnected] = useState(false);
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [bgAnim, setBgAnim] = useState(true);
+    const [showChangelog, setShowChangelog] = useState(false);
     const [cutin, setCutin] = useState(null);
     const [visualFieldCard, setVisualFieldCard] = useState(null);
     const prevFieldCardId = useRef(null);
@@ -812,8 +790,89 @@ const App = () => {
                         </div>
                         <div className="system-status-bar">
                             <span>STATUS: <span className={`status-tag ${(!isConnected) ? 'bg-red-600' : ''}`}>{(!isConnected) ? 'OFFLINE' : 'ONLINE'}</span></span>
-                            <span>VER: <span className="text-white/80 font-black">133.0_R</span></span>
+                            <span>VER: <span className="text-white/80 font-black">v1.4</span></span>
+                            <span className="text-accent font-black cursor-pointer hover:opacity-70 transition-opacity text-[11px] tracking-[1px] font-['Orbitron']" onClick={() => setShowChangelog(true)}>📋 LOG</span>
                         </div>
+
+                        {/* 更新履歴モーダル */}
+                        {showChangelog && (
+                            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => setShowChangelog(false)}>
+                                <div className="absolute inset-0 bg-black/70" />
+                                <div className="relative w-full max-w-sm bg-[#0a0520] border border-accent/40 rounded-lg overflow-hidden shadow-[0_0_40px_rgba(64,224,208,0.2)]" onClick={e => e.stopPropagation()}>
+                                    <div className="flex items-center justify-between px-4 py-3 border-b border-accent/20 bg-black/40">
+                                        <span className="font-['Orbitron'] font-black text-accent text-sm tracking-[3px]">UPDATE LOG</span>
+                                        <button className="text-white/50 hover:text-white text-xl leading-none" onClick={() => setShowChangelog(false)}>✕</button>
+                                    </div>
+                                    <div className="p-4 max-h-[60vh] overflow-y-auto space-y-5 text-[12px]">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v1.4</span>
+                                                <span className="text-white/30 text-[10px]">2026.05.08</span>
+                                                <span className="bg-accent/20 text-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-accent/30">LATEST</span>
+                                            </div>
+                                            <div className="text-white/30 text-[10px] mb-2 pl-0">背景リデザイン・スマホ発熱軽量化</div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🎨 背景をサイバーグリッドに簡素化</li>
+                                                <li>✨ スキャンライン・コーナーグロー追加</li>
+                                                <li>💡 ホライゾングロー追加（低負荷アニメ）</li>
+                                                <li>🌈 スマホ向けグラデーション背景対応</li>
+                                                <li>⚡ blurアニメーション全廃（発熱軽減）</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-accent/60 text-[11px]">v1.3</span>
+                                                <span className="text-white/30 text-[10px]">2026.05.05</span>
+                                            </div>
+                                            <div className="text-white/30 text-[10px] mb-2 pl-0">黒画面バグ修正 + 負荷軽減</div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🐛 真っ黒画面バグを修正</li>
+                                                <li>🎬 軽量モードの動作を大幅改善</li>
+                                                <li>⚡ パフォーマンス最適化（発熱軽減）</li>
+                                                <li>🔥 連勝ボーナスをリザルトに表示</li>
+                                                <li>🏠 待機画面にルームID表示を追加</li>
+                                                <li>🃏 カードドロー方向を上から落下に変更</li>
+                                                <li>📱 スワイプでカードを出しやすく改善</li>
+                                                <li>⚡ WILD選択のレスポンス改善</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-[11px]" style={{color:'var(--steam-gold)'}}>v1.2</span>
+                                                <span className="text-white/30 text-[10px]">2026.05.03</span>
+                                            </div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🎨 CSSアイコンレンダリング改善</li>
+                                                <li>📐 レイアウト・サイクル図・HUD調整</li>
+                                                <li>⚙️ 演出系の競合を修正</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-[11px]" style={{color:'var(--magic-purple)'}}>v1.1</span>
+                                                <span className="text-white/30 text-[10px]">2026.04.27</span>
+                                            </div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>👥 プレイヤー人数上限を5人に拡張</li>
+                                                <li>🔄 プレイヤー脱落・ターン処理を改善</li>
+                                                <li>🌐 OGPタグ追加（SNSシェア対応）</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-white/40 text-[11px]">v1.0</span>
+                                                <span className="text-white/30 text-[10px]">初期リリース</span>
+                                            </div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🎮 Cross Realm 基本システム実装</li>
+                                                <li>🤖 CPU対戦対応</li>
+                                                <li>🏆 シリーズ戦システム（複数マッチ）</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ) : (joined && !gs) ? (
                     <div className="h-full flex flex-col items-center justify-center p-4 text-center">
@@ -871,6 +930,11 @@ const App = () => {
                                         <div className="text-[12px] md:text-[14px] font-black text-[var(--steam-gold)] mb-2 font-['Orbitron']">★ {p.score}</div>
 
                                         {/* 点数計算結果の表示 - 重なりを防ぐため高さを調整 */}
+                                        {p.streakCount >= 2 && !gs.isSeriesFinished && (
+                                            <div className="absolute top-[-105px] text-[10px] text-[#ffdd44] font-black animate-pulse drop-shadow-[0_0_5px_rgba(255,220,0,0.8)] whitespace-nowrap z-20">
+                                                🔥 連勝ボーナス +3!
+                                            </div>
+                                        )}
                                         {p.finishBonus && !gs.isSeriesFinished && (
                                             <div className="absolute top-[-90px] text-[10px] text-[#ff88ff] font-black animate-pulse drop-shadow-[0_0_5px_rgba(255,0,255,0.8)] whitespace-nowrap z-20">
                                                 ワイルドボーナス x1.2!
