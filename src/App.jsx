@@ -321,37 +321,14 @@ const MemoizedPlayerSlot = React.memo(PlayerSlot, (prev, next) => {
 
 
 const AstralBackground = ({ bgAnim, isDimmed }) => {
-    const stars = useMemo(() => {
-        return [...Array(5)].map((_, i) => ({
-            id: i,
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            delay: `${Math.random() * 5}s`,
-            dur: `${4 + Math.random() * 6}s`
-        }));
-    }, []);
-
     return (
         <div className={`astral-bg-container ${bgAnim ? 'bg-anim-active' : ''} ${isDimmed ? 'bg-dimmed' : ''}`}>
             {bgAnim && (
                 <>
+                    <div className="corner-glow-layer" />
                     <div className="cyber-grid-layer" />
-                    <div className="nebula-layer">
-                        <div className="nebula-glow n1" />
-                        <div className="nebula-glow n2" />
-                    </div>
-                    <div className="magic-circle-layer">
-                        <div className="bg-magic-circle-css" />
-                    </div>
-                    <div className="gears-layer">
-                        <div className="bg-gear-css g1" />
-                        <div className="bg-gear-css g2" />
-                    </div>
-                    <div className="star-particles">
-                        {stars.map(s => (
-                            <div key={s.id} className="star-particle" style={{ left: s.left, top: s.top, animationDelay: s.delay, animationDuration: s.dur }} />
-                        ))}
-                    </div>
+                    <div className="horizon-glow" />
+                    <div className="scanline-layer" />
                 </>
             )}
         </div>
