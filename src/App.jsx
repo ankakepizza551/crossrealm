@@ -742,7 +742,7 @@ const App = () => {
                         </div>
                         <div className="system-status-bar">
                             <span>STATUS: <span className={`status-tag ${(!isConnected) ? 'bg-red-600' : ''}`}>{(!isConnected) ? 'OFFLINE' : 'ONLINE'}</span></span>
-                            <span>VER: <span className="text-white/80 font-black">133.0_R</span></span>
+                            <span>VER: <span className="text-white/80 font-black">v1.3</span></span>
                         </div>
                     </div>
                 ) : (joined && !gs) ? (
