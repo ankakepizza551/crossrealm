@@ -88,27 +88,45 @@ const playSE = (type, muted) => {
     } catch (e) { }
 };
 
-const ComplexEmblem = ({ isLogo = false }) => (
+const ComplexEmblem = React.memo(({ isLogo = false }) => (
     <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
         <defs>
-            <filter id="core-glow-bg"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter>
+            <linearGradient id="emblem-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.8" />
+                <stop offset="100%" stopColor="var(--magic-purple)" stopOpacity="0.8" />
+            </linearGradient>
         </defs>
-        <g style={{ transform: isLogo ? 'scale(1)' : 'scale(0.8)', transformOrigin: 'center' }}>
-            <circle cx="50" cy="50" r="42" fill="none" stroke="var(--accent)" strokeWidth="0.5" opacity="0.3" strokeDasharray="1 3" />
-            <g style={{ animation: 'emblem-rotate-outer 40s linear infinite', transformOrigin: 'center' }}>
-                <circle cx="50" cy="50" r="45" fill="none" stroke="var(--accent)" strokeWidth="1" strokeDasharray="15 5" opacity="0.4" />
-                {[...Array(3)].map((_, i) => <rect key={i} x="48" y="2" width="4" height="6" fill="var(--accent)" opacity="0.6" transform={`rotate(${i * 120} 50 50)`} />)}
+        <g style={{ transform: isLogo ? 'scale(1.1)' : 'scale(0.8)', transformOrigin: 'center' }}>
+            <circle cx="50" cy="50" r="48" fill="none" stroke="var(--accent)" strokeWidth="0.5" opacity="0.2" strokeDasharray="2 4" style={{ animation: 'emblem-rotate-outer 15s linear infinite', transformOrigin: '50px 50px' }} />
+            <g style={{ animation: 'emblem-rotate-inner 30s linear infinite', transformOrigin: '50px 50px' }}>
+                <polygon points="50,5 89,27.5 89,72.5 50,95 11,72.5 11,27.5" fill="none" stroke="url(#emblem-grad)" strokeWidth="1" opacity="0.4" />
             </g>
-            <path d="M50 16 L79.4 33 L79.4 67 L50 84 L20.6 67 L20.6 33 Z" fill="none" stroke="var(--steam-gold)" strokeWidth="1.5" opacity="0.5" style={{ animation: 'emblem-rotate-inner 45s linear infinite', transformOrigin: 'center' }} />
-            <path d="M50 20 L76 35 L76 65 L50 80 L24 65 L24 35 Z" fill="none" stroke="var(--steam-gold)" strokeWidth="0.5" opacity="0.3" style={{ animation: 'emblem-rotate-outer 55s linear infinite', transformOrigin: 'center' }} />
-            {isLogo && <g style={{ animation: 'emblem-rotate-inner 45s linear infinite', transformOrigin: 'center' }}>{[...Array(6)].map((_, i) => <circle key={i} cx="50" cy="16" r="1.5" fill="var(--steam-gold)" opacity="0.9" transform={`rotate(${i * 60} 50 50)`} />)}</g>}
-            <circle cx="50" cy="50" r="12" fill="var(--danger)" opacity="0.3" filter="url(#core-glow-bg)" style={{ animation: 'emblem-pulse 3s infinite' }} />
-            <path d="M36 36 L64 64 M64 36 L36 64" stroke="#fff" strokeWidth="4" strokeLinecap="square" opacity="0.9" />
-            <path d="M30 30 L70 70 M70 30 L30 70" stroke="var(--accent)" strokeWidth="1" strokeLinecap="square" opacity="0.5" />
-            <text x="50" y="54" fill="var(--accent)" fontSize="10" fontWeight="1000" font-family="Orbitron" textAnchor="middle" style={{ animation: 'emblem-pulse 2s infinite' }}>X</text>
+            <circle cx="50" cy="50" r="35" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeDasharray="20 10" opacity="0.5" style={{ animation: 'emblem-rotate-outer 20s linear infinite reverse', transformOrigin: '50px 50px' }} />
+            <g style={{ animation: 'emblem-rotate-outer 40s linear infinite', transformOrigin: '50px 50px', opacity: 0.4 }}>
+                {[...Array(12)].map((_, i) => (
+                    <rect key={i} x="48.5" y="28" width="3" height="7" fill="var(--steam-gold)" transform={`rotate(${i * 30} 50 50)`} />
+                ))}
+                <circle cx="50" cy="50" r="18" fill="none" stroke="var(--steam-gold)" strokeWidth="1" strokeDasharray="3 3" />
+            </g>
+            <g style={{ animation: 'emblem-pulse 2s infinite', transformOrigin: '50px 50px' }}>
+                <circle cx="50" cy="50" r="14" fill="var(--danger)" opacity="0.15" />
+                <circle cx="50" cy="50" r="10" fill="none" stroke="var(--danger)" strokeWidth="2" />
+                <path d="M50 35 L50 65 M35 50 L65 50" stroke="var(--danger)" strokeWidth="1" />
+                <text x="50" y="54" fill="white" fontSize="8" fontWeight="1000" fontFamily="Orbitron" textAnchor="middle">Ω</text>
+            </g>
+            <g opacity="0.8">
+                <path d="M20 20 L30 20 M20 20 L20 30" fill="none" stroke="var(--accent)" strokeWidth="0.5" />
+                <circle cx="20" cy="20" r="3.5" fill="none" stroke="var(--steam-gold)" strokeWidth="0.8" strokeDasharray="1.5 1.5" style={{ animation: 'emblem-rotate-outer 5s linear infinite', transformOrigin: '20px 20px' }} />
+                <path d="M80 20 L70 20 M80 20 L80 30" fill="none" stroke="var(--accent)" strokeWidth="0.5" />
+                <circle cx="80" cy="20" r="3.5" fill="none" stroke="var(--steam-gold)" strokeWidth="0.8" strokeDasharray="1.5 1.5" style={{ animation: 'emblem-rotate-outer 5s linear infinite reverse', transformOrigin: '80px 20px' }} />
+                <path d="M20 80 L30 80 M20 80 L20 70" fill="none" stroke="var(--accent)" strokeWidth="0.5" />
+                <circle cx="20" cy="80" r="3.5" fill="none" stroke="var(--steam-gold)" strokeWidth="0.8" strokeDasharray="1.5 1.5" style={{ animation: 'emblem-rotate-outer 8s linear infinite', transformOrigin: '20px 80px' }} />
+                <path d="M80 80 L70 80 M80 80 L80 70" fill="none" stroke="var(--accent)" strokeWidth="0.5" />
+                <circle cx="80" cy="80" r="3.5" fill="none" stroke="var(--steam-gold)" strokeWidth="0.8" strokeDasharray="1.5 1.5" style={{ animation: 'emblem-rotate-outer 8s linear infinite reverse', transformOrigin: '80px 80px' }} />
+            </g>
         </g>
     </svg>
-);
+));
 
 const IconRenderer = ({ r, spec, className, ...rest }) => {
     const p = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: spec ? 4 : 2, strokeLinecap: "round", strokeLinejoin: "round", className: className || "w-full h-full", ...rest };
