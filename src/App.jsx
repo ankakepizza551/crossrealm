@@ -380,6 +380,7 @@ const App = () => {
     const [isDisconnected, setIsDisconnected] = useState(false);
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [bgAnim, setBgAnim] = useState(true);
+    const [showChangelog, setShowChangelog] = useState(false);
     const [cutin, setCutin] = useState(null);
     const [visualFieldCard, setVisualFieldCard] = useState(null);
     const prevFieldCardId = useRef(null);
@@ -743,7 +744,74 @@ const App = () => {
                         <div className="system-status-bar">
                             <span>STATUS: <span className={`status-tag ${(!isConnected) ? 'bg-red-600' : ''}`}>{(!isConnected) ? 'OFFLINE' : 'ONLINE'}</span></span>
                             <span>VER: <span className="text-white/80 font-black">v1.3</span></span>
+                            <span className="text-accent font-black cursor-pointer hover:opacity-70 transition-opacity text-[11px] tracking-[1px] font-['Orbitron']" onClick={() => setShowChangelog(true)}>📋 LOG</span>
                         </div>
+
+                        {/* 更新履歴モーダル */}
+                        {showChangelog && (
+                            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => setShowChangelog(false)}>
+                                <div className="absolute inset-0 bg-black/70" />
+                                <div className="relative w-full max-w-sm bg-[#0a0520] border border-accent/40 rounded-lg overflow-hidden shadow-[0_0_40px_rgba(64,224,208,0.2)]" onClick={e => e.stopPropagation()}>
+                                    {/* ヘッダー */}
+                                    <div className="flex items-center justify-between px-4 py-3 border-b border-accent/20 bg-black/40">
+                                        <span className="font-['Orbitron'] font-black text-accent text-sm tracking-[3px]">UPDATE LOG</span>
+                                        <button className="text-white/50 hover:text-white text-xl leading-none" onClick={() => setShowChangelog(false)}>✕</button>
+                                    </div>
+                                    {/* 内容 */}
+                                    <div className="p-4 max-h-[60vh] overflow-y-auto space-y-5 text-[12px]">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v1.3</span>
+                                                <span className="text-white/30 text-[10px]">2026.05.05</span>
+                                                <span className="bg-accent/20 text-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-accent/30">LATEST</span>
+                                            </div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🔥 連勝ボーナスをリザルトに表示</li>
+                                                <li>🃏 カードドロー方向を上から落下に変更</li>
+                                                <li>🏠 待機画面にルームID表示を追加</li>
+                                                <li>⚡ WILD選択のレスポンス改善</li>
+                                                <li>📱 スワイプでカードを出しやすく改善</li>
+                                                <li>🎬 軽量モードの動作を大幅改善</li>
+                                                <li>🐛 真っ黒画面バグを修正</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="font-['Orbitron'] font-black text-steam-gold text-[11px]" style={{color:'var(--steam-gold)'}}>v1.2</span>
+                                                <span className="text-white/30 text-[10px]">2026.05.03</span>
+                                            </div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🎨 CSS・レイアウト全体を調整</li>
+                                                <li>🔧 アイコンレンダリング改善</li>
+                                                <li>⚙️ 演出系の競合を修正</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="font-['Orbitron'] font-black text-[11px]" style={{color:'var(--magic-purple)'}}>v1.1</span>
+                                                <span className="text-white/30 text-[10px]">2026.04.27</span>
+                                            </div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>👥 5人対戦に対応</li>
+                                                <li>🔄 プレイヤー脱落ロジック改善</li>
+                                                <li>🌐 OGPタグ追加（SNSシェア対応）</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="font-['Orbitron'] font-black text-white/60 text-[11px]">v1.0</span>
+                                                <span className="text-white/30 text-[10px]">初期リリース</span>
+                                            </div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🎮 Cross Realm 基本システム実装</li>
+                                                <li>🤖 CPU対戦対応</li>
+                                                <li>🏆 シリーズ戦システム</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ) : (joined && !gs) ? (
                     <div className="h-full flex flex-col items-center justify-center p-4 text-center">
