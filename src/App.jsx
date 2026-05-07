@@ -828,52 +828,54 @@ const App = () => {
                                     </div>
                                     <div className="p-4 max-h-[60vh] overflow-y-auto space-y-5 text-[12px]">
                                         <div>
-                                            <div className="flex items-center gap-2 mb-2">
+                                            <div className="flex items-center gap-2 mb-1">
                                                 <span className="font-['Orbitron'] font-black text-accent text-[11px]">v1.3</span>
                                                 <span className="text-white/30 text-[10px]">2026.05.05</span>
                                                 <span className="bg-accent/20 text-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-accent/30">LATEST</span>
                                             </div>
+                                            <div className="text-white/30 text-[10px] mb-2 pl-0">黒画面バグ修正 + 負荷軽減</div>
                                             <ul className="space-y-1 text-white/70 pl-2">
-                                                <li>🔥 連勝ボーナスをリザルトに表示</li>
-                                                <li>🃏 カードドロー方向を上から落下に変更</li>
-                                                <li>🏠 待機画面にルームID表示を追加</li>
-                                                <li>⚡ WILD選択のレスポンス改善</li>
-                                                <li>📱 スワイプでカードを出しやすく改善</li>
-                                                <li>🎬 軽量モードの動作を大幅改善</li>
                                                 <li>🐛 真っ黒画面バグを修正</li>
+                                                <li>🎬 軽量モードの動作を大幅改善</li>
+                                                <li>⚡ パフォーマンス最適化（発熱軽減）</li>
+                                                <li>🔥 連勝ボーナスをリザルトに表示</li>
+                                                <li>🏠 待機画面にルームID表示を追加</li>
+                                                <li>🃏 カードドロー方向を上から落下に変更</li>
+                                                <li>📱 スワイプでカードを出しやすく改善</li>
+                                                <li>⚡ WILD選択のレスポンス改善</li>
                                             </ul>
                                         </div>
                                         <div className="border-t border-white/10 pt-4">
-                                            <div className="flex items-center gap-2 mb-2">
+                                            <div className="flex items-center gap-2 mb-1">
                                                 <span className="font-['Orbitron'] font-black text-[11px]" style={{color:'var(--steam-gold)'}}>v1.2</span>
                                                 <span className="text-white/30 text-[10px]">2026.05.03</span>
                                             </div>
                                             <ul className="space-y-1 text-white/70 pl-2">
-                                                <li>🎨 CSS・レイアウト全体を調整</li>
-                                                <li>🔧 アイコンレンダリング改善</li>
+                                                <li>🎨 CSSアイコンレンダリング改善</li>
+                                                <li>📐 レイアウト・サイクル図・HUD調整</li>
                                                 <li>⚙️ 演出系の競合を修正</li>
                                             </ul>
                                         </div>
                                         <div className="border-t border-white/10 pt-4">
-                                            <div className="flex items-center gap-2 mb-2">
+                                            <div className="flex items-center gap-2 mb-1">
                                                 <span className="font-['Orbitron'] font-black text-[11px]" style={{color:'var(--magic-purple)'}}>v1.1</span>
                                                 <span className="text-white/30 text-[10px]">2026.04.27</span>
                                             </div>
                                             <ul className="space-y-1 text-white/70 pl-2">
-                                                <li>👥 5人対戦に対応</li>
-                                                <li>🔄 プレイヤー脱落ロジック改善</li>
+                                                <li>👥 プレイヤー人数上限を5人に拡張</li>
+                                                <li>🔄 プレイヤー脱落・ターン処理を改善</li>
                                                 <li>🌐 OGPタグ追加（SNSシェア対応）</li>
                                             </ul>
                                         </div>
                                         <div className="border-t border-white/10 pt-4">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <span className="font-['Orbitron'] font-black text-white/60 text-[11px]">v1.0</span>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-white/40 text-[11px]">v1.0</span>
                                                 <span className="text-white/30 text-[10px]">初期リリース</span>
                                             </div>
                                             <ul className="space-y-1 text-white/70 pl-2">
                                                 <li>🎮 Cross Realm 基本システム実装</li>
                                                 <li>🤖 CPU対戦対応</li>
-                                                <li>🏆 シリーズ戦システム</li>
+                                                <li>🏆 シリーズ戦システム（複数マッチ）</li>
                                             </ul>
                                         </div>
                                     </div>
