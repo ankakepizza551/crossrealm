@@ -145,57 +145,87 @@ const MemoizedIconRenderer = IconRenderer;
 const ComplexEmblem = React.memo(({ isLogo = false }) => (
     <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
         <defs>
-            <linearGradient id="emblem-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.8" />
-                <stop offset="100%" stopColor="var(--magic-purple)" stopOpacity="0.8" />
-            </linearGradient>
+            <radialGradient id="emb-core-glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="rgba(200,180,255,0.12)" />
+                <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+            </radialGradient>
         </defs>
         <g style={{ transform: isLogo ? 'scale(1.1)' : 'scale(0.8)', transformOrigin: 'center' }}>
-            {/* 外周：高速回転する破線リング */}
-            <circle cx="50" cy="50" r="48" fill="none" stroke="var(--accent)" strokeWidth="0.5" opacity="0.2" strokeDasharray="2 4" style={{ animation: 'emblem-rotate-outer 15s linear infinite', transformOrigin: '50px 50px' }} />
-            
-            {/* 中周：重厚な正六角形フレーム（座標を正確に50,50中心へ） */}
-            <g style={{ animation: 'emblem-rotate-inner 30s linear infinite', transformOrigin: '50px 50px' }}>
-                <polygon points="50,5 89,27.5 89,72.5 50,95 11,72.5 11,27.5" fill="none" stroke="url(#emblem-grad)" strokeWidth="1" opacity="0.4" />
-            </g>
-            
-            {/* 内周：逆回転するコンパスリング */}
-            <circle cx="50" cy="50" r="35" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeDasharray="20 10" opacity="0.5" style={{ animation: 'emblem-rotate-outer 20s linear infinite reverse', transformOrigin: '50px 50px' }} />
-            
-            {/* 追加：メカニカル・コア・ギア（イエロー/真鍮） */}
-            <g style={{ animation: 'emblem-rotate-outer 40s linear infinite', transformOrigin: '50px 50px', opacity: 0.4 }}>
-                {[...Array(12)].map((_, i) => (
-                    <rect key={i} x="48.5" y="28" width="3" height="7" fill="var(--steam-gold)" transform={`rotate(${i * 30} 50 50)`} />
-                ))}
-                <circle cx="50" cy="50" r="18" fill="none" stroke="var(--steam-gold)" strokeWidth="1" strokeDasharray="3 3" />
+
+            {/* ベース中心グロー */}
+            <circle cx="50" cy="50" r="44" fill="url(#emb-core-glow)" />
+
+            {/* 外周装飾リング (低速逆回転) */}
+            <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,0.07)"
+                strokeWidth="0.5" strokeDasharray="2 7"
+                style={{ animation: 'emblem-rotate-inner 80s linear infinite', transformOrigin: '50px 50px' }} />
+
+            {/* === 三領域アーク + ノードシンボル (逆回転) === */}
+            {/*
+                Steam: top    (270°) arc 220°→320°, gold
+                Fantasy: lower-left (150°) arc 100°→200°, teal
+                Cyber: lower-right  (30°) arc 340°→80°,  purple
+                All arc endpoints calculated at r=42 from center (50,50)
+            */}
+            <g style={{ animation: 'emblem-rotate-outer 60s linear infinite', transformOrigin: '50px 50px' }}>
+                {/* Steam arc (gold) */}
+                <path d="M 17.83,23.00 A 42,42 0 0 1 82.17,23.00"
+                    fill="none" stroke="#e8b820" strokeWidth="2.5" strokeLinecap="round" opacity="0.88" />
+                {/* Fantasy arc (teal) */}
+                <path d="M 42.70,91.38 A 42,42 0 0 1 10.53,35.64"
+                    fill="none" stroke="#38d4c0" strokeWidth="2.5" strokeLinecap="round" opacity="0.88" />
+                {/* Cyber arc (purple) */}
+                <path d="M 89.47,35.64 A 42,42 0 0 1 57.30,91.38"
+                    fill="none" stroke="#a050f0" strokeWidth="2.5" strokeLinecap="round" opacity="0.88" />
+
+                {/* Steam gear symbol at arc midpoint (50, 8) */}
+                <g transform="translate(50, 8)">
+                    {[0,45,90,135,180,225,270,315].map(a => (
+                        <rect key={a} x="-0.65" y="-5.2" width="1.3" height="2.4"
+                            fill="#e8b820" transform={`rotate(${a})`} opacity="0.9" />
+                    ))}
+                    <circle r="3.2" fill="none" stroke="#e8b820" strokeWidth="1" opacity="0.9" />
+                    <circle r="1.2" fill="#e8b820" opacity="0.95" />
+                </g>
+
+                {/* Fantasy diamond symbol at arc midpoint (13.63, 71) */}
+                <g transform="translate(13.63, 71)">
+                    <polygon points="0,-4.5 3.2,0 0,4.5 -3.2,0"
+                        fill="rgba(56,212,192,0.2)" stroke="#38d4c0" strokeWidth="1" opacity="0.9" />
+                    <polygon points="0,-2.0 1.4,0 0,2.0 -1.4,0"
+                        fill="#38d4c0" opacity="0.85" />
+                </g>
+
+                {/* Cyber hexagon symbol at arc midpoint (86.37, 71) */}
+                <g transform="translate(86.37, 71)">
+                    <polygon points="0,-4.2 3.64,-2.1 3.64,2.1 0,4.2 -3.64,2.1 -3.64,-2.1"
+                        fill="rgba(160,80,240,0.2)" stroke="#a050f0" strokeWidth="1" opacity="0.9" />
+                    <circle r="1.5" fill="#a050f0" opacity="0.9" />
+                </g>
             </g>
 
-            {/* 中心：コアの鼓動 */}
-            <g style={{ animation: 'emblem-pulse 2s infinite', transformOrigin: '50px 50px' }}>
-                <circle cx="50" cy="50" r="14" fill="var(--danger)" opacity="0.15" />
-                <circle cx="50" cy="50" r="10" fill="none" stroke="var(--danger)" strokeWidth="2" />
-                <path d="M50 35 L50 65 M35 50 L65 50" stroke="var(--danger)" strokeWidth="1" />
-                <text x="50" y="54" fill="white" fontSize="8" fontWeight="1000" fontFamily="Orbitron" textAnchor="middle">Ω</text>
+            {/* === 内三角形 (順回転、アークと逆方向) === */}
+            {/* 頂点: Steam(50,22) Cyber(74.25,64) Fantasy(25.75,64) — r=28 */}
+            <g style={{ animation: 'emblem-rotate-inner 90s linear infinite', transformOrigin: '50px 50px' }}>
+                <line x1="50"    y1="22" x2="74.25" y2="64" stroke="rgba(255,255,255,0.18)" strokeWidth="0.8" />
+                <line x1="74.25" y1="64" x2="25.75" y2="64" stroke="rgba(255,255,255,0.18)" strokeWidth="0.8" />
+                <line x1="25.75" y1="64" x2="50"    y2="22" stroke="rgba(255,255,255,0.18)" strokeWidth="0.8" />
+                <circle cx="50"    cy="22" r="2"   fill="#e8b820" opacity="0.75" />
+                <circle cx="74.25" cy="64" r="2"   fill="#a050f0" opacity="0.75" />
+                <circle cx="25.75" cy="64" r="2"   fill="#38d4c0" opacity="0.75" />
             </g>
-            
-            {/* 装飾：四隅のセンサーライン ＋ イエロー・マイクロギア */}
-            <g opacity="0.8">
-                {/* TOP LEFT */}
-                <path d="M20 20 L30 20 M20 20 L20 30" fill="none" stroke="var(--accent)" strokeWidth="0.5" />
-                <circle cx="20" cy="20" r="3.5" fill="none" stroke="var(--steam-gold)" strokeWidth="0.8" strokeDasharray="1.5 1.5" style={{ animation: 'emblem-rotate-outer 5s linear infinite', transformOrigin: '20px 20px' }} />
-                
-                {/* TOP RIGHT */}
-                <path d="M80 20 L70 20 M80 20 L80 30" fill="none" stroke="var(--accent)" strokeWidth="0.5" />
-                <circle cx="80" cy="20" r="3.5" fill="none" stroke="var(--steam-gold)" strokeWidth="0.8" strokeDasharray="1.5 1.5" style={{ animation: 'emblem-rotate-outer 5s linear infinite reverse', transformOrigin: '80px 20px' }} />
-                
-                {/* BOTTOM LEFT */}
-                <path d="M20 80 L30 80 M20 80 L20 70" fill="none" stroke="var(--accent)" strokeWidth="0.5" />
-                <circle cx="20" cy="80" r="3.5" fill="none" stroke="var(--steam-gold)" strokeWidth="0.8" strokeDasharray="1.5 1.5" style={{ animation: 'emblem-rotate-outer 8s linear infinite', transformOrigin: '20px 80px' }} />
-                
-                {/* BOTTOM RIGHT */}
-                <path d="M80 80 L70 80 M80 80 L80 70" fill="none" stroke="var(--accent)" strokeWidth="0.5" />
-                <circle cx="80" cy="80" r="3.5" fill="none" stroke="var(--steam-gold)" strokeWidth="0.8" strokeDasharray="1.5 1.5" style={{ animation: 'emblem-rotate-outer 8s linear infinite reverse', transformOrigin: '80px 80px' }} />
-            </g>
+
+            {/* === 中心収束点 === */}
+            {/* パルスするグロー輪 */}
+            <circle cx="50" cy="50" r="9.5" fill="rgba(255,255,255,0.04)"
+                stroke="rgba(255,255,255,0.22)" strokeWidth="0.6"
+                style={{ animation: 'emblem-pulse 3s ease-in-out infinite', transformOrigin: '50px 50px' }} />
+            {/* 三色ドット (三角形配置, r=5.5) — 常時表示 */}
+            <circle cx="50"   cy="44.5"  r="2.1" fill="#e8b820" opacity="0.92" />
+            <circle cx="54.76" cy="52.75" r="2.1" fill="#a050f0" opacity="0.92" />
+            <circle cx="45.24" cy="52.75" r="2.1" fill="#38d4c0" opacity="0.92" />
+            {/* 中心白点 */}
+            <circle cx="50" cy="50" r="1.6" fill="white" opacity="0.96" />
         </g>
     </svg>
 ));
