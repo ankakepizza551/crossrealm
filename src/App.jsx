@@ -863,6 +863,20 @@ const App = () => {
                                         </div>
                                         <div className="border-t border-white/10 pt-4">
                                             <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-accent/60 text-[11px]">v1.4</span>
+                                                <span className="text-white/30 text-[10px]">2026.05.08</span>
+                                            </div>
+                                            <div className="text-white/30 text-[10px] mb-2 pl-0">背景リデザイン・スマホ発熱軽量化</div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🎨 背景をサイバーグリッドに簡素化</li>
+                                                <li>✨ スキャンライン・コーナーグロー追加</li>
+                                                <li>💡 ホライゾングロー追加（低負荷アニメ）</li>
+                                                <li>🌈 スマホ向けグラデーション背景対応</li>
+                                                <li>⚡ blurアニメーション全廃（発熱軽減）</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-1">
                                                 <span className="font-['Orbitron'] font-black text-accent/60 text-[11px]">v1.3</span>
                                                 <span className="text-white/30 text-[10px]">2026.05.05</span>
                                             </div>
