@@ -142,6 +142,15 @@ const IconRenderer = React.memo(({ r, spec, className, ...rest }) => {
 });
 const MemoizedIconRenderer = IconRenderer;
 
+const PERSONALITY_INFO = {
+  AGGRESSOR:   { icon: '⚔️', label: 'アタッカー',      color: '#FF8C00' },
+  STRATEGIST:  { icon: '🧠', label: 'ストラテジスト',   color: '#40E0D0' },
+  WILDCARDIAN: { icon: '🌀', label: 'ワイルダー',       color: '#8A2BE2' },
+  SPEEDRUNNER: { icon: '⚡', label: 'スピードスター',    color: '#ADFF2F' },
+  SABOTEUR:    { icon: '💣', label: 'サボタージュ',     color: '#FF4500' },
+  RANDOM:      { icon: '🎲', label: 'ランダム',          color: '#888888' },
+};
+
 const ComplexEmblem = React.memo(({ isLogo = false }) => (
     <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
         <defs>
@@ -820,7 +829,7 @@ const App = () => {
                         </div>
                         <div className="system-status-bar">
                             <span>STATUS: <span className={`status-tag ${(!isConnected) ? 'bg-red-600' : ''}`}>{(!isConnected) ? 'OFFLINE' : 'ONLINE'}</span></span>
-                            <span>VER: <span className="text-white/80 font-black">v1.4</span></span>
+                             <span>VER: <span className="text-white/80 font-black">v1.5</span></span>
                             <span className="text-accent font-black cursor-pointer hover:opacity-70 transition-opacity text-[11px] tracking-[1px] font-['Orbitron']" onClick={() => setShowChangelog(true)}>📋 LOG</span>
                         </div>
 
@@ -836,17 +845,20 @@ const App = () => {
                                     <div className="p-4 max-h-[60vh] overflow-y-auto space-y-5 text-[12px]">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v1.4</span>
+                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v1.5</span>
                                                 <span className="text-white/30 text-[10px]">2026.05.08</span>
                                                 <span className="bg-accent/20 text-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-accent/30">LATEST</span>
                                             </div>
-                                            <div className="text-white/30 text-[10px] mb-2 pl-0">背景リデザイン・スマホ発熱軽量化</div>
+                                            <div className="text-white/30 text-[10px] mb-2 pl-0">CPU個性・席順シャッフル実装</div>
                                             <ul className="space-y-1 text-white/70 pl-2">
-                                                <li>🎨 背景をサイバーグリッドに簡素化</li>
-                                                <li>✨ スキャンライン・コーナーグロー追加</li>
-                                                <li>💡 ホライゾングロー追加（低負荷アニメ）</li>
-                                                <li>🌈 スマホ向けグラデーション背景対応</li>
-                                                <li>⚡ blurアニメーション全廃（発熱軽減）</li>
+                                                <li>🤖 CPU全員に独自のプレイスタイルを実装</li>
+                                                <li>⚔️ Nova/Kael: アタッカー（スペシャル最優先）</li>
+                                                <li>🧠 Astra/Cyrus: ストラテジスト（WILD温存）</li>
+                                                <li>🌀 Echo/Luna: ワイルダー（WILD積極使用）</li>
+                                                <li>⚡ Vector/Iris: スピードスター（速攻型）</li>
+                                                <li>💣 Zion/Xenon: サボタージュ（妨害特化）</li>
+                                                <li>🏷️ ロビーにCPUタイプバッジを表示</li>
+                                                <li>🎲 毎戦開始時に席順をランダムシャッフル</li>
                                             </ul>
                                         </div>
                                         <div className="border-t border-white/10 pt-4">
@@ -923,8 +935,18 @@ const App = () => {
                                 return (
                                     <div key={i} className={`bg-[#140a28]/85 border px-5 py-2.5 rounded-md mb-1.5 flex justify-between items-center min-h-[56px] shadow-md  ${p ? 'border-l-8 border-l-accent border-accent/80 bg-[#0a1e28]/85 shadow-sm' : 'border-white/30 opacity-20 border-dashed'}`}>
                                         <span className="font-black text-sm tracking-wide uppercase">{p ? p.name : '--- 空きスロット ---'}</span>
-                                        {p && i === 0 && <span className="bg-white text-black text-[10px] px-3 py-1 font-black rounded shadow-lg">マスター</span>}
-                                        {p && p.isBot && (gs?.players[0]?.id === socket?.id || gs?.players[0]?.name === name) && <button className="text-[10px] font-black text-red-400 border border-red-400/40 px-2 py-0.5 rounded hover:bg-red-400/10 transition-all" onClick={() => socket.emit('remove-cpu', { roomId: room, botId: p.id })}>削除</button>}
+                                        <div className="flex items-center gap-2">
+                                            {p && p.isBot && p.personality && (() => {
+                                                const info = PERSONALITY_INFO[p.personality] || PERSONALITY_INFO.RANDOM;
+                                                return (
+                                                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full border" style={{ color: info.color, borderColor: info.color, background: `${info.color}18` }}>
+                                                        {info.icon} {info.label}
+                                                    </span>
+                                                );
+                                            })()}
+                                            {p && i === 0 && <span className="bg-white text-black text-[10px] px-3 py-1 font-black rounded shadow-lg">マスター</span>}
+                                            {p && p.isBot && (gs?.players[0]?.id === socket?.id || gs?.players[0]?.name === name) && <button className="text-[10px] font-black text-red-400 border border-red-400/40 px-2 py-0.5 rounded hover:bg-red-400/10 transition-all" onClick={() => socket.emit('remove-cpu', { roomId: room, botId: p.id })}>削除</button>}
+                                        </div>
                                     </div>
                                 );
                             })}
@@ -936,7 +958,7 @@ const App = () => {
                                         <button className="flex-1 py-4 bg-black/80 border border-white/40 text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm hover:bg-white/10 transition-all" disabled={gs?.players?.length >= 5} onClick={() => { playSE('play', muted); socket.emit('add-cpu', { roomId: room }); }}>🤖 CPU追加</button>
                                         <button className="flex-[2] py-4 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-base rounded-sm shadow-2xl active:scale-95 transition-all" disabled={gs?.players?.length < 2} onClick={() => { playSE('start', muted); socket.emit('start-game', { roomId: room }); }}>ミッション開始</button>
                                     </div>
-                                    <p className="text-[10px] text-white/40 mb-3 font-bold">💡 CPUは中級レベルの強さで、ランダムに選ばれます</p>
+                                    <p className="text-[10px] text-white/40 mb-3 font-bold">💡 CPUはそれぞれ異なる戦略を持ちます。追加するたびにランダムで配置されます</p>
                                 </>
                             )}
                             <button className="mt-1 inline-block py-2.5 px-8 bg-black/90 border-2 border-accent text-white font-['Orbitron'] text-[11px] font-black tracking-[4px] rounded-full" onClick={leave}>同期を解除</button>

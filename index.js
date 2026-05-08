@@ -303,6 +303,7 @@ function broadcastRoomState(roomId) {
             id: p.id,
             name: p.name,
             isBot: p.isBot,
+            personality: p.personality,
             score: p.score,
             isEliminated: p.isEliminated,
             ready: p.ready,
@@ -449,16 +450,113 @@ function processBotTurn(roomId) {
 
 function getBotAction(room, bot) {
   const playable = bot.hand.filter(card => canPlay(room, card));
+  const personality = bot.personality || 'RANDOM';
+
   if (playable.length === 0) return { type: 'draw' };
-  let targetCard = playable[Math.floor(Math.random() * playable.length)];
-  let chosenRealm = undefined;
-  if (['PLANET', 'RUINS', 'FOUNTAIN'].includes(targetCard.realm) && (targetCard.realm !== 'FOUNTAIN' || targetCard.isSpecial)) {
-    chosenRealm = ['GEAR', 'FOUNTAIN', 'MACHINE'][Math.floor(Math.random() * 3)];
+
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const wilds      = playable.filter(c => c.realm === 'PLANET' || c.realm === 'RUINS');
+  const limitWilds = playable.filter(c => c.realm === 'FOUNTAIN' && c.isSpecial);
+  const drawTwos   = playable.filter(c => c.realm === 'GEAR' && c.isSpecial);
+  const reverses   = playable.filter(c => c.realm === 'MACHINE' && c.isSpecial);
+  const specials   = playable.filter(c => c.isSpecial);
+  const normals    = playable.filter(c => !c.isSpecial && c.realm !== 'PLANET' && c.realm !== 'RUINS');
+
+  // 手札で一番多い属性を返す（次ターンの連打を狙う）
+  const getHandMajorityRealm = () => {
+    const counts = {};
+    bot.hand.forEach(c => {
+      if (!['PLANET', 'RUINS'].includes(c.realm)) counts[c.realm] = (counts[c.realm] || 0) + 1;
+    });
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    return sorted.length > 0 ? sorted[0][0] : 'GEAR';
+  };
+
+  // 相手が持ちにくいレアな属性を選ぶ（妨害用）
+  const getDisruptiveRealm = () => {
+    const hardRealms = ['BATTERY', 'ICEAGE', 'ARCHIVE'];
+    return hardRealms[Math.floor(Math.random() * hardRealms.length)];
+  };
+
+  let targetCard;
+  switch (personality) {
+    case 'AGGRESSOR':
+      // スペシャル最優先：DRAW2 > REVERSE > WILD > 通常
+      if (drawTwos.length > 0)       targetCard = pick(drawTwos);
+      else if (reverses.length > 0)  targetCard = pick(reverses);
+      else if (wilds.length > 0)     targetCard = pick(wilds);
+      else                           targetCard = pick(normals.length > 0 ? normals : playable);
+      break;
+
+    case 'STRATEGIST':
+      // ピンチ（手札8枚以上）になってからWILDを使う。通常は普通のカードで堅実に進める
+      if (bot.hand.length >= 8 && wilds.length > 0) targetCard = pick(wilds);
+      else if (normals.length > 0)                  targetCard = pick(normals);
+      else if (specials.length > 0)                 targetCard = pick(specials);
+      else                                          targetCard = pick(playable);
+      break;
+
+    case 'WILDCARDIAN':
+      // WILDを積極的に消費。LIMIT WILDも好んで使う
+      if (wilds.length > 0)           targetCard = pick(wilds);
+      else if (limitWilds.length > 0) targetCard = pick(limitWilds);
+      else if (normals.length > 0)    targetCard = pick(normals);
+      else                            targetCard = pick(playable);
+      break;
+
+    case 'SPEEDRUNNER':
+      // 手札を最速で減らすことだけを考える。出せるなら必ず出す（ドローしない）
+      // 手札枚数が少ない属性を選ぶため通常カードを優先
+      if (normals.length > 0)        targetCard = pick(normals);
+      else if (specials.length > 0)  targetCard = pick(specials);
+      else                           targetCard = pick(playable);
+      break;
+
+    case 'SABOTEUR':
+      // 妨害最優先：DRAW2積み > REVERSE（3人以上の場合） > WILD > 通常
+      if (drawTwos.length > 0)                                  targetCard = pick(drawTwos);
+      else if (reverses.length > 0 && room.players.length > 2)  targetCard = pick(reverses);
+      else if (wilds.length > 0)                                targetCard = pick(wilds);
+      else                                                      targetCard = pick(normals.length > 0 ? normals : playable);
+      break;
+
+    default: // RANDOM
+      targetCard = pick(playable);
+      break;
   }
+
+  // WILDのRealm選択（パーソナリティ別）
+  let chosenRealm;
+  const isWildCard   = targetCard.realm === 'PLANET' || targetCard.realm === 'RUINS';
+  const isLimitWild  = targetCard.realm === 'FOUNTAIN' && targetCard.isSpecial;
+  if (isWildCard || isLimitWild) {
+    if (personality === 'SABOTEUR') {
+      chosenRealm = getDisruptiveRealm();
+    } else if (['STRATEGIST', 'WILDCARDIAN', 'SPEEDRUNNER'].includes(personality)) {
+      chosenRealm = getHandMajorityRealm();
+    } else {
+      chosenRealm = ['GEAR', 'FOUNTAIN', 'MACHINE'][Math.floor(Math.random() * 3)];
+    }
+  }
+
   return { type: 'play', card: targetCard, chosenRealm };
 }
 
 const BOT_NAMES = ['Astra', 'Nova', 'Echo', 'Vector', 'Zion', 'Kael', 'Luna', 'Cyrus', 'Iris', 'Xenon'];
+
+// ボット名 → パーソナリティ対応表
+const BOT_PERSONALITIES = {
+  'Nova':   'AGGRESSOR',   // 攻撃型：スペシャルカードで積極的に仕掛ける
+  'Kael':   'AGGRESSOR',
+  'Astra':  'STRATEGIST',  // 戦略型：ピンチまでWILDを温存する堅実派
+  'Cyrus':  'STRATEGIST',
+  'Echo':   'WILDCARDIAN', // WILD型：WILDカードを積極的に切って変幻自在に動く
+  'Luna':   'WILDCARDIAN',
+  'Vector': 'SPEEDRUNNER', // 速攻型：手札を最速で減らすことに集中
+  'Iris':   'SPEEDRUNNER',
+  'Zion':   'SABOTEUR',    // 妨害型：ドロー積み・嫌な属性指定で場を混乱させる
+  'Xenon':  'SABOTEUR',
+};
 
 io.on('connection', (socket) => {
   socket.on('join-room', (data) => {
@@ -514,6 +612,7 @@ io.on('connection', (socket) => {
         ? availableNames[Math.floor(Math.random() * availableNames.length)]
         : (data.botName || 'CPU');
 
+      const botPersonality = BOT_PERSONALITIES[botBaseName] || 'RANDOM';
       room.players.push({
         id: 'CPU_' + Math.random().toString(36).substr(2, 5),
         name: botBaseName + ' (AI)',
@@ -522,7 +621,8 @@ io.on('connection', (socket) => {
         isBot: true,
         isEliminated: false,
         score: 0,
-        ready: true
+        ready: true,
+        personality: botPersonality
       });
       broadcastRoomState(room.id);
     }
@@ -545,6 +645,11 @@ io.on('connection', (socket) => {
       const room = rooms[data.roomId.toUpperCase()];
       if (room && room.players.length >= 2) {
         room.deck = createDeck();
+        // 毎戦席順をシャッフル（Fisher-Yates）
+        for (let i = room.players.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [room.players[i], room.players[j]] = [room.players[j], room.players[i]];
+        }
         room.turnIndex = Math.floor(Math.random() * room.players.length);
         room.players.forEach(p => {
           p.hand = []; for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop());
@@ -684,6 +789,11 @@ io.on('connection', (socket) => {
         } else {
           // 次のマッチを開始 (start-gameのロジックと同様)
           room.deck = createDeck();
+          // 毎戦席順をシャッフル（Fisher-Yates）
+          for (let i = room.players.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [room.players[i], room.players[j]] = [room.players[j], room.players[i]];
+          }
           room.turnIndex = Math.floor(Math.random() * room.players.length);
           room.players.forEach(p => {
             p.hand = []; for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop());
