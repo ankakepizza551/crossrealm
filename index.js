@@ -37,6 +37,21 @@ app.get('/api/debug', (req, res) => {
 });
 
 // 静的ファイルの提供 (ビルド済みのフロントエンド)
+// 公開ルーム一覧API
+app.get('/api/rooms', (req, res) => {
+  const publicRooms = Object.values(rooms)
+    .filter(r => r.isPublic && r.status === 'waiting' && r.players.filter(p => !p.isBot).length > 0)
+    .map(r => ({
+      id: r.id,
+      roomName: r.roomName,
+      hostName: r.players.find(p => p.id === r.hostId)?.name || '不明',
+      playerCount: r.players.filter(p => !p.isBot).length,
+      botCount: r.players.filter(p => p.isBot).length,
+      maxPlayers: 5
+    }));
+  res.json(publicRooms);
+});
+
 app.use(express.static(distPath));
 
 // どこにアクセスしても index.html を返す (SPA用設定)
@@ -259,7 +274,10 @@ function checkGameOver(room) {
 
       // 他のプレイヤーの連勝をリセット
       room.players.forEach(p => {
-        if (p.id !== winner.id) p.consecutiveWins = 0;
+        if (p.id !== winner.id) {
+          p.consecutiveWins = 0;
+          p.streakCount = 0;
+        }
       });
 
       room.logs.push({ id: Math.random(), text: `RESULT: Winner=${winner.name}, Base=${basePoints}, Bonus=${bonusPoints}, Wild=${isWildFinish}, Streak=${winner.consecutiveWins}` });
@@ -565,7 +583,7 @@ io.on('connection', (socket) => {
     console.log(`[SYSTEM] Join Request: Room=${rid}, Player=${data.playerName}`);
 
     if (!rooms[rid]) {
-      rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], currentTurnPlayerId: null, matchCount: 1, maxMatches: 5, isSeriesFinished: false };
+      rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], currentTurnPlayerId: null, matchCount: 1, maxMatches: 5, isSeriesFinished: false, roomName: data.roomName || rid, isPublic: data.isPublic || false, hostId: null };
       console.log(`[SYSTEM] New Room Created: ${rid}`);
     }
 
@@ -595,6 +613,8 @@ io.on('connection', (socket) => {
 
     const newPlayer = { id: socket.id, name: sanitizedName, hand: [], handCount: 0, isBot: false, isEliminated: false, score: 0, ready: false };
     room.players.push(newPlayer);
+    // 最初の参加者をホストに設定
+    if (!room.hostId) room.hostId = socket.id;
     socket.join(rid);
 
     console.log(`[SYSTEM] Player ${newPlayer.name} joined ${rid}. Total players: ${room.players.length}`);

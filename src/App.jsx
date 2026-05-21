@@ -432,6 +432,13 @@ const App = () => {
     const [room, setRoom] = useState('');
     const [name, setName] = useState('');
     const [joined, setJoined] = useState(false);
+    const [menuMode, setMenuMode] = useState(null); // null=トップ, 'solo'=1人, 'multi'=多人数選択, 'private'=プライベート, 'public'=パブリック
+    const [multiMode, setMultiMode] = useState(null); // null=選択, 'create'=作成, 'join'=参加
+    const [roomName, setRoomName] = useState('');
+    const [isPublic, setIsPublic] = useState(false);
+    const [publicRooms, setPublicRooms] = useState([]);
+    const [loadingRooms, setLoadingRooms] = useState(false);
+    const [soloCpuCount, setSoloCpuCount] = useState(3); // CPU人数（デフォルト3）
     const [selector, setSelector] = useState(null);
     const [muted, setMuted] = useState(false);
     const [selectedCardId, setSelectedCardId] = useState(null);
@@ -537,7 +544,44 @@ const App = () => {
         ));
     }, [gs?.logs]);
 
+    // 公開ルーム一覧を取得
+    const fetchPublicRooms = useCallback(async () => {
+        setLoadingRooms(true);
+        try {
+            const res = await fetch('/api/rooms');
+            const data = await res.json();
+            setPublicRooms(data);
+        } catch (e) {
+            setPublicRooms([]);
+        }
+        setLoadingRooms(false);
+    }, []);
+
+    // ルームを作成して参加
+    const createRoom = useCallback(() => {
+        if (!name) return;
+        const newRoomId = Math.random().toString(36).substr(2, 6).toUpperCase();
+        playSE('start', muted);
+        setRoom(newRoomId);
+        setJoined(true);
+        socket.emit('join-room', { roomId: newRoomId, playerName: name, roomName: roomName || `${name}のルーム`, isPublic });
+    }, [name, roomName, isPublic, muted]);
+
     const join = useCallback(() => { if (room && name) { playSE('start', muted); setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name }); } }, [room, name, muted]);
+    const startSolo = useCallback((cpuCount, playerName) => {
+        if (!playerName) return;
+        const soloRoomId = 'SOLO_' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        playSE('start', muted);
+        setRoom(soloRoomId);
+        setJoined(true);
+        socket.emit('join-room', { roomId: soloRoomId, playerName: playerName });
+        // CPU追加（少し遅延して確実に参加後に追加）
+        for (let i = 0; i < cpuCount; i++) {
+            setTimeout(() => socket.emit('add-cpu', { roomId: soloRoomId }), 300 + i * 100);
+        }
+        // 全員揃ったら自動でゲーム開始
+        setTimeout(() => socket.emit('toggle-ready', { roomId: soloRoomId }), 300 + cpuCount * 100 + 200);
+    }, [muted]);
     const leave = useCallback(() => { if (room) { playSE('cancel', muted); socket.emit('leave-room', { roomId: room.toUpperCase() }); setJoined(false); setGs(null); } }, [room, muted]);
     const goToTopPage = useCallback(() => { playSE('cancel', muted); if (room) socket.emit('leave-room', { roomId: room.toUpperCase() }); window.location.reload(); }, [room, muted]);
 
@@ -799,7 +843,8 @@ const App = () => {
                 {!joined ? (
                     <div className="h-full flex flex-col no-scrollbar">
                         <div className="flex-1 flex flex-col items-center justify-center py-4 sm:py-8 overflow-y-auto no-scrollbar">
-                            <div className="top-logo-area flex-shrink-0 scale-[1.15] sm:scale-100 origin-center mb-8 sm:mb-4">
+                            {/* ロゴ共通 */}
+                            <div className="top-logo-area flex-shrink-0 scale-[1.15] sm:scale-100 origin-center mb-6 sm:mb-4">
                                 <div className="field-central-zone">
                                     <div className="emblem-bg-layer"><ComplexEmblem isLogo={true} /></div>
                                     <div className="logo-text-layer">
@@ -809,27 +854,182 @@ const App = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="trinity-flavor-box mb-4 sm:mb-8 flex-shrink-0">
-                                <div className="flavor-line"><span className="f-steam">真鍮</span>の爆鳴、<span className="f-fantasy">星界</span>の共鳴、<span className="f-cyber">電脳</span>の火花。</div>
-                                <div className="mt-2 text-white/70 font-black text-[0.8rem]">次元の境界は消失し、特異点へと収束する。</div>
-                            </div>
-                            <div className="w-full px-6 sm:px-8 flex flex-col gap-3 sm:gap-5 flex-shrink-0">
-                                <div className="relative w-full flex flex-col">
-                                    <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-sm"></div>
-                                    <label className="input-label-tech font-['Orbitron'] text-[10px] font-black text-accent tracking-[2px] mb-1 pl-4 uppercase">パイロット識別名</label>
-                                    <input type="text" className="input-field-nova w-full p-3 sm:p-4 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg sm:text-xl outline-none rounded" value={name} placeholder="名前を入力..." onChange={e => setName(e.target.value)} maxLength={10} />
+
+                            {/* ===== トップメニュー ===== */}
+                            {menuMode === null && (
+                                <>
+                                    <div className="trinity-flavor-box mb-6 sm:mb-8 flex-shrink-0">
+                                        <div className="flavor-line"><span className="f-steam">真鍮</span>の爆鳴、<span className="f-fantasy">星界</span>の共鳴、<span className="f-cyber">電脳</span>の火花。</div>
+                                        <div className="mt-2 text-white/70 font-black text-[0.8rem]">次元の境界は消失し、特異点へと収束する。</div>
+                                    </div>
+                                    <div className="w-full px-6 sm:px-8 flex flex-col gap-4 flex-shrink-0">
+                                        {/* 1人でプレイ */}
+                                        <button
+                                            className="w-full p-5 rounded-lg border-2 border-accent/40 bg-accent/10 active:scale-95 transition-all text-left relative overflow-hidden group"
+                                            onClick={() => { playSE('start', muted); setMenuMode('solo'); }}
+                                            disabled={!isConnected}
+                                        >
+                                            <div className="absolute inset-0 bg-accent/5 opacity-0 group-active:opacity-100 transition-opacity" />
+                                            <div className="font-['Orbitron'] font-black text-accent text-lg tracking-[2px]">🤖 1人でプレイ</div>
+                                            <div className="text-white/50 text-[11px] mt-1">CPU相手にソロプレイ</div>
+                                        </button>
+                                        {/* みんなでプレイ */}
+                                        <button
+                                            className="w-full p-5 rounded-lg border-2 border-steam-gold/40 bg-steam-gold/10 active:scale-95 transition-all text-left relative overflow-hidden group"
+                                            style={{ borderColor: 'rgba(212,175,55,0.4)', background: 'rgba(212,175,55,0.08)' }}
+                                            onClick={() => { playSE('start', muted); setMenuMode('multi'); }}
+                                            disabled={!isConnected}
+                                        >
+                                            <div className="absolute inset-0 opacity-0 group-active:opacity-100 transition-opacity" style={{ background: 'rgba(212,175,55,0.1)' }} />
+                                            <div className="font-['Orbitron'] font-black text-lg tracking-[2px]" style={{ color: 'var(--steam-gold)' }}>👥 みんなでプレイ</div>
+                                            <div className="text-white/50 text-[11px] mt-1">ルームコードで友達と対戦</div>
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+
+                            {/* ===== 1人でプレイ画面 ===== */}
+                            {menuMode === 'solo' && (
+                                <div className="w-full px-6 sm:px-8 flex flex-col gap-4 flex-shrink-0">
+                                    <div className="relative w-full flex flex-col">
+                                        <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-sm"></div>
+                                        <label className="input-label-tech font-['Orbitron'] text-[10px] font-black text-accent tracking-[2px] mb-1 pl-4 uppercase">パイロット識別名</label>
+                                        <input type="text" className="input-field-nova w-full p-3 sm:p-4 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg sm:text-xl outline-none rounded" value={name} placeholder="名前を入力..." onChange={e => setName(e.target.value)} maxLength={10} autoFocus />
+                                    </div>
+                                    {/* CPU人数選択 */}
+                                    <div className="flex flex-col gap-2">
+                                        <div className="font-['Orbitron'] text-[10px] font-black text-accent/60 tracking-[2px] uppercase pl-1">CPU人数</div>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {[1, 2, 3, 4].map(n => (
+                                                <button
+                                                    key={n}
+                                                    className={`py-3 rounded font-['Orbitron'] font-black text-lg transition-all active:scale-95 ${soloCpuCount === n ? 'bg-accent text-black' : 'bg-white/5 border border-white/20 text-white/60'}`}
+                                                    onClick={() => setSoloCpuCount(n)}
+                                                >{n}</button>
+                                            ))}
+                                        </div>
+                                        <div className="text-white/30 text-[10px] text-center">合計 {1 + soloCpuCount} 人で対戦</div>
+                                    </div>
+                                    <button
+                                        className={`w-full mt-1 p-4 text-lg font-black rounded-sm active:scale-95 transition-transform ${(!isConnected || !name) ? 'bg-gray-600 opacity-50' : 'bg-gradient-to-r from-cyan-500 to-accent text-black'}`}
+                                        onClick={() => startSolo(soloCpuCount, name)}
+                                        disabled={!isConnected || !name}
+                                    >出撃</button>
+                                    <button className="w-full mt-2 p-3 rounded border border-white/20 text-white/70 text-sm font-black tracking-[2px] active:bg-white/10 transition-all" onClick={() => setMenuMode(null)}>← 戻る</button>
                                 </div>
-                                <div className="relative w-full flex flex-col">
-                                    <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-sm"></div>
-                                    <label className="input-label-tech font-['Orbitron'] text-[10px] font-black text-accent tracking-[2px] mb-1 pl-4 uppercase">セクターコード</label>
-                                    <input type="text" className="input-field-nova w-full p-3 sm:p-4 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg sm:text-xl outline-none rounded" value={room} placeholder="合言葉を入力..." onChange={e => setRoom(e.target.value.toUpperCase())} />
+                            )}
+
+                            {/* ===== みんなでプレイ: モード選択 ===== */}
+                            {menuMode === 'multi' && (
+                                <div className="w-full px-6 sm:px-8 flex flex-col gap-4 flex-shrink-0">
+                                    {/* 名前入力（共通） */}
+                                    <div className="relative w-full flex flex-col">
+                                        <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-sm"></div>
+                                        <label className="input-label-tech font-['Orbitron'] text-[10px] font-black text-accent tracking-[2px] mb-1 pl-4 uppercase">パイロット識別名</label>
+                                        <input type="text" className="input-field-nova w-full p-3 sm:p-4 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg sm:text-xl outline-none rounded" value={name} placeholder="名前を入力..." onChange={e => setName(e.target.value)} maxLength={10} />
+                                    </div>
+                                    {/* プライベート / パブリック選択 */}
+                                    {multiMode === null && (
+                                        <>
+                                            <button className="w-full p-5 rounded-lg border-2 border-accent/40 bg-accent/10 active:scale-95 transition-all text-left" onClick={() => setMultiMode('private')}>
+                                                <div className="font-['Orbitron'] font-black text-accent text-base tracking-[2px]">🔒 プライベート</div>
+                                                <div className="text-white/50 text-[11px] mt-1">ルームを作る・コードで入る</div>
+                                            </button>
+                                            <button className="w-full p-5 rounded-lg border-2 active:scale-95 transition-all text-left" style={{ borderColor: 'rgba(212,175,55,0.4)', background: 'rgba(212,175,55,0.08)' }}
+                                                onClick={() => { setMultiMode('public'); fetchPublicRooms(); }}>
+                                                <div className="font-['Orbitron'] font-black text-base tracking-[2px]" style={{ color: 'var(--steam-gold)' }}>🌐 パブリック</div>
+                                                <div className="text-white/50 text-[11px] mt-1">公開ルーム一覧から参加</div>
+                                            </button>
+                                        </>
+                                    )}
+                                    {/* プライベート: 作る/入る選択 */}
+                                    {multiMode === 'private' && (
+                                        <>
+                                            <button className="w-full p-4 rounded-lg border border-accent/30 bg-accent/5 active:scale-95 transition-all text-left" onClick={() => setMultiMode('create')}>
+                                                <div className="font-['Orbitron'] font-black text-accent text-sm tracking-[1px]">＋ ルームを作る</div>
+                                                <div className="text-white/40 text-[11px] mt-0.5">新しいルームを作成してコードを発行</div>
+                                            </button>
+                                            <button className="w-full p-4 rounded-lg border border-white/20 bg-white/5 active:scale-95 transition-all text-left" onClick={() => setMultiMode('join')}>
+                                                <div className="font-['Orbitron'] font-black text-white text-sm tracking-[1px]">→ ルームに入る</div>
+                                                <div className="text-white/40 text-[11px] mt-0.5">セクターコードを入力して参加</div>
+                                            </button>
+                                            <button className="w-full p-3 rounded border border-white/20 text-white/70 text-sm font-black tracking-[2px] active:bg-white/10" onClick={() => setMultiMode(null)}>← 戻る</button>
+                                        </>
+                                    )}
+                                    {/* ルームを作る */}
+                                    {multiMode === 'create' && (
+                                        <>
+                                            <div className="relative w-full flex flex-col">
+                                                <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-sm"></div>
+                                                <label className="input-label-tech font-['Orbitron'] text-[10px] font-black text-accent tracking-[2px] mb-1 pl-4 uppercase">ルーム名</label>
+                                                <input type="text" className="input-field-nova w-full p-3 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg outline-none rounded" value={roomName} placeholder={`${name || 'あなた'}のルーム`} onChange={e => setRoomName(e.target.value)} maxLength={20} />
+                                            </div>
+                                            <button className={`w-full p-3 rounded-lg flex items-center justify-between border-2 transition-all ${isPublic ? 'border-yellow-500/60 bg-yellow-500/10' : 'border-white/20 bg-white/5'}`} onClick={() => setIsPublic(!isPublic)}>
+                                                <div>
+                                                    <div className={`font-['Orbitron'] font-black text-sm ${isPublic ? 'text-yellow-400' : 'text-white/50'}`}>🌐 パブリックに公開</div>
+                                                    <div className="text-white/30 text-[10px] mt-0.5">ONにすると公開ルーム一覧に表示</div>
+                                                </div>
+                                                <div className={`w-10 h-6 rounded-full transition-all ${isPublic ? 'bg-yellow-500' : 'bg-white/20'}`}>
+                                                    <div className={`w-5 h-5 bg-white rounded-full mt-0.5 transition-all ${isPublic ? 'ml-5' : 'ml-0.5'}`} />
+                                                </div>
+                                            </button>
+                                            <button className={`w-full p-4 text-lg font-black rounded-sm active:scale-95 transition-transform ${(!isConnected || !name) ? 'bg-gray-600 opacity-50' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-black'}`} onClick={createRoom} disabled={!isConnected || !name}>ルームを作成</button>
+                                            <button className="w-full p-3 rounded border border-white/20 text-white/70 text-sm font-black active:bg-white/10" onClick={() => setMultiMode('private')}>← 戻る</button>
+                                        </>
+                                    )}
+                                    {/* ルームに入る */}
+                                    {multiMode === 'join' && (
+                                        <>
+                                            <div className="relative w-full flex flex-col">
+                                                <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-sm"></div>
+                                                <label className="input-label-tech font-['Orbitron'] text-[10px] font-black text-accent tracking-[2px] mb-1 pl-4 uppercase">セクターコード</label>
+                                                <input type="text" className="input-field-nova w-full p-3 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg outline-none rounded" value={room} placeholder="コードを入力..." onChange={e => setRoom(e.target.value.toUpperCase())} />
+                                            </div>
+                                            <button className={`w-full p-4 text-lg font-black rounded-sm active:scale-95 transition-transform ${(!isConnected || !name || !room) ? 'bg-gray-600 opacity-50' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-black'}`} onClick={join} disabled={!isConnected || !name || !room}>リンク開始</button>
+                                            <button className="w-full p-3 rounded border border-white/20 text-white/70 text-sm font-black active:bg-white/10" onClick={() => setMultiMode('private')}>← 戻る</button>
+                                        </>
+                                    )}
+                                    {/* パブリックルーム一覧 */}
+                                    {multiMode === 'public' && (
+                                        <>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <div className="font-['Orbitron'] text-[10px] text-accent/60 tracking-[2px] uppercase">公開ルーム一覧</div>
+                                                <button className="text-accent/60 text-[11px] font-black active:text-accent" onClick={fetchPublicRooms}>🔄 更新</button>
+                                            </div>
+                                            {loadingRooms ? (
+                                                <div className="text-center text-white/40 text-sm py-8">読み込み中...</div>
+                                            ) : publicRooms.length === 0 ? (
+                                                <div className="text-center text-white/30 text-sm py-8 border border-white/10 rounded-lg">公開ルームがありません</div>
+                                            ) : (
+                                                <div className="flex flex-col gap-2 max-h-[40vh] overflow-y-auto">
+                                                    {publicRooms.map(r => (
+                                                        <button key={r.id} className="w-full p-4 rounded-lg border border-white/20 bg-white/5 active:bg-white/10 transition-all text-left" onClick={() => { setRoom(r.id); join(); }}>
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="font-black text-white text-sm">{r.roomName}</div>
+                                                                <div className="text-accent font-['Orbitron'] text-[11px]">{r.playerCount}/{r.maxPlayers}人</div>
+                                                            </div>
+                                                            <div className="text-white/40 text-[11px] mt-0.5">ホスト: {r.hostName}</div>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <button className="w-full p-3 rounded border border-white/20 text-white/70 text-sm font-black active:bg-white/10" onClick={() => setMultiMode(null)}>← 戻る</button>
+                                        </>
+                                    )}
+                                    {/* 最上位の戻るボタン */}
+                                    {multiMode === null && (
+                                        <button className="w-full p-3 rounded border border-white/20 text-white/70 text-sm font-black active:bg-white/10 transition-all" onClick={() => setMenuMode(null)}>← 戻る</button>
+                                    )}
                                 </div>
-                                <button className={`w-full mt-1 p-4 text-lg font-black rounded-sm active:scale-95 transition-transform ${(!isConnected) ? 'bg-gray-600 opacity-50' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-black'}`} onClick={join} disabled={!isConnected}>{(!isConnected) ? '接続中...' : 'リンク開始'}</button>
-                            </div>
+                            )}
                         </div>
                         <div className="system-status-bar">
                             <span>STATUS: <span className={`status-tag ${(!isConnected) ? 'bg-red-600' : ''}`}>{(!isConnected) ? 'OFFLINE' : 'ONLINE'}</span></span>
+<<<<<<< HEAD
                              <span>VER: <span className="text-white/80 font-black">v1.5</span></span>
+=======
+                             <span>VER: <span className="text-white/80 font-black">v1.7</span></span>
+>>>>>>> 1377694d5af13b062bd325126feb787fc3701671
                             <span className="text-accent font-black cursor-pointer hover:opacity-70 transition-opacity text-[11px] tracking-[1px] font-['Orbitron']" onClick={() => setShowChangelog(true)}>📋 LOG</span>
                         </div>
 
@@ -845,10 +1045,40 @@ const App = () => {
                                     <div className="p-4 max-h-[60vh] overflow-y-auto space-y-5 text-[12px]">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
+<<<<<<< HEAD
                                                 <span className="font-['Orbitron'] font-black text-accent text-[11px]">v1.5</span>
                                                 <span className="text-white/30 text-[10px]">2026.05.08</span>
                                                 <span className="bg-accent/20 text-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-accent/30">LATEST</span>
                                             </div>
+=======
+                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v1.7</span>
+                                                <span className="text-white/30 text-[10px]">2026.05.08</span>
+                                                <span className="bg-accent/20 text-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-accent/30">LATEST</span>
+                                            </div>
+                                            <div className="text-white/30 text-[10px] mb-2">ロビー機能追加</div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🔒 プライベートルーム（ルーム名+コード発行）</li>
+                                                <li>🌐 パブリックルーム（公開一覧から参加）</li>
+                                                <li>👑 ホスト機能（CPU追加・削除）</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-accent/60 text-[11px]">v1.6</span>
+                                                <span className="text-white/30 text-[10px]">2026.05.08</span>
+                                            </div>
+                                            <div className="text-white/30 text-[10px] mb-2">1人/多人数メニュー分離</div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🤖 1人でプレイ（CPU人数選択→即開始）</li>
+                                                <li>👥 みんなでプレイを分離</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-accent/60 text-[11px]">v1.5</span>
+                                                <span className="text-white/30 text-[10px]">2026.05.08</span>
+                                            </div>
+>>>>>>> 1377694d5af13b062bd325126feb787fc3701671
                                             <div className="text-white/30 text-[10px] mb-2 pl-0">CPU個性・席順シャッフル実装</div>
                                             <ul className="space-y-1 text-white/70 pl-2">
                                                 <li>🤖 CPU全員に独自のプレイスタイルを実装</li>
@@ -938,6 +1168,12 @@ const App = () => {
                 ) : (gs?.status === 'waiting') ? (
                     <div className="h-full flex flex-col items-center justify-center p-4 text-center overflow-y-auto no-scrollbar">
                         <h2 className="text-[clamp(1.2rem,6.5vw,1.875rem)] font-black mb-3 tracking-[clamp(4px,2vw,10px)] font-['Orbitron'] text-white animate-pulse uppercase w-full text-center">同期待機中...</h2>
+                        {gs?.roomName && gs.roomName !== room && (
+                            <div className="text-white/50 font-black text-sm mb-1 tracking-[2px]">{gs.roomName}</div>
+                        )}
+                        {gs?.hostId === me?.id && (
+                            <div className="text-accent text-[10px] font-black tracking-[2px] mb-2">👑 あなたはホストです</div>
+                        )}
                         <div className="mb-5 px-6 py-3 bg-black/60 border border-accent/40 rounded-lg text-center">
                             <div className="text-[10px] font-black text-accent/60 tracking-[3px] uppercase mb-1">Room ID</div>
                             <div className="text-2xl font-black font-['Orbitron'] text-accent tracking-[6px]">{room}</div>
@@ -959,7 +1195,11 @@ const App = () => {
                                                 );
                                             })()}
                                             {p && i === 0 && <span className="bg-white text-black text-[10px] px-3 py-1 font-black rounded shadow-lg">マスター</span>}
+<<<<<<< HEAD
                                             {p && p.isBot && (gs?.players[0]?.id === socket?.id || gs?.players[0]?.name === name) && <button className="text-[10px] font-black text-red-400 border border-red-400/40 px-2 py-0.5 rounded hover:bg-red-400/10 transition-all" onClick={() => socket.emit('remove-cpu', { roomId: room, botId: p.id })}>削除</button>}
+=======
+                                            {p && p.isBot && gs?.hostId === me?.id && <button className="text-[10px] font-black text-red-400 border border-red-400/40 px-2 py-0.5 rounded hover:bg-red-400/10 transition-all" onClick={() => socket.emit('remove-cpu', { roomId: room, botId: p.id })}>削除</button>}
+>>>>>>> 1377694d5af13b062bd325126feb787fc3701671
                                         </div>
                                     </div>
                                 );
@@ -969,7 +1209,7 @@ const App = () => {
                             {(gs?.players[0]?.id === socket?.id || gs?.players[0]?.name === name) && (
                                 <>
                                     <div className="flex gap-3 w-full mb-3">
-                                        <button className="flex-1 py-4 bg-black/80 border border-white/40 text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm hover:bg-white/10 transition-all" disabled={gs?.players?.length >= 5} onClick={() => { playSE('play', muted); socket.emit('add-cpu', { roomId: room }); }}>🤖 CPU追加</button>
+                                        {gs?.hostId === me?.id && <button className="flex-1 py-4 bg-black/80 border border-white/40 text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm hover:bg-white/10 transition-all" disabled={gs?.players?.length >= 5} onClick={() => { playSE('play', muted); socket.emit('add-cpu', { roomId: room }); }}>🤖 CPU追加</button>}
                                         <button className="flex-[2] py-4 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-base rounded-sm shadow-2xl active:scale-95 transition-all" disabled={gs?.players?.length < 2} onClick={() => { playSE('start', muted); socket.emit('start-game', { roomId: room }); }}>ミッション開始</button>
                                     </div>
                                     <p className="text-[10px] text-white/40 mb-3 font-bold">💡 CPUはそれぞれ異なる戦略を持ちます。追加するたびにランダムで配置されます</p>

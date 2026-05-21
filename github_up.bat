@@ -4,9 +4,9 @@ setlocal enabledelayedexpansion
 :: ======================================================================
 :: 設定エリア
 :: ======================================================================
-set "SRC_DIR=J:\制作データ\ツール\crossrealm_test"
-set "DEST_DIR=J:\制作データ\ツール\crossrealm"
-set "BK_BASE_DIR=J:\制作データ\ツール\crossrealm_bk"
+set "SRC_DIR=J:\制作データ\tools\crossrealm_test"
+set "DEST_DIR=J:\制作データ\tools\crossrealm"
+set "BK_BASE_DIR=J:\制作データ\tools\crossrealm_bk"
 
 :: 実行時にコミットメッセージを入力させる（何も入力せずEnterを押した場合は自動メッセージ）
 set /p COMMIT_MSG="今回のコミットメッセージを入力してください: "
@@ -31,7 +31,7 @@ cd /d "%SRC_DIR%"
 call npx vite build --config vite.config.js
 
 :: /E を /MIR に変更し、テスト環境で削除されたファイルも同期先に反映させる
-robocopy "%SRC_DIR%" "%DEST_DIR%" /MIR /XD node_modules .git .backups old scratch
+robocopy "%SRC_DIR%" "%DEST_DIR%" /MIR /XD node_modules .git .backups old scratch .bat
 
 echo.
 echo ======================================================================
