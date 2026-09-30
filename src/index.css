@@ -107,20 +107,8 @@ body {
 
 
 @keyframes pulse-shimmer {
-
-    0%,
-    100% {
-        opacity: 0.6;
-        filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
-        transform: scale(1);
-    }
-
-    50% {
-        opacity: 1;
-        filter: drop-shadow(0 0 8px #fff) brightness(1.5);
-        transform: scale(1.1);
-        color: #fff;
-    }
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50%      { opacity: 1;   transform: scale(1.1); }
 }
 
 /* === 驕ｨ・ｶ隶鯉ｽｵ邵ｺ・ｮ郢ｧ・ｫ郢晢ｽｼ郢晏ｳｨ縺顔ｹ晁ｼ斐♂郢ｧ・ｯ郢晏現縺・ｹ昜ｹ斟鍋ｹ晢ｽｼ郢ｧ・ｷ郢晢ｽｧ郢晢ｽｳ === */
@@ -1016,8 +1004,8 @@ body {
 
 
 @keyframes turn-glow-pulse {
-    0%, 100% { border-color: var(--accent); opacity: 0.8; }
-    50% { border-color: rgba(255, 255, 255, 0.8); opacity: 1; }
+    0%, 100% { opacity: 0.8; }
+    50%      { opacity: 1; }
 }
 
 
@@ -1091,21 +1079,14 @@ body {
 }
 
 @keyframes playable-card-pulse-fast {
-
-    0%,
-    100% {
-        transform: translateY(0);
-        filter: drop-shadow(0 0 5px rgba(64, 224, 208, 0.4));
-    }
-
-    50% {
-        transform: translateY(-4px);
-        filter: drop-shadow(0 0 15px rgba(64, 224, 208, 0.8));
-    }
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
 }
 
 .card-anchor.playable.is-my-turn {
     animation: playable-card-pulse-fast 2s infinite ease-in-out;
+    filter: drop-shadow(0 0 10px rgba(64, 224, 208, 0.6)); /* 光は静止させ、上下の動きだけアニメーション */
+    will-change: transform;
 }
 
 .my-turn-hand-fx {
@@ -1997,16 +1978,8 @@ body {
 }
 
 @keyframes pulse-shimmer {
-    0%, 100% {
-        opacity: 0.6;
-        filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
-        transform: scale(1);
-    }
-    50% {
-        opacity: 1;
-        filter: drop-shadow(0 0 8px #fff) brightness(1.5);
-        transform: scale(1.1);
-    }
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50%      { opacity: 1;   transform: scale(1.1); }
 }
 
 /* === iPad/Tablet Scaling Adjustments === */

@@ -134,7 +134,7 @@ crossrealm/
 ├── package.json
 ├── vite.config.js / tailwind.config.js / postcss.config.cjs
 ├── public/
-│   └── ogp.png               # OGP / Twitterカード画像
+│   └── ogp.jpg               # OGP / Twitterカード画像
 ├── test/                     # テスト (npm test)
 ├── src/
 │   ├── App.jsx               # フロントエンド本体 (React)
