@@ -370,6 +370,11 @@ const shouldStartLight = () => {
 };
 
 const REALM_TINTS = ['steam', 'fantasy', 'cyber', 'void'];
+
+// 再接続用の合言葉（トークン）。同じ名前で入り直したときに、本人だけが元の席に戻れるようにする
+const tokenKey = (roomId) => `crossrealm_token_${roomId}`;
+const loadToken = (roomId) => { try { return localStorage.getItem(tokenKey(roomId)) || undefined; } catch (e) { return undefined; } };
+const saveToken = (roomId, token) => { try { localStorage.setItem(tokenKey(roomId), token); } catch (e) { /* 保存できない環境では再接続できないだけ */ } };
 const tintOf = (theme) => (theme ? (theme.startsWith('void') ? 'void' : theme) : null);
 
 // 勝利時の紙吹雪（一度だけ降る）
@@ -621,7 +626,7 @@ const App = () => {
         socket.emit('join-room', { roomId: newRoomId, playerName: name, roomName: roomName || `${name}のルーム`, isPublic });
     }, [name, roomName, isPublic, muted]);
 
-    const join = useCallback(() => { if (room && name) { playSE('start', muted); setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name }); } }, [room, name, muted]);
+    const join = useCallback(() => { if (room && name) { playSE('start', muted); setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name, token: loadToken(room.toUpperCase()) }); } }, [room, name, muted]);
     const startSolo = useCallback((cpuCount, playerName, mode) => {
         if (!playerName) return;
         const soloRoomId = 'SOLO_' + Math.random().toString(36).substr(2, 6).toUpperCase();
@@ -711,6 +716,8 @@ const App = () => {
     useEffect(() => {
         socket.on('connect', () => { setIsConnected(true); setIsDisconnected(false); });
         socket.on('update-game', (data) => { setGs(data); });
+        socket.on('joined', ({ roomId, token }) => { if (roomId && token) saveToken(roomId, token); });
+        socket.on('join-error', ({ message }) => { setJoined(false); setGs(null); window.alert(message); });
         socket.on('disconnect', (reason) => { setIsConnected(false); setIsDisconnected(true); });
         const initAudio = () => {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -723,7 +730,7 @@ const App = () => {
         const handleUnload = () => { if (socket.connected) socket.disconnect(); };
         window.addEventListener('beforeunload', handleUnload);
         return () => {
-            socket.off('update-game'); socket.off('disconnect'); socket.off('connect');
+            socket.off('update-game'); socket.off('disconnect'); socket.off('connect'); socket.off('joined'); socket.off('join-error');
             document.removeEventListener('click', initAudio); document.removeEventListener('touchstart', initAudio);
             window.removeEventListener('beforeunload', handleUnload);
             [entryAnimTimerRef, cutinTimerRef, vfxTimerRef, newlyDrawnTimerRef,

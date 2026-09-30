@@ -7,6 +7,7 @@ const ranking = require('./ranking');
 
 const app = express();
 const path = require('path');
+const crypto = require('crypto');
 app.use(cors());
 
 // デバッグ: dist/の存在チェック
@@ -98,7 +99,7 @@ const NG_WORDS = [
 ];
 
 function filterName(name) {
-  if (!name) return 'Pilot';
+  if (typeof name !== 'string' || !name) return 'Pilot';
 
   // 1. Unicode正規化 (結合文字対策など)
   let n = name.normalize('NFKC');
@@ -615,6 +616,23 @@ const BOT_PERSONALITIES = {
   'Xenon':  'SABOTEUR',
 };
 
+// クライアントから来た roomId を検証して部屋を返す（不正な値なら null）
+function roomFor(data) {
+  if (!data || typeof data.roomId !== 'string') return null;
+  return rooms[data.roomId.toUpperCase()] || null;
+}
+
+// 同じ部屋で使われていない名前にする（例: Kael → Kael2）。10文字制限は守る
+function uniqueName(room, name) {
+  if (!room.players.some(p => p.name === name)) return name;
+  for (let n = 2; n < 100; n++) {
+    const suffix = String(n);
+    const candidate = name.substring(0, 10 - suffix.length) + suffix;
+    if (!room.players.some(p => p.name === candidate)) return candidate;
+  }
+  return name;
+}
+
 // 試合（マッチ）を開始する。最初の試合（start-game）と次の試合（play-again）で共通
 function startMatch(room) {
   room.deck = createDeck();
@@ -650,13 +668,18 @@ function startMatch(room) {
 }
 
 io.on('connection', (socket) => {
-  socket.on('join-room', (data) => {
-    if (!data || !data.roomId) return;
+  // どのイベントで例外が起きてもサーバー全体が落ちないようにする
+  const on = (event, handler) => socket.on(event, (...args) => {
+    try { handler(...args); } catch (e) { console.error(`[ERROR] ${event}:`, e); }
+  });
+
+  on('join-room', (data) => {
+    if (!data || typeof data.roomId !== 'string' || !data.roomId || data.roomId.length > 32) return;
     const rid = data.roomId.toUpperCase();
     console.log(`[SYSTEM] Join Request: Room=${rid}, Player=${data.playerName}`);
 
     if (!rooms[rid]) {
-      rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], currentTurnPlayerId: null, matchCount: 1, maxMatches: 5, isSeriesFinished: false, roomName: data.roomName || rid, isPublic: data.isPublic || false, hostId: null, mode: data.mode === 'streak' ? 'streak' : 'series', streak: 0 };
+      rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], currentTurnPlayerId: null, matchCount: 1, maxMatches: 5, isSeriesFinished: false, roomName: (typeof data.roomName === 'string' && data.roomName.substring(0, 30)) || rid, isPublic: data.isPublic === true, hostId: null, mode: data.mode === 'streak' ? 'streak' : 'series', streak: 0 };
       console.log(`[SYSTEM] New Room Created: ${rid}`);
     }
 
@@ -666,14 +689,16 @@ io.on('connection', (socket) => {
     // NGワードフィルタを適用
     const sanitizedName = filterName(data.playerName);
 
-    // 同名のプレイヤーがいるかチェック（再接続対応）
-    const existingPlayer = room.players.find(p => p.name === sanitizedName);
+    // 再接続: 同じ名前で、入室時に渡した合言葉（トークン）が一致する場合だけ席を引き継ぐ
+    const existingPlayer = room.players.find(p => p.name === sanitizedName && !p.isBot
+      && p.reconnectToken && typeof data.token === 'string' && p.reconnectToken === data.token);
 
     if (existingPlayer) {
       console.log(`[SYSTEM] Reconnecting Player: ${existingPlayer.name} (ID: ${existingPlayer.id} -> ${socket.id})`);
       if (room.hostId === existingPlayer.id) room.hostId = socket.id;
       existingPlayer.id = socket.id;
       socket.join(rid);
+      socket.emit('joined', { roomId: rid, token: existingPlayer.reconnectToken });
       broadcastRoomState(rid);
 
       // もしその人のターンだったら、AIかどうかチェックして進行させる（念のため）
@@ -683,22 +708,26 @@ io.on('connection', (socket) => {
       return;
     }
 
-    if (room.players.length >= 5) return;
+    // 新しいプレイヤーはロビー待機中の部屋にだけ入れる（対戦中に手札0枚で入ると即勝利扱いになるため）
+    const reject = (message) => socket.emit('join-error', { message });
+    if (room.status !== 'waiting') return reject('このルームは対戦中のため参加できません');
+    if (room.players.length >= 5) return reject('このルームは満員です（最大5人）');
     // 連勝モードは1人プレイ専用
-    if (room.mode === 'streak' && room.players.some(p => !p.isBot)) return;
+    if (room.mode === 'streak' && room.players.some(p => !p.isBot)) return reject('このルームには参加できません');
 
-    const newPlayer = { id: socket.id, name: sanitizedName, hand: [], handCount: 0, isBot: false, isEliminated: false, score: 0, ready: false };
+    const newPlayer = { id: socket.id, name: uniqueName(room, sanitizedName), hand: [], handCount: 0, isBot: false, isEliminated: false, score: 0, ready: false, reconnectToken: crypto.randomUUID() };
     room.players.push(newPlayer);
     // 最初の参加者をホストに設定
     if (!room.hostId) room.hostId = socket.id;
     socket.join(rid);
+    socket.emit('joined', { roomId: rid, token: newPlayer.reconnectToken });
 
     console.log(`[SYSTEM] Player ${newPlayer.name} joined ${rid}. Total players: ${room.players.length}`);
     broadcastRoomState(rid);
   });
 
-  socket.on('add-cpu', (data) => {
-    const room = rooms[data.roomId.toUpperCase()];
+  on('add-cpu', (data) => {
+    const room = roomFor(data);
     if (room && room.status === 'waiting' && room.hostId === socket.id && room.players.length < 5) {
       // 被っていない名前をプールから選ぶ
       const usedNames = room.players.map(p => p.name.replace(' (AI)', ''));
@@ -724,8 +753,8 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('remove-cpu', (data) => {
-    const room = rooms[data.roomId.toUpperCase()];
+  on('remove-cpu', (data) => {
+    const room = roomFor(data);
     if (room && room.status === 'waiting' && room.hostId === socket.id) {
       const idx = room.players.findIndex(p => p.id === data.botId);
       if (idx !== -1 && room.players[idx].isBot) {
@@ -736,9 +765,9 @@ io.on('connection', (socket) => {
   });
 
 
-  socket.on('start-game', (data) => {
+  on('start-game', (data) => {
     try {
-      const room = rooms[data.roomId.toUpperCase()];
+      const room = roomFor(data);
       // 開始できるのはロビー待機中のホストのみ
       if (room && room.status === 'waiting' && room.hostId === socket.id && room.players.length >= 2) {
         startMatch(room);
@@ -746,9 +775,9 @@ io.on('connection', (socket) => {
     } catch (e) { console.error("[ERROR] start-game:", e); }
   });
 
-  socket.on('play-card', (data) => {
+  on('play-card', (data) => {
     try {
-      const room = rooms[data.roomId.toUpperCase()];
+      const room = roomFor(data);
       if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
       // WILDアニメーションロック中はアクション拒否
       if (room.wildAnimLockUntil && Date.now() < room.wildAnimLockUntil) return;
@@ -801,9 +830,9 @@ io.on('connection', (socket) => {
     } catch (e) { console.error("[ERROR] play-card:", e); }
   });
 
-  socket.on('draw-card', (data) => {
+  on('draw-card', (data) => {
     try {
-      const room = rooms[data.roomId.toUpperCase()];
+      const room = roomFor(data);
       if (!room || room.status !== 'playing' || room.players[room.turnIndex].id !== socket.id) return;
       // WILDアニメーションロック中はアクション拒否
       if (room.wildAnimLockUntil && Date.now() < room.wildAnimLockUntil) return;
@@ -835,8 +864,8 @@ io.on('connection', (socket) => {
     } catch (e) { console.error("[ERROR] draw-card:", e); }
   });
 
-  socket.on('play-again', (data) => {
-    const room = rooms[data.roomId.toUpperCase()];
+  on('play-again', (data) => {
+    const room = roomFor(data);
     if (room && room.status === 'finished') {
       const player = room.players.find(p => p.id === socket.id);
       if (player) {
@@ -866,7 +895,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('leave-room', (data) => { if (data.roomId) handlePlayerExit(socket, data.roomId.toUpperCase()); });
+  on('leave-room', (data) => { const room = roomFor(data); if (room) handlePlayerExit(socket, room.id); });
   socket.on('disconnect', () => { for (const rid in rooms) handlePlayerExit(socket, rid); });
 });
 

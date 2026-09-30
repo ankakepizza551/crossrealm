@@ -110,15 +110,83 @@ test('ホストが抜けると残った人間プレイヤーにホストが移�
   await playing;
 });
 
-test('ホストが同じ名前で再接続してもホストのまま', async () => {
+// join-room を送り、サーバーから渡される再接続用トークンを受け取る
+function joinWithToken(client, roomId, playerName, token) {
+  const joined = new Promise(resolve => client.once('joined', resolve));
+  client.emit('join-room', { roomId, playerName, token });
+  return joined;
+}
+
+test('ホストが同じ名前・同じトークンで再接続してもホストのまま', async () => {
   const roomId = 'RECONNECT';
   const first = await connect();
-  await joinRoom(first, roomId, 'Host', 1);
+  const { token } = await joinWithToken(first, roomId, 'Host');
+  assert.equal(typeof token, 'string');
 
-  // 切断を検知される前に、新しい接続で同じ名前のまま入り直す
+  // 切断を検知される前に、新しい接続で同じ名前・同じトークンのまま入り直す
   const second = await connect();
-  const state = await joinRoom(second, roomId, 'Host', 1);
-  assert.equal(state.hostId, second.id);
+  const state = waitForState(second, s => s.players.length === 1, '再接続');
+  const again = await joinWithToken(second, roomId, 'Host', token);
+  assert.equal(again.token, token);
+  assert.equal((await state).hostId, second.id);
+});
+
+test('同じ名前でもトークンがなければ席を乗っ取れず、別名で参加になる', async () => {
+  const roomId = 'NOHIJACK';
+  const host = await connect();
+  await joinWithToken(host, roomId, 'Host');
+  const intruder = await connect();
+  const state = waitForState(intruder, s => s.players.length === 2, '別名で参加');
+  await joinWithToken(intruder, roomId, 'Host', 'wrong-token');
+  const s = await state;
+  assert.deepEqual(s.players.map(p => p.name).sort(), ['Host', 'Host2']);
+  assert.equal(s.hostId, host.id, 'ホストは元の接続のまま');
+  assert.equal(rooms[roomId].players.find(p => p.name === 'Host').id, host.id);
+});
+
+test('CPUと同じ名前で入ってもCPUの席は乗っ取れない', async () => {
+  const roomId = 'NOBOTHIJACK';
+  const host = await connect();
+  await joinWithToken(host, roomId, 'Host');
+  const withCpu = waitForState(host, s => s.players.length === 2, 'CPU追加');
+  host.emit('add-cpu', { roomId });
+  const botName = (await withCpu).players.find(p => p.isBot).name;
+
+  const intruder = await connect();
+  const state = waitForState(intruder, s => s.players.length === 3, '別名で参加');
+  await joinWithToken(intruder, roomId, botName);
+  const players = (await state).players;
+  assert.equal(players.filter(p => p.isBot).length, 1, 'CPUはCPUのまま');
+  assert.equal(players.filter(p => p.name === botName).length, 1, '名前は重複しない');
+});
+
+test('対戦中のルームには新しいプレイヤーは入れない', async () => {
+  const roomId = 'NOMIDJOIN';
+  const host = await connect();
+  await joinWithToken(host, roomId, 'Host');
+  const playing = waitForState(host, s => s.status === 'playing', '試合開始');
+  host.emit('add-cpu', { roomId });
+  host.emit('start-game', { roomId });
+  await playing;
+
+  const late = await connect();
+  const error = new Promise(resolve => late.once('join-error', resolve));
+  late.emit('join-room', { roomId, playerName: 'Late' });
+  assert.match((await error).message, /対戦中/);
+  assert.equal(rooms[roomId].players.length, 2);
+});
+
+test('不正なメッセージを送られてもサーバーは落ちない', async () => {
+  const bad = await connect();
+  const payloads = [undefined, null, {}, { roomId: 123 }, { roomId: null }, { roomId: 'NOPE' }, { roomId: 'x'.repeat(100), playerName: 42 }];
+  for (const ev of ['join-room', 'add-cpu', 'remove-cpu', 'start-game', 'play-card', 'draw-card', 'play-again', 'leave-room']) {
+    for (const data of payloads) bad.emit(ev, data);
+  }
+  await settle();
+  // その後も普通に部屋を作って遊べる
+  const ok = await connect();
+  const { token } = await joinWithToken(ok, 'AFTERBAD', 'Pilot');
+  assert.ok(token);
 });
 
 test('次のマッチへ: 全員が準備完了すると手札を配り直して次の試合が始まる', async () => {
