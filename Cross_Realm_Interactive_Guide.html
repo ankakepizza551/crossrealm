@@ -1287,6 +1287,7 @@
 
                     <div className="sticky-header">
                         <div className="nav-link" onClick={() => scrollTo('section-lore')}>Realms</div>
+                        <div className="nav-link" onClick={() => scrollTo('section-modes')}>Modes</div>
                         <div className="nav-link" onClick={() => scrollTo('section-rules')}>Rules</div>
                         <div className="nav-link" onClick={() => scrollTo('section-tactics')}>Tactics</div>
                         <div className="nav-link" onClick={() => scrollTo('section-special')}>Special</div>
@@ -1344,6 +1345,49 @@
                         </div>
 
                         {/* Core Rules Summary Section */}
+                        {/* Game Modes Section */}
+                        <div id="section-modes" className="guide-section">
+                            <h2 className="section-title text-[var(--accent)]">
+                                Game Modes
+                                <span className="block text-[0.45em] opacity-80 tracking-[6px] mt-2">ゲームモード</span>
+                            </h2>
+                            <div className="bg-black/50 p-6 md:p-8 rounded-xl border border-white/10 text-left max-w-2xl mx-auto shadow-2xl backdrop-blur-md">
+                                <ul className="space-y-4 text-white/90 font-bold leading-relaxed">
+                                    <li className="flex items-start bg-white/5 p-4 rounded-lg border border-white/10 shadow-lg">
+                                        <span className="font-black text-xl mr-4 mt-1">🤖</span>
+                                        <div className="flex-1">
+                                            <div className="text-lg font-black mb-1" style={{ color: 'var(--accent)' }}>1人でプレイ</div>
+                                            <div className="text-sm text-white/70 font-bold">CPUの人数（1〜4人）を選んで「出撃」を押すと、すぐに対戦が始まります。全5戦のシリーズ合計スコアはランキングに登録されます。</div>
+                                        </div>
+                                    </li>
+
+                                    <li className="flex items-start bg-white/5 p-4 rounded-lg border border-white/10 shadow-lg">
+                                        <span className="font-black text-xl mr-4 mt-1">🔥</span>
+                                        <div className="flex-1">
+                                            <div className="text-lg font-black mb-1" style={{ color: '#fca5a5' }}>連勝モード</div>
+                                            <div className="text-sm text-white/70 font-bold">1人専用のCPU戦です。1位を取り続ける限り試合が続き、1位を逃した時点で終了。そこまでの連勝数がランキングに登録されます。</div>
+                                        </div>
+                                    </li>
+
+                                    <li className="flex items-start bg-white/5 p-4 rounded-lg border border-white/10 shadow-lg">
+                                        <span className="font-black text-xl mr-4 mt-1">👥</span>
+                                        <div className="flex-1">
+                                            <div className="text-lg font-black mb-1" style={{ color: 'var(--steam-gold)' }}>みんなでプレイ</div>
+                                            <div className="text-sm text-white/70 font-bold"><span className="text-white">プライベート</span>: ルームを作るとルームコードが発行されます。友達にコードを伝えて「ルームに入る」から参加してもらいます。<br /><span className="text-white">パブリック</span>: ルーム作成時に「パブリックに公開」をONにすると、公開ルーム一覧から誰でも参加できます。</div>
+                                        </div>
+                                    </li>
+
+                                    <li className="flex items-start bg-white/5 p-4 rounded-lg border border-white/10 shadow-lg">
+                                        <span className="font-black text-xl mr-4 mt-1">🏆</span>
+                                        <div className="flex-1">
+                                            <div className="text-lg font-black mb-1" style={{ color: '#fde047' }}>ランキング</div>
+                                            <div className="text-sm text-white/70 font-bold">「シリーズ合計スコア」と「連勝記録」の2種類を、歴代・今週・今日で確認できます。上位にはメダルが表示されます。</div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
                         <div id="section-rules" className="guide-section">
                             <h2 className="section-title text-[var(--steam-gold)]" style={{ textShadow: '0 0 15px rgba(212,175,55,0.6)' }}>
                                 Core Rules Summary
@@ -1379,6 +1423,15 @@
                                         </div>
                                     </li>
 
+                                    {/* Rule 2c: Time Limit */}
+                                    <li className="flex items-start bg-white/5 p-4 rounded-lg border border-white/10 shadow-lg">
+                                        <span className="text-[var(--accent)] font-black text-xl mr-4 mt-1">⏱</span>
+                                        <div className="flex-1">
+                                            <div className="text-lg font-black text-white mb-1">手番の制限時間は <span className="text-[var(--accent)]">60秒</span></div>
+                                            <div className="text-sm text-white/60 font-bold">時間内に操作しないと自動でドロー（ドロー攻撃中はその枚数）して、次のプレイヤーに手番が移ります。</div>
+                                        </div>
+                                    </li>
+
                                     {/* Rule 3: Scoring */}
                                     <li className="flex items-start bg-blue-900/30 p-4 rounded-lg border border-blue-500/30 shadow-lg">
                                         <span className="text-blue-400 font-black text-xl mr-4 mt-1">📊</span>
@@ -1408,7 +1461,7 @@
                                     <li className="flex items-start bg-gradient-to-r from-yellow-500/20 to-transparent p-4 rounded-lg border border-yellow-500/30 shadow-lg">
                                         <span className="text-yellow-400 font-black text-xl mr-4 mt-1">🏆</span>
                                         <div className="flex-1">
-                                            <div className="text-lg font-black text-yellow-400 mb-1">マッチの最終勝利</div>
+                                            <div className="text-lg font-black text-yellow-400 mb-1">シリーズの最終勝利</div>
                                             <div className="text-sm text-white/90">全 <span className="text-yellow-400 font-black">5ラウンド</span> を戦い抜き、最終的な獲得ポイントが最も多いプレイヤーが総合優勝となります。</div>
                                         </div>
                                     </li>
@@ -1483,7 +1536,7 @@
                                         <h3 className="text-xl font-black text-[#DDA0DD] mb-2 tracking-widest pointer-events-none">🤖 機械 (S) [REVERSE] <span className="text-sm font-normal text-white/40 ml-2">(属性9枚中 2枚)</span></h3>
                                         <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none mb-2">手番の進行方向（時計回り↔反時計回り）を反転させます。中央のサイクル図の矢印もリアルタイムに反転します。2人プレイ時は相手の手番をスキップして連続で自分のターンになります。（クリックで試す）</p>
                                         <div className="text-xs text-white/60 bg-black/40 p-2 rounded border-l-2 border-purple-500">
-                                            💡 <strong>戦略:</strong> 次のプレイヤーをスキップしたい時や、連続攻撃を避けたい時に有効。
+                                            💡 <strong>戦略:</strong> 手札が少ない相手に番が回るのを遅らせたい時に有効。2人戦では連続ターンで一気に手札を減らせる。※ドロー攻撃を受けている間は出せない（重ねられるのは歯車(S)のみ）
                                         </div>
                                     </div>
                                 </div>
@@ -1504,7 +1557,7 @@
                                     <div className="flex items-center gap-6 bg-black/40 p-4 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 hover:border-white/30 transition-all transform hover:-translate-y-1" onClick={() => triggerSpecial('PLANET')}>
                                         <div className="pointer-events-none"><CardView realmKey="PLANET" /></div>
                                         <div className="flex-1">
-                                            <h3 className="text-xl font-black text-white mb-2 tracking-widest pointer-events-none">🪐 惑星 [PURE WILD] <span className="text-sm font-normal text-white/40 ml-2">(3/51)</span></h3>
+                                            <h3 className="text-xl font-black text-white mb-2 tracking-widest pointer-events-none">🪐 惑星 [PURE WILD] <span className="text-sm font-normal text-white/40 ml-2">(3/54)</span></h3>
                                             <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none">どの場でも出せる万能カードです。このカードであがると「WILDボーナス」として獲得スコアが1.2倍になります。</p>
                                         </div>
                                     </div>
@@ -1512,7 +1565,7 @@
                                     <div className="flex items-center gap-6 bg-black/40 p-4 rounded-lg border border-white/5 cursor-pointer hover:bg-white/10 hover:border-white/30 transition-all transform hover:-translate-y-1" onClick={() => triggerSpecial('RUINS')}>
                                         <div className="pointer-events-none"><CardView realmKey="RUINS" /></div>
                                         <div className="flex-1">
-                                            <h3 className="text-xl font-black text-[#CCCCCC] mb-2 tracking-widest pointer-events-none">🏛️ 廃墟 [PURE WILD] <span className="text-sm font-normal text-white/40 ml-2">(3/51)</span></h3>
+                                            <h3 className="text-xl font-black text-[#CCCCCC] mb-2 tracking-widest pointer-events-none">🏛️ 廃墟 [PURE WILD] <span className="text-sm font-normal text-white/40 ml-2">(3/54)</span></h3>
                                             <p className="text-sm text-white/80 font-bold leading-relaxed pointer-events-none">惑星と同様、いつでも出せます。惑星と同じく1.2倍の「WILDボーナス」が適用されます。</p>
                                         </div>
                                     </div>
@@ -1556,28 +1609,28 @@
                                                 <div className="flex-1 space-y-4">
                                                     <h3 className="text-xl font-black text-white flex items-center gap-2">
                                                         <span className="w-1.5 h-6 bg-[var(--accent)] rounded-full"></span>
-                                                        セットアップ画面
+                                                        トップ画面
                                                     </h3>
                                                     <p className="text-white/70 text-sm leading-relaxed font-bold">
-                                                        ゲームを開始するための初期設定画面です。サーバーに接続してパイロットとしての識別情報を登録します。
+                                                        遊び方を選ぶ最初の画面です。モードを選ぶと、次の画面でパイロット識別名（プレイヤー名）を入力します。
                                                     </p>
                                                     <ul className="space-y-3">
                                                         <li className="flex items-start gap-3 bg-white/5 p-3 rounded border border-white/5 hover:border-white/20 transition-colors">
                                                             <span className="text-[var(--accent)] font-black text-xs bg-white/10 px-1.5 py-0.5 rounded">01</span>
-                                                            <div className="text-sm"><span className="text-white font-black">パイロット識別名</span>: 自分の名前を登録します。10文字以内で、不適切な言葉は自動的に拒否されます。</div>
+                                                            <div className="text-sm"><span className="text-white font-black">モード選択</span>: 「1人でプレイ」「連勝モード」「みんなでプレイ」「ランキング」から選びます（詳しくは Game Modes を参照）。</div>
                                                         </li>
                                                         <li className="flex items-start gap-3 bg-white/5 p-3 rounded border border-white/5 hover:border-white/20 transition-colors">
                                                             <span className="text-[var(--accent)] font-black text-xs bg-white/10 px-1.5 py-0.5 rounded">02</span>
-                                                            <div className="text-sm"><span className="text-white font-black">セクターコード</span>: 合言葉（ルームID）です。友人と揃えることで同じ対戦ルームに入れます。</div>
+                                                            <div className="text-sm"><span className="text-white font-black">パイロット識別名</span>: モード選択後に入力する自分の名前です。10文字以内で、不適切な言葉は自動的に「Pilot」に置き換えられます。</div>
                                                         </li>
                                                         <li className="flex items-start gap-3 bg-white/5 p-3 rounded border border-white/5 hover:border-white/20 transition-colors">
                                                             <span className="text-[var(--accent)] font-black text-xs bg-white/10 px-1.5 py-0.5 rounded">03</span>
-                                                            <div className="text-sm"><span className="text-white font-black">リンク開始</span>: 入力完了後、このボタンで次元接続（ログイン）を開始します。</div>
+                                                            <div className="text-sm"><span className="text-white font-black">画面下部・右上のボタン</span>: 「📋 LOG」で更新履歴、✨/🍃で軽量モード、🔊で効果音を切り替えられます。</div>
                                                         </li>
                                                     </ul>
                                                 </div>
                                                 <div className="w-full md:w-[350px] rounded-xl border-4 border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)] overflow-hidden bg-black/40 group relative">
-                                                    <img src="./guide_ss_top.webp" className="w-full h-auto opacity-90 group-hover:opacity-100 transition-opacity" alt="Actual Setup Screen" />
+                                                    <img src="./guide_ss_top.webp" className="w-full h-auto opacity-90 group-hover:opacity-100 transition-opacity" alt="Actual Top Screen" />
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-20 transition-opacity"></div>
                                                     <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/60 rounded text-[9px] text-white/40 font-mono">CAPTURED_INTERFACE: TITLE</div>
                                                 </div>
@@ -1594,20 +1647,20 @@
                                                         待機ロビー画面
                                                     </h3>
                                                     <p className="text-white/70 text-sm leading-relaxed font-bold">
-                                                        他のプレイヤーの参加を待つ画面です。ホスト（マスター）は対戦の構成を管理できます。
+                                                        他のプレイヤーの参加を待つ画面です。ルームコードを友達に伝えて参加してもらいます。最初に入室したプレイヤーがホスト（マスター）になり、対戦の構成を管理できます。
                                                     </p>
                                                     <ul className="space-y-3">
                                                         <li className="flex items-start gap-3 bg-white/5 p-3 rounded border border-white/5 hover:border-white/20 transition-colors">
                                                             <span className="text-[var(--steam-gold)] font-black text-xs bg-white/10 px-1.5 py-0.5 rounded">01</span>
-                                                            <div className="text-sm"><span className="text-white font-black">プレイヤーリスト</span>: 現在接続中のメンバーが表示されます。最大5人まで参加可能です。</div>
+                                                            <div className="text-sm"><span className="text-white font-black">プレイヤーリスト</span>: 現在接続中のメンバーが表示されます。最大5人まで参加可能です。ホストには「マスター」バッジが付きます。</div>
                                                         </li>
                                                         <li className="flex items-start gap-3 bg-white/5 p-3 rounded border border-white/5 hover:border-white/20 transition-colors">
                                                             <span className="text-[var(--steam-gold)] font-black text-xs bg-white/10 px-1.5 py-0.5 rounded">02</span>
-                                                            <div className="text-sm"><span className="text-white font-black">CPU追加</span>: 空きスロットにAIプレイヤーを追加します。各CPUは固有のプレイスタイル（⚔️アタッカー / 🧠ストラテジスト / 🌀ワイルダー / ⚡スピードスター / 💣サボタージュ）を持ち、ロビーにバッジで表示されます。また毎戦席順がランダムにシャッフルされます。</div>
+                                                            <div className="text-sm"><span className="text-white font-black">CPU追加</span>: 空きスロットにAIプレイヤーを追加します（追加・削除はホストのみ）。各CPUは固有のプレイスタイル（⚔️アタッカー / 🧠ストラテジスト / 🌀ワイルダー / ⚡スピードスター / 💣サボタージュ）を持ち、ロビーにバッジで表示されます。また毎戦席順がランダムにシャッフルされます。</div>
                                                         </li>
                                                         <li className="flex items-start gap-3 bg-white/5 p-3 rounded border border-white/5 hover:border-white/20 transition-colors">
                                                             <span className="text-[var(--steam-gold)] font-black text-xs bg-white/10 px-1.5 py-0.5 rounded">03</span>
-                                                            <div className="text-sm"><span className="text-white font-black">ミッション開始</span>: マスター権限を持つプレイヤーのみが、全員の準備完了後に押下できます。</div>
+                                                            <div className="text-sm"><span className="text-white font-black">ミッション開始</span>: ホストのみが押せます（2人以上で開始可能）。ホストが退室した場合は、残っているプレイヤーにホストが引き継がれます。</div>
                                                         </li>
                                                     </ul>
                                                 </div>
@@ -1664,12 +1717,12 @@
                                                         リザルト画面
                                                     </h3>
                                                     <p className="text-white/70 text-sm leading-relaxed font-bold">
-                                                        ラウンド終了時、および5ラウンド終了時の最終結果が表示されます。
+                                                        各戦の終了時と、5戦（シリーズ）終了時の最終結果が表示されます。全員が「次のマッチへ」を押すと次の戦が始まります。
                                                     </p>
                                                     <ul className="space-y-3">
                                                         <li className="flex items-start gap-3 bg-white/5 p-3 rounded border border-white/5 hover:border-white/20 transition-colors">
                                                             <span className="text-yellow-400 font-black text-xs bg-white/10 px-1.5 py-0.5 rounded">01</span>
-                                                            <div className="text-sm"><span className="text-white font-black">ランキングバー</span>: 1位から順にスコアが並びます。勝者のポイント加算やバースト減点もここで確認。</div>
+                                                            <div className="text-sm"><span className="text-white font-black">表彰台</span>: 順位ごとに残り枚数と合計スコア（★）が並びます。勝者の獲得ポイントやバースト減点もここで確認。</div>
                                                         </li>
                                                         <li className="flex items-start gap-3 bg-white/5 p-3 rounded border border-white/5 hover:border-white/20 transition-colors">
                                                             <span className="text-yellow-400 font-black text-xs bg-white/10 px-1.5 py-0.5 rounded">02</span>
@@ -1758,7 +1811,7 @@
                                         </li>
                                         <li className="flex items-start gap-2">
                                             <span className="text-purple-500 font-black">•</span>
-                                            <span><strong className="text-purple-300">REVERSE</strong>で攻撃を回避したり連続ターンを獲得</span>
+                                            <span><strong className="text-purple-300">REVERSE</strong>で順番の向きを変え、あがりそうな相手の手番を遠ざける（2人戦なら連続ターン）</span>
                                         </li>
                                         <li className="flex items-start gap-2">
                                             <span className="text-purple-500 font-black">•</span>
@@ -1899,7 +1952,7 @@
                                         </div>
                                         <div>
                                             <h4 className="text-[var(--steam-gold)] font-black text-sm mb-1">ラウンド（Round）</h4>
-                                            <p className="text-white/70 text-xs">1ゲームの1回分。誰かがあがるかバーストで終了。全5ラウンドで1トーナメント。</p>
+                                            <p className="text-white/70 text-xs">1ゲームの1回分。誰かがあがるかバーストで終了。全5ラウンドで1シリーズ。</p>
                                         </div>
                                         <div>
                                             <h4 className="text-[var(--steam-gold)] font-black text-sm mb-1">CHAMPION / チャンピオン</h4>
@@ -1967,19 +2020,20 @@
                                         <h3 className="text-xl font-black text-[var(--accent)]">アニメーション設定</h3>
                                     </div>
                                     <p className="text-white/90 text-sm mb-4 leading-relaxed">
-                                        ゲーム画面右上の🎬ボタンでアニメーションのON/OFFを切り替えできます。
+                                        画面右上の ✨ ボタンで演出（アニメーション）のON/OFFを切り替えできます。OFF（軽量モード）のときはボタンが 🍃 になります。性能の低い端末や、端末の「視覚効果を減らす」設定がONの場合は、最初から軽量モードで起動します。
                                     </p>
                                     <div className="space-y-3">
                                         <div className="bg-black/40 p-4 rounded-lg border border-[var(--accent)]/20">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <span className="text-green-400 font-black">✓ ON（デフォルト）</span>
+                                                <span className="text-green-400 font-black">✓ ON（通常）</span>
                                             </div>
                                             <ul className="text-white/70 text-xs space-y-1 ml-4">
-                                                <li>• 背景の星雲・歯車・魔法陣が回転</li>
+                                                <li>• 場の属性に合わせて背景の色調が変化</li>
                                                 <li>• カードプレイ時に場の中央へ飛ぶアニメーション</li>
                                                 <li>• ドロー時にカードが手札へ飛ぶアニメーション</li>
                                                 <li>• 手札に追加されたカードが光る</li>
                                                 <li>• カットイン演出（WILD等）</li>
+                                                <li>• カードを出した瞬間の衝撃リング、勝利時の紙吹雪</li>
                                             </ul>
                                         </div>
                                         <div className="bg-black/40 p-4 rounded-lg border border-gray-500/20">
@@ -1987,11 +2041,11 @@
                                                 <span className="text-gray-400 font-black">○ OFF（軽量モード）</span>
                                             </div>
                                             <ul className="text-white/70 text-xs space-y-1 ml-4">
-                                                <li>• 背景アニメーション停止（暗く、グレースケール化）</li>
+                                                <li>• 背景アニメーション停止</li>
                                                 <li>• カードが飛ぶアニメーション停止</li>
                                                 <li>• 点滅・パルスエフェクト停止</li>
-                                                <li>• カットイン演出停止</li>
-                                                <li className="text-green-400">✓ 手札のドローアニメーションは残る</li>
+                                                <li>• カットイン演出・衝撃リング・紙吹雪なし</li>
+                                                <li className="text-green-400">✓ カードが移動するアニメーションは残る</li>
                                             </ul>
                                         </div>
                                     </div>
@@ -2116,13 +2170,14 @@
                             </h2>
                             <div className="bg-black/50 p-6 rounded-xl border border-white/10 text-left max-w-2xl mx-auto shadow-2xl backdrop-blur-md">
                                 <p className="text-white/80 text-sm mb-4 font-bold leading-relaxed">
-                                    本プロジェクトは v133.0 より、メンテナンス性向上のため **Vite + React** によるモジュール構造へ移行しました。
+                                    本プロジェクトは、メンテナンス性向上のため <strong>Vite + React</strong> によるモジュール構造で開発されています。
                                 </p>
                                 <ul className="space-y-3 text-white/70 font-bold text-xs list-disc pl-5">
-                                    <li><span className="text-white">Backend</span>: Node.js / Express / Socket.io</li>
+                                    <li><span className="text-white">Backend</span>: Node.js 22 / Express / Socket.io（ランキングは SQLite に保存）</li>
                                     <li><span className="text-white">Frontend</span>: React 18 / Vite / Tailwind CSS + Vanilla CSS</li>
-                                    <li><span className="text-white">Design</span>: Image-less, Pure CSS &amp; SVG UI (480px固定幅レイアウト)</li>
+                                    <li><span className="text-white">Design</span>: Image-less, Pure CSS &amp; SVG UI（スマホは全画面、PCは縦長 9:18.5 の枠で中央表示）</li>
                                     <li><span className="text-white">Direction</span>: 時計回り/反時計回り対応のサイクル図矢印</li>
+                                    <li><span className="text-white">Hosting</span>: Fly.io（GitHub の main へのマージで自動テスト・自動デプロイ）</li>
                                 </ul>
                                 <div className="mt-6 pt-4 border-t border-white/10 text-[10px] text-white/40 font-['Orbitron'] tracking-widest text-center">
                                     CROSS REALM - OMEGA SINGULARITY - TECHNICAL_DOC_SYNC_COMPLETE
