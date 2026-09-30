@@ -1328,7 +1328,17 @@
                                 タイトル画面からロビーを経て、対戦が開始されるまでの一連の流れです。
                             </p>
                             <div className="max-w-2xl mx-auto rounded-xl border-4 border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)] overflow-hidden bg-black/40 relative">
-                                <img src="./guide_flow_demo.webp" alt="Game Flow Demo" className="w-full h-auto" />
+                                <video
+                                    className="w-full h-auto"
+                                    autoPlay
+                                    loop
+                                    muted
+                                    playsInline
+                                    controls
+                                >
+                                    <source src="./guide_flow_demo.webm" type="video/webm" />
+                                    <source src="./guide_flow_demo.mp4" type="video/mp4" />
+                                </video>
                                 <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/60 rounded text-[9px] text-white/40 font-mono">DEMO_RECORDING</div>
                             </div>
                         </div>

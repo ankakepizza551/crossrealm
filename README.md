@@ -146,7 +146,7 @@ crossrealm/
 ├── Cross_Realm_Interactive_Guide.html  # インタラクティブガイド
 ├── Cross_Realm_Card_Showcase.html      # カードショーケース
 ├── Cross_Realm_Icon_Lab.html / DesignLab.html  # デザイン検証用
-└── guide_*.webp / icon.*     # ガイド・アイコン用画像
+└── guide_* / icon.*          # ガイド用の画像・動画、アイコン
 ```
 
 ## 🧪 テスト
