@@ -1025,7 +1025,7 @@ const App = () => {
                         </div>
                         <div className="system-status-bar">
                             <span>STATUS: <span className={`status-tag ${(!isConnected) ? 'bg-red-600' : ''}`}>{(!isConnected) ? 'OFFLINE' : 'ONLINE'}</span></span>
-                             <span>VER: <span className="text-white/80 font-black">v1.5</span></span>
+                             <span>VER: <span className="text-white/80 font-black">v1.7</span></span>
                             <span className="text-accent font-black cursor-pointer hover:opacity-70 transition-opacity text-[11px] tracking-[1px] font-['Orbitron']" onClick={() => setShowChangelog(true)}>📋 LOG</span>
                         </div>
 
@@ -1041,9 +1041,32 @@ const App = () => {
                                     <div className="p-4 max-h-[60vh] overflow-y-auto space-y-5 text-[12px]">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v1.5</span>
+                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v1.7</span>
                                                 <span className="text-white/30 text-[10px]">2026.05.08</span>
                                                 <span className="bg-accent/20 text-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-accent/30">LATEST</span>
+                                            </div>
+                                            <div className="text-white/30 text-[10px] mb-2">ロビー機能追加</div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🔒 プライベートルーム（ルーム名+コード発行）</li>
+                                                <li>🌐 パブリックルーム（公開一覧から参加）</li>
+                                                <li>👑 ホスト機能（CPU追加・削除）</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-accent/60 text-[11px]">v1.6</span>
+                                                <span className="text-white/30 text-[10px]">2026.05.08</span>
+                                            </div>
+                                            <div className="text-white/30 text-[10px] mb-2">1人/多人数メニュー分離</div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🤖 1人でプレイ（CPU人数選択→即開始）</li>
+                                                <li>👥 みんなでプレイを分離</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-accent/60 text-[11px]">v1.5</span>
+                                                <span className="text-white/30 text-[10px]">2026.05.08</span>
                                             </div>
                                             <div className="text-white/30 text-[10px] mb-2 pl-0">CPU個性・席順シャッフル実装</div>
                                             <ul className="space-y-1 text-white/70 pl-2">

@@ -23,11 +23,15 @@
     ```bash
     npm run dev
     ```
-4.  **アクセス**: ブラウザで `http://localhost:5173` にアクセスします。
+4.  **アクセス**: ブラウザで `http://localhost:5174` にアクセスします。
 
 ### 操作方法
 - **プレイヤー名**: 自分の名前を入力します（最大10文字）。
-- **ルームID**: 対戦相手と同じ合言葉（ID）を入力して「接続開始」を押します。
+- **🤖 1人でプレイ**: CPUの人数（1〜4人）を選んで「出撃」を押すと、CPU戦がすぐに始まります。
+- **👥 みんなでプレイ**:
+  - **ルーム作成**: ルーム名を付けてルームを作成すると、ルームコードが発行されます。「🌐 パブリックに公開」をオンにすると公開ルーム一覧に表示されます。
+  - **コードで参加**: 友達から共有されたルームコードを入力して参加します。
+  - **公開ルームを探す**: 公開中の待機ルーム一覧から選んで参加します。
 - **ゲーム開始**: ルームに入場し、全員（CPU含む）が揃ったら、ホスト（一番最初に入室し「HOST」バッジがついているプレイヤー）が「ゲーム開始」を押してミッションをスタートします。
   - ※「CPU追加」ボタンで、Bot（Astra, Nova, Echo, Vector, Zion, Kael, Luna, Cyrus, Iris, Xenon）を参戦させることも可能です。各CPUは固有の戦略（⚔️アタッカー / 🧠ストラテジスト / 🌀ワイルダー / ⚡スピードスター / 💣サボタージュ）を持ちます。
 - **サウンド**: 右上の「🔊/🔇」ボタンでいつでもSE（効果音）のオン/オフが可能です。
@@ -119,21 +123,38 @@
 ## 📂 プロジェクト構成
 
 ```
-crossrealm_test/
-├── index.js                  # バックエンドサーバー (Socket.io)
+crossrealm/
+├── index.js                  # バックエンドサーバー (Express + Socket.io, CPU AI含む)
+├── index.html                # Vite エントリーHTML (OGP設定含む)
 ├── launcher.js               # ワンクリック起動スクリプト
-├── START_LOCAL_SERVER.bat     # Windows用ランチャー
+├── START_LOCAL_SERVER.bat    # Windows用ランチャー
+├── github_up.bat             # GitHubへのアップロード用
+├── github_localshare.bat     # ローカル共有用
+├── Dockerfile / fly.toml     # Fly.io デプロイ設定
 ├── package.json
+├── vite.config.js / tailwind.config.js / postcss.config.cjs
+├── public/
+│   └── ogp.png               # OGP / Twitterカード画像
 ├── src/
 │   ├── App.jsx               # フロントエンド本体 (React)
 │   ├── index.css             # 全スタイル定義
 │   ├── main.jsx              # エントリーポイント
-│   └── components/           # 共通コンポーネント
+│   └── components/
 │       └── CycleDiagramSmall.jsx
-├── dist/                     # ビルド出力
+├── dist/                     # ビルド出力 (Git管理外・Dockerビルド時に生成)
 ├── Cross_Realm_Interactive_Guide.html  # インタラクティブガイド
-└── Cross_Realm_Card_Showcase.html      # カードショーケース
+├── Cross_Realm_Card_Showcase.html      # カードショーケース
+├── Cross_Realm_Icon_Lab.html / DesignLab.html  # デザイン検証用
+└── guide_*.webp / icon.*     # ガイド・アイコン用画像
 ```
+
+## 🚀 デプロイ (Fly.io)
+
+```bash
+fly deploy
+```
+
+Dockerイメージの中でフロントエンドをビルドするため、事前に `npm run build` を実行する必要はありません。
 
 ## 🎮 開発・技術仕様
 
@@ -166,18 +187,33 @@ crossrealm_test/
 
 ## 📝 更新履歴
 
+### 2026-05-22〜2026-06-24
+- 🚀 Fly.io へのデプロイに対応（Dockerfile / fly.toml）
+- 🐦 OGP / Twitter カードを追加
+- 🐛 連勝カウントのリセット漏れを修正
+- 📖 インタラクティブガイドを更新
+
+### v1.7 (2026-05-08)
+- 🔒 プライベートルーム（ルーム名＋ルームコード発行）
+- 🌐 パブリックルーム（公開ルーム一覧から参加）
+- 👑 ホスト機能（CPUの追加・削除）
+
+### v1.6 (2026-05-08)
+- 🤖 「1人でプレイ」を追加（CPU人数を選んで即開始）
+- 👥 「みんなでプレイ」メニューを分離
+
 ### v1.5 (2026-05-08)
 - 🤖 CPU全員に独自のプレイスタイルを実装
   - ⚔️ **Nova/Kael**: アタッカー — DRAW2・ REVERSEを最優先で仕掛ける
   - 🧠 **Astra/Cyrus**: ストラテジスト — ピンチまでWILDを温存する堅実派
   - 🌀 **Echo/Luna**: ワイルダー — WILDカードを積極的に展開する
   - ⚡ **Vector/Iris**: スピードスター — 手札を最速で減らす速攻型
-  - 💣 **Zion/Xenon**: サボタージュ — ドロー積み・嫌な属性指定で妨害に徙化
+  - 💣 **Zion/Xenon**: サボタージュ — ドロー積み・嫌な属性指定で妨害に特化
 - 🏷️ ロビー画面にCPUパーソナリティバッジを表示
 - 🎲 毎戦開始時に席順をランダムシャッフル
 - 🔧 スマホ背景のグラデーション表示を修正
 
-### v1.3√1.4 (2026-05-05〜2026-05-08)
+### v1.3〜1.4 (2026-05-05〜2026-05-08)
 - 🐛 スマホで背景が真っ黒になるバグを修正
 - 🎨 背景をサイバーグリッドにリデザイン
 - 💎 スキャンライン・コーナーグロー追加
