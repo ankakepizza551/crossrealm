@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { io: ioClient } = require('socket.io-client');
-const { server, io, rooms } = require('../index.js');
+const { server, io, rooms, checkGameOver } = require('../index.js');
 
 let url;
 const clients = [];
@@ -119,4 +119,38 @@ test('ホストが同じ名前で再接続してもホストのまま', async ()
   const second = await connect();
   const state = await joinRoom(second, roomId, 'Host', 1);
   assert.equal(state.hostId, second.id);
+});
+
+test('次のマッチへ: 全員が準備完了すると手札を配り直して次の試合が始まる', async () => {
+  const roomId = 'NEXTMATCH';
+  const host = await connect();
+  await joinRoom(host, roomId, 'Host', 1);
+  const playing = waitForState(host, s => s.status === 'playing', '1試合目の開始');
+  host.emit('add-cpu', { roomId });
+  host.emit('start-game', { roomId });
+  await playing;
+
+  // 1試合目をホストの勝ちで終わらせる
+  const room = rooms[roomId];
+  clearTimeout(room.turnTimer);
+  const me = room.players.find(p => !p.isBot);
+  me.hand = []; me.handCount = 0;
+  assert.equal(checkGameOver(room), true);
+  assert.equal(room.status, 'finished');
+  assert.ok(me.basePoints > 0);
+
+  const next = waitForState(host, s => s.status === 'playing' && s.matchCount === 2, '2試合目の開始');
+  host.emit('play-again', { roomId });
+  await next;
+
+  assert.equal(room.logs[0].text, 'MATCH 2 開始。');
+  for (const p of room.players) {
+    assert.equal(p.hand.length, 5, `${p.name} の手札`);
+    assert.equal(p.isEliminated, false);
+    assert.equal(p.earnedPoints, 0);
+    assert.equal(p.basePoints, 0);
+    assert.equal(p.bonusPoints, 0);
+    assert.equal(p.ready, p.isBot);
+  }
+  assert.ok(me.score > 0, 'シリーズの合計スコアは引き継がれる');
 });

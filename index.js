@@ -615,6 +615,40 @@ const BOT_PERSONALITIES = {
   'Xenon':  'SABOTEUR',
 };
 
+// 試合（マッチ）を開始する。最初の試合（start-game）と次の試合（play-again）で共通
+function startMatch(room) {
+  room.deck = createDeck();
+  // 毎戦席順をシャッフル（Fisher-Yates）
+  for (let i = room.players.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [room.players[i], room.players[j]] = [room.players[j], room.players[i]];
+  }
+  room.turnIndex = Math.floor(Math.random() * room.players.length);
+  room.players.forEach(p => {
+    p.hand = []; for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop());
+    p.handCount = p.hand.length;
+    p.isEliminated = false;
+    p.earnedPoints = 0;
+    p.basePoints = 0;
+    p.bonusPoints = 0;
+    p.finishBonus = false;
+    p.ready = p.isBot;
+  });
+  room.fieldCard = room.deck.pop();
+  room.status = 'playing';
+  room.currentTurnPlayerId = room.players[room.turnIndex].id;
+  room.nextDrawAmount = 1;
+  room.isReversed = false;
+  room.logs = [{ id: Math.random(), text: `MATCH ${room.matchCount} 開始。` }];
+  broadcastRoomState(room.id);
+
+  // 最初のターンのタイマー開始
+  startTurnTimer(room.id);
+
+  // 最初がAIなら動かす
+  if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
+}
+
 io.on('connection', (socket) => {
   socket.on('join-room', (data) => {
     if (!data || !data.roomId) return;
@@ -707,36 +741,7 @@ io.on('connection', (socket) => {
       const room = rooms[data.roomId.toUpperCase()];
       // 開始できるのはロビー待機中のホストのみ
       if (room && room.status === 'waiting' && room.hostId === socket.id && room.players.length >= 2) {
-        room.deck = createDeck();
-        // 毎戦席順をシャッフル（Fisher-Yates）
-        for (let i = room.players.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [room.players[i], room.players[j]] = [room.players[j], room.players[i]];
-        }
-        room.turnIndex = Math.floor(Math.random() * room.players.length);
-        room.players.forEach(p => {
-          p.hand = []; for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop());
-          p.handCount = p.hand.length;
-          p.isEliminated = false;
-          p.earnedPoints = 0;
-          p.basePoints = 0;
-          p.bonusPoints = 0;
-          p.finishBonus = false;
-        });
-        room.fieldCard = room.deck.pop();
-        room.status = 'playing';
-        room.currentTurnPlayerId = room.players[room.turnIndex].id;
-        room.nextDrawAmount = 1;
-        room.isReversed = false;
-        room.logs = [{ id: Math.random(), text: `MATCH ${room.matchCount} 開始。` }];
-        room.players.forEach(p => p.ready = p.isBot);
-        broadcastRoomState(room.id);
-
-        // 最初のターンのタイマー開始
-        startTurnTimer(room.id);
-
-        // 最初がAIなら動かす
-        if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
+        startMatch(room);
       }
     } catch (e) { console.error("[ERROR] start-game:", e); }
   });
@@ -852,34 +857,9 @@ io.on('connection', (socket) => {
           room.status = 'waiting';
           room.logs = [];
         } else {
-          // 次のマッチを開始 (start-gameのロジックと同様)
-          room.deck = createDeck();
-          // 毎戦席順をシャッフル（Fisher-Yates）
-          for (let i = room.players.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [room.players[i], room.players[j]] = [room.players[j], room.players[i]];
-          }
-          room.turnIndex = Math.floor(Math.random() * room.players.length);
-          room.players.forEach(p => {
-            p.hand = []; for (let i = 0; i < INITIAL_HAND; i++) p.hand.push(room.deck.pop());
-            p.handCount = p.hand.length;
-            p.isEliminated = false;
-            p.earnedPoints = 0;
-            p.finishBonus = false;
-            p.ready = p.isBot;
-          });
-          room.fieldCard = room.deck.pop();
-          room.status = 'playing';
-          room.currentTurnPlayerId = room.players[room.turnIndex].id;
-          room.nextDrawAmount = 1;
-          room.isReversed = false;
-          room.logs = [{ id: Math.random(), text: `MATCH ${room.matchCount} 開始。` }];
-          
-          broadcastRoomState(room.id);
-          // 最初のターンのタイマー開始
-          startTurnTimer(room.id);
-
-          if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
+          // 次のマッチを開始（startMatch が状態を配信する）
+          startMatch(room);
+          return;
         }
       }
       broadcastRoomState(room.id);
@@ -897,4 +877,4 @@ if (require.main === module) {
 }
 
 // テスト用に公開
-module.exports = { server, io, rooms, filterName, createDeck, canPlay, nextTurn, checkGameOver, ranking, HAND_LIMIT, INITIAL_HAND };
+module.exports = { server, io, rooms, filterName, createDeck, canPlay, nextTurn, checkGameOver, startMatch, ranking, HAND_LIMIT, INITIAL_HAND };
