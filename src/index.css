@@ -2478,6 +2478,91 @@ body {
 }
 .bg-dimmed .realm-tint-layer.active { opacity: 0.1 !important; }
 
+/* === 属性モチーフ（場の属性に合わせて浮かぶ背景の模様・静止SVG。回転はPCのみ） === */
+.realm-motif {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    pointer-events: none;
+    overflow: hidden;
+}
+.realm-motif.active { opacity: 1; }
+.realm-motif::before,
+.realm-motif::after {
+    content: '';
+    position: absolute;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+}
+.bg-dimmed .realm-motif.active { opacity: 0.1 !important; }
+
+/* スチーム: 左上と右下の大きな歯車 */
+.realm-motif-steam::before {
+    width: 70vmin; height: 70vmin; left: -22vmin; top: -18vmin;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cg fill='none' stroke='rgba(255,170,60,0.55)' stroke-width='3' stroke-linejoin='round'%3E%3Cpolygon points='364.2,184.2 389.6,188.4 389.6,211.6 364.2,215.8 359.7,241.3 382.2,254.0 374.2,275.8 348.9,271.0 336.0,293.5 352.7,313.0 337.8,330.8 315.7,317.7 295.8,334.3 304.9,358.4 284.8,370.0 268.4,350.1 244.1,359.0 244.4,384.8 221.5,388.8 212.9,364.5 187.1,364.5 178.5,388.8 155.6,384.8 155.9,359.0 131.6,350.1 115.2,370.0 95.1,358.4 104.2,334.3 84.3,317.7 62.2,330.8 47.3,313.0 64.0,293.5 51.1,271.0 25.8,275.8 17.8,254.0 40.3,241.3 35.8,215.8 10.4,211.6 10.4,188.4 35.8,184.2 40.3,158.7 17.8,146.0 25.8,124.2 51.1,129.0 64.0,106.5 47.3,87.0 62.2,69.2 84.3,82.3 104.2,65.7 95.1,41.6 115.2,30.0 131.6,49.9 155.9,41.0 155.6,15.2 178.5,11.2 187.1,35.5 212.9,35.5 221.5,11.2 244.4,15.2 244.1,41.0 268.4,49.9 284.8,30.0 304.9,41.6 295.8,65.7 315.7,82.3 337.8,69.2 352.7,87.0 336.0,106.5 348.9,129.0 374.2,124.2 382.2,146.0 359.7,158.7'/%3E%3Ccircle cx='200' cy='200' r='147'/%3E%3Ccircle cx='200' cy='200' r='40'/%3E%3Cline x1='240.0' y1='200.0' x2='347.0' y2='200.0'/%3E%3Cline x1='220.0' y1='234.6' x2='273.5' y2='327.3'/%3E%3Cline x1='180.0' y1='234.6' x2='126.5' y2='327.3'/%3E%3Cline x1='160.0' y1='200.0' x2='53.0' y2='200.0'/%3E%3Cline x1='180.0' y1='165.4' x2='126.5' y2='72.7'/%3E%3Cline x1='220.0' y1='165.4' x2='273.5' y2='72.7'/%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.55;
+}
+.realm-motif-steam::after {
+    width: 55vmin; height: 55vmin; right: -16vmin; bottom: -10vmin;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cg fill='none' stroke='rgba(255,110,60,0.5)' stroke-width='3' stroke-linejoin='round'%3E%3Cpolygon points='358.3,177.0 389.2,182.6 389.2,217.4 358.3,223.0 348.6,259.3 372.5,279.5 355.2,309.7 325.7,299.1 299.1,325.7 309.7,355.2 279.5,372.5 259.3,348.6 223.0,358.3 217.4,389.2 182.6,389.2 177.0,358.3 140.7,348.6 120.5,372.5 90.3,355.2 100.9,325.7 74.3,299.1 44.8,309.7 27.5,279.5 51.4,259.3 41.7,223.0 10.8,217.4 10.8,182.6 41.7,177.0 51.4,140.7 27.5,120.5 44.8,90.3 74.3,100.9 100.9,74.3 90.3,44.8 120.5,27.5 140.7,51.4 177.0,41.7 182.6,10.8 217.4,10.8 223.0,41.7 259.3,51.4 279.5,27.5 309.7,44.8 299.1,74.3 325.7,100.9 355.2,90.3 372.5,120.5 348.6,140.7'/%3E%3Ccircle cx='200' cy='200' r='142'/%3E%3Ccircle cx='200' cy='200' r='50'/%3E%3Cline x1='250.0' y1='200.0' x2='342.0' y2='200.0'/%3E%3Cline x1='225.0' y1='243.3' x2='271.0' y2='323.0'/%3E%3Cline x1='175.0' y1='243.3' x2='129.0' y2='323.0'/%3E%3Cline x1='150.0' y1='200.0' x2='58.0' y2='200.0'/%3E%3Cline x1='175.0' y1='156.7' x2='129.0' y2='77.0'/%3E%3Cline x1='225.0' y1='156.7' x2='271.0' y2='77.0'/%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+}
+
+/* 幻想: 地平線付近の魔法陣と星 */
+.realm-motif-fantasy::before {
+    width: 80vmin; height: 80vmin; left: 50%; top: 34%;
+    margin: -40vmin 0 0 -40vmin;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cg fill='none' stroke='rgba(120,200,255,0.55)' stroke-width='2'%3E%3Ccircle cx='200' cy='200' r='190'/%3E%3Ccircle cx='200' cy='200' r='172'/%3E%3Ccircle cx='200' cy='200' r='110'/%3E%3Ccircle cx='200' cy='200' r='40'/%3E%3Cpolygon points='200.0,28.0 349.0,286.0 51.0,286.0'/%3E%3Cpolygon points='200.0,372.0 51.0,114.0 349.0,114.0'/%3E%3Cline x1='372.0' y1='200.0' x2='390.0' y2='200.0'/%3E%3Cline x1='374.5' y1='223.0' x2='384.4' y2='224.3'/%3E%3Cline x1='370.0' y1='245.6' x2='379.7' y2='248.1'/%3E%3Cline x1='362.6' y1='267.4' x2='371.8' y2='271.2'/%3E%3Cline x1='349.0' y1='286.0' x2='364.5' y2='295.0'/%3E%3Cline x1='339.6' y1='307.1' x2='347.6' y2='313.2'/%3E%3Cline x1='324.5' y1='324.5' x2='331.5' y2='331.5'/%3E%3Cline x1='307.1' y1='339.6' x2='313.2' y2='347.6'/%3E%3Cline x1='286.0' y1='349.0' x2='295.0' y2='364.5'/%3E%3Cline x1='267.4' y1='362.6' x2='271.2' y2='371.8'/%3E%3Cline x1='245.6' y1='370.0' x2='248.1' y2='379.7'/%3E%3Cline x1='223.0' y1='374.5' x2='224.3' y2='384.4'/%3E%3Cline x1='200.0' y1='372.0' x2='200.0' y2='390.0'/%3E%3Cline x1='177.0' y1='374.5' x2='175.7' y2='384.4'/%3E%3Cline x1='154.4' y1='370.0' x2='151.9' y2='379.7'/%3E%3Cline x1='132.6' y1='362.6' x2='128.8' y2='371.8'/%3E%3Cline x1='114.0' y1='349.0' x2='105.0' y2='364.5'/%3E%3Cline x1='92.9' y1='339.6' x2='86.8' y2='347.6'/%3E%3Cline x1='75.5' y1='324.5' x2='68.5' y2='331.5'/%3E%3Cline x1='60.4' y1='307.1' x2='52.4' y2='313.2'/%3E%3Cline x1='51.0' y1='286.0' x2='35.5' y2='295.0'/%3E%3Cline x1='37.4' y1='267.4' x2='28.2' y2='271.2'/%3E%3Cline x1='30.0' y1='245.6' x2='20.3' y2='248.1'/%3E%3Cline x1='25.5' y1='223.0' x2='15.6' y2='224.3'/%3E%3Cline x1='28.0' y1='200.0' x2='10.0' y2='200.0'/%3E%3Cline x1='25.5' y1='177.0' x2='15.6' y2='175.7'/%3E%3Cline x1='30.0' y1='154.4' x2='20.3' y2='151.9'/%3E%3Cline x1='37.4' y1='132.6' x2='28.2' y2='128.8'/%3E%3Cline x1='51.0' y1='114.0' x2='35.5' y2='105.0'/%3E%3Cline x1='60.4' y1='92.9' x2='52.4' y2='86.8'/%3E%3Cline x1='75.5' y1='75.5' x2='68.5' y2='68.5'/%3E%3Cline x1='92.9' y1='60.4' x2='86.8' y2='52.4'/%3E%3Cline x1='114.0' y1='51.0' x2='105.0' y2='35.5'/%3E%3Cline x1='132.6' y1='37.4' x2='128.8' y2='28.2'/%3E%3Cline x1='154.4' y1='30.0' x2='151.9' y2='20.3'/%3E%3Cline x1='177.0' y1='25.5' x2='175.7' y2='15.6'/%3E%3Cline x1='200.0' y1='28.0' x2='200.0' y2='10.0'/%3E%3Cline x1='223.0' y1='25.5' x2='224.3' y2='15.6'/%3E%3Cline x1='245.6' y1='30.0' x2='248.1' y2='20.3'/%3E%3Cline x1='267.4' y1='37.4' x2='271.2' y2='28.2'/%3E%3Cline x1='286.0' y1='51.0' x2='295.0' y2='35.5'/%3E%3Cline x1='307.1' y1='60.4' x2='313.2' y2='52.4'/%3E%3Cline x1='324.5' y1='75.5' x2='331.5' y2='68.5'/%3E%3Cline x1='339.6' y1='92.9' x2='347.6' y2='86.8'/%3E%3Cline x1='349.0' y1='114.0' x2='364.5' y2='105.0'/%3E%3Cline x1='362.6' y1='132.6' x2='371.8' y2='128.8'/%3E%3Cline x1='370.0' y1='154.4' x2='379.7' y2='151.9'/%3E%3Cline x1='374.5' y1='177.0' x2='384.4' y2='175.7'/%3E%3Ccircle cx='200.0' cy='28.0' r='9'/%3E%3Ccircle cx='349.0' cy='114.0' r='9'/%3E%3Ccircle cx='349.0' cy='286.0' r='9'/%3E%3Ccircle cx='200.0' cy='372.0' r='9'/%3E%3Ccircle cx='51.0' cy='286.0' r='9'/%3E%3Ccircle cx='51.0' cy='114.0' r='9'/%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+}
+.realm-motif-fantasy::after {
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Ccircle cx='130' cy='60' r='0.8' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='329' cy='38' r='0.8' fill='rgba(200,230,255,0.7)'/%3E%3Ccircle cx='86' cy='34' r='1.6' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='96' cy='220' r='0.8' fill='rgba(200,230,255,0.7)'/%3E%3Ccircle cx='50' cy='89' r='0.8' fill='rgba(200,230,255,0.7)'/%3E%3Ccircle cx='234' cy='20' r='1' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='223' cy='53' r='1.6' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='216' cy='228' r='1' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='233' cy='256' r='1.2' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='219' cy='25' r='0.8' fill='rgba(200,230,255,0.7)'/%3E%3Ccircle cx='82' cy='272' r='1.6' fill='rgba(200,230,255,0.5)'/%3E%3Ccircle cx='186' cy='369' r='1.2' fill='rgba(200,230,255,0.5)'/%3E%3Ccircle cx='99' cy='72' r='1' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='230' cy='210' r='1.2' fill='rgba(200,230,255,0.7)'/%3E%3Ccircle cx='180' cy='244' r='0.8' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='205' cy='66' r='1.2' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='373' cy='169' r='0.8' fill='rgba(200,230,255,0.7)'/%3E%3Ccircle cx='229' cy='350' r='1.2' fill='rgba(200,230,255,0.5)'/%3E%3Ccircle cx='278' cy='238' r='1.6' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='336' cy='378' r='1.6' fill='rgba(200,230,255,0.7)'/%3E%3Ccircle cx='266' cy='24' r='1.2' fill='rgba(200,230,255,0.7)'/%3E%3Ccircle cx='231' cy='272' r='1.6' fill='rgba(200,230,255,0.5)'/%3E%3Ccircle cx='287' cy='355' r='1.2' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='376' cy='142' r='0.8' fill='rgba(200,230,255,0.5)'/%3E%3Ccircle cx='24' cy='307' r='1' fill='rgba(200,230,255,0.7)'/%3E%3Ccircle cx='99' cy='156' r='1.6' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='67' cy='161' r='1.2' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='328' cy='346' r='1.2' fill='rgba(200,230,255,0.7)'/%3E%3Ccircle cx='166' cy='144' r='1.6' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='60' cy='70' r='1' fill='rgba(200,230,255,0.7)'/%3E%3Ccircle cx='93' cy='194' r='1' fill='rgba(200,230,255,0.5)'/%3E%3Ccircle cx='113' cy='58' r='1.2' fill='rgba(200,230,255,0.7)'/%3E%3Ccircle cx='227' cy='381' r='0.8' fill='rgba(200,230,255,0.5)'/%3E%3Ccircle cx='360' cy='312' r='1.6' fill='rgba(200,230,255,0.5)'/%3E%3Ccircle cx='160' cy='41' r='1.6' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='76' cy='394' r='1.6' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='44' cy='240' r='0.8' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='227' cy='215' r='1.2' fill='rgba(200,230,255,0.7)'/%3E%3Ccircle cx='10' cy='350' r='1.6' fill='rgba(200,230,255,0.35)'/%3E%3Ccircle cx='254' cy='382' r='1.2' fill='rgba(200,230,255,0.5)'/%3E%3C/svg%3E");
+    background-size: 400px 400px;
+    background-repeat: repeat;
+    opacity: 0.8;
+}
+
+/* サイバー: 画面の左右から伸びる回路 */
+.realm-motif-cyber::before,
+.realm-motif-cyber::after {
+    top: 8%; bottom: 8%; width: 32vmin;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 500'%3E%3Cg fill='none' stroke='rgba(200,130,255,0.6)' stroke-width='2'%3E%3Cpolyline points='0,36 99,36 99,36 157,36'/%3E%3Cpolyline points='0,80 63,80 89,106 125,106'/%3E%3Cpolyline points='0,131 52,131 78,157 110,157'/%3E%3Cpolyline points='0,182 51,182 51,182 115,182'/%3E%3Cpolyline points='0,231 90,231 90,231 148,231'/%3E%3Cpolyline points='0,287 41,287 67,261 104,261'/%3E%3Cpolyline points='0,335 44,335 70,309 86,309'/%3E%3Cpolyline points='0,386 99,386 125,412 149,412'/%3E%3Cpolyline points='0,444 106,444 106,444 150,444'/%3E%3C/g%3E%3Cg fill='rgba(173,255,47,0.75)'%3E%3Ccircle cx='157' cy='36' r='4'/%3E%3Ccircle cx='125' cy='106' r='4'/%3E%3Ccircle cx='110' cy='157' r='4'/%3E%3Ccircle cx='115' cy='182' r='4'/%3E%3Ccircle cx='148' cy='231' r='4'/%3E%3Ccircle cx='104' cy='261' r='4'/%3E%3Ccircle cx='86' cy='309' r='4'/%3E%3Ccircle cx='149' cy='412' r='4'/%3E%3Ccircle cx='150' cy='444' r='4'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 100% auto;
+    background-repeat: repeat-y;
+    background-position: left top;
+    opacity: 0.55;
+}
+.realm-motif-cyber::before { left: 0; }
+.realm-motif-cyber::after { right: 0; transform: scaleX(-1); }
+
+/* ボイド（惑星・廃墟）: 傾いた惑星の軌道 */
+.realm-motif-void::before {
+    width: 110vmin; height: 110vmin; left: 50%; top: 34%;
+    margin: -55vmin 0 0 -55vmin;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='rgba(230,235,255,0.45)' stroke-width='1.6'%3E%3Cellipse cx='300' cy='300' rx='280' ry='95'/%3E%3Cellipse cx='300' cy='300' rx='200' ry='66' stroke-dasharray='6 10'/%3E%3Cellipse cx='300' cy='300' rx='120' ry='40'/%3E%3C/g%3E%3Ccircle cx='300' cy='300' r='26' fill='none' stroke='rgba(230,235,255,0.6)' stroke-width='2'/%3E%3Ccircle cx='580' cy='300' r='6' fill='rgba(230,235,255,0.7)'/%3E%3Ccircle cx='160' cy='354' r='4' fill='rgba(230,235,255,0.6)'/%3E%3C/svg%3E");
+    transform: rotate(-14deg);
+    opacity: 0.55;
+}
+
+/* PCのみ、歯車・魔法陣・軌道をゆっくり回転（transform のみ） */
+@keyframes motif-spin { to { transform: rotate(360deg); } }
+@keyframes motif-spin-rev { to { transform: rotate(-360deg); } }
+@keyframes motif-orbit { from { transform: rotate(-14deg); } to { transform: rotate(346deg); } }
+@media (min-width: 1024px) and (hover: hover) {
+    .realm-motif-steam.active::before { animation: motif-spin 90s linear infinite; will-change: transform; }
+    .realm-motif-steam.active::after { animation: motif-spin-rev 70s linear infinite; will-change: transform; }
+    .realm-motif-fantasy.active::before { animation: motif-spin 120s linear infinite; will-change: transform; }
+    .realm-motif-void.active::before { animation: motif-orbit 200s linear infinite; will-change: transform; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .realm-motif::before, .realm-motif::after { animation: none !important; }
+    .realm-motif { transition: none; }
+}
+
+
 /* カードが場に出た瞬間の衝撃リング（属性色） */
 .field-shockwave {
     position: absolute;
