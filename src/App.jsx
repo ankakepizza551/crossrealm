@@ -399,6 +399,7 @@ const AstralBackground = ({ bgAnim, isDimmed, theme }) => {
                 <>
                     <div className="corner-glow-layer" />
                     {REALM_TINTS.map(t => <div key={t} className={`realm-tint-layer realm-tint-${t} ${theme === t ? 'active' : ''}`} />)}
+                    {REALM_TINTS.map(t => <div key={`motif-${t}`} className={`realm-motif realm-motif-${t} ${theme === t ? 'active' : ''}`} />)}
                     <div className="cyber-grid-layer" />
                     <div className="horizon-glow" />
                     <div className="scanline-layer" />
