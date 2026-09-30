@@ -159,9 +159,10 @@ npm test
 
 ## 🚀 デプロイ (Fly.io)
 
-```bash
-fly deploy
-```
+`main` ブランチに変更が入ると、GitHub Actions（`.github/workflows/fly-deploy.yml`）が自動でテスト → Fly.io へのデプロイを行います。プルリクエストではテストのみ実行されます。
+
+- 事前設定: GitHub の Settings → Secrets and variables → Actions に、Fly.io のデプロイトークンを `FLY_API_TOKEN` として登録してください。
+- 手動で再デプロイしたい場合は、GitHub の Actions タブから「Test & Fly Deploy」を選び「Run workflow」を押すか、ローカルで `fly deploy` を実行します。
 
 Dockerイメージの中でフロントエンドをビルドするため、事前に `npm run build` を実行する必要はありません。
 
