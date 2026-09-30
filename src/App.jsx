@@ -359,12 +359,46 @@ const MemoizedPlayerSlot = React.memo(PlayerSlot, (prev, next) => {
 });
 
 
-const AstralBackground = ({ bgAnim, isDimmed }) => {
+// 低スペック端末・視覚効果を減らす設定では最初から軽量モードで起動する
+const shouldStartLight = () => {
+    try {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+        if (navigator.deviceMemory && navigator.deviceMemory <= 2) return true;
+        if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) return true;
+    } catch (e) { /* 判定できない環境は通常モード */ }
+    return false;
+};
+
+const REALM_TINTS = ['steam', 'fantasy', 'cyber', 'void'];
+const tintOf = (theme) => (theme ? (theme.startsWith('void') ? 'void' : theme) : null);
+
+// 勝利時の紙吹雪（一度だけ降る）
+const CONFETTI_COLORS = ['#FFD700', '#FF8C00', '#40E0D0', '#E2B0FF', '#ADFF2F', '#FF6347'];
+const Confetti = React.memo(() => {
+    const pieces = useMemo(() => Array.from({ length: 36 }, (_, i) => ({
+        left: Math.random() * 100,
+        delay: Math.random() * 0.8,
+        dur: 2.6 + Math.random() * 1.6,
+        drift: Math.round((Math.random() - 0.5) * 120),
+        spin: Math.round(360 + Math.random() * 540),
+        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+    })), []);
+    return (
+        <div className="confetti-layer">
+            {pieces.map((p, i) => (
+                <span key={i} className="confetti-piece" style={{ left: `${p.left}%`, background: p.color, '--delay': `${p.delay}s`, '--dur': `${p.dur}s`, '--drift': `${p.drift}px`, '--spin': `${p.spin}deg` }} />
+            ))}
+        </div>
+    );
+});
+
+const AstralBackground = ({ bgAnim, isDimmed, theme }) => {
     return (
         <div className={`astral-bg-container ${bgAnim ? 'bg-anim-active' : ''} ${isDimmed ? 'bg-dimmed' : ''}`}>
             {bgAnim && (
                 <>
                     <div className="corner-glow-layer" />
+                    {REALM_TINTS.map(t => <div key={t} className={`realm-tint-layer realm-tint-${t} ${theme === t ? 'active' : ''}`} />)}
                     <div className="cyber-grid-layer" />
                     <div className="horizon-glow" />
                     <div className="scanline-layer" />
@@ -450,7 +484,7 @@ const App = () => {
     const [vfxOverlay, setVfxOverlay] = useState(null);
     const [isDisconnected, setIsDisconnected] = useState(false);
     const [isConnected, setIsConnected] = useState(socket.connected);
-    const [bgAnim, setBgAnim] = useState(true);
+    const [bgAnim, setBgAnim] = useState(() => !shouldStartLight());
     const [showChangelog, setShowChangelog] = useState(false);
     const [cutin, setCutin] = useState(null);
     const [visualFieldCard, setVisualFieldCard] = useState(null);
@@ -842,7 +876,7 @@ const App = () => {
                 </div>
             )}
 
-            <MemoizedAstralBackground bgAnim={bgAnim} />
+            <MemoizedAstralBackground bgAnim={bgAnim} theme={joined && gs?.status === 'playing' ? tintOf(REALMS[currentR]?.theme) : null} />
             
             {isDisconnected && joined && (
                 <div className="fixed inset-0 bg-black/95 z-[9999] flex flex-col items-center justify-center p-8 ">
@@ -975,7 +1009,7 @@ const App = () => {
                                         {!loadingRank && rankRows.length === 0 && <div className="text-center text-white/40 text-sm py-6">まだ記録がありません</div>}
                                         {!loadingRank && rankRows.map((r, i) => (
                                             <div key={i} className="flex items-center gap-3 px-3 py-2 rounded bg-white/5 border border-white/10">
-                                                <div className="w-7 text-center font-['Orbitron'] font-black" style={{ color: i === 0 ? '#FFD700' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'rgba(255,255,255,0.5)' }}>{i + 1}</div>
+                                                <div className="w-7 text-center font-['Orbitron'] font-black" style={{ color: i === 0 ? '#FFD700' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'rgba(255,255,255,0.5)' }}>{i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</div>
                                                 <div className="flex-1 min-w-0 truncate text-white font-black text-sm">{r.name}</div>
                                                 <div className="text-white/40 text-[10px] whitespace-nowrap">CPU×{r.cpuCount}</div>
                                                 <div className="font-['Orbitron'] font-black text-[var(--steam-gold)] whitespace-nowrap">{rankMode === 'series' ? `${r.score} pts` : `${r.score} 連勝`}</div>
@@ -1092,7 +1126,7 @@ const App = () => {
                         </div>
                         <div className="system-status-bar">
                             <span>STATUS: <span className={`status-tag ${(!isConnected) ? 'bg-red-600' : ''}`}>{(!isConnected) ? 'OFFLINE' : 'ONLINE'}</span></span>
-                             <span>VER: <span className="text-white/80 font-black">v1.8</span></span>
+                             <span>VER: <span className="text-white/80 font-black">v1.9</span></span>
                             <span className="text-accent font-black cursor-pointer hover:opacity-70 transition-opacity text-[11px] tracking-[1px] font-['Orbitron']" onClick={() => setShowChangelog(true)}>📋 LOG</span>
                         </div>
 
@@ -1108,9 +1142,23 @@ const App = () => {
                                     <div className="p-4 max-h-[60vh] overflow-y-auto space-y-5 text-[12px]">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v1.8</span>
+                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v1.9</span>
                                                 <span className="text-white/30 text-[10px]">2026.09.30</span>
                                                 <span className="bg-accent/20 text-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-accent/30">LATEST</span>
+                                            </div>
+                                            <div className="text-white/30 text-[10px] mb-2">グラフィック強化</div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🎨 場の属性に合わせて背景の色調が変化</li>
+                                                <li>💥 カードを出した瞬間に衝撃リングを表示</li>
+                                                <li>🎉 勝利時に紙吹雪、連勝中はタイトルが炎色に</li>
+                                                <li>🥇 ランキング上位にメダルを表示</li>
+                                                <li>🍃 低スペック端末・視覚効果を減らす設定では軽量モードで起動</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-accent/60 text-[11px]">v1.8</span>
+                                                <span className="text-white/30 text-[10px]">2026.09.30</span>
                                             </div>
                                             <div className="text-white/30 text-[10px] mb-2">ランキング・連勝モード追加</div>
                                             <ul className="space-y-1 text-white/70 pl-2">
@@ -1287,7 +1335,8 @@ const App = () => {
                     </div>
                 ) : (gs.status === 'finished') ? (
                     <div className="result-screen">
-                        <h2 className="result-title uppercase tracking-tighter" style={{ color: gs.isSeriesFinished ? '#FFD700' : 'var(--steam-gold)' }}>{gs.mode === 'streak' ? (gs.isSeriesFinished ? "連勝ストップ" : `🔥 ${gs.streak} 連勝中！`) : (gs.isSeriesFinished ? "シリーズ終了" : `第 ${gs.matchCount - 1} 戦 終了`)}</h2>
+                        {bgAnim && (me?.earnedPoints > 0 || (gs.isSeriesFinished && gs.mode !== 'streak' && [...gs.players].sort((a, b) => b.score - a.score)[0]?.id === me?.id)) && <Confetti key={gs.matchCount} />}
+                        <h2 className={`result-title uppercase tracking-tighter ${gs.mode === 'streak' && !gs.isSeriesFinished && gs.streak >= 2 ? 'streak-hot' : ''}`} style={{ color: gs.isSeriesFinished ? '#FFD700' : 'var(--steam-gold)' }}>{gs.mode === 'streak' ? (gs.isSeriesFinished ? "連勝ストップ" : `🔥 ${gs.streak} 連勝中！`) : (gs.isSeriesFinished ? "シリーズ終了" : `第 ${gs.matchCount - 1} 戦 終了`)}</h2>
                         {gs.mode === 'streak' && gs.isSeriesFinished && <div className="text-xl text-white font-black mb-6 text-center champion-fx py-4 px-8 rounded-full border border-[var(--steam-gold)]">連勝記録<br /><span className="text-[clamp(1.5rem,6vw,2.25rem)] text-[var(--steam-gold)] mt-2 inline-block">🔥 {gs.streak} 連勝</span></div>}
                         {gs.mode !== 'streak' && gs.isSeriesFinished && <div className="text-xl text-white font-black mb-6 text-center animate-pulse champion-fx py-4 px-8 rounded-full border border-[var(--steam-gold)]">総合優勝 (CHAMPION)<br /><span className="text-[clamp(1.5rem,6vw,2.25rem)] text-[var(--steam-gold)] drop-shadow-[0_0_10px_rgba(212,175,55,1)] mt-2 inline-block max-w-full truncate break-all px-2">👑 {[...gs.players].sort((a, b) => b.score - a.score)[0].name} 👑</span></div>}
                         <div className="flex flex-row items-end justify-center w-full max-w-[440px] h-[220px] gap-1 mt-4 mb-8 px-2">
@@ -1385,6 +1434,7 @@ const App = () => {
                                             </div>
                                         </div>
                                         <div className={`field-card-scale relative z-10 ${entryAnim ? 'card-play-vfx' : ''}`}>
+                                            {entryAnim && bgAnim && <><span className="field-shockwave" /><span className="field-shockwave second" /></>}
                                             {/* Layer A: 常時表示 - visualFieldCardをそのまま描画 */}
                                             <div>
                                                 <MemoizedCardView card={visualFieldCard || gs.fieldCard} isField={true} isMyTurn={isMyTurn} hideOrnaments={isMorphing} forceRealRealm={false} />
