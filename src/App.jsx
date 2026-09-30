@@ -439,6 +439,10 @@ const App = () => {
     const [publicRooms, setPublicRooms] = useState([]);
     const [loadingRooms, setLoadingRooms] = useState(false);
     const [soloCpuCount, setSoloCpuCount] = useState(3); // CPU人数（デフォルト3）
+    const [rankMode, setRankMode] = useState('series'); // ランキング: 'series'=シリーズ合計 / 'streak'=連勝
+    const [rankPeriod, setRankPeriod] = useState('all'); // 'all' | 'week' | 'day'
+    const [rankRows, setRankRows] = useState([]);
+    const [loadingRank, setLoadingRank] = useState(false);
     const [selector, setSelector] = useState(null);
     const [muted, setMuted] = useState(false);
     const [selectedCardId, setSelectedCardId] = useState(null);
@@ -557,6 +561,21 @@ const App = () => {
         setLoadingRooms(false);
     }, []);
 
+    // ランキングを取得
+    const fetchRanking = useCallback(async (mode, period) => {
+        setLoadingRank(true);
+        try {
+            const res = await fetch(`/api/ranking?mode=${mode}&period=${period}`);
+            setRankRows(await res.json());
+        } catch (e) {
+            setRankRows([]);
+        }
+        setLoadingRank(false);
+    }, []);
+    useEffect(() => {
+        if (menuMode === 'ranking') fetchRanking(rankMode, rankPeriod);
+    }, [menuMode, rankMode, rankPeriod, fetchRanking]);
+
     // ルームを作成して参加
     const createRoom = useCallback(() => {
         if (!name) return;
@@ -568,13 +587,13 @@ const App = () => {
     }, [name, roomName, isPublic, muted]);
 
     const join = useCallback(() => { if (room && name) { playSE('start', muted); setJoined(true); socket.emit('join-room', { roomId: room.toUpperCase(), playerName: name }); } }, [room, name, muted]);
-    const startSolo = useCallback((cpuCount, playerName) => {
+    const startSolo = useCallback((cpuCount, playerName, mode) => {
         if (!playerName) return;
         const soloRoomId = 'SOLO_' + Math.random().toString(36).substr(2, 6).toUpperCase();
         playSE('start', muted);
         setRoom(soloRoomId);
         setJoined(true);
-        socket.emit('join-room', { roomId: soloRoomId, playerName: playerName });
+        socket.emit('join-room', { roomId: soloRoomId, playerName: playerName, mode });
         // CPU追加（少し遅延して確実に参加後に追加）
         for (let i = 0; i < cpuCount; i++) {
             setTimeout(() => socket.emit('add-cpu', { roomId: soloRoomId }), 300 + i * 100);
@@ -873,6 +892,15 @@ const App = () => {
                                             <div className="font-['Orbitron'] font-black text-accent text-lg tracking-[2px]">🤖 1人でプレイ</div>
                                             <div className="text-white/50 text-[11px] mt-1">CPU相手にソロプレイ</div>
                                         </button>
+                                        {/* 連勝モード */}
+                                        <button
+                                            className="w-full p-5 rounded-lg border-2 border-red-400/40 bg-red-500/10 active:scale-95 transition-all text-left"
+                                            onClick={() => { playSE('start', muted); setMenuMode('streak'); }}
+                                            disabled={!isConnected}
+                                        >
+                                            <div className="font-['Orbitron'] font-black text-red-300 text-lg tracking-[2px]">🔥 連勝モード</div>
+                                            <div className="text-white/50 text-[11px] mt-1">負けるまで続くCPU戦。連勝数でランキング</div>
+                                        </button>
                                         {/* みんなでプレイ */}
                                         <button
                                             className="w-full p-5 rounded-lg border-2 border-steam-gold/40 bg-steam-gold/10 active:scale-95 transition-all text-left relative overflow-hidden group"
@@ -884,13 +912,22 @@ const App = () => {
                                             <div className="font-['Orbitron'] font-black text-lg tracking-[2px]" style={{ color: 'var(--steam-gold)' }}>👥 みんなでプレイ</div>
                                             <div className="text-white/50 text-[11px] mt-1">ルームコードで友達と対戦</div>
                                         </button>
+                                        {/* ランキング */}
+                                        <button
+                                            className="w-full p-4 rounded-lg border border-white/20 bg-white/5 active:scale-95 transition-all text-left"
+                                            onClick={() => { playSE('start', muted); setMenuMode('ranking'); }}
+                                        >
+                                            <div className="font-['Orbitron'] font-black text-white text-base tracking-[2px]">🏆 ランキング</div>
+                                            <div className="text-white/50 text-[11px] mt-1">シリーズ合計スコア・連勝記録</div>
+                                        </button>
                                     </div>
                                 </>
                             )}
 
                             {/* ===== 1人でプレイ画面 ===== */}
-                            {menuMode === 'solo' && (
+                            {(menuMode === 'solo' || menuMode === 'streak') && (
                                 <div className="w-full px-6 sm:px-8 flex flex-col gap-4 flex-shrink-0">
+                                    {menuMode === 'streak' && <div className="text-center text-red-300 text-[11px] font-black leading-relaxed border border-red-400/30 bg-red-500/10 rounded p-3">🔥 連勝モード<br /><span className="text-white/60 font-normal">1位を取り続ける限り試合が続きます。取れなかった時点で終了し、連勝数がランキングに登録されます。</span></div>}
                                     <div className="relative w-full flex flex-col">
                                         <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-sm"></div>
                                         <label className="input-label-tech font-['Orbitron'] text-[10px] font-black text-accent tracking-[2px] mb-1 pl-4 uppercase">パイロット識別名</label>
@@ -912,10 +949,40 @@ const App = () => {
                                     </div>
                                     <button
                                         className={`w-full mt-1 p-4 text-lg font-black rounded-sm active:scale-95 transition-transform ${(!isConnected || !name) ? 'bg-gray-600 opacity-50' : 'bg-gradient-to-r from-cyan-500 to-accent text-black'}`}
-                                        onClick={() => startSolo(soloCpuCount, name)}
+                                        onClick={() => startSolo(soloCpuCount, name, menuMode === 'streak' ? 'streak' : undefined)}
                                         disabled={!isConnected || !name}
                                     >出撃</button>
                                     <button className="w-full mt-2 p-3 rounded border border-white/20 text-white/70 text-sm font-black tracking-[2px] active:bg-white/10 transition-all" onClick={() => setMenuMode(null)}>← 戻る</button>
+                                </div>
+                            )}
+
+                            {/* ===== ランキング画面 ===== */}
+                            {menuMode === 'ranking' && (
+                                <div className="w-full px-6 sm:px-8 flex flex-col gap-3 flex-shrink-0">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {[['series', '🏆 シリーズ'], ['streak', '🔥 連勝']].map(([k, label]) => (
+                                            <button key={k} className={`py-2 rounded font-black text-sm transition-all ${rankMode === k ? 'bg-accent text-black' : 'bg-white/5 border border-white/20 text-white/60'}`} onClick={() => setRankMode(k)}>{label}</button>
+                                        ))}
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {[['all', '歴代'], ['week', '今週'], ['day', '今日']].map(([k, label]) => (
+                                            <button key={k} className={`py-1.5 rounded text-xs font-black transition-all ${rankPeriod === k ? 'bg-white/90 text-black' : 'bg-white/5 border border-white/20 text-white/60'}`} onClick={() => setRankPeriod(k)}>{label}</button>
+                                        ))}
+                                    </div>
+                                    <div className="text-white/40 text-[10px] text-center">{rankMode === 'series' ? '5戦シリーズの合計スコア' : '連勝モードの連勝数（同数ならポイント合計）'}</div>
+                                    <div className="flex flex-col gap-1 max-h-[45vh] overflow-y-auto">
+                                        {loadingRank && <div className="text-center text-white/40 text-sm py-6">読み込み中...</div>}
+                                        {!loadingRank && rankRows.length === 0 && <div className="text-center text-white/40 text-sm py-6">まだ記録がありません</div>}
+                                        {!loadingRank && rankRows.map((r, i) => (
+                                            <div key={i} className="flex items-center gap-3 px-3 py-2 rounded bg-white/5 border border-white/10">
+                                                <div className="w-7 text-center font-['Orbitron'] font-black" style={{ color: i === 0 ? '#FFD700' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'rgba(255,255,255,0.5)' }}>{i + 1}</div>
+                                                <div className="flex-1 min-w-0 truncate text-white font-black text-sm">{r.name}</div>
+                                                <div className="text-white/40 text-[10px] whitespace-nowrap">CPU×{r.cpuCount}</div>
+                                                <div className="font-['Orbitron'] font-black text-[var(--steam-gold)] whitespace-nowrap">{rankMode === 'series' ? `${r.score} pts` : `${r.score} 連勝`}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <button className="w-full mt-1 p-3 rounded border border-white/20 text-white/70 text-sm font-black tracking-[2px] active:bg-white/10 transition-all" onClick={() => setMenuMode(null)}>← 戻る</button>
                                 </div>
                             )}
 
@@ -1207,8 +1274,9 @@ const App = () => {
                     </div>
                 ) : (gs.status === 'finished') ? (
                     <div className="result-screen">
-                        <h2 className="result-title uppercase tracking-tighter" style={{ color: gs.isSeriesFinished ? '#FFD700' : 'var(--steam-gold)' }}>{gs.isSeriesFinished ? "シリーズ終了" : `第 ${gs.matchCount - 1} 戦 終了`}</h2>
-                        {gs.isSeriesFinished && <div className="text-xl text-white font-black mb-6 text-center animate-pulse champion-fx py-4 px-8 rounded-full border border-[var(--steam-gold)]">総合優勝 (CHAMPION)<br /><span className="text-[clamp(1.5rem,6vw,2.25rem)] text-[var(--steam-gold)] drop-shadow-[0_0_10px_rgba(212,175,55,1)] mt-2 inline-block max-w-full truncate break-all px-2">👑 {[...gs.players].sort((a, b) => b.score - a.score)[0].name} 👑</span></div>}
+                        <h2 className="result-title uppercase tracking-tighter" style={{ color: gs.isSeriesFinished ? '#FFD700' : 'var(--steam-gold)' }}>{gs.mode === 'streak' ? (gs.isSeriesFinished ? "連勝ストップ" : `🔥 ${gs.streak} 連勝中！`) : (gs.isSeriesFinished ? "シリーズ終了" : `第 ${gs.matchCount - 1} 戦 終了`)}</h2>
+                        {gs.mode === 'streak' && gs.isSeriesFinished && <div className="text-xl text-white font-black mb-6 text-center champion-fx py-4 px-8 rounded-full border border-[var(--steam-gold)]">連勝記録<br /><span className="text-[clamp(1.5rem,6vw,2.25rem)] text-[var(--steam-gold)] mt-2 inline-block">🔥 {gs.streak} 連勝</span></div>}
+                        {gs.mode !== 'streak' && gs.isSeriesFinished && <div className="text-xl text-white font-black mb-6 text-center animate-pulse champion-fx py-4 px-8 rounded-full border border-[var(--steam-gold)]">総合優勝 (CHAMPION)<br /><span className="text-[clamp(1.5rem,6vw,2.25rem)] text-[var(--steam-gold)] drop-shadow-[0_0_10px_rgba(212,175,55,1)] mt-2 inline-block max-w-full truncate break-all px-2">👑 {[...gs.players].sort((a, b) => b.score - a.score)[0].name} 👑</span></div>}
                         <div className="flex flex-row items-end justify-center w-full max-w-[440px] h-[220px] gap-1 mt-4 mb-8 px-2">
                             {(gs.isSeriesFinished ? [...gs.players].sort((a, b) => b.score - a.score) : sortedResultPlayers).map((p, i) => {
                                 const order = i === 0 ? 3 : i === 1 ? 2 : i === 2 ? 4 : i === 3 ? 1 : 5;
@@ -1253,14 +1321,14 @@ const App = () => {
                             })}
                         </div>
                         <div className="w-full max-w-xs flex flex-col gap-3">
-                            <button className={`w-full py-5 text-xl font-black rounded-sm shadow-2xl uppercase tracking-[2px] transition-all ${me?.ready ? 'bg-gray-600 text-white/50' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-black'}`} onClick={() => { if (me?.ready) return; playSE('start', muted); socket.emit('play-again', { roomId: room }); }}>{me?.ready ? "待機中..." : (gs.isSeriesFinished ? "新しいシリーズを開始" : "次のマッチへ")}</button>
+                            <button className={`w-full py-5 text-xl font-black rounded-sm shadow-2xl uppercase tracking-[2px] transition-all ${me?.ready ? 'bg-gray-600 text-white/50' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-black'}`} onClick={() => { if (me?.ready) return; playSE('start', muted); socket.emit('play-again', { roomId: room }); }}>{me?.ready ? "待機中..." : (gs.isSeriesFinished ? (gs.mode === 'streak' ? "もう一度挑戦" : "新しいシリーズを開始") : "次のマッチへ")}</button>
                             <button className="w-full py-3 text-xs font-black bg-black/50 border border-white/10 text-white/50 rounded-sm uppercase tracking-[2px] mt-2" onClick={goToTopPage}>タイトル画面へ戻る</button>
                         </div>
                     </div>
                 ) : (
                     <>
                         <div className="flex justify-between items-center px-4 py-2 bg-[#05010a]/90 border-b border-accent/20 shrink-0 z-50">
-                            <div className="text-[11px] font-black text-accent font-['Orbitron'] tracking-[2px] sm:tracking-[4px] truncate flex-1">セクター: {room} <span className="ml-2 text-white/80">| 第{gs.matchCount}/{gs.maxMatches}戦</span> <span className="ml-2 text-[var(--steam-gold)]">★ {me?.score || 0} pts</span></div>
+                            <div className="text-[11px] font-black text-accent font-['Orbitron'] tracking-[2px] sm:tracking-[4px] truncate flex-1">セクター: {room} <span className="ml-2 text-white/80">{gs.mode === 'streak' ? `| 🔥 ${gs.streak || 0}連勝中` : `| 第${gs.matchCount}/${gs.maxMatches}戦`}</span> <span className="ml-2 text-[var(--steam-gold)]">★ {me?.score || 0} pts</span></div>
                             <div className="flex items-center gap-2 shrink-0 ml-2">
                                 <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all hover:bg-accent/10 ${bgAnim ? 'border-accent text-accent bg-black/80 shadow-[0_0_10px_rgba(64,224,208,0.4)]' : 'border-gray-500 text-gray-500 bg-black/60'}`} onClick={() => { playSE(bgAnim ? 'cancel' : 'start', muted); setBgAnim(!bgAnim); }} title={bgAnim ? "軽量モードON (描画負荷軽減)" : "軽量モードOFF (通常演出)"}>{bgAnim ? '✨' : '🍃'}</div>
                                 <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80 cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.4)] transition-all hover:bg-accent/10" onClick={() => setMuted(!muted)} title={muted ? "音声ON" : "音声OFF"}>{muted ? '🔇' : '🔊'}</div>

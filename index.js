@@ -3,6 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const fs = require('fs');
+const ranking = require('./ranking');
 
 const app = express();
 const path = require('path');
@@ -50,6 +51,13 @@ app.get('/api/rooms', (req, res) => {
       maxPlayers: 5
     }));
   res.json(publicRooms);
+});
+
+// ランキングAPI: /api/ranking?mode=series|streak&period=all|week|day
+app.get('/api/ranking', (req, res) => {
+  const mode = ranking.MODES.includes(req.query.mode) ? req.query.mode : 'series';
+  const period = req.query.period in ranking.PERIODS ? req.query.period : 'all';
+  res.json(ranking.getRanking(mode, period));
 });
 
 app.use(express.static(distPath));
@@ -295,12 +303,36 @@ function checkGameOver(room) {
 
     room.matchCount++;
     if (room.turnTimer) clearTimeout(room.turnTimer); // 試合終了時にタイマー停止
-    if (room.matchCount > room.maxMatches) {
+    if (room.mode === 'streak') {
+      // 連勝モード: 人間が勝てば継続、負けたら終了して記録
+      const human = room.players.find(p => !p.isBot);
+      if (human) {
+        if (winner && winner.id === human.id) {
+          room.streak = (room.streak || 0) + 1;
+        } else {
+          room.isSeriesFinished = true;
+          recordStreak(room);
+        }
+      }
+    } else if (room.matchCount > room.maxMatches) {
       room.isSeriesFinished = true;
+      const cpuCount = room.players.filter(p => p.isBot).length;
+      room.players.filter(p => !p.isBot).forEach(p => {
+        ranking.addRecord({ mode: 'series', name: p.name, score: p.score, cpuCount });
+      });
     }
     return true;
   }
   return false;
+}
+
+// 連勝モードの記録を1回だけ保存する
+function recordStreak(room) {
+  if (room.streakRecorded) return;
+  room.streakRecorded = true;
+  const human = room.players.find(p => !p.isBot);
+  if (!human || !room.streak) return;
+  ranking.addRecord({ mode: 'streak', name: human.name, score: room.streak, extra: human.score, cpuCount: room.players.filter(p => p.isBot).length });
 }
 
 function broadcastRoomState(roomId) {
@@ -361,6 +393,7 @@ function handlePlayerExit(socket, roomId) {
   const pIndex = room.players.findIndex(p => p.id === socket.id);
   if (pIndex === -1) return;
   const player = room.players[pIndex];
+  if (room.mode === 'streak' && !player.isBot) recordStreak(room); // 途中離脱でも連勝記録は残す
   room.logs.push({ id: Math.random(), text: `${player.name} が戦線を離脱しました` });
   room.players.splice(pIndex, 1);
 
@@ -589,7 +622,7 @@ io.on('connection', (socket) => {
     console.log(`[SYSTEM] Join Request: Room=${rid}, Player=${data.playerName}`);
 
     if (!rooms[rid]) {
-      rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], currentTurnPlayerId: null, matchCount: 1, maxMatches: 5, isSeriesFinished: false, roomName: data.roomName || rid, isPublic: data.isPublic || false, hostId: null };
+      rooms[rid] = { id: rid, players: [], deck: [], fieldCard: null, turnIndex: 0, status: 'waiting', nextDrawAmount: 1, isReversed: false, logs: [], currentTurnPlayerId: null, matchCount: 1, maxMatches: 5, isSeriesFinished: false, roomName: data.roomName || rid, isPublic: data.isPublic || false, hostId: null, mode: data.mode === 'streak' ? 'streak' : 'series', streak: 0 };
       console.log(`[SYSTEM] New Room Created: ${rid}`);
     }
 
@@ -617,6 +650,8 @@ io.on('connection', (socket) => {
     }
 
     if (room.players.length >= 5) return;
+    // 連勝モードは1人プレイ専用
+    if (room.mode === 'streak' && room.players.some(p => !p.isBot)) return;
 
     const newPlayer = { id: socket.id, name: sanitizedName, hand: [], handCount: 0, isBot: false, isEliminated: false, score: 0, ready: false };
     room.players.push(newPlayer);
@@ -811,7 +846,9 @@ io.on('connection', (socket) => {
         if (room.isSeriesFinished) {
           room.matchCount = 1;
           room.isSeriesFinished = false;
-          room.players.forEach(p => { p.score = 0; });
+          room.players.forEach(p => { p.score = 0; p.consecutiveWins = 0; p.streakCount = 0; });
+          room.streak = 0;
+          room.streakRecorded = false;
           room.status = 'waiting';
           room.logs = [];
         } else {
@@ -855,8 +892,9 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
+  ranking.init(path.join(process.env.DATA_DIR || path.join(__dirname, 'data'), 'crossrealm.db'));
   server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
 // テスト用に公開
-module.exports = { server, io, rooms, filterName, createDeck, canPlay, nextTurn, checkGameOver, HAND_LIMIT, INITIAL_HAND };
+module.exports = { server, io, rooms, filterName, createDeck, canPlay, nextTurn, checkGameOver, ranking, HAND_LIMIT, INITIAL_HAND };

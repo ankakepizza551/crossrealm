@@ -18,7 +18,7 @@ COPY package-lock.json package.json ./
 RUN npm ci --omit=dev
 
 COPY --from=build /app/dist ./dist
-COPY index.js ./
+COPY index.js ranking.js ./
 
 EXPOSE 3000
 CMD ["node", "index.js"]

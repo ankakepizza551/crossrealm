@@ -6,3 +6,4 @@ old/
 *.bak
 *.log
 .DS_Store
+data/
