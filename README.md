@@ -135,6 +135,7 @@ crossrealm/
 ├── vite.config.js / tailwind.config.js / postcss.config.cjs
 ├── public/
 │   └── ogp.png               # OGP / Twitterカード画像
+├── test/                     # テスト (npm test)
 ├── src/
 │   ├── App.jsx               # フロントエンド本体 (React)
 │   ├── index.css             # 全スタイル定義
@@ -147,6 +148,14 @@ crossrealm/
 ├── Cross_Realm_Icon_Lab.html / DesignLab.html  # デザイン検証用
 └── guide_*.webp / icon.*     # ガイド・アイコン用画像
 ```
+
+## 🧪 テスト
+
+```bash
+npm test
+```
+
+`test/` 配下のテストを Node 標準のテストランナーで実行します（Node 20.14 以降）。カードの出し方・ターン進行・スコア計算などのルール判定と、「1人でプレイ」の開始フローを検証しています。
 
 ## 🚀 デプロイ (Fly.io)
 

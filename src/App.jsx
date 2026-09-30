@@ -580,7 +580,7 @@ const App = () => {
             setTimeout(() => socket.emit('add-cpu', { roomId: soloRoomId }), 300 + i * 100);
         }
         // 全員揃ったら自動でゲーム開始
-        setTimeout(() => socket.emit('toggle-ready', { roomId: soloRoomId }), 300 + cpuCount * 100 + 200);
+        setTimeout(() => socket.emit('start-game', { roomId: soloRoomId }), 300 + cpuCount * 100 + 200);
     }, [muted]);
     const leave = useCallback(() => { if (room) { playSE('cancel', muted); socket.emit('leave-room', { roomId: room.toUpperCase() }); setJoined(false); setGs(null); } }, [room, muted]);
     const goToTopPage = useCallback(() => { playSE('cancel', muted); if (room) socket.emit('leave-room', { roomId: room.toUpperCase() }); window.location.reload(); }, [room, muted]);

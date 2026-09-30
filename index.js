@@ -353,7 +353,7 @@ setInterval(() => {
       console.log(`[CLEANUP] Room ${rid} removed due to inactivity.`);
     }
   }
-}, 600000); // 10分おきにチェック
+}, 600000).unref(); // 10分おきにチェック
 
 function handlePlayerExit(socket, roomId) {
   const room = rooms[roomId];
@@ -846,4 +846,9 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+if (require.main === module) {
+  server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+// テスト用に公開
+module.exports = { server, io, rooms, filterName, createDeck, canPlay, nextTurn, checkGameOver, HAND_LIMIT, INITIAL_HAND };
