@@ -1,5 +1,9 @@
 node_modules
-src
+dist
 scratch
 *.bat
 .git
+guide_*
+Cross_Realm_*.html
+DesignLab.html
+test

@@ -353,7 +353,7 @@ setInterval(() => {
       console.log(`[CLEANUP] Room ${rid} removed due to inactivity.`);
     }
   }
-}, 600000); // 10分おきにチェック
+}, 600000).unref(); // 10分おきにチェック
 
 function handlePlayerExit(socket, roomId) {
   const room = rooms[roomId];
@@ -363,6 +363,12 @@ function handlePlayerExit(socket, roomId) {
   const player = room.players[pIndex];
   room.logs.push({ id: Math.random(), text: `${player.name} が戦線を離脱しました` });
   room.players.splice(pIndex, 1);
+
+  // ホストが抜けたら、残っている人間プレイヤーの先頭にホストを引き継ぐ
+  if (room.hostId === player.id) {
+    const nextHost = room.players.find(p => !p.isBot);
+    room.hostId = nextHost ? nextHost.id : null;
+  }
 
   if (room.status === 'playing') {
     if (!checkGameOver(room)) {
@@ -598,6 +604,7 @@ io.on('connection', (socket) => {
 
     if (existingPlayer) {
       console.log(`[SYSTEM] Reconnecting Player: ${existingPlayer.name} (ID: ${existingPlayer.id} -> ${socket.id})`);
+      if (room.hostId === existingPlayer.id) room.hostId = socket.id;
       existingPlayer.id = socket.id;
       socket.join(rid);
       broadcastRoomState(rid);
@@ -623,7 +630,7 @@ io.on('connection', (socket) => {
 
   socket.on('add-cpu', (data) => {
     const room = rooms[data.roomId.toUpperCase()];
-    if (room && room.status === 'waiting' && room.players.length < 5) {
+    if (room && room.status === 'waiting' && room.hostId === socket.id && room.players.length < 5) {
       // 被っていない名前をプールから選ぶ
       const usedNames = room.players.map(p => p.name.replace(' (AI)', ''));
       const availableNames = BOT_NAMES.filter(name => !usedNames.includes(name));
@@ -650,7 +657,7 @@ io.on('connection', (socket) => {
 
   socket.on('remove-cpu', (data) => {
     const room = rooms[data.roomId.toUpperCase()];
-    if (room && room.status === 'waiting') {
+    if (room && room.status === 'waiting' && room.hostId === socket.id) {
       const idx = room.players.findIndex(p => p.id === data.botId);
       if (idx !== -1 && room.players[idx].isBot) {
         room.players.splice(idx, 1);
@@ -663,7 +670,8 @@ io.on('connection', (socket) => {
   socket.on('start-game', (data) => {
     try {
       const room = rooms[data.roomId.toUpperCase()];
-      if (room && room.players.length >= 2) {
+      // 開始できるのはロビー待機中のホストのみ
+      if (room && room.status === 'waiting' && room.hostId === socket.id && room.players.length >= 2) {
         room.deck = createDeck();
         // 毎戦席順をシャッフル（Fisher-Yates）
         for (let i = room.players.length - 1; i > 0; i--) {
@@ -846,4 +854,9 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+if (require.main === module) {
+  server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+// テスト用に公開
+module.exports = { server, io, rooms, filterName, createDeck, canPlay, nextTurn, checkGameOver, HAND_LIMIT, INITIAL_HAND };

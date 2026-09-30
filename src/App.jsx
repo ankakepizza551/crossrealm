@@ -580,7 +580,7 @@ const App = () => {
             setTimeout(() => socket.emit('add-cpu', { roomId: soloRoomId }), 300 + i * 100);
         }
         // 全員揃ったら自動でゲーム開始
-        setTimeout(() => socket.emit('toggle-ready', { roomId: soloRoomId }), 300 + cpuCount * 100 + 200);
+        setTimeout(() => socket.emit('start-game', { roomId: soloRoomId }), 300 + cpuCount * 100 + 200);
     }, [muted]);
     const leave = useCallback(() => { if (room) { playSE('cancel', muted); socket.emit('leave-room', { roomId: room.toUpperCase() }); setJoined(false); setGs(null); } }, [room, muted]);
     const goToTopPage = useCallback(() => { playSE('cancel', muted); if (room) socket.emit('leave-room', { roomId: room.toUpperCase() }); window.location.reload(); }, [room, muted]);
@@ -1025,7 +1025,7 @@ const App = () => {
                         </div>
                         <div className="system-status-bar">
                             <span>STATUS: <span className={`status-tag ${(!isConnected) ? 'bg-red-600' : ''}`}>{(!isConnected) ? 'OFFLINE' : 'ONLINE'}</span></span>
-                             <span>VER: <span className="text-white/80 font-black">v1.5</span></span>
+                             <span>VER: <span className="text-white/80 font-black">v1.7</span></span>
                             <span className="text-accent font-black cursor-pointer hover:opacity-70 transition-opacity text-[11px] tracking-[1px] font-['Orbitron']" onClick={() => setShowChangelog(true)}>📋 LOG</span>
                         </div>
 
@@ -1041,9 +1041,32 @@ const App = () => {
                                     <div className="p-4 max-h-[60vh] overflow-y-auto space-y-5 text-[12px]">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v1.5</span>
+                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v1.7</span>
                                                 <span className="text-white/30 text-[10px]">2026.05.08</span>
                                                 <span className="bg-accent/20 text-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-accent/30">LATEST</span>
+                                            </div>
+                                            <div className="text-white/30 text-[10px] mb-2">ロビー機能追加</div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🔒 プライベートルーム（ルーム名+コード発行）</li>
+                                                <li>🌐 パブリックルーム（公開一覧から参加）</li>
+                                                <li>👑 ホスト機能（CPU追加・削除）</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-accent/60 text-[11px]">v1.6</span>
+                                                <span className="text-white/30 text-[10px]">2026.05.08</span>
+                                            </div>
+                                            <div className="text-white/30 text-[10px] mb-2">1人/多人数メニュー分離</div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🤖 1人でプレイ（CPU人数選択→即開始）</li>
+                                                <li>👥 みんなでプレイを分離</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-accent/60 text-[11px]">v1.5</span>
+                                                <span className="text-white/30 text-[10px]">2026.05.08</span>
                                             </div>
                                             <div className="text-white/30 text-[10px] mb-2 pl-0">CPU個性・席順シャッフル実装</div>
                                             <ul className="space-y-1 text-white/70 pl-2">
@@ -1160,7 +1183,7 @@ const App = () => {
                                                     </span>
                                                 );
                                             })()}
-                                            {p && i === 0 && <span className="bg-white text-black text-[10px] px-3 py-1 font-black rounded shadow-lg">マスター</span>}
+                                            {p && p.id === gs?.hostId && <span className="bg-white text-black text-[10px] px-3 py-1 font-black rounded shadow-lg">マスター</span>}
                                             {p && p.isBot && gs?.hostId === me?.id && <button className="text-[10px] font-black text-red-400 border border-red-400/40 px-2 py-0.5 rounded hover:bg-red-400/10 transition-all" onClick={() => socket.emit('remove-cpu', { roomId: room, botId: p.id })}>削除</button>}
                                         </div>
                                     </div>
@@ -1168,14 +1191,16 @@ const App = () => {
                             })}
                         </div>
                         <div className="w-full mt-2 px-4 flex flex-col items-center">
-                            {(gs?.players[0]?.id === socket?.id || gs?.players[0]?.name === name) && (
+                            {gs?.hostId === me?.id ? (
                                 <>
                                     <div className="flex gap-3 w-full mb-3">
-                                        {gs?.hostId === me?.id && <button className="flex-1 py-4 bg-black/80 border border-white/40 text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm hover:bg-white/10 transition-all" disabled={gs?.players?.length >= 5} onClick={() => { playSE('play', muted); socket.emit('add-cpu', { roomId: room }); }}>🤖 CPU追加</button>}
+                                        <button className="flex-1 py-4 bg-black/80 border border-white/40 text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm hover:bg-white/10 transition-all" disabled={gs?.players?.length >= 5} onClick={() => { playSE('play', muted); socket.emit('add-cpu', { roomId: room }); }}>🤖 CPU追加</button>
                                         <button className="flex-[2] py-4 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-base rounded-sm shadow-2xl active:scale-95 transition-all" disabled={gs?.players?.length < 2} onClick={() => { playSE('start', muted); socket.emit('start-game', { roomId: room }); }}>ミッション開始</button>
                                     </div>
                                     <p className="text-[10px] text-white/40 mb-3 font-bold">💡 CPUはそれぞれ異なる戦略を持ちます。追加するたびにランダムで配置されます</p>
                                 </>
+                            ) : (
+                                <p className="text-[11px] text-white/60 mb-3 font-bold tracking-[1px]">👑 ホストの開始を待っています…</p>
                             )}
                             <button className="mt-1 inline-block py-2.5 px-8 bg-black/90 border-2 border-accent text-white font-['Orbitron'] text-[11px] font-black tracking-[4px] rounded-full" onClick={leave}>同期を解除</button>
                         </div>
