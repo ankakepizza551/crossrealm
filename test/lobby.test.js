@@ -265,6 +265,24 @@ test('REVERSE中に手番中のプレイヤーが抜けると、逆方向の次�
   assert.equal(room.players[room.turnIndex].name, 'A');
 });
 
+test('脱落者を除いて残り2人なら、REVERSE を出すともう一度自分の番になる', async () => {
+  const roomId = 'REV2ALIVE';
+  const { room, b } = await setupThreeHumans(roomId);
+  room.players[0].isEliminated = true; // A は脱落、残りは B と C
+  const reverse = { id: 'rev-test', realm: 'MACHINE', isSpecial: true };
+  const B = room.players[1];
+  B.hand = [reverse, { id: 'keep-1', realm: 'GEAR', isSpecial: false }, { id: 'keep-2', realm: 'GEAR', isSpecial: false }];
+  B.handCount = B.hand.length;
+  room.fieldCard = { id: 'field', realm: 'MACHINE', isSpecial: false };
+  room.nextDrawAmount = 1;
+  room.wildAnimLockUntil = null;
+  b.emit('play-card', { roomId, card: reverse });
+  await settle();
+  clearTimeout(room.turnTimer);
+  assert.equal(room.fieldCard.id, 'rev-test');
+  assert.equal(room.players[room.turnIndex].name, 'B');
+});
+
 test('手番中のプレイヤーが抜けて次がCPUなら、CPUがすぐに動く', async () => {
   const roomId = 'LEAVEBOT';
   const host = await connect(), guest = await connect();

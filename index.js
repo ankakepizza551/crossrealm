@@ -153,6 +153,9 @@ function createDeck() {
   return deck;
 }
 
+// 脱落していないプレイヤーの数（REVERSE の扱いは脱落者を除いた人数で決める）
+const aliveCount = (room) => room.players.filter(p => !p.isEliminated).length;
+
 // 生存しているプレイヤーを探して次のターンを決定
 function nextTurn(room, skip = false) {
   const step = room.isReversed ? -1 : 1;
@@ -510,7 +513,7 @@ function processBotTurn(roomId) {
     room.lastActivityAt = Date.now(); 
 
     if (!checkGameOver(room)) {
-      nextTurn(room, action.card?.isSpecial && action.card.realm === 'MACHINE' && room.players.length === 2);
+      nextTurn(room, action.card?.isSpecial && action.card.realm === 'MACHINE' && aliveCount(room) === 2);
     }
 
     broadcastRoomState(roomId);
@@ -592,7 +595,7 @@ function getBotAction(room, bot) {
     case 'SABOTEUR':
       // 妨害最優先：DRAW2積み > REVERSE（3人以上の場合） > WILD > 通常
       if (drawTwos.length > 0)                                  targetCard = pick(drawTwos);
-      else if (reverses.length > 0 && room.players.length > 2)  targetCard = pick(reverses);
+      else if (reverses.length > 0 && aliveCount(room) > 2)  targetCard = pick(reverses);
       else if (wilds.length > 0)                                targetCard = pick(wilds);
       else                                                      targetCard = pick(normals.length > 0 ? normals : playable);
       break;
@@ -836,7 +839,7 @@ io.on('connection', (socket) => {
       player.handCount = player.hand.length;
 
       if (!checkGameOver(room)) {
-        nextTurn(room, card.isSpecial && card.realm === 'MACHINE' && room.players.length === 2);
+        nextTurn(room, card.isSpecial && card.realm === 'MACHINE' && aliveCount(room) === 2);
       }
       // lastActionには変身前のカード情報（motionCard）を使用
       room.lastAction = { type: 'play', playerId: socket.id, cardId: motionCard.id, card: motionCard };
