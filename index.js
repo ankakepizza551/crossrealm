@@ -928,7 +928,12 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
-  ranking.init(path.join(process.env.DATA_DIR || path.join(__dirname, 'data'), 'crossrealm.db'));
+  const dataDir = process.env.DATA_DIR || path.join(__dirname, 'data');
+  ranking.init(path.join(dataDir, 'crossrealm.db'));
+  // ランキングのバックアップ（1日1回、7日分）。マシンは止まりがちなので起動時にも確認する
+  const backupDir = path.join(dataDir, 'backups');
+  ranking.backup(backupDir);
+  setInterval(() => ranking.backup(backupDir), 60 * 60 * 1000).unref();
   server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 

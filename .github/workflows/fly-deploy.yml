@@ -21,6 +21,10 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - name: ガイドが元ファイルから生成済みか確認
+        run: |
+          npm run build:guide
+          git diff --exit-code Cross_Realm_Interactive_Guide.html
 
   deploy:
     needs: test
