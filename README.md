@@ -136,6 +136,8 @@ crossrealm/
 ├── public/
 │   └── ogp.jpg               # OGP / Twitterカード画像
 ├── test/                     # テスト (npm test)
+├── scripts/build-guide.js    # ガイドの組み立て (npm run build:guide)
+├── guide/                    # ガイドの元ファイル（編集はこちら）
 ├── src/
 │   ├── App.jsx               # フロントエンド本体 (React)
 │   ├── index.css             # 全スタイル定義
@@ -143,7 +145,7 @@ crossrealm/
 │   └── components/
 │       └── CycleDiagramSmall.jsx
 ├── dist/                     # ビルド出力 (Git管理外・Dockerビルド時に生成)
-├── Cross_Realm_Interactive_Guide.html  # インタラクティブガイド
+├── Cross_Realm_Interactive_Guide.html  # インタラクティブガイド（自動生成）
 ├── Cross_Realm_Card_Showcase.html      # カードショーケース
 ├── Cross_Realm_Icon_Lab.html / DesignLab.html  # デザイン検証用
 └── guide_* / icon.*          # ガイド用の画像・動画、アイコン
@@ -165,6 +167,16 @@ npm test
 - 手動で再デプロイしたい場合は、GitHub の Actions タブから「Test & Fly Deploy」を選び「Run workflow」を押すか、ローカルで `fly deploy` を実行します。
 
 Dockerイメージの中でフロントエンドをビルドするため、事前に `npm run build` を実行する必要はありません。
+
+## 💾 ランキングのバックアップ
+
+- サーバーが 1 日 1 回、`/data/backups/` に SQLite のコピーを作ります（7 日分。`latest.db` が最新）。
+- GitHub Actions の「Ranking Backup」（`.github/workflows/ranking-backup.yml`）が毎週月曜に `latest.db` を取り出し、Actions の成果物として 90 日保存します。Actions タブから手動でも実行できます。
+- 戻すときは、成果物の `ranking-backup.db` を `fly ssh sftp shell` などで `/data/crossrealm.db` に置き、マシンを再起動します。
+
+## 📖 ガイドの編集
+
+`Cross_Realm_Interactive_Guide.html` は自動生成です。`guide/Cross_Realm_Interactive_Guide.src.html` を編集して `npm run build:guide` を実行し、両方をコミットしてください（JSX の変換と Tailwind の生成を前もって済ませ、ブラウザでの読み込みを軽くしています）。生成し忘れると CI のテストで失敗します。
 
 ## 🎮 開発・技術仕様
 

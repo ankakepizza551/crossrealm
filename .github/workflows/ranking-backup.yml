@@ -1,0 +1,35 @@
+# ランキングのバックアップを Fly.io から取り出し、GitHub Actions の成果物として 90 日保存する。
+# サーバーは /data/backups に毎日のコピー（latest.db が最新）を作っている。ここではそれを外に持ち出す。
+# 毎週月曜（日本時間 12:00 ごろ）と、Actions 画面からの手動実行で動く。FLY_API_TOKEN はデプロイと共通。
+name: Ranking Backup
+
+on:
+  schedule:
+    - cron: '47 2 * * 1'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: マシンを起こす（止まっていると取り出せないため）
+        run: |
+          for i in 1 2 3 4 5 6; do
+            curl -fsS -o /dev/null https://crossrealm.fly.dev/api/rooms && break
+            sleep 10
+          done
+      - name: latest.db を取り出す
+        run: |
+          for i in 1 2 3; do
+            flyctl ssh sftp get /data/backups/latest.db ranking-backup.db -a crossrealm && break
+            sleep 15
+          done
+          test -s ranking-backup.db
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ranking-backup-${{ github.run_number }}
+          path: ranking-backup.db
+          retention-days: 90

@@ -1,5 +1,9 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { DatabaseSync } = require('node:sqlite');
 const { checkGameOver, ranking } = require('../index.js');
 
 test.before(() => assert.equal(ranking.init(':memory:'), true));
@@ -74,4 +78,22 @@ test('連勝モード: 1試合目で負けたら記録なし、二重登録も�
   checkGameOver(r2);
   const n = ranking.getRanking('streak', 'all').length;
   assert.equal(n, before + 1);
+});
+
+test('バックアップは1日1つ、古いものは消え、中身を読める', () => {
+  ranking.addRecord({ mode: 'series', name: 'Backup', score: 77 });
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cr-backup-'));
+  try {
+    const days = ['2026-01-01', '2026-01-02', '2026-01-03', '2026-01-04'];
+    for (const d of days) assert.ok(ranking.backup(dir, 3, new Date(`${d}T12:00:00Z`)));
+    assert.equal(ranking.backup(dir, 3, new Date('2026-01-04T20:00:00Z')), null); // 同じ日は作らない
+    const files = fs.readdirSync(dir).sort();
+    assert.deepEqual(files, ['crossrealm-2026-01-02.db', 'crossrealm-2026-01-03.db', 'crossrealm-2026-01-04.db', 'latest.db']);
+    const copy = new DatabaseSync(path.join(dir, 'latest.db'));
+    const row = copy.prepare("SELECT score FROM records WHERE name = 'Backup'").get();
+    copy.close();
+    assert.equal(row.score, 77);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });

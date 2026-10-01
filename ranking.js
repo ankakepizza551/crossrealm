@@ -61,4 +61,24 @@ function getRanking(mode, period = 'all', limit = 20) {
   }
 }
 
-module.exports = { init, addRecord, getRanking, MODES, PERIODS };
+// その日のバックアップを dir に作る（すでにあれば何もしない）。新しいものから keep 個だけ残す。
+// VACUUM INTO で書き込み中でも整合性のとれたコピーになる。latest.db は最新のコピー（外部への持ち出し用）。
+function backup(dir, keep = 7, now = new Date()) {
+  if (!db) return null;
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    const file = path.join(dir, `crossrealm-${now.toISOString().slice(0, 10)}.db`);
+    if (fs.existsSync(file)) return null;
+    db.exec(`VACUUM INTO '${file.replace(/'/g, "''")}'`);
+    fs.copyFileSync(file, path.join(dir, 'latest.db'));
+    const old = fs.readdirSync(dir).filter(f => /^crossrealm-\d{4}-\d{2}-\d{2}\.db$/.test(f)).sort().reverse().slice(keep);
+    for (const f of old) fs.unlinkSync(path.join(dir, f));
+    console.log('[RANKING] backup created:', file);
+    return file;
+  } catch (e) {
+    console.error('[RANKING] backup failed:', e.message);
+    return null;
+  }
+}
+
+module.exports = { init, addRecord, getRanking, backup, MODES, PERIODS };

@@ -1291,7 +1291,7 @@ const App = () => {
                         <h2 className="text-accent font-black tracking-[8px] animate-pulse font-['Orbitron']">ESTABLISHING LINK...</h2>
                     </div>
                 ) : (gs?.status === 'waiting') ? (
-                    <div className="h-full flex flex-col items-center justify-center p-4 text-center overflow-y-auto no-scrollbar">
+                    <div className="h-full flex flex-col items-center [justify-content:safe_center] p-4 text-center overflow-y-auto no-scrollbar">
                         <h2 className="text-[clamp(1.2rem,6.5vw,1.875rem)] font-black mb-3 tracking-[clamp(4px,2vw,10px)] font-['Orbitron'] text-white animate-pulse uppercase w-full text-center">同期待機中...</h2>
                         {gs?.roomName && gs.roomName !== room && (
                             <div className="text-white/50 font-black text-sm mb-1 tracking-[2px]">{gs.roomName}</div>
@@ -1505,7 +1505,7 @@ const App = () => {
                                 );
                             })}
                         </div>
-                        <div className="w-full px-4 pb-4 shrink-0 flex flex-col gap-2"><button className="btn-mega-draw w-full h-16 bg-gradient-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl tracking-[8px] cursor-pointer transition-all active:scale-95 disabled:grayscale disabled:opacity-50" disabled={!isMyTurn || selector || isAnimating || isMorphing} onClick={() => { if (isAnimating || isMorphing) { setBufferedAction({ type: 'draw' }); return; } playSE('draw', muted); socket.emit('draw-card', { roomId: room }); }}>ドロー ({gs.nextDrawAmount}枚)</button></div>
+                        <div className="draw-btn-area w-full px-4 pb-4 shrink-0 flex flex-col gap-2"><button className="btn-mega-draw w-full h-16 bg-gradient-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl tracking-[8px] cursor-pointer transition-all active:scale-95 disabled:grayscale disabled:opacity-50" disabled={!isMyTurn || selector || isAnimating || isMorphing} onClick={() => { if (isAnimating || isMorphing) { setBufferedAction({ type: 'draw' }); return; } playSE('draw', muted); socket.emit('draw-card', { roomId: room }); }}>ドロー ({gs.nextDrawAmount}枚)</button></div>
                     </>
                 )}
             </div>
