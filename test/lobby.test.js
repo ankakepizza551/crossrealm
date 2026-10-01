@@ -222,3 +222,91 @@ test('次のマッチへ: 全員が準備完了すると手札を配り直して
   }
   assert.ok(me.score > 0, 'シリーズの合計スコアは引き継がれる');
 });
+
+// A・B・C（＋任意のCPU）で対戦を始め、席順を A,B,C,… に固定して B の番にする
+async function setupThreeHumans(roomId, cpuCount = 0) {
+  const a = await connect(), b = await connect(), c = await connect();
+  await joinWithToken(a, roomId, 'A');
+  await joinWithToken(b, roomId, 'B');
+  await joinWithToken(c, roomId, 'C');
+  for (let i = 0; i < cpuCount; i++) a.emit('add-cpu', { roomId });
+  const playing = waitForState(a, s => s.status === 'playing', '試合開始');
+  a.emit('start-game', { roomId });
+  await playing;
+  const room = rooms[roomId];
+  clearTimeout(room.turnTimer);
+  room.players.sort((x, y) => x.name.localeCompare(y.name));
+  room.isReversed = false;
+  room.turnIndex = 1;
+  room.currentTurnPlayerId = room.players[1].id;
+  return { room, a, b, c };
+}
+
+test('手番外のプレイヤーが抜けても、今の手番は変わらない', async () => {
+  const { room, a } = await setupThreeHumans('LEAVEOTHER');
+  a.emit('leave-room', { roomId: 'LEAVEOTHER' });
+  await settle();
+  assert.equal(room.players[room.turnIndex].name, 'B');
+  assert.equal(room.currentTurnPlayerId, room.players[room.turnIndex].id);
+});
+
+test('手番中のプレイヤーが抜けると、進行方向の次の人の番になる', async () => {
+  const { room, b } = await setupThreeHumans('LEAVECUR');
+  b.emit('leave-room', { roomId: 'LEAVECUR' });
+  await settle();
+  assert.equal(room.players[room.turnIndex].name, 'C');
+});
+
+test('REVERSE中に手番中のプレイヤーが抜けると、逆方向の次の人の番になる', async () => {
+  const { room, b } = await setupThreeHumans('LEAVEREV');
+  room.isReversed = true;
+  b.emit('leave-room', { roomId: 'LEAVEREV' });
+  await settle();
+  assert.equal(room.players[room.turnIndex].name, 'A');
+});
+
+test('手番中のプレイヤーが抜けて次がCPUなら、CPUがすぐに動く', async () => {
+  const roomId = 'LEAVEBOT';
+  const host = await connect(), guest = await connect();
+  await joinWithToken(host, roomId, 'Host');
+  await joinWithToken(guest, roomId, 'Guest');
+  host.emit('add-cpu', { roomId });
+  const playing = waitForState(host, s => s.status === 'playing', '試合開始');
+  host.emit('start-game', { roomId });
+  await playing;
+  const room = rooms[roomId];
+  clearTimeout(room.turnTimer);
+  // 席順を Guest → CPU → Host にして Guest の番に
+  const order = [room.players.find(p => p.name === 'Guest'), room.players.find(p => p.isBot), room.players.find(p => p.name === 'Host')];
+  room.players.splice(0, room.players.length, ...order);
+  room.isReversed = false;
+  room.turnIndex = 0;
+  room.currentTurnPlayerId = order[0].id;
+  room.logs.push({ id: 1, text: 'x' }); // 試合開始直後の長い待ち時間を避ける
+  const bot = order[1];
+  const before = bot.hand.length;
+
+  guest.emit('leave-room', { roomId });
+  // CPU が出すかドローして、手番がホストに回る
+  const moved = waitForState(host, s => s.currentTurnPlayerId === host.id, 'CPUの行動');
+  await moved;
+  assert.notEqual(bot.hand.length, before, 'CPUがカードを出すかドローした');
+});
+
+test('1つの接続で入れる部屋は1つだけ（別の部屋に入ると前の部屋から抜ける）', async () => {
+  const c = await connect();
+  await joinWithToken(c, 'ONEROOM1', 'Solo');
+  await joinWithToken(c, 'ONEROOM2', 'Solo');
+  assert.equal(rooms['ONEROOM1'], undefined, '誰もいなくなった前の部屋は消える');
+  assert.equal(rooms['ONEROOM2'].players.length, 1);
+});
+
+test('公開ルーム一覧は最大50件まで', async () => {
+  for (let i = 0; i < 60; i++) {
+    rooms[`FAKEPUB${i}`] = { id: `FAKEPUB${i}`, roomName: 'x', isPublic: true, status: 'waiting', hostId: 'h', players: [{ id: 'h', name: 'h', isBot: false }] };
+  }
+  const res = await fetch(`${url}/api/rooms`);
+  const list = await res.json();
+  for (let i = 0; i < 60; i++) delete rooms[`FAKEPUB${i}`];
+  assert.equal(list.length, 50);
+});
