@@ -548,7 +548,7 @@ body {
 .top-logo-area {
     position: relative;
     width: 100%;
-    height: clamp(160px, 25vh, 260px);
+    height: clamp(170px, 26vh, 260px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -560,8 +560,9 @@ body {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 240px;
-    height: 240px;
+    /* ロゴ領域の高さに合わせて縮める（リングが上のヘッダーに隠れないように） */
+    width: min(240px, clamp(170px, 26vh, 260px));
+    height: min(240px, clamp(170px, 26vh, 260px));
     z-index: 1;
     transform: translate(-50%, -50%);
     pointer-events: none;

@@ -903,9 +903,9 @@ const App = () => {
                 )}
                 {!joined ? (
                     <div className="h-full flex flex-col no-scrollbar">
-                        <div className="flex-1 flex flex-col items-center justify-center py-4 sm:py-8 overflow-y-auto no-scrollbar">
+                        <div className="flex-1 min-h-0 flex flex-col items-center [justify-content:safe_center] py-4 sm:py-8 overflow-y-auto no-scrollbar">
                             {/* ロゴ共通 */}
-                            <div className="top-logo-area flex-shrink-0 scale-[1.15] sm:scale-100 origin-center mb-6 sm:mb-4">
+                            <div className="top-logo-area flex-shrink-0 mb-3 sm:mb-4">
                                 <div className="field-central-zone">
                                     <div className="emblem-bg-layer"><ComplexEmblem isLogo={true} /></div>
                                     <div className="logo-text-layer">
@@ -919,14 +919,14 @@ const App = () => {
                             {/* ===== トップメニュー ===== */}
                             {menuMode === null && (
                                 <>
-                                    <div className="trinity-flavor-box mb-6 sm:mb-8 flex-shrink-0">
+                                    <div className="trinity-flavor-box mb-4 sm:mb-8 flex-shrink-0">
                                         <div className="flavor-line"><span className="f-steam">真鍮</span>の爆鳴、<span className="f-fantasy">星界</span>の共鳴、<span className="f-cyber">電脳</span>の火花。</div>
                                         <div className="mt-2 text-white/70 font-black text-[0.8rem]">次元の境界は消失し、特異点へと収束する。</div>
                                     </div>
-                                    <div className="w-full px-6 sm:px-8 flex flex-col gap-4 flex-shrink-0">
+                                    <div className="w-full px-6 sm:px-8 flex flex-col gap-3 sm:gap-4 flex-shrink-0">
                                         {/* 1人でプレイ */}
                                         <button
-                                            className="w-full p-5 rounded-lg border-2 border-accent/40 bg-accent/10 active:scale-95 transition-all text-left relative overflow-hidden group"
+                                            className="w-full px-5 py-4 sm:p-5 rounded-lg border-2 border-accent/40 bg-accent/10 active:scale-95 transition-all text-left relative overflow-hidden group"
                                             onClick={() => { playSE('start', muted); setMenuMode('solo'); }}
                                             disabled={!isConnected}
                                         >
@@ -936,7 +936,7 @@ const App = () => {
                                         </button>
                                         {/* 連勝モード */}
                                         <button
-                                            className="w-full p-5 rounded-lg border-2 border-red-400/40 bg-red-500/10 active:scale-95 transition-all text-left"
+                                            className="w-full px-5 py-4 sm:p-5 rounded-lg border-2 border-red-400/40 bg-red-500/10 active:scale-95 transition-all text-left"
                                             onClick={() => { playSE('start', muted); setMenuMode('streak'); }}
                                             disabled={!isConnected}
                                         >
@@ -945,7 +945,7 @@ const App = () => {
                                         </button>
                                         {/* みんなでプレイ */}
                                         <button
-                                            className="w-full p-5 rounded-lg border-2 border-steam-gold/40 bg-steam-gold/10 active:scale-95 transition-all text-left relative overflow-hidden group"
+                                            className="w-full px-5 py-4 sm:p-5 rounded-lg border-2 border-steam-gold/40 bg-steam-gold/10 active:scale-95 transition-all text-left relative overflow-hidden group"
                                             style={{ borderColor: 'rgba(212,175,55,0.4)', background: 'rgba(212,175,55,0.08)' }}
                                             onClick={() => { playSE('start', muted); setMenuMode('multi'); }}
                                             disabled={!isConnected}
@@ -956,7 +956,7 @@ const App = () => {
                                         </button>
                                         {/* ランキング */}
                                         <button
-                                            className="w-full p-4 rounded-lg border border-white/20 bg-white/5 active:scale-95 transition-all text-left"
+                                            className="w-full px-4 py-3 sm:p-4 rounded-lg border border-white/20 bg-white/5 active:scale-95 transition-all text-left"
                                             onClick={() => { playSE('start', muted); setMenuMode('ranking'); }}
                                         >
                                             <div className="font-['Orbitron'] font-black text-white text-base tracking-[2px]">🏆 ランキング</div>
