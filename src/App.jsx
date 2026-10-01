@@ -1428,7 +1428,7 @@ const App = () => {
                         </div>
                         <div className="field-main-area">
                             <div className="tactical-field-viewport">
-                                <CycleDiagramSmall currentRealm={gs.currentRealm} playableRealms={playableRealms} hoveredCard={null} bgAnim={bgAnim} isReversed={gs.isReversed} />
+                                <CycleDiagramSmall currentRealm={currentR} playableRealms={playableRealms} hoveredCard={null} bgAnim={bgAnim} isReversed={gs.isReversed} isMyTurn={isMyTurn} />
                                 <div className="central-cards-overlay">
                                     <div className="flex items-center justify-center gap-4 sm:gap-6">
                                         <div className="relative w-14 h-20 sm:w-16 sm:h-24 opacity-90 transition-all cursor-help group">

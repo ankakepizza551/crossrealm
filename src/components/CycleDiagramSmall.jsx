@@ -59,7 +59,13 @@ const MarkerIcon = ({ r, color, spec = false, scale = 1 }) => {
     );
 };
 
-const CycleDiagramSmall = ({ currentRealm, playableRealms = [], isReversed }) => {
+// 中心 (0,0)・外接半径 r の縦長六角形
+const hexPath = (r) => {
+    const pts = [-90, -30, 30, 90, 150, 210].map(a => `${(r * Math.cos(a * Math.PI / 180)).toFixed(1)} ${(r * Math.sin(a * Math.PI / 180)).toFixed(1)}`);
+    return `M${pts.join(' L')} Z`;
+};
+
+const CycleDiagramSmall = ({ currentRealm, playableRealms = [], isReversed, isMyTurn = true }) => {
     const containerRef = useRef(null);
     const [dimensions, setDimensions] = useState({
         width: 400,
@@ -110,7 +116,7 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], isReversed }) =>
         ? (isMicro ? Math.max(90, 110 - (480 - width) * 0.1) : (isMedium ? 108 : 130))
         : 180;
 
-    const mScale = isPortrait ? (isMicro ? 1.4 : (isMedium ? 1.5 : 1.8)) : 3.0;
+    const mScale = isPortrait ? (isMicro ? 1.6 : (isMedium ? 1.7 : 2.0)) : 3.3;
     const fontSize = isPortrait ? (isMicro ? 16 : (isMedium ? 17 : 20)) : 28;
 
     const getPos = (i) => {
@@ -140,14 +146,6 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], isReversed }) =>
                     <marker id="arrowhead-master" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
                         <path d="M0,0 L0,10 L10,5 z" fill="rgba(255,255,255,0.3)" />
                     </marker>
-                    <linearGradient id="marker-copper" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style={{ stopColor: '#d4af37' }} />
-                        <stop offset="50%" style={{ stopColor: '#b8860b' }} />
-                        <stop offset="100%" style={{ stopColor: '#4b3c00' }} />
-                    </linearGradient>
-                    <pattern id="marker-grid" width="8" height="8" patternUnits="userSpaceOnUse">
-                        <circle cx="1.5" cy="1.5" r="0.8" fill="rgba(255,255,255,0.15)" />
-                    </pattern>
                 </defs>
 
                 <style>{`
@@ -177,6 +175,9 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], isReversed }) =>
                     const isCurrent = item.k === currentRealm;
                     const isPlayable = playableRealms.includes(item.k);
                     const rData = REALMS[item.k];
+                    // 形は世界観ごとに残し、質感（暗い地＋属性色の太枠）をそろえる。今の場は属性色で塗る
+                    const nodeFill = isCurrent ? `${rData.color}50` : 'rgba(10,6,24,0.88)';
+                    const nodeStroke = isCurrent ? 4 : 2.5;
                     
                     const dx = nextPos.x - pos.x;
                     const dy = nextPos.y - pos.y;
@@ -197,26 +198,42 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], isReversed }) =>
                             />
 
                             <g transform={`translate(${pos.x}, ${pos.y})`}>
-                                {isPlayable && (
+                                {/* 出せる場: 自分の番は広がる光の輪、ほかの人の番は薄く動かない輪（次の展開は読めるが、操作の合図と紛れないように） */}
+                                {isPlayable && isMyTurn && (
                                     <g>
                                         <circle r={mBase * 0.6} fill="none" stroke={rData.bright} strokeWidth="3.5" className="playable-pulse" style={{ animationDelay: '0s' }} />
                                         <circle r={mBase * 0.6} fill="none" stroke={rData.bright} strokeWidth="2.2" className="playable-pulse" style={{ animationDelay: '0.6s' }} />
                                         <circle r={mBase * 0.6} fill="none" stroke={rData.bright} strokeWidth="1.2" className="playable-pulse" style={{ animationDelay: '1.2s' }} />
                                     </g>
                                 )}
+                                {isPlayable && !isMyTurn && (
+                                    <circle r={mBase * 0.6} fill="none" stroke={rData.bright} strokeWidth="1.5" opacity="0.35" />
+                                )}
                                 
                                 <g className={isCurrent ? "marker-float" : ""}>
+                                    {/* 今の場: 外側の白い点線リング */}
+                                    {isCurrent && (
+                                        <circle r={mBase * 0.66} fill="none" stroke="#fff" strokeWidth="2" strokeDasharray="6 6" opacity="0.9" />
+                                    )}
                                     {rData.theme === 'steam' && (
-                                        <rect x={-mBase/2} y={-mBase/2} width={mBase} height={mBase} rx={isPortrait ? 4 : 8} fill="url(#marker-copper)" stroke="#3d2616" strokeWidth="1" />
+                                        <g>
+                                            <rect x={-mBase * 0.48} y={-mBase * 0.48} width={mBase * 0.96} height={mBase * 0.96} rx={mBase * 0.08} fill={nodeFill} stroke="#d4af37" strokeWidth={nodeStroke} />
+                                            {[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sy]) => (
+                                                <circle key={`${sx}${sy}`} cx={sx * mBase * 0.38} cy={sy * mBase * 0.38} r={mBase * 0.03} fill="#d4af37" />
+                                            ))}
+                                        </g>
                                     )}
                                     {rData.theme === 'fantasy' && (
                                         <g>
-                                            <circle r={mBase * 0.52} fill="none" stroke={rData.bright} strokeWidth="1" strokeDasharray="4 4" className="marker-rotate" opacity="0.4" />
-                                            <circle r={mBase * 0.45} fill="rgba(0,0,0,0.6)" stroke={rData.bright} strokeWidth="1.5" />
+                                            <circle r={mBase * 0.52} fill="none" stroke={rData.bright} strokeWidth="1" strokeDasharray="4 4" className="marker-rotate" opacity="0.6" />
+                                            <circle r={mBase * 0.46} fill={nodeFill} stroke={rData.bright} strokeWidth={nodeStroke} />
                                         </g>
                                     )}
                                     {rData.theme === 'cyber' && (
-                                        <path d={`M0 -${mBase*0.52} L${mBase*0.45} -${mBase*0.26} L${mBase*0.45} ${mBase*0.26} L0 ${mBase*0.52} L-${mBase*0.45} ${mBase*0.26} L-${mBase*0.45} -${mBase*0.26} Z`} fill="rgba(0,0,0,0.7)" stroke={rData.bright} strokeWidth="2" />
+                                        <g>
+                                            <path d={hexPath(mBase * 0.54)} fill={nodeFill} stroke={rData.bright} strokeWidth={nodeStroke} />
+                                            <path d={hexPath(mBase * 0.46)} fill="none" stroke={rData.bright} strokeWidth="1" opacity="0.5" />
+                                        </g>
                                     )}
 
                                     <g transform={`translate(0, -${isPortrait ? 8 : 14})`}>
@@ -247,6 +264,7 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], isReversed }) =>
 export default React.memo(CycleDiagramSmall, (prev, next) => {
     if (prev.currentRealm !== next.currentRealm) return false;
     if (prev.isReversed !== next.isReversed) return false;
+    if (prev.isMyTurn !== next.isMyTurn) return false;
     if (prev.playableRealms.length !== next.playableRealms.length) return false;
     if (!prev.playableRealms.every((r, i) => r === next.playableRealms[i])) return false;
     return true;
