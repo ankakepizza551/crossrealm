@@ -65,7 +65,7 @@ const hexPath = (r) => {
     return `M${pts.join(' L')} Z`;
 };
 
-const CycleDiagramSmall = ({ currentRealm, playableRealms = [], isReversed }) => {
+const CycleDiagramSmall = ({ currentRealm, playableRealms = [], isReversed, isMyTurn = true }) => {
     const containerRef = useRef(null);
     const [dimensions, setDimensions] = useState({
         width: 400,
@@ -198,12 +198,16 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], isReversed }) =>
                             />
 
                             <g transform={`translate(${pos.x}, ${pos.y})`}>
-                                {isPlayable && (
+                                {/* 出せる場: 自分の番は広がる光の輪、ほかの人の番は薄く動かない輪（次の展開は読めるが、操作の合図と紛れないように） */}
+                                {isPlayable && isMyTurn && (
                                     <g>
                                         <circle r={mBase * 0.6} fill="none" stroke={rData.bright} strokeWidth="3.5" className="playable-pulse" style={{ animationDelay: '0s' }} />
                                         <circle r={mBase * 0.6} fill="none" stroke={rData.bright} strokeWidth="2.2" className="playable-pulse" style={{ animationDelay: '0.6s' }} />
                                         <circle r={mBase * 0.6} fill="none" stroke={rData.bright} strokeWidth="1.2" className="playable-pulse" style={{ animationDelay: '1.2s' }} />
                                     </g>
+                                )}
+                                {isPlayable && !isMyTurn && (
+                                    <circle r={mBase * 0.6} fill="none" stroke={rData.bright} strokeWidth="1.5" opacity="0.35" />
                                 )}
                                 
                                 <g className={isCurrent ? "marker-float" : ""}>
@@ -260,6 +264,7 @@ const CycleDiagramSmall = ({ currentRealm, playableRealms = [], isReversed }) =>
 export default React.memo(CycleDiagramSmall, (prev, next) => {
     if (prev.currentRealm !== next.currentRealm) return false;
     if (prev.isReversed !== next.isReversed) return false;
+    if (prev.isMyTurn !== next.isMyTurn) return false;
     if (prev.playableRealms.length !== next.playableRealms.length) return false;
     if (!prev.playableRealms.every((r, i) => r === next.playableRealms[i])) return false;
     return true;
