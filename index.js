@@ -39,7 +39,8 @@ app.get('/api/debug', (req, res) => {
 });
 
 // 静的ファイルの提供 (ビルド済みのフロントエンド)
-// 公開ルーム一覧API
+// 公開ルーム一覧API（荒らし対策で最大件数を制限）
+const MAX_PUBLIC_ROOMS = 50;
 app.get('/api/rooms', (req, res) => {
   const publicRooms = Object.values(rooms)
     .filter(r => r.isPublic && r.status === 'waiting' && r.players.filter(p => !p.isBot).length > 0)
@@ -50,7 +51,8 @@ app.get('/api/rooms', (req, res) => {
       playerCount: r.players.filter(p => !p.isBot).length,
       botCount: r.players.filter(p => p.isBot).length,
       maxPlayers: 5
-    }));
+    }))
+    .slice(0, MAX_PUBLIC_ROOMS);
   res.json(publicRooms);
 });
 
@@ -396,6 +398,21 @@ function handlePlayerExit(socket, roomId) {
   const player = room.players[pIndex];
   if (room.mode === 'streak' && !player.isBot) recordStreak(room); // 途中離脱でも連勝記録は残す
   room.logs.push({ id: Math.random(), text: `${player.name} が戦線を離脱しました` });
+
+  // 退出後に手番を持つプレイヤーを、退出前の席順で決めておく
+  // （手番外の人が抜けたら今の手番のまま、手番中の人が抜けたら進行方向の次の人へ）
+  const wasCurrentTurn = room.status === 'playing' && pIndex === room.turnIndex;
+  let nextTurnPlayer = room.players[room.turnIndex];
+  if (wasCurrentTurn) {
+    const n = room.players.length;
+    const step = room.isReversed ? -1 : 1;
+    nextTurnPlayer = null;
+    for (let i = 1; i < n; i++) {
+      const candidate = room.players[(pIndex + step * i + n) % n];
+      if (!candidate.isEliminated) { nextTurnPlayer = candidate; break; }
+    }
+  }
+
   room.players.splice(pIndex, 1);
 
   // ホストが抜けたら、残っている人間プレイヤーの先頭にホストを引き継ぐ
@@ -404,11 +421,13 @@ function handlePlayerExit(socket, roomId) {
     room.hostId = nextHost ? nextHost.id : null;
   }
 
-  if (room.status === 'playing') {
-    if (!checkGameOver(room)) {
-      if (pIndex < room.turnIndex) room.turnIndex--;
-      room.turnIndex = (room.turnIndex + room.players.length) % room.players.length;
-      nextTurn(room, false);
+  if (room.status === 'playing' && !checkGameOver(room)) {
+    room.turnIndex = Math.max(0, room.players.indexOf(nextTurnPlayer));
+    room.currentTurnPlayerId = room.players[room.turnIndex].id;
+    if (wasCurrentTurn) {
+      // 手番が移ったので、タイマーを掛け直し、CPUの番ならすぐ動かす
+      startTurnTimer(room.id);
+      if (room.players[room.turnIndex].isBot) processBotTurn(room.id);
     }
   }
   
@@ -685,6 +704,14 @@ io.on('connection', (socket) => {
 
     const room = rooms[rid];
     if (room.status !== 'waiting' && room.status !== 'playing') return;
+
+    // 1つの接続で入れる部屋は1つだけ。別の部屋に入っていたら先に退出させる（部屋の大量作成を防ぐ）
+    for (const otherId of Object.keys(rooms)) {
+      if (otherId !== rid && rooms[otherId].players.some(p => p.id === socket.id)) {
+        handlePlayerExit(socket, otherId);
+        socket.leave(otherId);
+      }
+    }
 
     // NGワードフィルタを適用
     const sanitizedName = filterName(data.playerName);
