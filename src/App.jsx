@@ -1134,7 +1134,7 @@ const App = () => {
                         </div>
                         <div className="system-status-bar">
                             <span>STATUS: <span className={`status-tag ${(!isConnected) ? 'bg-red-600' : ''}`}>{(!isConnected) ? 'OFFLINE' : 'ONLINE'}</span></span>
-                             <span>VER: <span className="text-white/80 font-black">v1.9</span></span>
+                             <span>VER: <span className="text-white/80 font-black">v2.0</span></span>
                             <span className="text-accent font-black cursor-pointer hover:opacity-70 transition-opacity text-[11px] tracking-[1px] font-['Orbitron']" onClick={() => setShowChangelog(true)}>📋 LOG</span>
                         </div>
 
@@ -1150,9 +1150,25 @@ const App = () => {
                                     <div className="p-4 max-h-[60vh] overflow-y-auto space-y-5 text-[12px]">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v1.9</span>
-                                                <span className="text-white/30 text-[10px]">2026.09.30</span>
+                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v2.0</span>
+                                                <span className="text-white/30 text-[10px]">2026.10.01</span>
                                                 <span className="bg-accent/20 text-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-accent/30">LATEST</span>
+                                            </div>
+                                            <div className="text-white/30 text-[10px] mb-2">見た目・遊びやすさ・安全性の改善</div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🎨 中央の属性アイコンのデザインを一新</li>
+                                                <li>✨ 今の場が光るように（表示されない不具合を修正）</li>
+                                                <li>💫 出せる場の光る輪は自分の番だけに</li>
+                                                <li>📱 小さいスマホでもドローボタンまで1画面に</li>
+                                                <li>🔄 途中退出で手番がずれる不具合を修正</li>
+                                                <li>🛡️ 席の乗っ取りなどの不正を防止、安定性を向上</li>
+                                                <li>📖 ガイドを最新の内容に更新、表示も高速に</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-accent/60 text-[11px]">v1.9</span>
+                                                <span className="text-white/30 text-[10px]">2026.09.30</span>
                                             </div>
                                             <div className="text-white/30 text-[10px] mb-2">グラフィック強化</div>
                                             <ul className="space-y-1 text-white/70 pl-2">
