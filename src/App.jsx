@@ -21,6 +21,8 @@ const REALMS = {
 };
 
 const NEXT_MAP = { GEAR: ['GEAR', 'ICEAGE'], ICEAGE: ['FOUNTAIN', 'BATTERY'], FOUNTAIN: ['FOUNTAIN', 'BATTERY'], BATTERY: ['MACHINE', 'ARCHIVE'], MACHINE: ['MACHINE', 'ARCHIVE'], ARCHIVE: ['GEAR', 'ICEAGE'] };
+// 1人でプレイ・待機画面に出すシリーズ戦のルール（得点はサーバーの checkGameOver と同じ考え方）
+const SERIES_RULE = '全5戦で対戦します。各試合で最初に手札を出し切った人が、相手に残った手札の枚数ぶん得点。5戦の合計得点がいちばん高い人が優勝です。';
 const SORT_WEIGHT = { GEAR: 1, ICEAGE: 2, FOUNTAIN: 3, BATTERY: 4, MACHINE: 5, ARCHIVE: 6, PLANET: 7, RUINS: 8 };
 
 let audioCtx = null;
@@ -492,6 +494,9 @@ const App = () => {
     const [isConnected, setIsConnected] = useState(socket.connected);
     const [bgAnim, setBgAnim] = useState(() => !shouldStartLight());
     const [showChangelog, setShowChangelog] = useState(false);
+    // リザルト画面: 切り替わった直後の連打で誤って押さないよう、少しの間ボタンを止める
+    const [resultLocked, setResultLocked] = useState(false);
+    const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
     const [cutin, setCutin] = useState(null);
     const [visualFieldCard, setVisualFieldCard] = useState(null);
     const prevFieldCardId = useRef(null);
@@ -643,6 +648,18 @@ const App = () => {
     }, [muted]);
     const leave = useCallback(() => { if (room) { playSE('cancel', muted); socket.emit('leave-room', { roomId: room.toUpperCase() }); setJoined(false); setGs(null); } }, [room, muted]);
     const goToTopPage = useCallback(() => { playSE('cancel', muted); if (room) socket.emit('leave-room', { roomId: room.toUpperCase() }); window.location.reload(); }, [room, muted]);
+    const isFinished = gs?.status === 'finished';
+    useEffect(() => {
+        setShowLeaveConfirm(false);
+        if (!isFinished) { setResultLocked(false); return; }
+        setResultLocked(true);
+        const t = setTimeout(() => setResultLocked(false), 1000);
+        return () => clearTimeout(t);
+    }, [isFinished, gs?.matchCount]);
+    // 抜けると失うものがあるとき（シリーズの途中・連勝中）だけ確認を出す
+    const leaveLoss = isFinished && !gs?.isSeriesFinished
+        ? (gs?.mode === 'streak' ? `${gs?.streak || 0}連勝中の記録はここで終わります（ランキングには残ります）。` : 'シリーズの途中です。ここで抜けると、ここまでの得点はランキングに記録されません。')
+        : null;
 
     const handleCardClick = useCallback((c, isPlayable) => {
         if (!isMyTurn || !isPlayable || selector) return;
@@ -969,6 +986,7 @@ const App = () => {
                             {/* ===== 1人でプレイ画面 ===== */}
                             {(menuMode === 'solo' || menuMode === 'streak') && (
                                 <div className="w-full px-6 sm:px-8 flex flex-col gap-4 flex-shrink-0">
+                                    {menuMode === 'solo' && <div className="text-center text-accent text-[11px] font-black leading-relaxed border border-accent/30 bg-accent/10 rounded p-3">🤖 シリーズ戦<br /><span className="text-white/60 font-normal">{SERIES_RULE}</span></div>}
                                     {menuMode === 'streak' && <div className="text-center text-red-300 text-[11px] font-black leading-relaxed border border-red-400/30 bg-red-500/10 rounded p-3">🔥 連勝モード<br /><span className="text-white/60 font-normal">1位を取り続ける限り試合が続きます。取れなかった時点で終了し、連勝数がランキングに登録されます。</span></div>}
                                     <div className="relative w-full flex flex-col">
                                         <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-sm"></div>
@@ -1320,6 +1338,11 @@ const App = () => {
                             <div className="text-2xl font-black font-['Orbitron'] text-accent tracking-[6px]">{room}</div>
                             <div className="text-[10px] text-white/40 mt-1">このIDを仲間に共有してください</div>
                         </div>
+                        {gs?.mode !== 'streak' && (
+                            <div className="w-full max-w-sm mb-4 px-4 py-2.5 text-center text-[11px] leading-relaxed border border-accent/30 bg-accent/10 rounded shrink-0">
+                                <span className="text-accent font-black">🏁 シリーズ戦</span><br /><span className="text-white/60">{SERIES_RULE}</span>
+                            </div>
+                        )}
                         <div className="w-full overflow-y-auto max-h-[320px] p-1 mx-5 mb-3 shrink-0 no-scrollbar">
                             {[...Array(5)].map((_, i) => {
                                 const p = gs?.players[i];
@@ -1407,9 +1430,22 @@ const App = () => {
                             })}
                         </div>
                         <div className="w-full max-w-xs flex flex-col gap-3">
-                            <button className={`w-full py-5 text-xl font-black rounded-sm shadow-2xl uppercase tracking-[2px] transition-all ${me?.ready ? 'bg-gray-600 text-white/50' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-black'}`} onClick={() => { if (me?.ready) return; playSE('start', muted); socket.emit('play-again', { roomId: room }); }}>{me?.ready ? "待機中..." : (gs.isSeriesFinished ? (gs.mode === 'streak' ? "もう一度挑戦" : "新しいシリーズを開始") : "次のマッチへ")}</button>
-                            <button className="w-full py-3 text-xs font-black bg-black/50 border border-white/10 text-white/50 rounded-sm uppercase tracking-[2px] mt-2" onClick={goToTopPage}>タイトル画面へ戻る</button>
+                            <button className={`w-full py-5 text-xl font-black rounded-sm shadow-2xl uppercase tracking-[2px] transition-all ${me?.ready ? 'bg-gray-600 text-white/50' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-black'} ${resultLocked ? 'opacity-40' : ''}`} onClick={() => { if (me?.ready || resultLocked) return; playSE('start', muted); socket.emit('play-again', { roomId: room }); }}>{me?.ready ? "待機中..." : (gs.isSeriesFinished ? (gs.mode === 'streak' ? "もう一度挑戦" : "新しいシリーズを開始") : "次のマッチへ")}</button>
+                            <button className={`w-full py-3 text-xs font-black bg-black/50 border border-white/10 text-white/50 rounded-sm uppercase tracking-[2px] mt-2 transition-opacity ${resultLocked ? 'opacity-40' : ''}`} onClick={() => { if (resultLocked) return; if (leaveLoss) { playSE('cancel', muted); setShowLeaveConfirm(true); } else goToTopPage(); }}>タイトル画面へ戻る</button>
                         </div>
+                        {showLeaveConfirm && leaveLoss && (
+                            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => setShowLeaveConfirm(false)}>
+                                <div className="absolute inset-0 bg-black/70" />
+                                <div className="relative w-full max-w-sm bg-[#0a0520] border border-accent/40 rounded-lg overflow-hidden shadow-[0_0_40px_rgba(64,224,208,0.2)]" onClick={e => e.stopPropagation()}>
+                                    <div className="px-4 py-3 border-b border-accent/20 bg-black/40 font-black text-accent text-sm tracking-[2px]">タイトル画面に戻りますか？</div>
+                                    <div className="p-4 text-white/70 text-[12px] leading-relaxed">{leaveLoss}</div>
+                                    <div className="flex gap-2 p-4 pt-0">
+                                        <button className="flex-1 py-3 text-xs font-black bg-black/60 border border-white/30 text-white rounded-sm tracking-[2px]" onClick={() => setShowLeaveConfirm(false)}>続ける</button>
+                                        <button className="flex-1 py-3 text-xs font-black bg-danger/20 border border-danger/60 text-white rounded-sm tracking-[2px]" onClick={goToTopPage}>戻る</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <>
