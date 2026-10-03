@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { RealmIconPaths } from './realmIcons';
 
 const REALMS = {
     GEAR: { n: '歯車', color: '#FF8C00', bright: '#FFD700', theme: 'steam' },
@@ -9,55 +10,13 @@ const REALMS = {
     BATTERY: { n: '電池', color: '#ADFF2F', bright: '#7FFF00', theme: 'cyber' }
 };
 
-const MarkerIcon = ({ r, color, spec = false, scale = 1 }) => {
-    const p = { fill: "none", stroke: color, strokeWidth: spec ? 3 : 2.5, strokeLinecap: "round", strokeLinejoin: "round" };
-    return (
-        <g transform={`scale(${scale})`}>
-            {(() => {
-                switch (r) {
-                    case 'GEAR': return (
-                        <g {...p}>
-                            <circle cx="0" cy="0" r="8" />
-                            <path d="M0 -10 v2 M0 8 v2 M-10 0 h2 M8 0 h2 M-7 -7 l1.5 1.5 M5.5 5.5 l1.5 1.5 M-7 7 l1.5 -1.5 M5.5 -5.5 l1.5 -1.5" />
-                            <circle cx="0" cy="0" r="2.5" fill="#fff" stroke="none" />
-                        </g>
-                    );
-                    case 'ARCHIVE': return (
-                        <g {...p}>
-                            <path d="M-4 -7 H6 v14 H-4 a2 2 0 0 1 0 -4 H6 M-6 7 a2 2 0 0 1 2 -2 H6" />
-                            <circle cx="4" cy="0.5" r="1" fill="#fff" stroke="none" />
-                        </g>
-                    );
-                    case 'ICEAGE': return (
-                        <g {...p} strokeWidth="1.5">
-                            <path d="M0 -9 v18 M-9 0 h18 M-6.5 -6.5 l13 13 M-6.5 6.5 l13 -13" opacity="0.7" />
-                            <circle cx="0" cy="0" r="2.5" fill="#fff" stroke="none" />
-                        </g>
-                    );
-                    case 'FOUNTAIN': return (
-                        <g {...p}>
-                            <path d="M0 8 c3 0 6 -2.5 6 -6 c0 -3.5 -6 -8 -6 -8 S-6 -0.5 -6 2 c0 3.5 3 6 6 6 z" />
-                            <path d="M0 5.5 c1.8 0 3 -1.2 3 -3 c0 -2.5 -3 -4.5 -3 -4.5 S-3 0.5 -3 2.5 c0 1.8 1.2 3 3 3 z" fill="#fff" stroke="none" />
-                        </g>
-                    );
-                    case 'MACHINE': return (
-                        <g {...p}>
-                            <rect x="-6" y="-6" width="12" height="12" rx="1" strokeDasharray="2 2" />
-                            <rect x="-3" y="-3" width="6" height="6" fill="#fff" stroke="none" />
-                        </g>
-                    );
-                    case 'BATTERY': return (
-                        <g {...p}>
-                            <rect x="-6" y="-8" width="12" height="16" rx="2" />
-                            <path d="M0.5 -5 l-2 5 h3 l-2 5" stroke="#fff" strokeWidth="1.5" />
-                        </g>
-                    );
-                    default: return <circle r="6" fill={color} />;
-                }
-            })()}
-        </g>
-    );
-};
+// アイコンはカードと共通（realmIcons.jsx）。24x24 の絵を中心 (0,0) に合わせて描く
+const MarkerIcon = ({ r, color, spec = false, scale = 1 }) => (
+    <g transform={`scale(${scale}) translate(-12 -12)`} style={{ color }} fill="none" stroke="currentColor"
+        strokeWidth={spec ? 2.8 : 2.2} strokeLinecap="round" strokeLinejoin="round">
+        <RealmIconPaths r={r} />
+    </g>
+);
 
 // 中心 (0,0)・外接半径 r の縦長六角形
 const hexPath = (r) => {

@@ -1113,7 +1113,7 @@ body {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    justify-content: center !important;
+    justify-content: safe center !important; /* 枚数が多くても左端のカードが切れないように */
     align-items: flex-end !important;
     gap: 4px; /* カード同士の間隔を狭める */
     padding: 15px 10px 10px;
@@ -1162,8 +1162,7 @@ body {
 .card-anchor.selected .card-surface {
     transform: translateY(-20px) scale(1.05);
     /* 巨大な影を、薄いグローと枠線の強調に置換 */
-    border: 2px solid var(--r-bright);
-    box-shadow: 0 0 15px var(--r-color-glow);
+    box-shadow: 0 0 calc(var(--card-w) * 0.15) var(--r-bright), 0 6px 14px rgba(0, 0, 0, 0.5);
 }
 
 /* App.jsxで設定されたhoveredクラスにより、重なり順を制御 */
@@ -1206,125 +1205,90 @@ body {
 }
 @keyframes ultimate-star-pulse { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 0.8; transform: scale(1.2); } }
 
-/* --- Ultimate Eco Foundation --- */
+/* --- カード（デザイン案A：統一フレーム） --- */
 .card-surface {
     position: relative;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    background: #000;
 }
-.card-surface::before {
-    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-    background: linear-gradient(45deg, transparent 45%, rgba(255,255,255,0.03) 50%, transparent 55%);
-    pointer-events: none; z-index: 5;
+.card-frame {
+    box-sizing: border-box;
+    border-radius: calc(var(--card-w) * 0.1);
+    border: calc(var(--card-w) * 0.035) solid var(--r-color);
+    background:
+        radial-gradient(circle at 50% 42%, var(--r-glow) 0%, var(--r-tint) 55%, #0b0716 100%),
+        #0b0716;
+    box-shadow: 0 0 calc(var(--card-w) * 0.08) var(--r-glow), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 4px 12px rgba(0, 0, 0, 0.5);
 }
-
-/* STEAM */
-.mat-steam {
-    background: 
-        repeating-linear-gradient(45deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(255,255,255,0.01) 3px),
-        linear-gradient(135deg, #2a1a10 0%, #111 100%);
-    border: 2px solid #3d2616;
-    border-top: 2px solid rgba(255,255,255,0.3);
-    clip-path: polygon(0 5%, 5% 0, 95% 0, 100% 5%, 100% 95%, 95% 100%, 5% 100%, 0 95%);
-}
-.u-steam-frame { position: absolute; inset: 4px; border: 1px solid rgba(212,175,55,0.15); pointer-events: none; }
-.u-steam-gauge { position: absolute; bottom: 15%; left: 8%; width: 30px; height: 30px; border: 1.5px solid rgba(212,175,55,0.2); border-radius: 50%; opacity: 0.6; }
-.u-steam-needle { position: absolute; top: 50%; left: 50%; width: 1px; height: 14px; background: #D4AF37; transform-origin: bottom; animation: ultimate-rotate 4s ease-in-out infinite alternate; }
-
-/* FANTASY */
-.mat-fantasy {
-    background: 
-        radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.1) 0%, transparent 80%),
-        linear-gradient(135deg, #010614 0%, #000 100%);
-    border: 1px solid rgba(138, 43, 226, 0.4);
-    border-top: 1.5px solid rgba(255,255,255,0.4);
-    border-radius: 20% 5% 20% 5% !important;
-}
-.u-fantasy-shine { position: absolute; top: 0; left: 0; width: 50%; height: 200%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent); animation: ultimate-shine 6s linear infinite; }
-.u-fantasy-ring { position: absolute; top: 55%; left: 50%; width: 140px; height: 140px; border: 0.5px solid rgba(255,255,255,0.1); border-radius: 50%; animation: ultimate-rotate 30s linear infinite; }
-
-/* CYBER */
-.mat-cyber {
-    background: 
-        conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.02) 0%, transparent 25%, rgba(255,255,255,0.02) 50%, transparent 75%),
-        #000;
-    border: 1px solid rgba(64,224,208,0.3);
-    border-top: 1.5px solid rgba(255,255,255,0.4);
-    clip-path: polygon(15% 0, 100% 0, 100% 85%, 85% 100%, 0 100%, 0 15%);
-}
-.u-cyber-grid { position: absolute; inset: 0; background: linear-gradient(rgba(64,224,208,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(64,224,208,0.03) 1px, transparent 1px); background-size: 10px 10px; }
-.u-cyber-edge { position: absolute; inset: 0; border: 2px solid var(--accent); opacity: 0.1; animation: ultimate-flicker 5s step-end infinite; }
-.u-cyber-scan { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(to right, transparent, var(--accent), transparent); opacity: 0.3; animation: ultimate-scan 3s linear infinite; }
-
-/* VOID */
-.mat-void-planet, .mat-void-ruins {
-    background: radial-gradient(circle at 50% 50%, #111 0%, #000 100%);
-    border-radius: 50% !important; border: 1px solid rgba(255,255,255,0.15);
-}
-.u-void-vortex { position: absolute; top: 55%; left: 50%; width: 160px; height: 160px; background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.05), transparent); border-radius: 50%; animation: ultimate-rotate 12s linear infinite; }
-.u-void-core { position: absolute; top: 55%; left: 50%; width: 70px; height: 70px; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); animation: ultimate-pulse 4s ease-in-out infinite; }
-.u-void-star { position: absolute; width: 1.5px; height: 1.5px; background: white; border-radius: 50%; animation: ultimate-star-pulse var(--d) infinite; opacity: 0.4; }
-
-.card-icon-overload {
-    animation: ultimate-float 5s ease-in-out infinite;
-}
-
-
-.card-info-top {
+.card-frame-genre {
     position: absolute;
-    top: 6%;
-    left: 6%;
-    padding: 3% 8%;
-    background: #000;
-    border-left: calc(var(--card-w)*0.04) solid var(--r-color);
-    z-index: 50;
-    border-radius: 1px;
+    top: 5%;
+    left: 7%;
+    width: 16%;
+    color: var(--r-color);
+    opacity: 0.9;
+    z-index: 2;
 }
-
-.card-info-top span {
-    font-size: calc(var(--card-w)*0.068);
-    font-weight: 950;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.card-footer-peak {
+.card-frame-genre svg { display: block; width: 100%; height: auto; }
+.card-frame-icon {
     position: absolute;
+    left: 22%;
+    top: 22%;
+    width: 56%;
+    aspect-ratio: 1;
+    color: var(--r-bright);
+    filter: drop-shadow(0 0 calc(var(--card-w) * 0.06) var(--r-color));
+    z-index: 1;
+}
+.card-frame-name {
+    position: absolute;
+    left: 0;
+    right: 0;
     bottom: 0;
-    width: 100%;
-    padding: 25% 0 12%;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
+    padding: 7% 0 8%;
     text-align: center;
     color: #fff;
-    z-index: 50;
     font-weight: 900;
-    font-size: calc(var(--card-w)*0.16);
-    text-shadow: 0 0 15px var(--r-color);
+    font-size: calc(var(--card-w) * 0.15);
+    line-height: 1.2;
+    white-space: nowrap;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0));
+    text-shadow: 0 0 6px var(--r-color);
+    z-index: 2;
 }
-
-.special-badge-base {
+.card-frame-band {
     position: absolute;
-    left: -8px;
-    top: 38%;
-    background: linear-gradient(90deg, #e60000, #800000);
-    border: 1.5px solid #FFF;
-    color: #FFF;
-    font-size: 7.2px;
-    font-weight: 1000;
-    padding: 3px 8px;
-    letter-spacing: 1.5px;
+    left: 0;
+    right: 0;
+    top: 18%;
+    padding: 3% 0;
     text-align: center;
-    border-radius: 3px 8px 8px 3px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.8);
-    z-index: 200;
+    white-space: nowrap;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: calc(var(--card-w) * 0.1);
     line-height: 1.1;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transform: rotate(-4deg);
+    color: #120a00;
+    background: linear-gradient(90deg, #f5c542, #ffe9a0, #f5c542);
+    z-index: 3;
 }
+/* 特殊：金の枠（内側に属性色の細い線） */
+.card-frame.is-special {
+    border-color: #f5c542;
+    box-shadow: inset 0 0 0 calc(var(--card-w) * 0.02) var(--r-color), 0 0 calc(var(--card-w) * 0.12) rgba(245, 197, 66, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+.card-frame.is-special .card-frame-icon,
+.card-frame.is-wild .card-frame-icon { top: 30%; left: 26%; width: 48%; }
+/* ワイルド：虹色の枠 */
+.card-frame.is-wild {
+    border-color: transparent;
+    background:
+        radial-gradient(circle at 50% 42%, #2a2140 0%, #0b0716 70%) padding-box,
+        conic-gradient(from 0deg, #ff8c00, #ff3131, #0047ff, #00f3ff, #adff2f, #e2b0ff, #ff8c00) border-box;
+    box-shadow: 0 0 calc(var(--card-w) * 0.1) rgba(255, 255, 255, 0.25), 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+.card-frame.is-wild .card-frame-genre { color: #fff; }
+.card-frame.is-wild .card-frame-band { background: linear-gradient(90deg, #ffffff, #dfe6ff, #ffffff); }
 
 .hand-info-label {
     font-size: clamp(12px, 1.5cqw, 18px) !important;
