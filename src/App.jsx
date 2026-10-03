@@ -204,8 +204,9 @@ const hexA = (hex, a) => {
     return `rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
 };
 
-// カード（デザイン案A：統一フレーム）
-// 形はすべて同じ角丸。暗い地に属性色のにじみと太い枠、左上にジャンルの印。
+// カード：暗い地に属性色のにじみと太い枠、左上にジャンルの印。
+// 形はジャンルごと（スチーム＝角を落とした八角、幻想＝左上・右下が丸い、サイバー＝角カット、ワイルド＝角丸）。
+// 枠は edge（枠の色）の上に body を枠の太さだけ内側に重ねて作る（clip-path の形でも枠が途切れないように）。
 // 特殊カードは金の枠＋上部の金帯（DRAW 2 など）、ワイルドは虹色の枠＋白い帯。
 const CardView = ({ card, forceRealRealm }) => {
     if (!card?.realm) return null;
@@ -233,16 +234,19 @@ const CardView = ({ card, forceRealRealm }) => {
     const kind = isWild ? 'is-wild' : (spec ? 'is-special' : '');
 
     return (
-        <div className={`card-surface card-frame ${kind}`}
+        <div className={`card-surface card-frame g-${genre} ${kind}`}
             style={{ '--r-color': rData.color, '--r-bright': rData.bright, '--r-glow': hexA(rData.color, 0.45), '--r-tint': hexA(rData.color, 0.14), width: 'var(--card-w)', height: 'var(--card-h)' }}>
-            <div className="card-frame-genre">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{GENRE_MARK_PATHS[genre]?.()}</svg>
+            <div className="card-frame-edge" />
+            <div className="card-frame-body">
+                <div className="card-frame-genre">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{GENRE_MARK_PATHS[genre]?.()}</svg>
+                </div>
+                {specialLabel && <div className="card-frame-band">{specialLabel}</div>}
+                <div className="card-frame-icon">
+                    <IconRenderer r={dr} spec={spec} />
+                </div>
+                <div className="card-frame-name">{rData.n}</div>
             </div>
-            {specialLabel && <div className="card-frame-band">{specialLabel}</div>}
-            <div className="card-frame-icon">
-                <IconRenderer r={dr} spec={spec} />
-            </div>
-            <div className="card-frame-name">{rData.n}</div>
         </div>
     );
 };
