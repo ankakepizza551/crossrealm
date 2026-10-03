@@ -1079,7 +1079,7 @@ const App = () => {
                         </div>
                         <div className="system-status-bar">
                             <span>STATUS: <span className={`status-tag ${(!isConnected) ? 'bg-red-600' : ''}`}>{(!isConnected) ? 'OFFLINE' : 'ONLINE'}</span></span>
-                             <span>VER: <span className="text-white/80 font-black">v2.0</span></span>
+                             <span>VER: <span className="text-white/80 font-black">v2.1</span></span>
                             <span className="text-accent font-black cursor-pointer hover:opacity-70 transition-opacity text-[11px] tracking-[1px] font-['Orbitron']" onClick={() => setShowChangelog(true)}>📋 LOG</span>
                         </div>
 
@@ -1095,9 +1095,23 @@ const App = () => {
                                     <div className="p-4 max-h-[60vh] overflow-y-auto space-y-5 text-[12px]">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v2.0</span>
-                                                <span className="text-white/30 text-[10px]">2026.10.01</span>
+                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v2.1</span>
+                                                <span className="text-white/30 text-[10px]">2026.10.03</span>
                                                 <span className="bg-accent/20 text-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-accent/30">LATEST</span>
+                                            </div>
+                                            <div className="text-white/30 text-[10px] mb-2">カードデザイン一新・遊びやすさの改善</div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🃏 カードのデザインを一新、特殊カードは金の帯で</li>
+                                                <li>🎨 属性アイコンを分かりやすく（古文書は巻物など）</li>
+                                                <li>👆 リザルト画面の誤タップを防止、戻る前に確認</li>
+                                                <li>📘 1人プレイと待機画面にルール説明を追加</li>
+                                                <li>🛠️ 手札の左端が切れる不具合などを修正</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-accent/60 text-[11px]">v2.0</span>
+                                                <span className="text-white/30 text-[10px]">2026.10.01</span>
                                             </div>
                                             <div className="text-white/30 text-[10px] mb-2">見た目・遊びやすさ・安全性の改善</div>
                                             <ul className="space-y-1 text-white/70 pl-2">
