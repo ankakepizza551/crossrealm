@@ -27,10 +27,65 @@ const SERIES_RULE = '全5戦で対戦します。各試合で最初に手札を�
 const SORT_WEIGHT = { GEAR: 1, ICEAGE: 2, FOUNTAIN: 3, BATTERY: 4, MACHINE: 5, ARCHIVE: 6, PLANET: 7, RUINS: 8 };
 
 let audioCtx = null;
+const getAudioCtx = () => {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+};
+
+// ---- BGM: デコード済みバッファをループ再生（mp3 のつなぎ目の隙間が出ない）----
+const BGM_URL = '/bgm/crossrealm.mp3';
+const BGM_VOLUME = 0.6; // 音源は -18 LUFS に調整済み。効果音とのバランスはここで調整
+let bgmBuffer = null;
+let bgmGain = null;
+let bgmLoading = false;
+let bgmWanted = false;
+
+const fadeBgm = (to, sec) => {
+    if (!bgmGain) return;
+    const t = audioCtx.currentTime;
+    bgmGain.gain.cancelScheduledValues(t);
+    bgmGain.gain.setValueAtTime(bgmGain.gain.value, t);
+    bgmGain.gain.linearRampToValueAtTime(to, t + sec);
+};
+
+// ユーザー操作の中（または操作後）で呼ぶ。ブラウザの自動再生制限のため、最初のタップまで音は出ない
+const startBgm = async () => {
+    bgmWanted = true;
+    try {
+        const ctx = getAudioCtx();
+        // resume は最初の操作まで完了しないので待たない（先に読み込みだけ進めておく）
+        if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+        if (bgmGain) { fadeBgm(BGM_VOLUME, 0.8); return; }
+        if (bgmLoading) return;
+        bgmLoading = true;
+        if (!bgmBuffer) {
+            const res = await fetch(BGM_URL);
+            bgmBuffer = await ctx.decodeAudioData(await res.arrayBuffer());
+        }
+        bgmLoading = false;
+        if (bgmGain) return;
+        const src = ctx.createBufferSource();
+        src.buffer = bgmBuffer;
+        src.loop = true;
+        bgmGain = ctx.createGain();
+        bgmGain.gain.value = 0;
+        src.connect(bgmGain);
+        bgmGain.connect(ctx.destination);
+        src.start();
+        if (bgmWanted) fadeBgm(BGM_VOLUME, 1.5);
+    } catch (e) {
+        bgmLoading = false; // 再生できなくてもゲームは続行
+    }
+};
+
+const pauseBgm = () => {
+    bgmWanted = false;
+    fadeBgm(0, 0.4);
+};
 const playSE = (type, muted) => {
     if (muted) return;
     try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        getAudioCtx();
         const doPlay = () => {
             const now = audioCtx.currentTime;
             if (type === 'play') {
@@ -414,6 +469,28 @@ const App = () => {
     const [loadingRank, setLoadingRank] = useState(false);
     const [selector, setSelector] = useState(null);
     const [muted, setMuted] = useState(false);
+
+    // BGM: 最初の操作で再生開始し、ミュート切替・タブの表示状態に追従する
+    useEffect(() => {
+        if (muted) { pauseBgm(); return; }
+        const unlock = () => { startBgm(); };
+        startBgm();
+        window.addEventListener('pointerdown', unlock, { once: true });
+        window.addEventListener('keydown', unlock, { once: true });
+        return () => {
+            window.removeEventListener('pointerdown', unlock);
+            window.removeEventListener('keydown', unlock);
+        };
+    }, [muted]);
+    useEffect(() => {
+        const onVis = () => {
+            if (!audioCtx) return;
+            if (document.hidden) audioCtx.suspend();
+            else if (!muted) audioCtx.resume();
+        };
+        document.addEventListener('visibilitychange', onVis);
+        return () => document.removeEventListener('visibilitychange', onVis);
+    }, [muted]);
     const [selectedCardId, setSelectedCardId] = useState(null);
     const [hoveredCardId, setHoveredCardId] = useState(null);
     const [vfxOverlay, setVfxOverlay] = useState(null);
@@ -1079,7 +1156,7 @@ const App = () => {
                         </div>
                         <div className="system-status-bar">
                             <span>STATUS: <span className={`status-tag ${(!isConnected) ? 'bg-red-600' : ''}`}>{(!isConnected) ? 'OFFLINE' : 'ONLINE'}</span></span>
-                             <span>VER: <span className="text-white/80 font-black">v2.1</span></span>
+                             <span>VER: <span className="text-white/80 font-black">v2.2</span></span>
                             <span className="text-accent font-black cursor-pointer hover:opacity-70 transition-opacity text-[11px] tracking-[1px] font-['Orbitron']" onClick={() => setShowChangelog(true)}>📋 LOG</span>
                         </div>
 
@@ -1095,9 +1172,20 @@ const App = () => {
                                     <div className="p-4 max-h-[60vh] overflow-y-auto space-y-5 text-[12px]">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v2.1</span>
-                                                <span className="text-white/30 text-[10px]">2026.10.03</span>
+                                                <span className="font-['Orbitron'] font-black text-accent text-[11px]">v2.2</span>
+                                                <span className="text-white/30 text-[10px]">2026.10.04</span>
                                                 <span className="bg-accent/20 text-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-accent/30">LATEST</span>
+                                            </div>
+                                            <div className="text-white/30 text-[10px] mb-2">BGM追加</div>
+                                            <ul className="space-y-1 text-white/70 pl-2">
+                                                <li>🎵 オリジナルBGMを追加（最初のタップで再生）</li>
+                                                <li>🔊 右上の音声ボタンでBGMと効果音をまとめてON/OFF</li>
+                                            </ul>
+                                        </div>
+                                        <div className="border-t border-white/10 pt-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-['Orbitron'] font-black text-accent/60 text-[11px]">v2.1</span>
+                                                <span className="text-white/30 text-[10px]">2026.10.03</span>
                                             </div>
                                             <div className="text-white/30 text-[10px] mb-2">カードデザイン一新・遊びやすさの改善</div>
                                             <ul className="space-y-1 text-white/70 pl-2">
