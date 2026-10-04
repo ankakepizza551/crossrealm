@@ -3,6 +3,7 @@ import io from 'socket.io-client';
 import './index.css';
 import CycleDiagramSmall from './components/CycleDiagramSmall';
 import { REALM_ICON_PATHS, GENRE_MARK_PATHS, RealmIconPaths } from './components/realmIcons';
+import { isSpecialFace } from './cardSpec.mjs';
 
 const socket = io(
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
@@ -268,7 +269,7 @@ const CardView = ({ card, forceRealRealm }) => {
 
     // 変異ガード：wasPlanet等のフラグがある場合は、WILDの見た目を優先する（forceRealRealmがtrueでない限り）
     let dr = card.realm;
-    const spec = card.isSpecial || card.wasPlanet || card.wasRuins || card.wasFountain;
+    const spec = isSpecialFace(card, forceRealRealm);
 
     if (!forceRealRealm) {
         if (card.wasPlanet) dr = 'PLANET';
