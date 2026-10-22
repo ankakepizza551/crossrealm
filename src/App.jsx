@@ -326,9 +326,9 @@ const PlayerSlot = ({ p, isCurrentTurn, turnDistance }) => {
     return (
         <div className={`bg-white/5 border border-white/15 rounded-md p-1.5 relative h-16 flex flex-col justify-start overflow-hidden ${isCurrentTurn ? 'current-turn-glow-active' : ''} ${p.isEliminated ? 'grayscale brightness-50 border-danger' : ''} ${(p.handCount >= 10 && !p.isEliminated) ? 'burst-warning' : ''}`}>
             <div className="font-black uppercase text-white/60 tracking-tight leading-none w-full pr-6" style={{ fontSize: p.name.length > 12 ? '6px' : p.name.length > 9 ? '7px' : p.name.length > 6 ? '8px' : '9px', overflow: 'hidden', whiteSpace: 'nowrap' }}>{p.name}</div>
-            <div className="absolute top-1 right-1 text-[9px] font-black text-[var(--steam-gold)]">★{p.score}</div>
+            <div className="absolute top-1 right-1 text-[9px] font-black text-(--steam-gold)">★{p.score}</div>
             <div className="absolute bottom-2 left-8 text-xl font-black text-white font-['Orbitron'] leading-none z-10">{p.handCount}<span className="text-[10px] ml-0.5">枚</span></div>
-            {turnDistance !== null && !p.isEliminated && turnDistance > 0 && <div className="absolute bottom-1 right-1 text-[8px] font-black px-1.5 py-0.5 rounded-full bg-black/60 border border-white/20 text-accent flex items-center gap-0.5 shadow-sm z-10">T-{turnDistance}</div>}
+            {turnDistance !== null && !p.isEliminated && turnDistance > 0 && <div className="absolute bottom-1 right-1 text-[8px] font-black px-1.5 py-0.5 rounded-full bg-black/60 border border-white/20 text-accent flex items-center gap-0.5 shadow-xs z-10">T-{turnDistance}</div>}
             <div className="absolute bottom-2 left-1 w-[14px] h-[20px] z-0 opacity-50">{[...Array(Math.min(p.handCount, 3))].map((_, i) => <div key={i} className="absolute w-full h-full bg-[#111] border border-white/80 rounded-[1px]" style={{ transform: `translate(${i * 2}px, ${i * 2}px)`, zIndex: i, borderColor: isCurrentTurn ? 'var(--accent)' : 'rgba(255,255,255,0.4)' }} />)}</div>
             {p.isEliminated && <div className="absolute inset-0 bg-red-500/30 flex items-center justify-center text-[10px] font-black text-danger tracking-[1px] -rotate-3 z-20">BURST</div>}
         </div>
@@ -909,10 +909,10 @@ const App = () => {
             <MemoizedAstralBackground bgAnim={bgAnim} theme={joined && gs?.status === 'playing' ? tintOf(REALMS[currentR]?.theme) : null} />
             
             {isDisconnected && joined && (
-                <div className="fixed inset-0 bg-black/95 z-[9999] flex flex-col items-center justify-center p-8 ">
+                <div className="fixed inset-0 bg-black/95 z-9999 flex flex-col items-center justify-center p-8 ">
                     <h3 className="font-black text-danger text-3xl tracking-widest mb-4 animate-pulse font-['Orbitron']">CONNECTION LOST</h3>
                     <p className="text-white/80 text-sm text-center mb-8 font-bold leading-relaxed">サーバーとの通信が切断されたため<br />部屋が消滅しました。</p>
-                    <button className="w-full max-w-xs p-5 font-black bg-gradient-to-r from-red-600 to-red-900 text-white rounded-sm shadow-2xl tracking-[4px]" onClick={() => window.location.reload()}>タイトルへ戻る</button>
+                    <button className="w-full max-w-xs p-5 font-black bg-linear-to-r from-red-600 to-red-900 text-white rounded-xs shadow-2xl tracking-[4px]" onClick={() => window.location.reload()}>タイトルへ戻る</button>
                 </div>
             )}
             <div className="ui-viewport" ref={viewportRef}>
@@ -925,9 +925,9 @@ const App = () => {
                 )}
                 {!joined ? (
                     <div className="h-full flex flex-col no-scrollbar">
-                        <div className="flex-1 min-h-0 flex flex-col items-center [justify-content:safe_center] py-4 sm:py-8 overflow-y-auto no-scrollbar">
+                        <div className="flex-1 min-h-0 flex flex-col items-center justify-center-safe py-4 sm:py-8 overflow-y-auto no-scrollbar">
                             {/* ロゴ共通 */}
-                            <div className="top-logo-area flex-shrink-0 mb-3 sm:mb-4">
+                            <div className="top-logo-area shrink-0 mb-3 sm:mb-4">
                                 <div className="field-central-zone">
                                     <div className="emblem-bg-layer"><ComplexEmblem isLogo={true} /></div>
                                     <div className="logo-text-layer">
@@ -941,11 +941,11 @@ const App = () => {
                             {/* ===== トップメニュー ===== */}
                             {menuMode === null && (
                                 <>
-                                    <div className="trinity-flavor-box mb-4 sm:mb-8 flex-shrink-0">
+                                    <div className="trinity-flavor-box mb-4 sm:mb-8! shrink-0">
                                         <div className="flavor-line"><span className="f-steam">真鍮</span>の爆鳴、<span className="f-fantasy">星界</span>の共鳴、<span className="f-cyber">電脳</span>の火花。</div>
                                         <div className="mt-2 text-white/70 font-black text-[0.8rem]">次元の境界は消失し、特異点へと収束する。</div>
                                     </div>
-                                    <div className="w-full px-6 sm:px-8 flex flex-col gap-3 sm:gap-4 flex-shrink-0">
+                                    <div className="w-full px-6 sm:px-8 flex flex-col gap-3 sm:gap-4 shrink-0">
                                         {/* 1人でプレイ */}
                                         <button
                                             className="w-full px-5 py-4 sm:p-5 rounded-lg border-2 border-accent/40 bg-accent/10 active:scale-95 transition-all text-left relative overflow-hidden group"
@@ -990,13 +990,13 @@ const App = () => {
 
                             {/* ===== 1人でプレイ画面 ===== */}
                             {(menuMode === 'solo' || menuMode === 'streak') && (
-                                <div className="w-full px-6 sm:px-8 flex flex-col gap-4 flex-shrink-0">
-                                    {menuMode === 'solo' && <div className="text-center text-accent text-[11px] font-black leading-relaxed border border-accent/30 bg-accent/10 rounded p-3">🤖 シリーズ戦<br /><span className="text-white/60 font-normal">{SERIES_RULE}</span></div>}
-                                    {menuMode === 'streak' && <div className="text-center text-red-300 text-[11px] font-black leading-relaxed border border-red-400/30 bg-red-500/10 rounded p-3">🔥 連勝モード<br /><span className="text-white/60 font-normal">1位を取り続ける限り試合が続きます。取れなかった時点で終了し、連勝数がランキングに登録されます。</span></div>}
+                                <div className="w-full px-6 sm:px-8 flex flex-col gap-4 shrink-0">
+                                    {menuMode === 'solo' && <div className="text-center text-accent text-[11px] font-black leading-relaxed border border-accent/30 bg-accent/10 rounded-sm p-3">🤖 シリーズ戦<br /><span className="text-white/60 font-normal">{SERIES_RULE}</span></div>}
+                                    {menuMode === 'streak' && <div className="text-center text-red-300 text-[11px] font-black leading-relaxed border border-red-400/30 bg-red-500/10 rounded-sm p-3">🔥 連勝モード<br /><span className="text-white/60 font-normal">1位を取り続ける限り試合が続きます。取れなかった時点で終了し、連勝数がランキングに登録されます。</span></div>}
                                     <div className="relative w-full flex flex-col">
-                                        <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-sm"></div>
+                                        <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-xs"></div>
                                         <label className="input-label-tech font-['Orbitron'] text-[10px] font-black text-accent tracking-[2px] mb-1 pl-4 uppercase">パイロット識別名</label>
-                                        <input type="text" className="input-field-nova w-full p-3 sm:p-4 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg sm:text-xl outline-none rounded" value={name} placeholder="名前を入力..." onChange={e => setName(e.target.value)} maxLength={10} autoFocus />
+                                        <input type="text" className="input-field-nova w-full p-3 sm:p-4! ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg leading-7 sm:text-xl! outline-hidden rounded-sm" value={name} placeholder="名前を入力..." onChange={e => setName(e.target.value)} maxLength={10} autoFocus />
                                     </div>
                                     {/* CPU人数選択 */}
                                     <div className="flex flex-col gap-2">
@@ -1005,7 +1005,7 @@ const App = () => {
                                             {[1, 2, 3, 4].map(n => (
                                                 <button
                                                     key={n}
-                                                    className={`py-3 rounded font-['Orbitron'] font-black text-lg transition-all active:scale-95 ${soloCpuCount === n ? 'bg-accent text-black' : 'bg-white/5 border border-white/20 text-white/60'}`}
+                                                    className={`py-3 rounded-sm font-['Orbitron'] font-black text-lg transition-all active:scale-95 ${soloCpuCount === n ? 'bg-accent text-black' : 'bg-white/5 border border-white/20 text-white/60'}`}
                                                     onClick={() => setSoloCpuCount(n)}
                                                 >{n}</button>
                                             ))}
@@ -1013,25 +1013,25 @@ const App = () => {
                                         <div className="text-white/30 text-[10px] text-center">合計 {1 + soloCpuCount} 人で対戦</div>
                                     </div>
                                     <button
-                                        className={`w-full mt-1 p-4 text-lg font-black rounded-sm active:scale-95 transition-transform ${(!isConnected || !name) ? 'bg-gray-600 opacity-50' : 'bg-gradient-to-r from-cyan-500 to-accent text-black'}`}
+                                        className={`w-full mt-1 p-4 text-lg font-black rounded-xs active:scale-95 transition-transform ${(!isConnected || !name) ? 'bg-gray-600 opacity-50' : 'bg-linear-to-r from-cyan-500 to-accent text-black'}`}
                                         onClick={() => startSolo(soloCpuCount, name, menuMode === 'streak' ? 'streak' : undefined)}
                                         disabled={!isConnected || !name}
                                     >出撃</button>
-                                    <button className="w-full mt-2 p-3 rounded border border-white/20 text-white/70 text-sm font-black tracking-[2px] active:bg-white/10 transition-all" onClick={() => setMenuMode(null)}>← 戻る</button>
+                                    <button className="w-full mt-2 p-3 rounded-sm border border-white/20 text-white/70 text-sm font-black tracking-[2px] active:bg-white/10 transition-all" onClick={() => setMenuMode(null)}>← 戻る</button>
                                 </div>
                             )}
 
                             {/* ===== ランキング画面 ===== */}
                             {menuMode === 'ranking' && (
-                                <div className="w-full px-6 sm:px-8 flex flex-col gap-3 flex-shrink-0">
+                                <div className="w-full px-6 sm:px-8 flex flex-col gap-3 shrink-0">
                                     <div className="grid grid-cols-2 gap-2">
                                         {[['series', '🏆 シリーズ'], ['streak', '🔥 連勝']].map(([k, label]) => (
-                                            <button key={k} className={`py-2 rounded font-black text-sm transition-all ${rankMode === k ? 'bg-accent text-black' : 'bg-white/5 border border-white/20 text-white/60'}`} onClick={() => setRankMode(k)}>{label}</button>
+                                            <button key={k} className={`py-2 rounded-sm font-black text-sm transition-all ${rankMode === k ? 'bg-accent text-black' : 'bg-white/5 border border-white/20 text-white/60'}`} onClick={() => setRankMode(k)}>{label}</button>
                                         ))}
                                     </div>
                                     <div className="grid grid-cols-3 gap-2">
                                         {[['all', '歴代'], ['week', '今週'], ['day', '今日']].map(([k, label]) => (
-                                            <button key={k} className={`py-1.5 rounded text-xs font-black transition-all ${rankPeriod === k ? 'bg-white/90 text-black' : 'bg-white/5 border border-white/20 text-white/60'}`} onClick={() => setRankPeriod(k)}>{label}</button>
+                                            <button key={k} className={`py-1.5 rounded-sm text-xs font-black transition-all ${rankPeriod === k ? 'bg-white/90 text-black' : 'bg-white/5 border border-white/20 text-white/60'}`} onClick={() => setRankPeriod(k)}>{label}</button>
                                         ))}
                                     </div>
                                     <div className="text-white/40 text-[10px] text-center">{rankMode === 'series' ? '5戦シリーズの合計スコア' : '連勝モードの連勝数（同数ならポイント合計）'}</div>
@@ -1039,26 +1039,26 @@ const App = () => {
                                         {loadingRank && <div className="text-center text-white/40 text-sm py-6">読み込み中...</div>}
                                         {!loadingRank && rankRows.length === 0 && <div className="text-center text-white/40 text-sm py-6">まだ記録がありません</div>}
                                         {!loadingRank && rankRows.map((r, i) => (
-                                            <div key={i} className="flex items-center gap-3 px-3 py-2 rounded bg-white/5 border border-white/10">
+                                            <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-sm bg-white/5 border border-white/10">
                                                 <div className="w-7 text-center font-['Orbitron'] font-black" style={{ color: i === 0 ? '#FFD700' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'rgba(255,255,255,0.5)' }}>{i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</div>
                                                 <div className="flex-1 min-w-0 truncate text-white font-black text-sm">{r.name}</div>
                                                 <div className="text-white/40 text-[10px] whitespace-nowrap">CPU×{r.cpuCount}</div>
-                                                <div className="font-['Orbitron'] font-black text-[var(--steam-gold)] whitespace-nowrap">{rankMode === 'series' ? `${r.score} pts` : `${r.score} 連勝`}</div>
+                                                <div className="font-['Orbitron'] font-black text-(--steam-gold) whitespace-nowrap">{rankMode === 'series' ? `${r.score} pts` : `${r.score} 連勝`}</div>
                                             </div>
                                         ))}
                                     </div>
-                                    <button className="w-full mt-1 p-3 rounded border border-white/20 text-white/70 text-sm font-black tracking-[2px] active:bg-white/10 transition-all" onClick={() => setMenuMode(null)}>← 戻る</button>
+                                    <button className="w-full mt-1 p-3 rounded-sm border border-white/20 text-white/70 text-sm font-black tracking-[2px] active:bg-white/10 transition-all" onClick={() => setMenuMode(null)}>← 戻る</button>
                                 </div>
                             )}
 
                             {/* ===== みんなでプレイ: モード選択 ===== */}
                             {menuMode === 'multi' && (
-                                <div className="w-full px-6 sm:px-8 flex flex-col gap-4 flex-shrink-0">
+                                <div className="w-full px-6 sm:px-8 flex flex-col gap-4 shrink-0">
                                     {/* 名前入力（共通） */}
                                     <div className="relative w-full flex flex-col">
-                                        <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-sm"></div>
+                                        <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-xs"></div>
                                         <label className="input-label-tech font-['Orbitron'] text-[10px] font-black text-accent tracking-[2px] mb-1 pl-4 uppercase">パイロット識別名</label>
-                                        <input type="text" className="input-field-nova w-full p-3 sm:p-4 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg sm:text-xl outline-none rounded" value={name} placeholder="名前を入力..." onChange={e => setName(e.target.value)} maxLength={10} />
+                                        <input type="text" className="input-field-nova w-full p-3 sm:p-4! ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg leading-7 sm:text-xl! outline-hidden rounded-sm" value={name} placeholder="名前を入力..." onChange={e => setName(e.target.value)} maxLength={10} />
                                     </div>
                                     {/* プライベート / パブリック選択 */}
                                     {multiMode === null && (
@@ -1085,16 +1085,16 @@ const App = () => {
                                                 <div className="font-['Orbitron'] font-black text-white text-sm tracking-[1px]">→ ルームに入る</div>
                                                 <div className="text-white/40 text-[11px] mt-0.5">セクターコードを入力して参加</div>
                                             </button>
-                                            <button className="w-full p-3 rounded border border-white/20 text-white/70 text-sm font-black tracking-[2px] active:bg-white/10" onClick={() => setMultiMode(null)}>← 戻る</button>
+                                            <button className="w-full p-3 rounded-sm border border-white/20 text-white/70 text-sm font-black tracking-[2px] active:bg-white/10" onClick={() => setMultiMode(null)}>← 戻る</button>
                                         </>
                                     )}
                                     {/* ルームを作る */}
                                     {multiMode === 'create' && (
                                         <>
                                             <div className="relative w-full flex flex-col">
-                                                <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-sm"></div>
+                                                <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-xs"></div>
                                                 <label className="input-label-tech font-['Orbitron'] text-[10px] font-black text-accent tracking-[2px] mb-1 pl-4 uppercase">ルーム名</label>
-                                                <input type="text" className="input-field-nova w-full p-3 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg outline-none rounded" value={roomName} placeholder={`${name || 'あなた'}のルーム`} onChange={e => setRoomName(e.target.value)} maxLength={20} />
+                                                <input type="text" className="input-field-nova w-full p-3 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg leading-7 outline-hidden rounded-sm" value={roomName} placeholder={`${name || 'あなた'}のルーム`} onChange={e => setRoomName(e.target.value)} maxLength={20} />
                                             </div>
                                             <button className={`w-full p-3 rounded-lg flex items-center justify-between border-2 transition-all ${isPublic ? 'border-yellow-500/60 bg-yellow-500/10' : 'border-white/20 bg-white/5'}`} onClick={() => setIsPublic(!isPublic)}>
                                                 <div>
@@ -1105,20 +1105,20 @@ const App = () => {
                                                     <div className={`w-5 h-5 bg-white rounded-full mt-0.5 transition-all ${isPublic ? 'ml-5' : 'ml-0.5'}`} />
                                                 </div>
                                             </button>
-                                            <button className={`w-full p-4 text-lg font-black rounded-sm active:scale-95 transition-transform ${(!isConnected || !name) ? 'bg-gray-600 opacity-50' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-black'}`} onClick={createRoom} disabled={!isConnected || !name}>ルームを作成</button>
-                                            <button className="w-full p-3 rounded border border-white/20 text-white/70 text-sm font-black active:bg-white/10" onClick={() => setMultiMode('private')}>← 戻る</button>
+                                            <button className={`w-full p-4 text-lg font-black rounded-xs active:scale-95 transition-transform ${(!isConnected || !name) ? 'bg-gray-600 opacity-50' : 'bg-linear-to-r from-amber-400 to-amber-600 text-black'}`} onClick={createRoom} disabled={!isConnected || !name}>ルームを作成</button>
+                                            <button className="w-full p-3 rounded-sm border border-white/20 text-white/70 text-sm font-black active:bg-white/10" onClick={() => setMultiMode('private')}>← 戻る</button>
                                         </>
                                     )}
                                     {/* ルームに入る */}
                                     {multiMode === 'join' && (
                                         <>
                                             <div className="relative w-full flex flex-col">
-                                                <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-sm"></div>
+                                                <div className="absolute left-0 top-0 w-1 h-full bg-accent shadow-[0_0_15px_var(--accent)] rounded-xs"></div>
                                                 <label className="input-label-tech font-['Orbitron'] text-[10px] font-black text-accent tracking-[2px] mb-1 pl-4 uppercase">セクターコード</label>
-                                                <input type="text" className="input-field-nova w-full p-3 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg outline-none rounded" value={room} placeholder="コードを入力..." onChange={e => setRoom(e.target.value.toUpperCase())} />
+                                                <input type="text" className="input-field-nova w-full p-3 ml-2 bg-[#0a0f23]/95 border border-accent/30 text-white font-black text-lg leading-7 outline-hidden rounded-sm" value={room} placeholder="コードを入力..." onChange={e => setRoom(e.target.value.toUpperCase())} />
                                             </div>
-                                            <button className={`w-full p-4 text-lg font-black rounded-sm active:scale-95 transition-transform ${(!isConnected || !name || !room) ? 'bg-gray-600 opacity-50' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-black'}`} onClick={join} disabled={!isConnected || !name || !room}>リンク開始</button>
-                                            <button className="w-full p-3 rounded border border-white/20 text-white/70 text-sm font-black active:bg-white/10" onClick={() => setMultiMode('private')}>← 戻る</button>
+                                            <button className={`w-full p-4 text-lg font-black rounded-xs active:scale-95 transition-transform ${(!isConnected || !name || !room) ? 'bg-gray-600 opacity-50' : 'bg-linear-to-r from-amber-400 to-amber-600 text-black'}`} onClick={join} disabled={!isConnected || !name || !room}>リンク開始</button>
+                                            <button className="w-full p-3 rounded-sm border border-white/20 text-white/70 text-sm font-black active:bg-white/10" onClick={() => setMultiMode('private')}>← 戻る</button>
                                         </>
                                     )}
                                     {/* パブリックルーム一覧 */}
@@ -1145,12 +1145,12 @@ const App = () => {
                                                     ))}
                                                 </div>
                                             )}
-                                            <button className="w-full p-3 rounded border border-white/20 text-white/70 text-sm font-black active:bg-white/10" onClick={() => setMultiMode(null)}>← 戻る</button>
+                                            <button className="w-full p-3 rounded-sm border border-white/20 text-white/70 text-sm font-black active:bg-white/10" onClick={() => setMultiMode(null)}>← 戻る</button>
                                         </>
                                     )}
                                     {/* 最上位の戻るボタン */}
                                     {multiMode === null && (
-                                        <button className="w-full p-3 rounded border border-white/20 text-white/70 text-sm font-black active:bg-white/10 transition-all" onClick={() => setMenuMode(null)}>← 戻る</button>
+                                        <button className="w-full p-3 rounded-sm border border-white/20 text-white/70 text-sm font-black active:bg-white/10 transition-all" onClick={() => setMenuMode(null)}>← 戻る</button>
                                     )}
                                 </div>
                             )}
@@ -1163,7 +1163,7 @@ const App = () => {
 
                         {/* 更新履歴モーダル */}
                         {showChangelog && (
-                            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => setShowChangelog(false)}>
+                            <div className="fixed inset-0 z-9999 flex items-center justify-center p-4" onClick={() => setShowChangelog(false)}>
                                 <div className="absolute inset-0 bg-black/70" />
                                 <div className="relative w-full max-w-sm bg-[#0a0520] border border-accent/40 rounded-lg overflow-hidden shadow-[0_0_40px_rgba(64,224,208,0.2)]" onClick={e => e.stopPropagation()}>
                                     <div className="flex items-center justify-between px-4 py-3 border-b border-accent/20 bg-black/40">
@@ -1355,7 +1355,7 @@ const App = () => {
                         <h2 className="text-accent font-black tracking-[8px] animate-pulse font-['Orbitron']">ESTABLISHING LINK...</h2>
                     </div>
                 ) : (gs?.status === 'waiting') ? (
-                    <div className="h-full flex flex-col items-center [justify-content:safe_center] p-4 text-center overflow-y-auto no-scrollbar">
+                    <div className="h-full flex flex-col items-center justify-center-safe p-4 text-center overflow-y-auto no-scrollbar">
                         <h2 className="text-[clamp(1.2rem,6.5vw,1.875rem)] font-black mb-3 tracking-[clamp(4px,2vw,10px)] font-['Orbitron'] text-white animate-pulse uppercase w-full text-center">同期待機中...</h2>
                         {gs?.roomName && gs.roomName !== room && (
                             <div className="text-white/50 font-black text-sm mb-1 tracking-[2px]">{gs.roomName}</div>
@@ -1369,7 +1369,7 @@ const App = () => {
                             <div className="text-[10px] text-white/40 mt-1">このIDを仲間に共有してください</div>
                         </div>
                         {gs?.mode !== 'streak' && (
-                            <div className="w-full max-w-sm mb-4 px-4 py-2.5 text-center text-[11px] leading-relaxed border border-accent/30 bg-accent/10 rounded shrink-0">
+                            <div className="w-full max-w-sm mb-4 px-4 py-2.5 text-center text-[11px] leading-relaxed border border-accent/30 bg-accent/10 rounded-sm shrink-0">
                                 <span className="text-accent font-black">🏁 シリーズ戦</span><br /><span className="text-white/60">{SERIES_RULE}</span>
                             </div>
                         )}
@@ -1377,7 +1377,7 @@ const App = () => {
                             {[...Array(5)].map((_, i) => {
                                 const p = gs?.players[i];
                                 return (
-                                    <div key={i} className={`bg-[#140a28]/85 border px-5 py-2.5 rounded-md mb-1.5 flex justify-between items-center min-h-[56px] shadow-md  ${p ? 'border-l-8 border-l-accent border-accent/80 bg-[#0a1e28]/85 shadow-sm' : 'border-white/30 opacity-20 border-dashed'}`}>
+                                    <div key={i} className={`bg-[#140a28]/85 border px-5 py-2.5 rounded-md mb-1.5 flex justify-between items-center min-h-[56px] shadow-md  ${p ? 'border-l-8 border-l-accent border-accent/80 bg-[#0a1e28]/85 shadow-xs' : 'border-white/30 opacity-20 border-dashed'}`}>
                                         <span className="font-black text-sm tracking-wide uppercase">{p ? p.name : '--- 空きスロット ---'}</span>
                                         <div className="flex items-center gap-2">
                                             {p && p.isBot && p.personality && (() => {
@@ -1388,8 +1388,8 @@ const App = () => {
                                                     </span>
                                                 );
                                             })()}
-                                            {p && p.id === gs?.hostId && <span className="bg-white text-black text-[10px] px-3 py-1 font-black rounded shadow-lg">マスター</span>}
-                                            {p && p.isBot && gs?.hostId === me?.id && <button className="text-[10px] font-black text-red-400 border border-red-400/40 px-2 py-0.5 rounded hover:bg-red-400/10 transition-all" onClick={() => socket.emit('remove-cpu', { roomId: room, botId: p.id })}>削除</button>}
+                                            {p && p.id === gs?.hostId && <span className="bg-white text-black text-[10px] px-3 py-1 font-black rounded-sm shadow-lg">マスター</span>}
+                                            {p && p.isBot && gs?.hostId === me?.id && <button className="text-[10px] font-black text-red-400 border border-red-400/40 px-2 py-0.5 rounded-sm hover:bg-red-400/10 transition-all" onClick={() => socket.emit('remove-cpu', { roomId: room, botId: p.id })}>削除</button>}
                                         </div>
                                     </div>
                                 );
@@ -1399,8 +1399,8 @@ const App = () => {
                             {gs?.hostId === me?.id ? (
                                 <>
                                     <div className="flex gap-3 w-full mb-3">
-                                        <button className="flex-1 py-4 bg-black/80 border border-white/40 text-white font-black text-[12px] tracking-[2px] uppercase rounded-sm hover:bg-white/10 transition-all" disabled={gs?.players?.length >= 5} onClick={() => { playSE('play', muted); socket.emit('add-cpu', { roomId: room }); }}>🤖 CPU追加</button>
-                                        <button className="flex-[2] py-4 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-base rounded-sm shadow-2xl active:scale-95 transition-all" disabled={gs?.players?.length < 2} onClick={() => { playSE('start', muted); socket.emit('start-game', { roomId: room }); }}>ミッション開始</button>
+                                        <button className="flex-1 py-4 bg-black/80 border border-white/40 text-white font-black text-[12px] tracking-[2px] uppercase rounded-xs hover:bg-white/10 transition-all" disabled={gs?.players?.length >= 5} onClick={() => { playSE('play', muted); socket.emit('add-cpu', { roomId: room }); }}>🤖 CPU追加</button>
+                                        <button className="flex-2 py-4 bg-linear-to-r from-amber-400 to-amber-600 text-black font-black text-base rounded-xs shadow-2xl active:scale-95 transition-all" disabled={gs?.players?.length < 2} onClick={() => { playSE('start', muted); socket.emit('start-game', { roomId: room }); }}>ミッション開始</button>
                                     </div>
                                     <p className="text-[10px] text-white/40 mb-3 font-bold">💡 CPUはそれぞれ異なる戦略を持ちます。追加するたびにランダムで配置されます</p>
                                 </>
@@ -1414,8 +1414,8 @@ const App = () => {
                     <div className="result-screen">
                         {bgAnim && (me?.earnedPoints > 0 || (gs.isSeriesFinished && gs.mode !== 'streak' && [...gs.players].sort((a, b) => b.score - a.score)[0]?.id === me?.id)) && <Confetti key={gs.matchCount} />}
                         <h2 className={`result-title uppercase tracking-tighter ${gs.mode === 'streak' && !gs.isSeriesFinished && gs.streak >= 2 ? 'streak-hot' : ''}`} style={{ color: gs.isSeriesFinished ? '#FFD700' : 'var(--steam-gold)' }}>{gs.mode === 'streak' ? (gs.isSeriesFinished ? "連勝ストップ" : `🔥 ${gs.streak} 連勝中！`) : (gs.isSeriesFinished ? "シリーズ終了" : `第 ${gs.matchCount - 1} 戦 終了`)}</h2>
-                        {gs.mode === 'streak' && gs.isSeriesFinished && <div className="text-xl text-white font-black mb-6 text-center champion-fx py-4 px-8 rounded-full border border-[var(--steam-gold)]">連勝記録<br /><span className="text-[clamp(1.5rem,6vw,2.25rem)] text-[var(--steam-gold)] mt-2 inline-block">🔥 {gs.streak} 連勝</span></div>}
-                        {gs.mode !== 'streak' && gs.isSeriesFinished && <div className="text-xl text-white font-black mb-6 text-center animate-pulse champion-fx py-4 px-8 rounded-full border border-[var(--steam-gold)]">総合優勝 (CHAMPION)<br /><span className="text-[clamp(1.5rem,6vw,2.25rem)] text-[var(--steam-gold)] drop-shadow-[0_0_10px_rgba(212,175,55,1)] mt-2 inline-block max-w-full truncate break-all px-2">👑 {[...gs.players].sort((a, b) => b.score - a.score)[0].name} 👑</span></div>}
+                        {gs.mode === 'streak' && gs.isSeriesFinished && <div className="text-xl text-white font-black mb-6 text-center champion-fx py-4 px-8 rounded-full border border-(--steam-gold)">連勝記録<br /><span className="text-[clamp(1.5rem,6vw,2.25rem)] text-(--steam-gold) mt-2 inline-block">🔥 {gs.streak} 連勝</span></div>}
+                        {gs.mode !== 'streak' && gs.isSeriesFinished && <div className="text-xl text-white font-black mb-6 text-center animate-pulse champion-fx py-4 px-8 rounded-full border border-(--steam-gold)">総合優勝 (CHAMPION)<br /><span className="text-[clamp(1.5rem,6vw,2.25rem)] text-(--steam-gold) drop-shadow-[0_0_10px_rgba(212,175,55,1)] mt-2 inline-block max-w-full truncate break-all px-2">👑 {[...gs.players].sort((a, b) => b.score - a.score)[0].name} 👑</span></div>}
                         <div className="flex flex-row items-end justify-center w-full max-w-[440px] h-[220px] gap-1 mt-4 mb-8 px-2">
                             {(gs.isSeriesFinished ? [...gs.players].sort((a, b) => b.score - a.score) : sortedResultPlayers).map((p, i) => {
                                 const order = i === 0 ? 3 : i === 1 ? 2 : i === 2 ? 4 : i === 3 ? 1 : 5;
@@ -1424,10 +1424,10 @@ const App = () => {
                                 return (
                                     <div key={p.id} className="flex flex-col items-center justify-end w-[20%] relative" style={{ order }}>
                                         {p.ready && <div className="absolute top-[-50px] text-[10px] text-accent font-black bg-black/90 px-2 py-0.5 rounded-full border border-accent animate-pulse z-30">READY</div>}
-                                        {p.isEliminated && !gs.isSeriesFinished && <div className="absolute top-[-25px] text-[8px] text-red-500 font-bold bg-black/90 px-1 rounded border border-red-500/50 z-10">臨界突破</div>}
+                                        {p.isEliminated && !gs.isSeriesFinished && <div className="absolute top-[-25px] text-[8px] text-red-500 font-bold bg-black/90 px-1 rounded-sm border border-red-500/50 z-10">臨界突破</div>}
                                         <div className="text-[9px] md:text-[10px] font-bold truncate w-full min-w-0 px-1 text-center mb-1" style={{ color: (p.isEliminated && !gs.isSeriesFinished) ? 'gray' : 'white', textDecoration: (p.isEliminated && !gs.isSeriesFinished) ? 'line-through' : 'none' }}>{p.name}</div>
                                         {!gs.isSeriesFinished && <div className="text-[11px] md:text-[13px] font-black mb-1 font-['Orbitron']">{p.handCount}枚</div>}
-                                        <div className="text-[12px] md:text-[14px] font-black text-[var(--steam-gold)] mb-2 font-['Orbitron']">★ {p.score}</div>
+                                        <div className="text-[12px] md:text-[14px] font-black text-(--steam-gold) mb-2 font-['Orbitron']">★ {p.score}</div>
 
                                         {/* 点数計算結果の表示 - 重なりを防ぐため高さを調整 */}
                                         {p.streakCount >= 2 && !gs.isSeriesFinished && (
@@ -1460,18 +1460,18 @@ const App = () => {
                             })}
                         </div>
                         <div className="w-full max-w-xs flex flex-col gap-3">
-                            <button className={`w-full py-5 text-xl font-black rounded-sm shadow-2xl uppercase tracking-[2px] transition-all ${me?.ready ? 'bg-gray-600 text-white/50' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-black'} ${resultLocked ? 'opacity-40' : ''}`} onClick={() => { if (me?.ready || resultLocked) return; playSE('start', muted); socket.emit('play-again', { roomId: room }); }}>{me?.ready ? "待機中..." : (gs.isSeriesFinished ? (gs.mode === 'streak' ? "もう一度挑戦" : "新しいシリーズを開始") : "次のマッチへ")}</button>
-                            <button className={`w-full py-3 text-xs font-black bg-black/50 border border-white/10 text-white/50 rounded-sm uppercase tracking-[2px] mt-2 transition-opacity ${resultLocked ? 'opacity-40' : ''}`} onClick={() => { if (resultLocked) return; if (leaveLoss) { playSE('cancel', muted); setShowLeaveConfirm(true); } else goToTopPage(); }}>タイトル画面へ戻る</button>
+                            <button className={`w-full py-5 text-xl font-black rounded-xs shadow-2xl uppercase tracking-[2px] transition-all ${me?.ready ? 'bg-gray-600 text-white/50' : 'bg-linear-to-r from-amber-400 to-amber-600 text-black'} ${resultLocked ? 'opacity-40' : ''}`} onClick={() => { if (me?.ready || resultLocked) return; playSE('start', muted); socket.emit('play-again', { roomId: room }); }}>{me?.ready ? "待機中..." : (gs.isSeriesFinished ? (gs.mode === 'streak' ? "もう一度挑戦" : "新しいシリーズを開始") : "次のマッチへ")}</button>
+                            <button className={`w-full py-3 text-xs font-black bg-black/50 border border-white/10 text-white/50 rounded-xs uppercase tracking-[2px] mt-2 transition-opacity ${resultLocked ? 'opacity-40' : ''}`} onClick={() => { if (resultLocked) return; if (leaveLoss) { playSE('cancel', muted); setShowLeaveConfirm(true); } else goToTopPage(); }}>タイトル画面へ戻る</button>
                         </div>
                         {showLeaveConfirm && leaveLoss && (
-                            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => setShowLeaveConfirm(false)}>
+                            <div className="fixed inset-0 z-9999 flex items-center justify-center p-4" onClick={() => setShowLeaveConfirm(false)}>
                                 <div className="absolute inset-0 bg-black/70" />
                                 <div className="relative w-full max-w-sm bg-[#0a0520] border border-accent/40 rounded-lg overflow-hidden shadow-[0_0_40px_rgba(64,224,208,0.2)]" onClick={e => e.stopPropagation()}>
                                     <div className="px-4 py-3 border-b border-accent/20 bg-black/40 font-black text-accent text-sm tracking-[2px]">タイトル画面に戻りますか？</div>
                                     <div className="p-4 text-white/70 text-[12px] leading-relaxed">{leaveLoss}</div>
                                     <div className="flex gap-2 p-4 pt-0">
-                                        <button className="flex-1 py-3 text-xs font-black bg-black/60 border border-white/30 text-white rounded-sm tracking-[2px]" onClick={() => setShowLeaveConfirm(false)}>続ける</button>
-                                        <button className="flex-1 py-3 text-xs font-black bg-danger/20 border border-danger/60 text-white rounded-sm tracking-[2px]" onClick={goToTopPage}>戻る</button>
+                                        <button className="flex-1 py-3 text-xs font-black bg-black/60 border border-white/30 text-white rounded-xs tracking-[2px]" onClick={() => setShowLeaveConfirm(false)}>続ける</button>
+                                        <button className="flex-1 py-3 text-xs font-black bg-danger/20 border border-danger/60 text-white rounded-xs tracking-[2px]" onClick={goToTopPage}>戻る</button>
                                     </div>
                                 </div>
                             </div>
@@ -1480,7 +1480,7 @@ const App = () => {
                 ) : (
                     <>
                         <div className="flex justify-between items-center px-4 py-2 bg-[#05010a]/90 border-b border-accent/20 shrink-0 z-50">
-                            <div className="text-[11px] font-black text-accent font-['Orbitron'] tracking-[2px] sm:tracking-[4px] truncate flex-1">セクター: {room} <span className="ml-2 text-white/80">{gs.mode === 'streak' ? `| 🔥 ${gs.streak || 0}連勝中` : `| 第${gs.matchCount}/${gs.maxMatches}戦`}</span> <span className="ml-2 text-[var(--steam-gold)]">★ {me?.score || 0} pts</span></div>
+                            <div className="text-[11px] font-black text-accent font-['Orbitron'] tracking-[2px] sm:tracking-[4px] truncate flex-1">セクター: {room} <span className="ml-2 text-white/80">{gs.mode === 'streak' ? `| 🔥 ${gs.streak || 0}連勝中` : `| 第${gs.matchCount}/${gs.maxMatches}戦`}</span> <span className="ml-2 text-(--steam-gold)">★ {me?.score || 0} pts</span></div>
                             <div className="flex items-center gap-2 shrink-0 ml-2">
                                 <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all hover:bg-accent/10 ${bgAnim ? 'border-accent text-accent bg-black/80 shadow-[0_0_10px_rgba(64,224,208,0.4)]' : 'border-gray-500 text-gray-500 bg-black/60'}`} onClick={() => { playSE(bgAnim ? 'cancel' : 'start', muted); setBgAnim(!bgAnim); }} title={bgAnim ? "軽量モードON (描画負荷軽減)" : "軽量モードOFF (通常演出)"}>{bgAnim ? '✨' : '🍃'}</div>
                                 <div className="w-8 h-8 rounded-full border-2 border-accent flex items-center justify-center text-accent bg-black/80 cursor-pointer shadow-[0_0_10px_rgba(64,224,208,0.4)] transition-all hover:bg-accent/10" onClick={() => setMuted(!muted)} title={muted ? "音声ON" : "音声OFF"}>{muted ? '🔇' : '🔊'}</div>
@@ -1514,8 +1514,8 @@ const App = () => {
                                 <div className="central-cards-overlay">
                                     <div className="flex items-center justify-center gap-4 sm:gap-6">
                                         <div className="relative w-14 h-20 sm:w-16 sm:h-24 opacity-90 transition-all cursor-help group">
-                                            <div className="absolute inset-0 bg-[#111] border border-white/40 rounded-sm shadow-md">
-                                                <div className="w-full h-full p-2 flex flex-col items-center justify-center bg-gradient-to-br from-[#1a1a2e] to-black">
+                                            <div className="absolute inset-0 bg-[#111] border border-white/40 rounded-xs shadow-md">
+                                                <div className="w-full h-full p-2 flex flex-col items-center justify-center bg-linear-to-br from-[#1a1a2e] to-black">
                                                     <div className="w-full h-full opacity-30 text-accent"><IconRenderer r="BACK" /></div>
                                                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                                                         <div className="text-xl font-black text-white font-['Orbitron']">{gs.deck?.length || 0}</div>
@@ -1547,8 +1547,8 @@ const App = () => {
                             </div>
                         )}
                         <div className="tactical-log-box no-scrollbar" ref={logContainerRef}>{logElements}</div>
-                        <div className="flex justify-between items-center px-5 py-1 shrink-0"><div className="flex items-baseline gap-2"><span className="hand-info-label text-[10px] font-black text-white/40 tracking-[2px] uppercase">Your Hand</span><span className={`hand-info-count text-2xl font-black font-['Orbitron'] leading-none ${me?.hand.length >= 8 ? 'text-danger animate-pulse' : 'text-white'}`}>{me?.hand.length || 0}<span className="text-xs ml-1 opacity-60">枚</span></span></div>{(isAnimating || isMorphing) && <div className="text-[9px] font-black text-accent animate-pulse tracking-[2px] bg-accent/10 px-3 py-1 rounded border border-accent/30 uppercase">Processing...</div>}</div>
-                        <div className={`hand-container no-scrollbar ${isMyTurn ? 'my-turn-hand-fx' : ''} ${(isAnimating || isMorphing || selector) ? 'opacity-40 grayscale-[50%] pointer-events-none' : ''}`}>
+                        <div className="flex justify-between items-center px-5 py-1 shrink-0"><div className="flex items-baseline gap-2"><span className="hand-info-label text-[10px] font-black text-white/40 tracking-[2px] uppercase">Your Hand</span><span className={`hand-info-count text-2xl font-black font-['Orbitron'] leading-none ${me?.hand.length >= 8 ? 'text-danger animate-pulse' : 'text-white'}`}>{me?.hand.length || 0}<span className="text-xs ml-1 opacity-60">枚</span></span></div>{(isAnimating || isMorphing) && <div className="text-[9px] font-black text-accent animate-pulse tracking-[2px] bg-accent/10 px-3 py-1 rounded-sm border border-accent/30 uppercase">Processing...</div>}</div>
+                        <div className={`hand-container no-scrollbar ${isMyTurn ? 'my-turn-hand-fx' : ''} ${(isAnimating || isMorphing || selector) ? 'opacity-40 grayscale-50 pointer-events-none' : ''}`}>
                             {sortedHand.map((card, idx) => {
                                 const handSize = me.hand.length;
                                 const baseMargin = -8;
@@ -1587,7 +1587,7 @@ const App = () => {
                                 );
                             })}
                         </div>
-                        <div className="draw-btn-area w-full px-4 pb-4 shrink-0 flex flex-col gap-2"><button className="btn-mega-draw w-full h-16 bg-gradient-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl tracking-[8px] cursor-pointer transition-all active:scale-95 disabled:grayscale disabled:opacity-50" disabled={!isMyTurn || selector || isAnimating || isMorphing} onClick={() => { if (isAnimating || isMorphing) { setBufferedAction({ type: 'draw' }); return; } playSE('draw', muted); socket.emit('draw-card', { roomId: room }); }}>ドロー ({gs.nextDrawAmount}枚)</button></div>
+                        <div className="draw-btn-area w-full px-4 pb-4 shrink-0 flex flex-col gap-2"><button className="btn-mega-draw w-full h-16 bg-linear-to-br from-[#FFD700] to-[#B8860B] text-black font-black text-2xl leading-8 tracking-[8px] cursor-pointer transition-all active:scale-95 disabled:grayscale disabled:opacity-50" disabled={!isMyTurn || selector || isAnimating || isMorphing} onClick={() => { if (isAnimating || isMorphing) { setBufferedAction({ type: 'draw' }); return; } playSE('draw', muted); socket.emit('draw-card', { roomId: room }); }}>ドロー ({gs.nextDrawAmount}枚)</button></div>
                     </>
                 )}
             </div>
@@ -1604,7 +1604,7 @@ const App = () => {
                             </button>
                         ))}
                     </div>
-                    <button className="w-full mt-4 p-5 text-white/70 text-[14px] tracking-[4px] font-black border-2 border-white/30 uppercase hover:bg-white/10 hover:border-white/50 rounded transition-all active:scale-95" onClick={() => { playSE('cancel', muted); setSelector(null); }}>✕ 選択をキャンセル</button>
+                    <button className="w-full mt-4 p-5 text-white/70 text-[14px] tracking-[4px] font-black border-2 border-white/30 uppercase hover:bg-white/10 hover:border-white/50 rounded-sm transition-all active:scale-95" onClick={() => { playSE('cancel', muted); setSelector(null); }}>✕ 選択をキャンセル</button>
                 </div>
             </div>
         )}

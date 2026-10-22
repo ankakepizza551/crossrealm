@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const esbuild = require('esbuild');
 const postcss = require('postcss');
-const tailwindcss = require('tailwindcss');
+const tailwindcss = require('@tailwindcss/postcss');
 
 const ROOT = path.join(__dirname, '..');
 const SRC = path.join(ROOT, 'guide', 'Cross_Realm_Interactive_Guide.src.html');
@@ -30,8 +30,17 @@ async function build() {
   const js = (await esbuild.transform(m[1], { loader: 'jsx', minify: true, target: 'es2018', charset: 'utf8' })).code;
 
   // ページ内で使われているクラスだけの Tailwind CSS（CDN 版と同じく既定設定・リセット込み）
-  const tw = await postcss([tailwindcss({ content: [{ raw: src, extension: 'html' }], theme: { extend: {} }, plugins: [] })])
-    .process('@tailwind base;@tailwind components;@tailwind utilities;', { from: undefined });
+  // 枠線の既定色・プレースホルダーの色・ボタンのカーソルは v3 に揃える
+  const tw = await postcss([tailwindcss({ base: ROOT })]).process(
+    `@import 'tailwindcss' source(none);
+@source '${path.relative(ROOT, SRC).split(path.sep).join('/')}';
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button { border-color: var(--color-gray-200, currentcolor); }
+  input::placeholder, textarea::placeholder { color: var(--color-gray-400); }
+  button:not(:disabled), [role='button']:not(:disabled) { cursor: pointer; }
+}`,
+    { from: path.join(ROOT, 'guide.css') },
+  );
   const css = (await esbuild.transform(tw.css, { loader: 'css', minify: true })).code.trim();
 
   let html = src;

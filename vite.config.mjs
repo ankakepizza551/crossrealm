@@ -16,11 +16,13 @@ export default defineConfig({
         passes: 2,
       },
     },
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks: {
-          react: ['react', 'react-dom'],
-          socket: ['socket.io-client'],
+        codeSplitting: {
+          groups: [
+            { name: 'react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
+            { name: 'socket', test: /node_modules[\\/](socket\.io-client|socket\.io-parser|engine\.io-client|engine\.io-parser|@socket\.io[\\/]component-emitter|debug|ms|xmlhttprequest-ssl)[\\/]/ },
+          ],
         },
       },
     },
